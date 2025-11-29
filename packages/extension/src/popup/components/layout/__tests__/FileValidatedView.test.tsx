@@ -210,7 +210,8 @@ describe('FileValidatedView', () => {
 
       const button = screen.getByTestId('export-button');
       expect(button).toHaveTextContent('Export to PDF');
-      expect(button).toHaveTextContent('E');
+      // Keyboard hint shows CtrlE on non-Mac platforms, ⌘E on Mac
+      expect(button).toHaveTextContent(/CtrlE|⌘E/);
     });
 
     it('export button has accessible aria-label', () => {
@@ -230,7 +231,7 @@ describe('FileValidatedView', () => {
       render(<FileValidatedView />);
 
       const button = screen.getByTestId('export-button');
-      expect(button).toHaveAttribute('aria-label', 'Export to PDF using current settings (E shortcut)');
+      expect(button).toHaveAttribute('aria-label', 'Export to PDF using current settings (Ctrl+E shortcut)');
     });
 
     it('calls handleExportClick when export button clicked', async () => {

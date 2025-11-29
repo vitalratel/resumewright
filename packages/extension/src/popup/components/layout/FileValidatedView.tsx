@@ -13,6 +13,7 @@ import { useConversion } from '../../context/ConversionContext';
 import { useQuickSettings } from '../../context/QuickSettingsContext';
 import { tokens } from '../../styles/tokens';
 import { getMarginPreset } from '../../utils/marginPresets';
+import { getShortcutDisplay } from '../../utils/shortcuts';
 import { Button } from '../common/Button';
 import { FileImport } from '../FileImport';
 
@@ -57,7 +58,7 @@ export const FileValidatedView = React.memo(() => {
             variant="primary"
             onClick={() => { void handleExportClick(); }}
             className={`w-full flex items-center justify-center ${tokens.spacing.gapSmall}`}
-            aria-label="Export to PDF using current settings (E shortcut)"
+            aria-label="Export to PDF using current settings (Ctrl+E shortcut)"
             data-testid="export-button"
           >
             <DocumentArrowDownIcon className={tokens.icons.md} aria-hidden="true" />
@@ -67,7 +68,7 @@ export const FileValidatedView = React.memo(() => {
                 .trim()
                 .replace(/\s+/g, ' ')}
             >
-              E
+              {getShortcutDisplay('E')}
             </kbd>
           </Button>
 
