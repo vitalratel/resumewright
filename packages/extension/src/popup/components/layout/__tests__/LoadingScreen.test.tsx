@@ -164,12 +164,12 @@ describe('LoadingScreen', () => {
       expect(fileImport).toBeInTheDocument();
     });
 
-    it('renders SkeletonQuickSettings', () => {
+    it('renders SkeletonExportSection', () => {
       const { container } = render(<LoadingScreen />);
 
-      // Should have quick settings skeleton
-      const quickSettings = container.querySelector('.gap-2');
-      expect(quickSettings).toBeInTheDocument();
+      // Should have export section skeleton with button and text
+      const skeletons = container.querySelectorAll('.animate-pulse');
+      expect(skeletons.length).toBeGreaterThan(5);
     });
 
     it('skeleton components have reduced opacity', () => {

@@ -5,6 +5,9 @@
 @source "../shared/";
 @source "../../entrypoints/";
 
+/* Enable class-based dark mode (toggled via .dark class on html element) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Custom theme extensions */
 @theme {
   /* LinkedIn Professional Blue color scheme */

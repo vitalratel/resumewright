@@ -59,6 +59,7 @@ export default defineConfig({
   },
 
   // Projects for different testing scenarios
+  // Note: Firefox not supported - Playwright cannot load Firefox extensions
   projects: [
     {
       name: 'extension-chrome',
@@ -66,15 +67,6 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         // Extension-specific configuration
         // Context will be set up in fixtures (persistent context required)
-      },
-    },
-    
-    {
-      name: 'extension-firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-        // Firefox extension support - requires firefox fixture
-        // Context will be set up in Firefox-specific fixture
       },
     },
   ],

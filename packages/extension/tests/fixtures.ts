@@ -13,17 +13,13 @@ const __dirname = path.dirname(__filename);
 
 /**
  * Extended Playwright test with custom fixtures for extension testing.
- * Supports both Chrome and Firefox browsers.
+ * Chrome only - Playwright doesn't support Firefox extension loading.
  *
  * Provides:
- * - browserType: Detected browser type ('chrome' or 'firefox')
+ * - browserType: Always 'chrome' (kept for API compatibility)
  * - context: Persistent browser context with extension loaded
  * - extensionId: The ID of the loaded extension (for accessing extension pages)
  * - backgroundPage: Service worker reference (limited in Manifest V3)
- *
- * Browser-specific behavior:
- * - Chrome: Uses chrome-extension:// protocol, discovers hash-based ID
- * - Firefox: Uses moz-extension:// protocol, reads static ID from manifest.json
  *
  * Usage:
  * ```typescript
@@ -35,9 +31,6 @@ const __dirname = path.dirname(__filename);
  *   await expect(page.locator('h1')).toContainText('ResumeWright');
  * });
  * ```
- *
- * Note: Tests automatically use the correct browser based on Playwright project name
- * (e.g., "chrome" or "firefox" project).
  */
 
 // Service worker mock interface for testing
@@ -53,27 +46,13 @@ export const test = base.extend<{
   backgroundPage: ServiceWorkerMock;
   browserType: BrowserType;
 }>({
-  // Detect browser type from project name
-  browserType: async ({}, use, testInfo) => {
-    const projectName = testInfo.project.name;
-    const browser: BrowserType = projectName.includes('firefox') ? 'firefox' : 'chrome';
-    await use(browser);
+  // Browser type - always Chrome (Playwright doesn't support Firefox extensions)
+  browserType: async ({}, use) => {
+    await use('chrome');
   },
 
   // Custom context fixture that loads the extension
   context: async ({ browserType }, use, testInfo) => {
-    // Skip Firefox tests - Playwright doesn't support loading Firefox extensions
-    // Firefox extensions must be tested manually using web-ext
-    // See tests/README.md section "Firefox Testing Limitation" for manual testing instructions
-    if (browserType === 'firefox') {
-      testInfo.skip(
-        true,
-        'Firefox extension testing not supported by Playwright. Use manual testing: cd .output/firefox-mv3 && web-ext run'
-      );
-      return; // Skip fixture setup
-    }
-
-    // Get browser-specific configuration (Chrome only at this point)
     const config = browserConfigs[browserType];
     const pathToExtension = path.join(__dirname, '..', config.distFolder);
 

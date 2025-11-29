@@ -1,9 +1,7 @@
-/**
- * Barrel export for conversion-related components
- */
+// ABOUTME: Barrel export for conversion-related components.
+// ABOUTME: Provides UI states for converting, success, error, and progress.
 
 export { ConvertingState } from './ConvertingState';
-export { CVDetected } from './CVDetected';
 export { ErrorState } from './ErrorState';
 export { ProgressBar } from './ProgressBar';
 export { ProgressStatus } from './ProgressStatus';

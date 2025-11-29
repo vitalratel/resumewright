@@ -1,9 +1,5 @@
-/**
- * Settings Hooks
- * Barrel export for settings-related hooks
- */
+// ABOUTME: Barrel export for settings-related hooks.
+// ABOUTME: Provides hooks for quick settings and unsaved changes tracking.
 
-export { useFontUpload } from './useFontUpload';
 export { useQuickSettings } from './useQuickSettings';
-export { useQuickSettingsUndo } from './useQuickSettingsUndo';
 export { useUnsavedChanges } from './useUnsavedChanges';

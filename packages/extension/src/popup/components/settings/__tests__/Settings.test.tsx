@@ -1,8 +1,5 @@
-/**
- * Settings Component Tests
- *
- * Tests Settings UI component functionality
- */
+// ABOUTME: Tests for Settings component with tabbed navigation.
+// ABOUTME: Tests rendering, page size, margins, reset, and keyboard navigation.
 
 import type { UserSettings } from '@/shared/types';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -10,6 +7,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import { Settings } from '../Settings';
+
+/**
+ * Helper to switch to a specific settings tab
+ */
+const switchToTab = (tabName: string) => {
+  const tab = screen.getByRole('tab', { name: tabName });
+  fireEvent.click(tab);
+};
 
 // Mock settingsStore
 vi.mock('@/shared/infrastructure/settings/SettingsStore', () => ({
@@ -40,8 +45,12 @@ describe('Settings', () => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
       });
 
+      // Page tab content (default)
       expect(screen.getByText('Letter (8.5" x 11")')).toBeInTheDocument();
       expect(screen.getByText('A4 (210mm x 297mm)')).toBeInTheDocument();
+
+      // General tab content
+      switchToTab('General');
       expect(screen.getByText('Reset to Defaults')).toBeInTheDocument();
     });
 
@@ -165,6 +174,7 @@ describe('Settings', () => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
       });
 
+      switchToTab('General');
       const resetButton = screen.getByText('Reset to Defaults');
       fireEvent.click(resetButton);
 
@@ -180,6 +190,7 @@ describe('Settings', () => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
       });
 
+      switchToTab('General');
       const resetButton = screen.getByText('Reset to Defaults');
       fireEvent.click(resetButton);
 
@@ -200,6 +211,7 @@ describe('Settings', () => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
       });
 
+      switchToTab('General');
       const resetButton = screen.getByText('Reset to Defaults');
       fireEvent.click(resetButton);
 
@@ -222,6 +234,7 @@ describe('Settings', () => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
       });
 
+      switchToTab('General');
       const resetButton = screen.getByText('Reset to Defaults');
       fireEvent.click(resetButton);
 
@@ -258,6 +271,7 @@ describe('Settings', () => {
         expect(a4Button).toHaveClass('border-green-500');
       });
 
+      switchToTab('General');
       const resetButton = screen.getByText('Reset to Defaults');
       fireEvent.click(resetButton);
 
@@ -268,6 +282,8 @@ describe('Settings', () => {
       const confirmButton = screen.getByRole('button', { name: /Reset to Defaults/i });
       fireEvent.click(confirmButton);
 
+      // Switch back to Page tab to check the page size
+      switchToTab('Page');
       await waitFor(() => {
         const letterButton = screen.getByText('Letter (8.5" x 11")').closest('button');
         expect(letterButton).toHaveClass('border-green-500');
@@ -299,9 +315,17 @@ describe('Settings', () => {
       });
 
       const backButton = screen.getByLabelText('Back to main screen');
-      const resetButton = screen.getByText('Reset to Defaults');
-
       expect(backButton).toBeInTheDocument();
+
+      // Check tabs are navigable
+      const pageTab = screen.getByRole('tab', { name: 'Page' });
+      const generalTab = screen.getByRole('tab', { name: 'General' });
+      expect(pageTab).toBeInTheDocument();
+      expect(generalTab).toBeInTheDocument();
+
+      // Check reset button in General tab
+      switchToTab('General');
+      const resetButton = screen.getByText('Reset to Defaults');
       expect(resetButton).toBeInTheDocument();
     });
   });

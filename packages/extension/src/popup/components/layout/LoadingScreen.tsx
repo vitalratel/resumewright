@@ -12,7 +12,7 @@
 import { useEffect, useState } from 'react';
 import { WASM_LOADING_MESSAGES } from '../../constants/app';
 import { tokens } from '../../styles/tokens';
-import { Alert, SkeletonFileImport, SkeletonHeader, SkeletonQuickSettings } from '../common';
+import { Alert, SkeletonExportSection, SkeletonFileImport, SkeletonHeader } from '../common';
 
 export function LoadingScreen() {
   // Timeout fallback after 30 seconds
@@ -90,12 +90,9 @@ export function LoadingScreen() {
           <SkeletonFileImport />
         </div>
 
-        {/* Skeleton UI - Quick Settings */}
+        {/* Skeleton UI - Export Section */}
         <div className="opacity-50">
-          <div className={tokens.spacing.marginSmall}>
-            <div className={`h-3 w-24 ${tokens.colors.neutral.bg} ${tokens.borders.rounded} ${tokens.animations.fadeIn}`}></div>
-          </div>
-          <SkeletonQuickSettings />
+          <SkeletonExportSection />
         </div>
       </div>
     </div>

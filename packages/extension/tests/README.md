@@ -25,8 +25,7 @@ tests/
 ├── fixtures.ts                # Shared test fixtures
 ├── fixtures/                  # Fixture modules
 │   ├── browser-config.ts          # Browser configuration
-│   ├── chrome-id-discovery.ts     # Chrome extension ID
-│   └── firefox-id-discovery.ts    # Firefox extension ID
+│   └── chrome-id-discovery.ts     # Chrome extension ID
 ├── helpers/                   # Test helper utilities
 │   ├── e2eHelpers.ts              # E2E test helpers
 │   ├── fixtures.ts                # Additional fixtures
@@ -179,7 +178,7 @@ pnpm test:accessibility
 
 ### Extension Loading Fixture (`fixtures.ts`)
 
-Automatically loads the extension with **browser abstraction** supporting both Chrome and Firefox:
+Automatically loads the Chrome extension:
 
 ```typescript
 import { test, expect, browserConfigs } from './fixtures';
@@ -195,25 +194,10 @@ test('my test', async ({ page, extensionId, browserType }) => {
 **Fixtures Provided:**
 - `context`: Persistent browser context with extension loaded
 - `extensionId`: The extension's ID (for accessing extension pages)
-- `browserType`: Detected browser type (`'chrome'` or `'firefox'`)
+- `browserType`: Always `'chrome'` (Firefox not supported by Playwright)
 - `backgroundPage`: Service worker reference (may be mocked in MV3)
 
-**Browser Support:**
-
-| Browser | Automated Tests | Protocol | Extension ID Format |
-|---------|-----------------|----------|---------------------|
-| Chrome | ✅ Fully supported | `chrome-extension://` | 32 lowercase letters (hash-based) |
-| Firefox | ⚠️ Manual only | `moz-extension://` | Email format (from manifest) |
-
-**Firefox Testing Limitation:**
-
-Playwright does not support loading Firefox extensions via command-line arguments like Chrome. Firefox tests automatically skip with a clear message directing users to manual testing:
-
-```bash
-# Manual Firefox testing (recommended approach)
-cd packages/extension/.output/firefox-mv3
-web-ext run
-```
+**Note:** Playwright does not support loading Firefox extensions. Firefox testing requires manual testing with `web-ext run`.
 
 ## CI/CD Integration
 
@@ -246,7 +230,7 @@ export default defineConfig({
 
 ## Troubleshooting
 
-### Extension Doesn't Load (Chrome)
+### Extension Doesn't Load
 
 **Symptoms:** Tests fail with timeout waiting for service worker
 
@@ -255,21 +239,6 @@ export default defineConfig({
 2. Check `.output/chrome-mv3/` directory exists and contains manifest.json
 3. Run with `--headed` flag to see browser errors
 4. Verify service worker loads: Check browser console for errors
-
-### Firefox Tests Skip Automatically
-
-**Symptoms:** Firefox tests show "skipped" status
-
-**Explanation:** This is expected behavior. Playwright does not support loading Firefox extensions via command-line arguments.
-
-**Solutions:**
-1. For automated testing: Use Chrome (fully supported)
-2. For Firefox validation: Use manual testing with `web-ext`
-   ```bash
-   cd packages/extension/.output/firefox-mv3
-   web-ext run
-   ```
-3. For CI/CD: Run Chrome tests only, manual Firefox check before releases
 
 ### Visual Tests Fail
 
@@ -327,4 +296,4 @@ pnpm test:accessibility  # Accessibility tests only
 ---
 
 **Test Framework:** Playwright 1.56+
-**Browser Support:** Chrome (automated) + Firefox (manual)
+**Browser Support:** Chrome (automated)

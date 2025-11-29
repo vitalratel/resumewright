@@ -14,8 +14,6 @@ test.setTimeout(60000);
 
 test.describe('Full Popup Application - WCAG 2.1 Compliance', () => {
   test('popup app has no WCAG Level A violations', async ({ page, extensionId, browserType }) => {
-    test.skip(browserType === 'firefox', 'Firefox extension loading not supported in Playwright');
-
     // Navigate to actual extension popup using browser-specific protocol
     const config = browserConfigs[browserType];
     await page.goto(`${config.protocol}://${extensionId}/converter.html`);
@@ -53,8 +51,6 @@ test.describe('Full Popup Application - WCAG 2.1 Compliance', () => {
   });
 
   test('popup app checks WCAG Level AA compliance', async ({ page, extensionId, browserType }) => {
-    test.skip(browserType === 'firefox', 'Firefox extension loading not supported in Playwright');
-
     // Navigate to actual extension popup using browser-specific protocol
     const config = browserConfigs[browserType];
     await page.goto(`${config.protocol}://${extensionId}/converter.html`);
@@ -87,8 +83,6 @@ test.describe('Full Popup Application - WCAG 2.1 Compliance', () => {
   });
 
   test('popup app keyboard navigation works', async ({ page, extensionId, browserType }) => {
-    test.skip(browserType === 'firefox', 'Firefox extension loading not supported in Playwright');
-
     // Navigate to actual extension popup using browser-specific protocol
     const config = browserConfigs[browserType];
     await page.goto(`${config.protocol}://${extensionId}/converter.html`);
@@ -139,8 +133,6 @@ test.describe('Full Popup Application - WCAG 2.1 Compliance', () => {
     extensionId,
     browserType,
   }) => {
-    test.skip(browserType === 'firefox', 'Firefox extension loading not supported in Playwright');
-
     // Navigate to actual extension popup using browser-specific protocol
     const config = browserConfigs[browserType];
     await page.goto(`${config.protocol}://${extensionId}/converter.html`);

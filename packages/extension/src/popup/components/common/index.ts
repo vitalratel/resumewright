@@ -16,21 +16,20 @@ export { Button } from './Button';
 export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps } from './ConfirmDialog';
 
-export { KeyboardHint } from './KeyboardHint';
-
-export { PageLayoutPreview } from './PageLayoutPreview';
-
 export {
   Skeleton,
+  SkeletonExportSection,
   SkeletonFileImport,
   SkeletonHeader,
-  SkeletonQuickSettings,
   SkeletonSettings,
   SkeletonText,
 } from './Skeleton';
 
 export { Spinner } from './Spinner';
 export type { SpinnerSize } from './Spinner';
+
+export { TabGroup } from './TabGroup';
+export type { Tab } from './TabGroup';
 export {
   ATS,
   Compatible,

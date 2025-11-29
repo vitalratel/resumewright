@@ -1,11 +1,8 @@
-/**
- * Layout Components Export
- * Centralized exports for layout components
- */
+// ABOUTME: Barrel export for layout components.
+// ABOUTME: Provides main structural components for the popup UI.
 
 export { AppFooter } from './AppFooter';
 export { AppHeader } from './AppHeader';
-export { CenteredContainer } from './CenteredContainer';
 export { LoadingScreen } from './LoadingScreen';
 export { MainContent } from './MainContent';
 export { PopupContainer } from './PopupContainer';

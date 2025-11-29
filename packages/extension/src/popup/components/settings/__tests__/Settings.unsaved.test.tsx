@@ -1,15 +1,20 @@
-/**
- * Settings Component Tests - Auto-Save
- * Auto-save with debounce implementation
- * Tests auto-save behavior, debounce, and settings persistence
- */
+// ABOUTME: Tests for Settings component auto-save with debounce.
+// ABOUTME: Tests auto-save behavior, debounce, tab switching, and settings persistence.
 
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import { Settings } from '../Settings';
+
+/**
+ * Helper to switch to a specific settings tab
+ */
+const switchToTab = (tabName: string) => {
+  const tab = screen.getByRole('tab', { name: tabName });
+  fireEvent.click(tab);
+};
 
 // Mock settingsStore
 vi.mock('@/shared/infrastructure/settings/SettingsStore', () => ({
@@ -178,7 +183,8 @@ describe('Settings - Auto-Save ', () => {
       const a4Button = screen.getByRole('radio', { name: /select a4/i });
       await user.click(a4Button);
 
-      // Reset settings (click button to open modal)
+      // Switch to General tab and reset settings
+      switchToTab('General');
       const resetButton = screen.getByRole('button', { name: /reset settings to default/i });
       await user.click(resetButton);
 

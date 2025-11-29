@@ -14,9 +14,6 @@ import {
 // Increase timeout for accessibility tests (axe-core analysis is slow)
 test.setTimeout(60000); // 60 seconds per test
 
-// Skip Firefox - these tests use static HTML via setContent(), no browser-specific behavior
-test.skip(({ browserName }) => browserName === 'firefox', 'Static HTML tests only need one browser');
-
 test.describe('Popup Accessibility Tests', () => {
   test.describe('WCAG 2.1 Level A (Hard Requirement)', () => {
     test('NoCVDetected state should have zero Level A violations', async ({ page }) => {
