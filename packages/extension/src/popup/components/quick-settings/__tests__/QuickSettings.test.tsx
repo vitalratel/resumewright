@@ -119,8 +119,8 @@ describe('QuickSettings', () => {
     const a4Button = screen.getByRole('button', { name: 'A4' });
     const letterButton = screen.getByRole('button', { name: 'Letter' });
 
-    expect(a4Button).toHaveClass('bg-blue-500');
-    expect(letterButton).not.toHaveClass('bg-blue-500');
+    expect(a4Button).toHaveClass('bg-blue-600');
+    expect(letterButton).not.toHaveClass('bg-blue-600');
   });
 
   it('shows custom margin inputs when margins are custom', () => {

@@ -50,7 +50,7 @@ describe('Button', () => {
     });
 
     it.each([
-      ['primary', 'bg-blue-500'],
+      ['primary', 'bg-blue-600'],
       ['secondary', 'border-2'],
       ['tertiary', 'bg-gray-50'],
       ['danger', 'bg-red-500'],
@@ -370,7 +370,7 @@ describe('Button', () => {
     it('primary variant has correct colors', () => {
       const { container } = render(<Button variant="primary">Primary</Button>);
       const button = container.querySelector('button');
-      expect(button).toHaveClass('bg-blue-500');
+      expect(button).toHaveClass('bg-blue-600');
       expect(button).toHaveClass('text-white');
     });
 

@@ -205,7 +205,7 @@ describe('ErrorActions', () => {
         btn.textContent?.includes('Import Different File'),
       );
 
-      expect(importButton).toHaveClass('bg-blue-500'); // Primary variant
+      expect(importButton).toHaveClass('bg-blue-600'); // Primary variant
     });
 
     it('prioritizes import button after multiple retry attempts', () => {
@@ -228,7 +228,7 @@ describe('ErrorActions', () => {
         btn.textContent?.includes('Import Different File'),
       );
 
-      expect(importButton).toHaveClass('bg-blue-500'); // Primary variant
+      expect(importButton).toHaveClass('bg-blue-600'); // Primary variant
     });
 
     it('shows import as secondary button for other errors', () => {
@@ -251,7 +251,7 @@ describe('ErrorActions', () => {
         btn.textContent?.includes('Import Different File'),
       );
 
-      expect(importButton).not.toHaveClass('bg-blue-500'); // Not primary
+      expect(importButton).not.toHaveClass('bg-blue-600'); // Not primary
     });
   });
 
