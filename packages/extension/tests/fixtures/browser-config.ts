@@ -1,14 +1,9 @@
 import type { BrowserConfig, BrowserType } from './types';
 import { discoverChromeExtensionId } from './chrome-id-discovery';
-import { discoverFirefoxExtensionId } from './firefox-id-discovery';
 
 /**
- * Browser-specific configurations for extension testing.
- *
- * Handles key differences between Chrome and Firefox:
- * - Protocol: chrome-extension:// vs moz-extension://
- * - Build directory: WXT outputs to .output/chrome-mv3 and .output/firefox-mv3
- * - ID discovery: Hash-based (Chrome) vs static manifest ID (Firefox)
+ * Browser configuration for extension testing.
+ * Chrome only - Playwright doesn't support Firefox extension loading.
  *
  * Usage:
  * ```typescript
@@ -20,12 +15,7 @@ import { discoverFirefoxExtensionId } from './firefox-id-discovery';
 export const browserConfigs: Record<BrowserType, BrowserConfig> = {
   chrome: {
     protocol: 'chrome-extension',
-    distFolder: '.output/chrome-mv3', // Original path (without -dev suffix)
+    distFolder: '.output/chrome-mv3',
     discoverExtensionId: discoverChromeExtensionId,
-  },
-  firefox: {
-    protocol: 'moz-extension',
-    distFolder: '.output/firefox-mv3',
-    discoverExtensionId: discoverFirefoxExtensionId,
   },
 };

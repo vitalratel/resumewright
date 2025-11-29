@@ -10,9 +10,9 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect } from 'vitest';
 import {
   Skeleton,
+  SkeletonExportSection,
   SkeletonFileImport,
   SkeletonHeader,
-  SkeletonQuickSettings,
   SkeletonSettings,
   SkeletonText,
 } from '../Skeleton';
@@ -181,24 +181,17 @@ describe('Skeleton', () => {
     });
   });
 
-  describe('SkeletonQuickSettings Component', () => {
-    it('renders quick settings skeleton structure', () => {
-      const { container } = render(<SkeletonQuickSettings />);
+  describe('SkeletonExportSection Component', () => {
+    it('renders export section skeleton structure', () => {
+      const { container } = render(<SkeletonExportSection />);
 
-      // Should have gap-2 for control spacing (using tokens.spacing.gapSmall)
-      expect(container.querySelector('.gap-2')).toBeInTheDocument();
-    });
-
-    it('has multiple toggle skeletons', () => {
-      const { container } = render(<SkeletonQuickSettings />);
+      // Should have skeletons for button and settings summary
       const skeletons = container.querySelectorAll('.animate-pulse');
-
-      // Should have 2 skeletons for quick settings toggles
       expect(skeletons.length).toBe(2);
     });
 
     it('is hidden from screen readers', () => {
-      const { container } = render(<SkeletonQuickSettings />);
+      const { container } = render(<SkeletonExportSection />);
       const wrapper = container.firstChild as HTMLElement;
 
       expect(wrapper).toHaveAttribute('aria-hidden', 'true');
@@ -213,7 +206,7 @@ describe('Skeleton', () => {
         <SkeletonFileImport key="file" />,
         <SkeletonSettings key="settings" />,
         <SkeletonHeader key="header" />,
-        <SkeletonQuickSettings key="quick" />,
+        <SkeletonExportSection key="export" />,
       ];
 
       components.forEach((component) => {
@@ -271,7 +264,7 @@ describe('Skeleton', () => {
         <SkeletonFileImport key="file" />,
         <SkeletonSettings key="settings" />,
         <SkeletonHeader key="header" />,
-        <SkeletonQuickSettings key="quick" />,
+        <SkeletonExportSection key="export" />,
       ];
 
       components.forEach((component) => {

@@ -12,9 +12,6 @@
  * - Memory/size limit errors (>4MB, >10MB files) → validation error inline
  * - Console logging of validation errors
  * - Error recovery and multiple error handling
- *
- * Note: Runtime errors, keyboard navigation, and issue reporting are tested
- * separately as they occur during conversion (ErrorState), not validation.
  */
 
 import type { Page } from '@playwright/test';
@@ -93,13 +90,6 @@ test.describe('Automated Error Handling', () => {
     await page.close();
   });
 
-  test('TSX Execution Error - Runtime Error', async () => {
-    // Skip: Runtime errors only occur during conversion (ErrorState), not validation
-    // Validation only checks syntax/structure - runtime errors happen when TSX is executed
-    // This would need to trigger conversion and check ErrorState, not validation errors
-    test.skip();
-  });
-
   test('Memory Limit Exceeded - Large File (>4MB)', async ({
     context,
     extensionId,
@@ -126,19 +116,6 @@ test.describe('Automated Error Handling', () => {
     await expect(validationError).toContainText(/too large|size|MB/i);
 
     await page.close();
-  });
-
-  test('Keyboard Navigation - Tab Through Error Buttons', async () => {
-    // Skip this test - validation errors in FileImport don't have action buttons
-    // Keyboard navigation testing is only relevant for ErrorState (conversion errors)
-    // This would need a conversion error to properly test
-    test.skip();
-  });
-
-  test('Issue Reporting UI - Dev Mode', async () => {
-    // Skip this test - report issue button is only in ErrorState (conversion errors)
-    // Validation errors in FileImport don't have this button
-    test.skip();
   });
 
   test('Console Logging - Error Format Verification', async ({

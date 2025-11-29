@@ -171,13 +171,15 @@ export const SkeletonHeader = React.memo(() => {
 });
 
 /**
- * Skeleton for quick settings toggles
+ * Skeleton for export button and settings summary
  */
-export const SkeletonQuickSettings = React.memo(() => {
+export const SkeletonExportSection = React.memo(() => {
   return (
-    <div className={tokens.spacing.gapSmall} aria-hidden="true" role="presentation">
-      <Skeleton className="w-full h-12" />
-      <Skeleton className="w-full h-12" />
+    <div className={`${tokens.spacing.containerPadding} ${tokens.spacing.stack}`} aria-hidden="true" role="presentation">
+      {/* Export button skeleton */}
+      <Skeleton className="w-full h-11" />
+      {/* Settings summary line skeleton */}
+      <Skeleton className="w-48 h-3 mx-auto" variant="text" />
     </div>
   );
 });

@@ -14,8 +14,6 @@ import { browserConfigs, expect, test } from '../fixtures';
 
 test.describe('Visual Regression - Popup UI', () => {
   test('should match baseline for initial popup state', async ({ page, extensionId, browserType }) => {
-    test.skip(browserType === 'firefox', 'Firefox extension loading not supported in Playwright');
-
     // Navigate to popup using browser-specific protocol
     const config = browserConfigs[browserType];
     await page.goto(`${config.protocol}://${extensionId}/converter.html`);
@@ -29,8 +27,6 @@ test.describe('Visual Regression - Popup UI', () => {
   });
   
   test('should match baseline for popup with TSX input', async ({ page, extensionId, browserType }) => {
-    test.skip(browserType === 'firefox', 'Firefox extension loading not supported in Playwright');
-
     const config = browserConfigs[browserType];
     await page.goto(`${config.protocol}://${extensionId}/converter.html`);
     await page.waitForLoadState('domcontentloaded');
@@ -47,8 +43,6 @@ test.describe('Visual Regression - Popup UI', () => {
   });
   
   test('should match baseline for converting state', async ({ page, extensionId, browserType }) => {
-    test.skip(browserType === 'firefox', 'Firefox extension loading not supported in Playwright');
-
     const config = browserConfigs[browserType];
     await page.goto(`${config.protocol}://${extensionId}/converter.html`);
     await page.waitForLoadState('domcontentloaded');
@@ -72,8 +66,6 @@ test.describe('Visual Regression - Popup UI', () => {
   });
   
   test('should match baseline for success state', async ({ page, extensionId, browserType }) => {
-    test.skip(browserType === 'firefox', 'Firefox extension loading not supported in Playwright');
-
     const config = browserConfigs[browserType];
     await page.goto(`${config.protocol}://${extensionId}/converter.html`);
     await page.waitForLoadState('domcontentloaded');
@@ -97,8 +89,6 @@ test.describe('Visual Regression - Popup UI', () => {
   });
   
   test('should match baseline for error state', async ({ page, extensionId, browserType }) => {
-    test.skip(browserType === 'firefox', 'Firefox extension loading not supported in Playwright');
-
     const config = browserConfigs[browserType];
     await page.goto(`${config.protocol}://${extensionId}/converter.html`);
     await page.waitForLoadState('domcontentloaded');

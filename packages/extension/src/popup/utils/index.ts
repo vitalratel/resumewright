@@ -18,8 +18,5 @@ export * from './marginPresets';
 // Keyboard shortcut utilities
 export * from './shortcuts';
 
-// TSX parsing utilities
-export * from './tsxParsing';
-
 // View context utilities
 export * from './viewContext';

@@ -1,10 +1,5 @@
-/**
- * SettingsView Component Tests (Presentational)
- * Dirty indicator visibility tests
- * Pure presentational component testing
- *
- * Tests SettingsView UI component functionality with all state passed as props
- */
+// ABOUTME: Tests for SettingsView component with tabbed navigation.
+// ABOUTME: Validates Page and General tab content, accessibility, and interactions.
 
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -86,7 +81,22 @@ describe('SettingsView', () => {
     it('shows auto-save status indicator', () => {
       render(<SettingsView {...defaultProps} showSuccess={true} />);
 
-      expect(screen.getByText('Your changes are saved automatically')).toBeInTheDocument();
+      expect(screen.getByText('Settings saved!')).toBeInTheDocument();
+    });
+
+    it('renders tab navigation', () => {
+      render(<SettingsView {...defaultProps} />);
+
+      expect(screen.getByRole('tablist')).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Page' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'General' })).toBeInTheDocument();
+    });
+
+    it('defaults to Page tab selected', () => {
+      render(<SettingsView {...defaultProps} />);
+
+      const pageTab = screen.getByRole('tab', { name: 'Page' });
+      expect(pageTab).toHaveAttribute('aria-selected', 'true');
     });
   });
 
@@ -200,7 +210,7 @@ describe('SettingsView', () => {
     it('displays margin range limits in help text', () => {
       render(<SettingsView {...defaultProps} />);
 
-      expect(screen.getByText(/Margins in inches \(0\.25 - 1\.5\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/In inches \(0\.25 - 1\.5\)/i)).toBeInTheDocument();
     });
 
     it('shows margin preview', () => {

@@ -1,19 +1,20 @@
-/**
- * Settings View Component (Presentational)
- * Separated presentation from container logic
- *
- * Pure presentational component for settings UI.
- * Receives all data and callbacks as props.
- */
+// ABOUTME: Settings view with tabbed navigation for Page and General settings.
+// ABOUTME: Uses tabs to eliminate scrolling and improve keyboard accessibility.
 
+import type { Tab } from '../common';
 import type { UserSettings } from '@/shared/types/settings';
 import { ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/outline';
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { tokens } from '../../styles/tokens';
-import { Alert, PDF, SkeletonSettings } from '../common';
+import { Alert, PDF, SkeletonSettings, TabGroup } from '../common';
 import { RangeSlider } from '../common/RangeSlider';
 import { MarginPreview } from '../MarginPreview';
 import { ThemeSelector } from './ThemeSelector';
+
+const SETTINGS_TABS: Tab[] = [
+  { id: 'page', label: 'Page' },
+  { id: 'general', label: 'General' },
+];
 
 interface SettingsViewProps {
   settings: UserSettings | null;
@@ -34,19 +35,20 @@ export const SettingsView = React.memo(
     isDirty,
     saving,
     showSuccess,
-    lastSaved: _lastSaved, // Included in props for future use, currently unused
+    lastSaved: _lastSaved,
     errors,
     onBack,
     onPageSizeChange,
     onMarginChange,
     onResetClick,
   }: SettingsViewProps) => {
+    const [activeTab, setActiveTab] = useState('page');
+
     // Memoize page size handlers to prevent recreation
     const handlePageSizeLetter = useCallback(() => onPageSizeChange('Letter'), [onPageSizeChange]);
     const handlePageSizeA4 = useCallback(() => onPageSizeChange('A4'), [onPageSizeChange]);
     const handlePageSizeLegal = useCallback(() => onPageSizeChange('Legal'), [onPageSizeChange]);
 
-    // Map size to handler
     const pageSizeHandlers = {
       Letter: handlePageSizeLetter,
       A4: handlePageSizeA4,
@@ -71,18 +73,18 @@ export const SettingsView = React.memo(
       [onMarginChange]
     );
 
-    // Map side to handler
     const marginHandlers = {
       top: handleMarginTop,
       bottom: handleMarginBottom,
       left: handleMarginLeft,
       right: handleMarginRight,
     } as const;
+
     // Loading state with skeleton
     if (!settings) {
       return (
         <div
-          className="w-[360px] min-h-[200px] max-h-[600px] overflow-y-auto p-4"
+          className="w-[360px] min-h-[200px] p-4"
           aria-busy="true"
           aria-live="polite"
         >
@@ -107,16 +109,13 @@ export const SettingsView = React.memo(
             Loading settings...
           </p>
 
-          {/* Settings content skeleton */}
           <SkeletonSettings />
         </div>
       );
     }
 
     return (
-      <div
-        className={`w-[360px] min-h-[200px] max-h-[600px] overflow-y-auto p-4 ${tokens.colors.neutral.bgWhite}`}
-      >
+      <div className={`w-[360px] min-h-[200px] p-4 ${tokens.colors.neutral.bgWhite}`}>
         {/* Header */}
         <div className={`flex items-center justify-between ${tokens.spacing.marginMedium}`}>
           <button
@@ -125,14 +124,12 @@ export const SettingsView = React.memo(
             className={`${tokens.colors.neutral.textMuted} ${tokens.colors.neutral.hover} ${tokens.buttons.variants.iconActive} ${tokens.effects.hoverScale} p-1 ${tokens.borders.rounded} relative flex items-center ${tokens.spacing.gapSmall} ${tokens.transitions.default} ${tokens.effects.focusRing}`}
             aria-label="Back to main screen"
           >
-            {/* Consistent icon sizing using tokens */}
             <ArrowLeftIcon className={tokens.icons.sm} aria-hidden="true" />
             <span
               className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.textMuted}`}
             >
               Back
             </span>
-            {/* Visual dirty state indicator */}
             {isDirty && (
               <>
                 <span
@@ -150,18 +147,16 @@ export const SettingsView = React.memo(
           >
             Settings
           </h1>
-          {/* Spacer to balance the back button for centering */}
           <div className="w-[72px]"></div>
         </div>
 
-        {/* Visual dirty indicator banner - shown during debounce period */}
+        {/* Visual dirty indicator banner */}
         {isDirty && !saving && (
           <div
             className={`flex items-center ${tokens.spacing.gapSmall} ${tokens.colors.info.text} ${tokens.typography.small} px-4 py-2 ${tokens.colors.info.bg} border ${tokens.colors.info.border} ${tokens.borders.roundedLg} ${tokens.spacing.marginMedium}`}
             role="status"
             aria-live="polite"
           >
-            {/* Consistent icon sizing using tokens */}
             <svg
               className={`animate-spin ${tokens.icons.xs} ${tokens.colors.primary.text} flex-shrink-0`}
               viewBox="0 0 24 24"
@@ -186,111 +181,13 @@ export const SettingsView = React.memo(
           </div>
         )}
 
-        {/* Auto-save status indicator replaces unsaved changes warning */}
-
-        {/* Page Layout Section */}
-        <section
-          className={`${tokens.spacing.marginLarge} ${tokens.spacing.card} ${tokens.colors.neutral.bg} ${tokens.borders.roundedLg} border ${tokens.borders.default}`}
-          aria-labelledby="page-layout-heading"
-        >
-          <h2
-            id="page-layout-heading"
-            className={`${tokens.typography.base} ${tokens.typography.semibold} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
-          >
-            Page Layout
-          </h2>
-          <p
-            className={`${tokens.typography.small} ${tokens.colors.neutral.textMuted} mb-4 max-w-prose`}
-          >
-            Control <PDF /> page size and margins
-          </p>
-
-          {/* Page Size Selection */}
-          <div className="mb-6" role="group" aria-labelledby="page-size-label">
-            <label
-              id="page-size-label"
-              className={`block ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
-            >
-              Page Size
-            </label>
-            <div className={tokens.spacing.gapSmall}>
-              {(['Letter', 'A4', 'Legal'] as const).map((size) => (
-                <button
-                  type="button"
-                  key={size}
-                  onClick={pageSizeHandlers[size]}
-                  role="radio"
-                  aria-checked={settings.defaultConfig.pageSize === size}
-                  aria-label={`Select ${size} page size`}
-                  className={`w-full text-left ${tokens.colors.neutral.text} p-3 rounded-md border-2 ${tokens.transitions.default} ${
-                    settings.defaultConfig.pageSize === size
-                      ? `${tokens.colors.borders.success} ${tokens.colors.success.bg} ${tokens.effects.shadow}`
-                      : `${tokens.borders.default} ${tokens.colors.neutral.hover} ${tokens.effects.hoverBorder} ${tokens.effects.shadowInteractive} ${tokens.effects.hoverScale}`
-                  } ${tokens.effects.focusRing}`}
-                >
-                  <div className="flex items-center">
-                    <div
-                      className={`w-4 h-4 ${tokens.borders.full} border-2 ${tokens.spacing.marginSmall} ${
-                        settings.defaultConfig.pageSize === size
-                          ? `${tokens.colors.borders.success} ${tokens.colors.success.bg}`
-                          : tokens.colors.borders.default
-                      }`}
-                    />
-                    <span>
-                      {size === 'Letter' && 'Letter (8.5" x 11")'}
-                      {size === 'A4' && 'A4 (210mm x 297mm)'}
-                      {size === 'Legal' && 'Legal (8.5" x 14")'}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Margin Controls */}
-          <div className="mb-6">
-            <label
-              className={`block ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
-              id="margins-label"
-            >
-              Margins
-            </label>
-            <p
-              className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}
-              id="margins-help"
-            >
-              Margins in inches (0.25 - 1.5). Use arrow keys to adjust in small increments.
-            </p>
-            <div
-              className={tokens.spacing.sectionGapCompact}
-              role="group"
-              aria-labelledby="margins-label"
-              aria-describedby="margins-help"
-            >
-              {(['top', 'bottom', 'left', 'right'] as const).map((side) => (
-                <RangeSlider
-                  key={side}
-                  id={`margin-${side}`}
-                  label={side}
-                  value={settings.defaultConfig.margin[side]}
-                  min={0.25}
-                  max={1.5}
-                  step={0.05}
-                  onChange={marginHandlers[side]}
-                  unit='"'
-                />
-              ))}
-            </div>
-
-            {/* Visual Margin Preview */}
-            <div className={tokens.spacing.marginMedium}>
-              <MarginPreview
-                pageSize={settings.defaultConfig.pageSize}
-                margins={settings.defaultConfig.margin}
-              />
-            </div>
-          </div>
-        </section>
+        {/* Tab Navigation */}
+        <TabGroup
+          tabs={SETTINGS_TABS}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          aria-label="Settings sections"
+        />
 
         {/* Error Messages */}
         {errors.general && (
@@ -299,119 +196,183 @@ export const SettingsView = React.memo(
           </Alert>
         )}
 
-        {/* Advanced Section */}
-        <section
-          className={`${tokens.spacing.marginLarge} ${tokens.spacing.card} ${tokens.colors.neutral.bg} ${tokens.borders.roundedLg} border ${tokens.borders.default}`}
-          aria-labelledby="advanced-heading"
-        >
-          <h2
-            id="advanced-heading"
-            className={`${tokens.typography.base} ${tokens.typography.semibold} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
+        {/* Auto-save status indicator - visible from all tabs */}
+        {(saving || showSuccess) && (
+          <div
+            role="status"
+            aria-live="polite"
+            className={`${tokens.spacing.marginMedium} px-4 py-3 ${tokens.borders.roundedLg} border-2 ${
+              showSuccess && !saving
+                ? `${tokens.colors.success.bg} ${tokens.colors.success.borderStrong}`
+                : `${tokens.colors.info.bg} ${tokens.colors.info.border}`
+            } transition-all duration-300`}
           >
-            Advanced
-          </h2>
-          <p
-            className={`${tokens.typography.small} ${tokens.colors.neutral.textMuted} mb-4 max-w-prose`}
-          >
-            Save settings and reset options
-          </p>
+            <div className={`flex items-center ${tokens.spacing.gapSmall}`}>
+              {showSuccess && !saving ? (
+                <CheckIcon
+                  className={`${tokens.icons.sm} ${tokens.colors.success.icon} flex-shrink-0`}
+                  aria-hidden="true"
+                />
+              ) : (
+                <svg
+                  className={`animate-spin h-5 w-5 ${tokens.colors.primary.text} flex-shrink-0`}
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              )}
+              <span
+                className={`${tokens.typography.small} ${tokens.typography.medium} ${
+                  showSuccess && !saving
+                    ? tokens.colors.success.textStrong
+                    : tokens.colors.info.textStrong
+                }`}
+              >
+                {saving ? 'Saving changes...' : 'Settings saved!'}
+              </span>
+            </div>
+          </div>
+        )}
 
-          {/* Enhanced auto-save status indicator */}
-          {(saving || showSuccess) && (
-            <div
-              role="status"
-              aria-live="polite"
-              className={`mb-4 px-4 py-3.5 ${tokens.borders.roundedLg} border-2 ${
-                showSuccess && !saving
-                  ? `${tokens.colors.success.bg} ${tokens.colors.success.borderStrong}`
-                  : `${tokens.colors.info.bg} ${tokens.colors.info.border}`
-              } transition-all duration-300`}
-            >
-              <div className={`flex items-center justify-between ${tokens.spacing.gapMedium}`}>
-                <div className={`flex items-center ${tokens.spacing.gapSmall}`}>
-                  {/* Consistent icon sizing using tokens */}
-                  {showSuccess && !saving ? (
-                    <CheckIcon
-                      className={`${tokens.icons.sm} ${tokens.colors.success.icon} flex-shrink-0`}
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <svg
-                      className={`animate-spin h-5 w-5 ${tokens.colors.primary.text} flex-shrink-0`}
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        fill="none"
+        {/* Page Tab Content */}
+        {activeTab === 'page' && (
+          <div
+            role="tabpanel"
+            id="tabpanel-page"
+            aria-labelledby="tab-page"
+            tabIndex={0}
+          >
+            {/* Page Size Selection */}
+            <div className={tokens.spacing.marginMedium} role="group" aria-labelledby="page-size-label">
+              <label
+                id="page-size-label"
+                className={`block ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
+              >
+                Page Size
+              </label>
+              <p
+                className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}
+              >
+                Control <PDF /> page dimensions
+              </p>
+              <div className={tokens.spacing.gapSmall}>
+                {(['Letter', 'A4', 'Legal'] as const).map((size) => (
+                  <button
+                    type="button"
+                    key={size}
+                    onClick={pageSizeHandlers[size]}
+                    role="radio"
+                    aria-checked={settings.defaultConfig.pageSize === size}
+                    aria-label={`Select ${size} page size`}
+                    className={`w-full text-left ${tokens.colors.neutral.text} p-3 rounded-md border-2 ${tokens.transitions.default} ${
+                      settings.defaultConfig.pageSize === size
+                        ? `${tokens.colors.borders.success} ${tokens.colors.success.bg} ${tokens.effects.shadow}`
+                        : `${tokens.borders.default} ${tokens.colors.neutral.hover} ${tokens.effects.hoverBorder} ${tokens.effects.shadowInteractive} ${tokens.effects.hoverScale}`
+                    } ${tokens.effects.focusRing}`}
+                  >
+                    <div className="flex items-center">
+                      <div
+                        className={`w-4 h-4 ${tokens.borders.full} border-2 ${tokens.spacing.marginSmall} ${
+                          settings.defaultConfig.pageSize === size
+                            ? `${tokens.colors.borders.success} ${tokens.colors.success.bg}`
+                            : tokens.colors.borders.default
+                        }`}
                       />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                  )}
-                  <div className="flex flex-col">
-                    <span
-                      className={`${tokens.typography.base} ${tokens.typography.medium} ${
-                        showSuccess && !saving
-                          ? tokens.colors.success.textStrong
-                          : tokens.colors.info.textStrong
-                      }`}
-                    >
-                      {saving ? 'Saving changes...' : 'Settings saved!'}
-                    </span>
-                    {/* Enhanced auto-save feedback - improved text color for visibility */}
-                    <span
-                      className={`${tokens.typography.small} ${
-                        showSuccess && !saving
-                          ? tokens.colors.success.text
-                          : tokens.colors.info.text
-                      }`}
-                    >
-                      {saving ? 'Please wait...' : 'Your changes are saved automatically'}
-                    </span>
-                  </div>
-                </div>
+                      <span>
+                        {size === 'Letter' && 'Letter (8.5" x 11")'}
+                        {size === 'A4' && 'A4 (210mm x 297mm)'}
+                        {size === 'Legal' && 'Legal (8.5" x 14")'}
+                      </span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
-          )}
 
-          {/* Reset Button */}
-          <button
-            type="button"
-            onClick={onResetClick}
-            aria-label="Reset settings to default values"
-            className={`w-full ${tokens.colors.neutral.text} border ${tokens.colors.borders.default} ${tokens.colors.neutral.hover} ${tokens.effects.hoverBorder} ${tokens.effects.shadowInteractive} ${tokens.buttons.variants.iconActive} ${tokens.effects.hoverScale} px-4 py-2 ${tokens.borders.roundedLg} ${tokens.typography.small} ${tokens.effects.focusRing} ${tokens.transitions.default}`}
-          >
-            Reset to Defaults
-          </button>
-        </section>
+            {/* Margin Controls */}
+            <div className={tokens.spacing.marginMedium}>
+              <label
+                className={`block ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
+                id="margins-label"
+              >
+                Margins
+              </label>
+              <p
+                className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}
+                id="margins-help"
+              >
+                In inches (0.25 - 1.5). Use arrow keys to adjust.
+              </p>
+              <div
+                className={tokens.spacing.sectionGapCompact}
+                role="group"
+                aria-labelledby="margins-label"
+                aria-describedby="margins-help"
+              >
+                {(['top', 'bottom', 'left', 'right'] as const).map((side) => (
+                  <RangeSlider
+                    key={side}
+                    id={`margin-${side}`}
+                    label={side}
+                    value={settings.defaultConfig.margin[side]}
+                    min={0.25}
+                    max={1.5}
+                    step={0.05}
+                    onChange={marginHandlers[side]}
+                    unit='"'
+                  />
+                ))}
+              </div>
 
-        {/* Appearance Section */}
-        <section
-          className={`${tokens.spacing.marginLarge} ${tokens.spacing.card} ${tokens.colors.neutral.bg} ${tokens.borders.roundedLg} border ${tokens.borders.default}`}
-          aria-labelledby="appearance-heading"
-        >
-          <h2
-            id="appearance-heading"
-            className={`${tokens.typography.base} ${tokens.typography.semibold} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
+              {/* Visual Margin Preview */}
+              <div className={tokens.spacing.marginMedium}>
+                <MarginPreview
+                  pageSize={settings.defaultConfig.pageSize}
+                  margins={settings.defaultConfig.margin}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* General Tab Content */}
+        {activeTab === 'general' && (
+          <div
+            role="tabpanel"
+            id="tabpanel-general"
+            aria-labelledby="tab-general"
+            tabIndex={0}
           >
-            Appearance
-          </h2>
-          <p
-            className={`${tokens.typography.small} ${tokens.colors.neutral.textMuted} mb-4 max-w-prose`}
-          >
-            Choose your preferred color theme
-          </p>
-          <ThemeSelector />
-        </section>
+            {/* Appearance Section */}
+            <div className={tokens.spacing.marginMedium}>
+              <ThemeSelector />
+            </div>
+
+            {/* Reset Button */}
+            <button
+              type="button"
+              onClick={onResetClick}
+              aria-label="Reset settings to default values"
+              className={`w-full ${tokens.colors.neutral.text} border ${tokens.colors.borders.default} ${tokens.colors.neutral.hover} ${tokens.effects.hoverBorder} ${tokens.effects.shadowInteractive} ${tokens.buttons.variants.iconActive} ${tokens.effects.hoverScale} px-4 py-2 ${tokens.borders.roundedLg} ${tokens.typography.small} ${tokens.effects.focusRing} ${tokens.transitions.default}`}
+            >
+              Reset to Defaults
+            </button>
+          </div>
+        )}
       </div>
     );
   }

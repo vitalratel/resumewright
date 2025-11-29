@@ -2,21 +2,20 @@ import type { BrowserContext } from '@playwright/test';
 
 /**
  * Browser type for fixture configuration.
- * Determines which browser-specific logic to use.
+ * Chrome only - Playwright doesn't support Firefox extension loading.
  */
-export type BrowserType = 'chrome' | 'firefox';
+export type BrowserType = 'chrome';
 
 /**
  * Browser-specific configuration for extension testing.
- * Handles differences in protocol, ID discovery, and manifest structure between browsers.
  */
 export interface BrowserConfig {
-  /** Extension URL protocol (chrome-extension:// or moz-extension://) */
+  /** Extension URL protocol (chrome-extension://) */
   protocol: string;
 
-  /** Path to browser-specific build directory (.output/chrome-mv3 or .output/firefox-mv3) */
+  /** Path to build directory (.output/chrome-mv3) */
   distFolder: string;
 
-  /** Function to discover extension ID for this browser */
+  /** Function to discover extension ID */
   discoverExtensionId: (context: BrowserContext, manifestPath: string) => Promise<string>;
 }

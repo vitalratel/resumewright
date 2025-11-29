@@ -1,9 +1,6 @@
-/**
- * Barrel export for settings components
- */
+// ABOUTME: Barrel export for settings components.
+// ABOUTME: Provides Settings page, SettingsView, and ThemeSelector.
 
-export { FontList } from './FontList';
-export { FontUpload } from './FontUpload';
 export { Settings } from './Settings';
 export { SettingsView } from './SettingsView';
 export { ThemeSelector } from './ThemeSelector';
