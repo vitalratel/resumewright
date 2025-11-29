@@ -54,7 +54,7 @@ describe('ProgressBar', () => {
     it('should render default variant with blue color', () => {
       const { container } = render(<ProgressBar percentage={50} variant="default" />);
       const progressBar = container.querySelector('[role="progressbar"]');
-      expect(progressBar).toHaveClass('bg-blue-500');
+      expect(progressBar).toHaveClass('bg-blue-600');
     });
 
     it('should render success variant with green color', () => {

@@ -302,7 +302,7 @@ describe('AppHeader', () => {
     it('applies primary background color', () => {
       const { container } = render(<AppHeader {...defaultProps} />);
       const header = container.querySelector('header');
-      expect(header).toHaveClass('bg-blue-500', 'dark:bg-blue-600');
+      expect(header).toHaveClass('bg-blue-600', 'dark:bg-blue-700');
     });
 
     it('applies white text color', () => {

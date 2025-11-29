@@ -77,13 +77,13 @@ export const ImportInfoCard = React.memo(() => {
         <div className={`flex items-start ${tokens.spacing.gapSmall} flex-1`}>
           <InformationCircleIcon className={`${tokens.icons.sm} ${tokens.colors.neutral.textMuted} flex-shrink-0`} aria-hidden="true" />
           <div className="flex-1">
-            <h3 className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}>
+            <h2 className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}>
               Get
               {' '}
               <TSX />
               {' '}
               from Claude.ai
-            </h3>
+            </h2>
             <ol className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} ${tokens.spacing.gapSmall} list-decimal list-inside`}>
               <li>
                 Ask Claude to create your CV in

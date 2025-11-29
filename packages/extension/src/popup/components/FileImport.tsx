@@ -256,7 +256,11 @@ export const FileImport = React.memo(({
 
       {/* Validation error */}
       {(validationError !== null && validationError !== undefined && validationError !== '') && (
-        <div role="alert" className={`${tokens.spacing.alert} ${tokens.colors.error.bg} ${tokens.colors.error.border} ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.typography.small} ${tokens.colors.error.textStrong}`}>
+        <div
+          role="alert"
+          data-testid="validation-error"
+          className={`${tokens.spacing.alert} ${tokens.colors.error.bg} ${tokens.colors.error.border} ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.typography.small} ${tokens.colors.error.textStrong}`}
+        >
           {validationError}
         </div>
       )}

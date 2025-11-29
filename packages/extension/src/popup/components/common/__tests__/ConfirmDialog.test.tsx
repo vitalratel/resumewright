@@ -141,7 +141,7 @@ describe('ConfirmDialog', () => {
       );
 
       const confirmButton = screen.getByText('Confirm');
-      expect(confirmButton).toHaveClass('bg-blue-500'); // Using tokens.colors.primary.bg
+      expect(confirmButton).toHaveClass('bg-blue-600'); // Using tokens.colors.primary.bg
     });
 
     it('should render primary variant by default', () => {
@@ -156,7 +156,7 @@ describe('ConfirmDialog', () => {
       );
 
       const confirmButton = screen.getByText('Confirm');
-      expect(confirmButton).toHaveClass('bg-blue-500'); // Using tokens.colors.primary.bg
+      expect(confirmButton).toHaveClass('bg-blue-600'); // Using tokens.colors.primary.bg
     });
   });
 

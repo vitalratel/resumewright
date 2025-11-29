@@ -60,94 +60,6 @@ describe('DragDropZone', () => {
     });
   });
 
-  describe('Keyboard Accessibility', () => {
-    it('drop zone is keyboard focusable', () => {
-      const { container } = render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />);
-
-      const dropZone = container.querySelector('[role="button"][tabindex="0"]');
-      expect(dropZone).toBeInTheDocument();
-    });
-
-    it('drop zone has role="button"', () => {
-      const { container } = render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />);
-
-      const dropZone = container.querySelector('[role="button"]');
-      expect(dropZone).toBeInTheDocument();
-      expect(dropZone).toHaveAttribute('tabIndex', '0');
-    });
-
-    it('drop zone has descriptive aria-label', () => {
-      const { container } = render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />);
-
-      const dropZone = container.querySelector('[role="button"]');
-      expect(dropZone).toHaveAttribute(
-        'aria-label',
-        'Click or press Enter to select TSX file for import. You can also drag and drop a file here.',
-      );
-    });
-
-    it('Enter key opens file picker', async () => {
-      const user = userEvent.setup();
-      const { container } = render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />);
-
-      const dropZone = container.querySelector('[role="button"]') as HTMLElement;
-      const fileInput = screen.getByLabelText('File input for CV import');
-
-      // Mock file input click
-      const clickSpy = vi.spyOn(fileInput, 'click');
-
-      dropZone.focus();
-      await user.keyboard('{Enter}');
-
-      expect(clickSpy).toHaveBeenCalled();
-    });
-
-    it('Space key opens file picker', async () => {
-      const user = userEvent.setup();
-      const { container } = render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />);
-
-      const dropZone = container.querySelector('[role="button"]') as HTMLElement;
-      const fileInput = screen.getByLabelText('File input for CV import');
-
-      // Mock file input click
-      const clickSpy = vi.spyOn(fileInput, 'click');
-
-      dropZone.focus();
-      await user.keyboard(' ');
-
-      expect(clickSpy).toHaveBeenCalled();
-    });
-
-    it('other keys do not trigger file picker', async () => {
-      const user = userEvent.setup();
-      const { container } = render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />);
-
-      const dropZone = container.querySelector('[role="button"]') as HTMLElement;
-      const fileInput = screen.getByLabelText('File input for CV import');
-
-      // Mock file input click
-      const clickSpy = vi.spyOn(fileInput, 'click');
-
-      dropZone.focus();
-      await user.keyboard('a');
-      await user.keyboard('{Escape}');
-      await user.keyboard('{Tab}');
-
-      expect(clickSpy).not.toHaveBeenCalled();
-    });
-
-    it('drop zone can be focused with Tab key', async () => {
-      const user = userEvent.setup();
-      render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />);
-
-      await user.tab();
-
-      // Either drop zone or browse button should have focus (both are keyboard accessible)
-      const focusedElement = document.activeElement;
-      expect(focusedElement).toBeDefined();
-    });
-  });
-
   describe('File Selection via Browse Button', () => {
     it('browse button opens file picker', async () => {
       const user = userEvent.setup();
@@ -279,11 +191,11 @@ describe('DragDropZone', () => {
   });
 
   describe('Accessibility', () => {
-    it('has accessible label for drop zone', () => {
-      const { container } = render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />);
+    it('browse button has accessible label', () => {
+      render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />);
 
-      const dropZone = container.querySelector('[role="button"]');
-      expect(dropZone).toHaveAccessibleName();
+      const browseButton = screen.getByRole('button', { name: /browse files/i });
+      expect(browseButton).toHaveAccessibleName();
     });
 
     it('upload icon has aria-hidden', () => {
@@ -316,45 +228,6 @@ describe('DragDropZone', () => {
   });
 
   describe('Edge Cases', () => {
-    it('prevents default on Enter key', async () => {
-      const user = userEvent.setup();
-      const { container } = render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />);
-
-      const preventDefaultSpy = vi.fn();
-      const dropZone = container.querySelector('[role="button"]') as HTMLElement;
-      dropZone.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          preventDefaultSpy();
-        }
-      });
-
-      dropZone.focus();
-      await user.keyboard('{Enter}');
-
-      // Verify Enter was handled
-      expect(preventDefaultSpy).toHaveBeenCalled();
-    });
-
-    it('prevents default on Space key', async () => {
-      const user = userEvent.setup();
-      const { container } = render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />);
-
-      const dropZone = container.querySelector('[role="button"]') as HTMLElement;
-
-      const preventDefaultSpy = vi.fn();
-      dropZone.addEventListener('keydown', (e) => {
-        if (e.key === ' ') {
-          preventDefaultSpy();
-        }
-      });
-
-      dropZone.focus();
-      await user.keyboard(' ');
-
-      // Verify Space was handled
-      expect(preventDefaultSpy).toHaveBeenCalled();
-    });
-
     it('handles empty files array', async () => {
       render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />);
 

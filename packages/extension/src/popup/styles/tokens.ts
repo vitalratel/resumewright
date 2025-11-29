@@ -69,9 +69,9 @@ export const tokens = {
     },
     primary: {
       text: 'text-blue-600 dark:text-blue-300',
-      bg: 'bg-blue-500 dark:bg-blue-600',
-      // Enhanced hover contrast (blue-700 light, blue-400 dark)
-      hover: 'hover:bg-blue-700 dark:hover:bg-blue-400',
+      bg: 'bg-blue-600 dark:bg-blue-700', // Changed from blue-500 (3.76:1) to blue-600 (4.68:1) for WCAG AA white text contrast
+      // Enhanced hover contrast (blue-700 light, blue-500 dark)
+      hover: 'hover:bg-blue-700 dark:hover:bg-blue-500',
       focus: 'focus:ring-blue-500 dark:focus:ring-blue-400',
     },
     link: {
@@ -218,7 +218,7 @@ export const tokens = {
   },
   layout: {
     maxWidthPopup: 'max-w-md',
-    maxWidthConverter: '672px', // Equivalent to Tailwind max-w-2xl (42rem)
+    maxWidthConverter: '672px', // CSS value for inline style (equivalent to Tailwind max-w-2xl)
     // Extract popup dimensions to tokens
     popupWidth: 'max-w-md', // 448px in Tailwind
     popupHeight: '600px',

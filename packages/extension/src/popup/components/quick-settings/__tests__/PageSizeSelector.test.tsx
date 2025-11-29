@@ -45,7 +45,7 @@ describe('PageSizeSelector', () => {
 
       const a4Button = screen.getByRole('button', { name: 'A4' });
       expect(a4Button).toHaveAttribute('aria-pressed', 'true');
-      expect(a4Button).toHaveClass('bg-blue-500');
+      expect(a4Button).toHaveClass('bg-blue-600');
       expect(a4Button).toHaveClass('text-white');
     });
 
@@ -54,7 +54,7 @@ describe('PageSizeSelector', () => {
 
       const letterButton = screen.getByRole('button', { name: 'Letter' });
       expect(letterButton).toHaveAttribute('aria-pressed', 'true');
-      expect(letterButton).toHaveClass('bg-blue-500');
+      expect(letterButton).toHaveClass('bg-blue-600');
     });
 
     it('should show Legal as selected when value is Legal', () => {
@@ -62,7 +62,7 @@ describe('PageSizeSelector', () => {
 
       const legalButton = screen.getByRole('button', { name: 'Legal' });
       expect(legalButton).toHaveAttribute('aria-pressed', 'true');
-      expect(legalButton).toHaveClass('bg-blue-500');
+      expect(legalButton).toHaveClass('bg-blue-600');
     });
 
     it('should show unselected buttons with white background', () => {
