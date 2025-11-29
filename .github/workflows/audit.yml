@@ -37,7 +37,9 @@ jobs:
           cache-targets: false
 
       - name: Install cargo-audit
-        uses: taiki-e/install-action@cargo-audit
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
 
       - name: Run security audit
         run: cargo audit
@@ -70,7 +72,9 @@ jobs:
           cache-targets: false
 
       - name: Install cargo-deny
-        uses: taiki-e/install-action@cargo-deny
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny
 
       - name: Run cargo-deny
         run: cargo deny check advisories licenses sources bans
@@ -90,7 +94,9 @@ jobs:
           cache-targets: false
 
       - name: Install cargo-outdated
-        uses: taiki-e/install-action@cargo-outdated
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-outdated
 
       - name: Check outdated dependencies
         run: cargo outdated --root-deps-only --workspace
