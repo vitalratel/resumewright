@@ -7,7 +7,7 @@
  */
 
 import { ChevronDownIcon, ChevronUpIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useLocalStorage } from '../../hooks';
 import { tokens } from '../../styles/tokens';
 import { LocalStorageKeys } from '../../utils/localStorage';
@@ -31,23 +31,24 @@ export const ImportInfoCard = React.memo(() => {
     LocalStorageKeys.INFO_CARD_MINIMIZED,
     false,
   );
-  const [, setLaunchCount] = useLocalStorage(LocalStorageKeys.LAUNCH_COUNT, 0);
+  const [launchCount, setLaunchCount] = useLocalStorage(LocalStorageKeys.LAUNCH_COUNT, 0);
 
-  // Auto-minimize after 3 launches
-  // Combined into single useEffect
+  // Track if auto-minimize has already run this session
+  const hasAutoMinimized = useRef(false);
+
+  // Increment launch count and auto-minimize on mount only
   useEffect(() => {
-    // Increment launch count
-    setLaunchCount((count) => {
-      const newCount = count + 1;
+    if (hasAutoMinimized.current) return;
+    hasAutoMinimized.current = true;
 
-      // Auto-minimize if reached threshold
-      if (newCount >= AUTO_MINIMIZE_AFTER_LAUNCHES && !infoCardMinimized) {
-        setInfoCardMinimized(true);
-      }
+    const newCount = launchCount + 1;
+    setLaunchCount(newCount);
 
-      return newCount;
-    });
-  }, [setLaunchCount, infoCardMinimized, setInfoCardMinimized]);
+    if (newCount >= AUTO_MINIMIZE_AFTER_LAUNCHES && !infoCardMinimized) {
+      setInfoCardMinimized(true);
+    }
+     
+  }, []);
 
   if (infoCardMinimized) {
     return (
@@ -72,7 +73,7 @@ export const ImportInfoCard = React.memo(() => {
   }
 
   return (
-    <div className={`bg-gray-50 border-gray-200 ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.spacing.alert}`}>
+    <div className={`${tokens.colors.neutral.bg} ${tokens.colors.neutral.borderLight} ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.spacing.alert}`}>
       <div className="flex items-start justify-between">
         <div className={`flex items-start ${tokens.spacing.gapSmall} flex-1`}>
           <InformationCircleIcon className={`${tokens.icons.sm} ${tokens.colors.neutral.textMuted} flex-shrink-0`} aria-hidden="true" />

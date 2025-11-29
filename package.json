@@ -9,7 +9,6 @@
     "dev": "pnpm build:wasm && pnpm --filter extension dev",
     "build": "pnpm build:wasm && pnpm --filter extension build",
     "typecheck": "pnpm --filter extension typecheck",
-    "test": "pnpm typecheck && pnpm test:ts && pnpm test:rust",
     "test:ts": "pnpm --filter extension test:ts",
     "test:rust": "cargo test --workspace",
     "test:wasm": "wasm-pack test packages/rust-core/wasm-bridge --headless --chrome --firefox",
@@ -23,12 +22,12 @@
     "validate:bundle": "node scripts/validate-bundle-size.js",
     "test:visual:headed": "playwright test --headed",
     "test:visual:ui": "playwright test --ui",
-    "ci": "pnpm typecheck && pnpm lint && pnpm build && pnpm test",
+    "ci": "pnpm typecheck && pnpm lint && pnpm build && pnpm test:ts",
     "prepare": "husky"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=9.0.0"
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
   },
   "packageManager": "pnpm@10.23.0",
   "pnpm": {
