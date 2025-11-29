@@ -98,7 +98,7 @@ jobs:
 
       - name: Check bundle size
         run: |
-          WASM_FILE="pkg/wasm_bridge_bg.wasm"
+          WASM_FILE="packages/rust-core/wasm-bridge/pkg/wasm_bridge_bg.wasm"
           if [ ! -f "$WASM_FILE" ]; then
             echo "❌ WASM file not found"
             exit 1
@@ -126,8 +126,8 @@ jobs:
         with:
           name: wasm-build
           path: |
-            pkg/
-            !pkg/.gitignore
+            packages/rust-core/wasm-bridge/pkg/
+            !packages/rust-core/wasm-bridge/pkg/.gitignore
           retention-days: 1
 
   typescript-tests:
@@ -160,7 +160,7 @@ jobs:
         uses: actions/download-artifact@v6
         with:
           name: wasm-build
-          path: pkg/
+          path: packages/rust-core/wasm-bridge/pkg/
 
       - name: TypeScript lint
         if: matrix.shard == '1/4'
@@ -200,7 +200,7 @@ jobs:
         uses: actions/download-artifact@v6
         with:
           name: wasm-build
-          path: pkg/
+          path: packages/rust-core/wasm-bridge/pkg/
 
       - name: Get Playwright version
         id: playwright-version
@@ -358,7 +358,7 @@ jobs:
         uses: actions/download-artifact@v6
         with:
           name: wasm-build
-          path: pkg/
+          path: packages/rust-core/wasm-bridge/pkg/
 
       - name: Build extension
         run: pnpm --filter extension build

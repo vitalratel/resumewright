@@ -112,7 +112,7 @@ jobs:
 
       - name: Verify WASM bundle size
         run: |
-          WASM_FILE="pkg/wasm_bridge_bg.wasm"
+          WASM_FILE="packages/rust-core/wasm-bridge/pkg/wasm_bridge_bg.wasm"
 
           if [ ! -f "$WASM_FILE" ]; then
             echo "❌ WASM file not found: $WASM_FILE"
@@ -232,7 +232,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📦 Build Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "- Chrome extension: dist/" >> $GITHUB_STEP_SUMMARY
-          echo "- WASM module: pkg/" >> $GITHUB_STEP_SUMMARY
+          echo "- WASM module: packages/rust-core/wasm-bridge/pkg/" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📝 Next Steps" >> $GITHUB_STEP_SUMMARY
           echo "1. Review changelog draft (CHANGELOG_DRAFT.md)" >> $GITHUB_STEP_SUMMARY
@@ -251,7 +251,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: wasm-module-v${{ github.event.inputs.version }}
-          path: pkg/
+          path: packages/rust-core/wasm-bridge/pkg/
           retention-days: 90
 
       - name: Upload changelog draft
