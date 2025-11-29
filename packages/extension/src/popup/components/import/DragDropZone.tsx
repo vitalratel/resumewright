@@ -1,8 +1,6 @@
 /**
- * DragDropZone Component
- * Extracted from FileImport for single responsibility
- *
- * Handles drag-and-drop file upload UI with visual feedback and browse button.
+ * ABOUTME: Drag-and-drop file upload component for CV import.
+ * ABOUTME: Provides visual feedback during drag operations and a browse button fallback.
  */
 
 import type { ChangeEvent } from 'react';
@@ -19,15 +17,6 @@ interface DragDropZoneProps {
   isValidating: boolean;
 }
 
-/**
- * DragDropZone - Drag-and-drop file upload UI
- *
- * Features:
- * - Drag-and-drop with visual feedback
- * - Browse button for traditional file selection
- * - Loading state during validation
- * - Accessible labels and states
- */
 export const DragDropZone = React.memo(({
   onFileDrop,
   isValidating,
@@ -38,7 +27,6 @@ export const DragDropZone = React.memo(({
   const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      // Handle both sync and async onFileDrop
       void onFileDrop(files[0]);
     }
   };
@@ -47,41 +35,26 @@ export const DragDropZone = React.memo(({
     fileInputRef.current?.click();
   };
 
-  // Keyboard accessibility for drop zone
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      fileInputRef.current?.click();
-    }
-  };
-
   return (
     <>
-      {/* Visible label for file input section */}
       <label htmlFor="file-input" className={`block ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} px-3`}>
         Import Your CV File
       </label>
 
-      {/* P2-A11Y-007: Screen reader feedback for drag state */}
       {isDragging && (
         <div role="status" aria-live="assertive" className="sr-only">
           Drop zone active. Release to import file.
         </div>
       )}
 
-      {/* Drop zone - Enhanced visual prominence */}
-      {/* Now keyboard accessible with tabIndex, role, and onKeyDown */}
+      {/* Drop zone - handles drag-and-drop only */}
       <div
         {...dragHandlers}
-        tabIndex={0}
-        role="button"
-        onKeyDown={handleKeyDown}
-        className={`border-2 border-dashed ${tokens.borders.roundedLg} p-8 text-center ${tokens.transitions.default} ${tokens.effects.focusRing} ${
+        className={`border-2 border-dashed ${tokens.borders.roundedLg} p-4 text-center ${tokens.transitions.default} ${
           isDragging
             ? `${tokens.colors.borders.primary} ${tokens.colors.info.bg} scale-[1.05] ${tokens.effects.shadowMd}`
             : `${tokens.colors.borders.primary} hover:border-blue-400 ${tokens.colors.info.hover} hover:scale-[1.03]`
         }`.trim().replace(/\s+/g, ' ')}
-        aria-label="Click or press Enter to select TSX file for import. You can also drag and drop a file here."
       >
         <ArrowUpTrayIcon className={`${tokens.icons.hero} mx-auto ${tokens.spacing.marginSmall} ${isDragging ? tokens.colors.primary.text : 'text-blue-400'} ${tokens.transitions.default}`.trim().replace(/\s+/g, ' ')} aria-hidden="true" />
         <p className={`${tokens.typography.base} ${tokens.colors.neutral.textMuted} mb-1`}>
@@ -96,7 +69,17 @@ export const DragDropZone = React.memo(({
               )
             : 'Drag & drop your CV file here'}
         </p>
-        <p className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall} text-center`}>or</p>
+        <p className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} mt-3`}>
+          Supports:
+          {' '}
+          <TSX />
+          {' '}
+          files (up to 1MB)
+        </p>
+      </div>
+
+      {/* Browse button - outside drop zone for proper accessibility */}
+      <div className="mt-2 text-center">
         <button
           onClick={handleBrowseClick}
           disabled={isValidating}
@@ -134,12 +117,6 @@ export const DragDropZone = React.memo(({
           )}
           {isValidating ? 'Validating...' : 'Browse Files'}
         </button>
-        <p className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} mt-3`}>
-          Supports:
-          <TSX />
-          {' '}
-          files (up to 1MB)
-        </p>
       </div>
 
       <input

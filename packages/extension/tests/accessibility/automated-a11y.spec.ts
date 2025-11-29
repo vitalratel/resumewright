@@ -59,18 +59,18 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
     const fileInput = await page.locator('input[type="file"]');
     await fileInput.setInputFiles(testFilePath);
 
-    await page.waitForSelector('[data-testid="error-display"]', { timeout: 5000 });
+    await page.waitForSelector('[data-testid="validation-error"]', { timeout: 5000 });
 
     // Run aXe scan on error display
     const results = await new AxeBuilder({ page })
-      .include('[data-testid="error-display"]')
+      .include('[data-testid="validation-error"]')
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
       .analyze();
 
     expect(results.violations).toEqual([]);
 
     // Verify ARIA attributes for screen reader announcement
-    const errorDisplay = page.locator('[data-testid="error-display"]');
+    const errorDisplay = page.locator('[data-testid="validation-error"]');
 
     // Should have role="alert" or aria-live for announcements
     const roleOrLive = await errorDisplay.evaluate((el) => {

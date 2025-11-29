@@ -74,24 +74,19 @@ describe('FileImport', () => {
     it('should render dropzone with drag-and-drop functionality', () => {
       render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
 
-      // Dropzone has keyboard accessibility with proper aria-label
-      const dropzone = screen.getByLabelText(/Click or press Enter to select TSX file for import/i);
-
-      expect(dropzone).toBeInTheDocument();
       expect(screen.getByText('Drag & drop your CV file here')).toBeInTheDocument();
 
       // Browse button provides keyboard accessibility
       expect(screen.getByRole('button', { name: /Browse Files/i })).toBeInTheDocument();
     });
 
-    it('should have accessible dropzone with proper ARIA label', () => {
+    it('should have accessible browse button for keyboard users', () => {
       render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
 
-      // Dropzone has role="button" and tabindex for keyboard accessibility
-      const dropzone = screen.getByLabelText(/Click or press Enter to select TSX file for import/i);
-
-      expect(dropzone).toHaveAttribute('role', 'button');
-      expect(dropzone).toHaveAttribute('tabIndex', '0');
+      // Browse button provides keyboard accessibility (instead of nested interactive controls)
+      const browseButton = screen.getByRole('button', { name: /Browse Files/i });
+      expect(browseButton).toBeInTheDocument();
+      expect(browseButton).toHaveAccessibleName();
     });
 
     it('should call useDragAndDrop hook on component render', () => {

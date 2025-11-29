@@ -11,9 +11,9 @@ import { CenteredContainer } from '../CenteredContainer';
 
 // Test constants for dimensions and test content
 const CONTAINER_DIMENSIONS = {
-  DEFAULT_MAX_WIDTH: '672px', // From tokens.layout.maxWidthConverter (equivalent to max-w-2xl)
+  DEFAULT_MAX_WIDTH: '672px', // From tokens.layout.maxWidthConverter (CSS value for inline style)
   CUSTOM_MAX_WIDTH_PX: '1200px',
-  CUSTOM_MAX_WIDTH_VALUE: '896px', // Equivalent to max-w-4xl (56rem)
+  CUSTOM_MAX_WIDTH_VALUE: '896px', // CSS value equivalent to max-w-4xl
   ALTERNATE_WIDTH: '800px',
   LARGE_WIDTH: '1000px',
   ZERO_WIDTH: '0',

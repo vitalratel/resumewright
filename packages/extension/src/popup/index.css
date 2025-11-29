@@ -1,6 +1,117 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/* Tailwind v4: Explicitly specify source files for class scanning */
+@source "./";
+@source "../shared/";
+@source "../../entrypoints/";
+
+/* Custom theme extensions */
+@theme {
+  /* LinkedIn Professional Blue color scheme */
+  --color-primary-50: #e6f4fa;
+  --color-primary-100: #cce9f5;
+  --color-primary-200: #99d3eb;
+  --color-primary-300: #66bde1;
+  --color-primary-400: #33a7d7;
+  --color-primary-500: #0077b5;
+  --color-primary-600: #006599;
+  --color-primary-700: #005e93;
+  --color-primary-800: #00486d;
+  --color-primary-900: #003247;
+  --color-primary-950: #001e2b;
+
+  /* Custom gray for dark mode */
+  --color-gray-850: #262626;
+
+  /* Custom spacing */
+  --spacing-18: 4.5rem;
+  --spacing-22: 5.5rem;
+  --spacing-26: 6.5rem;
+  --spacing-30: 7.5rem;
+
+  /* Custom font sizes */
+  --font-size-2_5xl: 1.75rem;
+  --font-size-3_5xl: 2rem;
+
+  /* Custom min heights for touch targets */
+  --min-height-11: 2.75rem;
+  --min-height-12: 3rem;
+  --min-height-14: 3.5rem;
+
+  /* Animations */
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-fade-in-slow: fade-in 0.5s ease-out;
+  --animate-slide-up: slide-up 0.3s ease-out;
+  --animate-bounce-once: bounce-once 0.6s ease-out;
+  --animate-scale-in: scale-in 0.2s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce-once {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes check-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+.animate-bounce-once {
+  animation: bounce-once 0.4s ease-out;
+}
+.animate-check-in {
+  animation: check-in 0.5s ease-out;
+}
 
 body {
   margin: 0;
@@ -17,47 +128,16 @@ body {
   min-height: 300px;
 }
 
-/* Progress Bar Animations */
 .progress-bar-fill {
   transition: width 300ms ease-out;
 }
 
-/* Fade in animation for components */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 300ms ease-out; /* Updated to 300ms for WCAG 2.2.2 */
-}
-
-/* Bounce animation for success checkmark */
-@keyframes bounce-once {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-.animate-bounce-once {
-  animation: bounce-once 400ms ease-out;
-}
-
-/* Respect user motion preferences - Accessibility */
+/* Respect user's motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .progress-bar-fill,
   .animate-fade-in,
   .animate-bounce-once,
+  .animate-check-in,
   .animate-pulse,
   .animate-spin {
     animation: none !important;

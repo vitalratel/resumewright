@@ -218,7 +218,7 @@ export const tokens = {
   },
   layout: {
     maxWidthPopup: 'max-w-md',
-    maxWidthConverter: '672px', // Equivalent to Tailwind max-w-2xl (42rem)
+    maxWidthConverter: '672px', // CSS value for inline style (equivalent to Tailwind max-w-2xl)
     // Extract popup dimensions to tokens
     popupWidth: 'max-w-md', // 448px in Tailwind
     popupHeight: '600px',
