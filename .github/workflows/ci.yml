@@ -223,7 +223,7 @@ jobs:
 
       # Accessibility tests (required)
       - name: Run accessibility tests
-        run: pnpm --filter extension test:a11y
+        run: xvfb-run --auto-servernum pnpm --filter extension test:a11y
         env:
           CI: true
 
@@ -249,7 +249,7 @@ jobs:
 
       - name: Run visual regression tests
         if: steps.check-baselines.outputs.baselines_exist == 'true'
-        run: pnpm test:visual
+        run: xvfb-run --auto-servernum pnpm test:visual
         continue-on-error: true
 
       - name: Upload visual test results
@@ -272,7 +272,7 @@ jobs:
 
       # E2E performance tests (optional)
       - name: Run E2E performance tests
-        run: pnpm playwright test tests/performance/conversion-benchmarks.spec.ts --reporter=list
+        run: xvfb-run --auto-servernum pnpm playwright test tests/performance/conversion-benchmarks.spec.ts --reporter=list
         continue-on-error: true
         env:
           CI: true

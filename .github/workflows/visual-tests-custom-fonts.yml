@@ -109,7 +109,7 @@ jobs:
 
       - name: Run custom fonts UI visual tests (shard ${{ matrix.shard }})
         if: steps.check-fonts.outputs.fonts_exist == 'true' && steps.check-ui-baselines.outputs.ui_baselines_exist == 'true'
-        run: pnpm exec playwright test tests/visual/custom-fonts-ui.spec.ts --shard=${{ matrix.shard }}
+        run: xvfb-run --auto-servernum pnpm exec playwright test tests/visual/custom-fonts-ui.spec.ts --shard=${{ matrix.shard }}
         working-directory: packages/extension
         env:
           CI: true
@@ -117,7 +117,7 @@ jobs:
 
       - name: Run custom fonts PDF visual tests (shard ${{ matrix.shard }})
         if: steps.check-fonts.outputs.fonts_exist == 'true' && steps.check-pdf-baselines.outputs.pdf_baselines_exist == 'true'
-        run: pnpm exec playwright test tests/visual/custom-fonts-pdf.spec.ts --shard=${{ matrix.shard }}
+        run: xvfb-run --auto-servernum pnpm exec playwright test tests/visual/custom-fonts-pdf.spec.ts --shard=${{ matrix.shard }}
         working-directory: packages/extension
         env:
           CI: true

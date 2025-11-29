@@ -167,7 +167,7 @@ jobs:
         run: pnpm exec playwright install-deps chromium
 
       - name: Run ATS compatibility tests
-        run: pnpm exec playwright test tests/ats/
+        run: xvfb-run --auto-servernum pnpm exec playwright test tests/ats/
         env:
           CI: true
 

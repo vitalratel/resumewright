@@ -171,14 +171,14 @@ jobs:
         run: pnpm exec playwright install-deps chromium
 
       - name: Run E2E tests
-        run: pnpm --filter extension test:e2e --project=chromium
+        run: xvfb-run --auto-servernum pnpm --filter extension test:e2e --project=chromium
 
       - name: Run visual regression tests (smoke test)
-        run: pnpm --filter extension test:visual --project=chromium --shard=1/1
+        run: xvfb-run --auto-servernum pnpm --filter extension test:visual --project=chromium --shard=1/1
         continue-on-error: true  # Visual tests may have minor diffs
 
       - name: Run accessibility tests
-        run: pnpm --filter extension test:a11y
+        run: xvfb-run --auto-servernum pnpm --filter extension test:a11y
         continue-on-error: true  # First run, may need adjustments
 
       - name: Run security audit
