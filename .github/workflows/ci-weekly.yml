@@ -88,6 +88,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build pdf-to-png binary
+        run: cargo build --release --bin pdf-to-png
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 

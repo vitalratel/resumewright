@@ -15,7 +15,7 @@ export default defineConfig({
       },
     },
     setupFiles: ['./vitest.setup.ts', './src/__tests__/setup.ts'], // Global mock + comprehensive browser API mocks
-    exclude: ['**/node_modules/**', '**/dist/**', '**/tests/**', '**/archive/**'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/tests/**', '**/archive/**', '**/__tests__/integration/**'],
     // Suppress React act() warnings for Zustand store updates
     environmentOptions: {
       jsdom: {
@@ -28,14 +28,9 @@ export default defineConfig({
 
     isolate: true, // Isolate test files from each other
     pool: 'forks', // Use process isolation instead of threads
-    poolOptions: {
-      forks: {
-        minForks: 2, // Minimum workers (was 1)
-        maxForks: 4, // Parallel workers to use CPU cores (was 1)
-      },
-    },
-    maxConcurrency: 5, // Allow concurrent tests within a file (was 1)
-    fileParallelism: true, // Run test files in parallel (was false)
+    maxWorkers: 4, // Parallel workers to use CPU cores (Vitest 4.x: replaces poolOptions.forks.maxForks)
+    maxConcurrency: 5, // Allow concurrent tests within a file
+    fileParallelism: true, // Run test files in parallel
     retry: 0, // Disable retries on test failure to prevent OOM
 
     // Timeouts

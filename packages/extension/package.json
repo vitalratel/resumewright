@@ -22,6 +22,7 @@
     "test:watch": "NODE_OPTIONS='--expose-gc --max-old-space-size=4096' vitest",
     "test:coverage": "NODE_OPTIONS='--expose-gc --max-old-space-size=4096' vitest run --coverage",
     "test:unit": "NODE_OPTIONS='--expose-gc --max-old-space-size=4096' vitest run",
+    "test:integration": "NODE_OPTIONS='--expose-gc --max-old-space-size=4096' vitest run src/__tests__/integration",
     "test:unit:watch": "NODE_OPTIONS='--expose-gc --max-old-space-size=4096' vitest",
     "test:unit:settings": "NODE_OPTIONS='--expose-gc --max-old-space-size=4096' vitest run --no-cache src/popup/components/__tests__/Settings",
     "test:clear-cache": "vitest --clearCache",

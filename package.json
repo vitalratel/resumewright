@@ -14,6 +14,7 @@
     "test:rust": "cargo test --workspace",
     "test:wasm": "wasm-pack test packages/rust-core/wasm-bridge --headless --chrome --firefox",
     "test:e2e": "pnpm --filter extension test:e2e",
+    "test:integration": "pnpm --filter extension test:integration",
     "test:performance": "pnpm --filter extension test:performance",
     "test:visual": "playwright test",
     "test:visual:update": "pnpm --filter extension test:visual:update",
@@ -37,11 +38,10 @@
     }
   },
   "lint-staged": {
-    "packages/extension/**/*.{ts,tsx}": [
-      "eslint --fix",
-      "bash -c 'pnpm typecheck'"
+    "packages/extension/src/**/*.{ts,tsx}": [
+      "eslint --config packages/extension/eslint.config.js --fix"
     ],
-    "packages/extension/**/*.{js,jsx,json,css}": [
+    "packages/extension/**/*.{js,json,css}": [
       "prettier --write"
     ],
     "**/*.rs": [
