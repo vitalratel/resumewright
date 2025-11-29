@@ -82,6 +82,7 @@
     "pngjs": "^7.0.0",
     "postcss": "^8.4.32",
     "prettier": "^3.7.2",
+    "@tailwindcss/postcss": "^4.1.17",
     "tailwindcss": "^4.1.17",
     "typedoc": "^0.28.14",
     "typescript": "^5.9.3",

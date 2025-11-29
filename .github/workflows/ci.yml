@@ -171,7 +171,7 @@ jobs:
         run: pnpm typecheck
 
       - name: Run unit tests (shard ${{ matrix.shard }})
-        run: pnpm test --shard=${{ matrix.shard }}
+        run: pnpm test:ts --shard=${{ matrix.shard }}
         env:
           CI: true
 
