@@ -1,0 +1,30 @@
+[package]
+name = "layout-engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+description = "Box layout engine with flexbox support for PDF rendering"
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+layout-types = { path = "../layout-types" }
+pdf-generator = { path = "../pdf-generator" }
+style-resolver = { path = "../style-resolver" }
+tsx-parser = { path = "../tsx-parser" }
+cv-domain = { path = "../cv-domain" }
+
+# Hyphenation support for text layout
+hyphenation = { version = "0.8", default-features = false, features = ["embed_en-us"] }
+
+# Taffy - Modern CSS layout engine (Phase 1: parallel implementation)
+taffy = "0.9"
+
+[dev-dependencies]
+cv-domain = { path = "../cv-domain" }
+serde_json = { workspace = true }
+criterion = { version = "0.7", features = ["html_reports"] }
+tsx-parser = { path = "../tsx-parser" }
+pdf-generator = { path = "../pdf-generator" }

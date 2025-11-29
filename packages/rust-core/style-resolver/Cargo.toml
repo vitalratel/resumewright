@@ -1,0 +1,18 @@
+[package]
+name = "style-resolver"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+tailwind-css = { package = "tailwind-css-fixes", version = "0.12.31" }
+pdf-generator = { path = "../pdf-generator" }
+layout-types = { path = "../layout-types" }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+layout-types = { path = "../layout-types" }

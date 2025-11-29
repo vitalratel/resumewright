@@ -1,0 +1,16 @@
+[package]
+name = "pdf-test-utils"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+# PDF rendering using pdfium
+pdfium-render = "0.8.37"
+# Only PNG support needed - disable AVIF/ravif/rav1e which pulls in unmaintained 'paste' crate
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+# Error handling (re-use from pdf-generator for compatibility)
+thiserror = { workspace = true }

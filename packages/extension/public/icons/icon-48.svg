@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradient Background (LinkedIn Blue) -->
+  <defs>
+    <linearGradient id="bg-gradient-48" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0077B5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#005E93;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background rounded rectangle -->
+  <rect x="0" y="0" width="48" height="48" rx="8" fill="url(#bg-gradient-48)"/>
+  
+  <!-- Document icon -->
+  <g transform="translate(12, 8)" opacity="0.95">
+    <!-- Main document shape (portrait 3:4 ratio) -->
+    <rect x="0" y="0" width="24" height="32" rx="2" fill="#FFFFFF"/>
+    
+    <!-- Folded corner -->
+    <path d="M 20 0 L 24 0 L 24 4 Z" fill="#00A0DC" opacity="0.6"/>
+    
+    <!-- Document lines (subtle texture) -->
+    <rect x="4" y="6" width="16" height="1.5" rx="0.75" fill="#005E93" opacity="0.15"/>
+    <rect x="4" y="10" width="16" height="1.5" rx="0.75" fill="#005E93" opacity="0.15"/>
+    <rect x="4" y="14" width="12" height="1.5" rx="0.75" fill="#005E93" opacity="0.15"/>
+  </g>
+  
+  <!-- Person silhouette -->
+  <g transform="translate(24, 24)" fill="#005E93" opacity="0.85">
+    <!-- Head -->
+    <circle cx="0" cy="0" r="3.5"/>
+    <!-- Shoulders/body -->
+    <path d="M -6 12 Q -6 5.5 -4 5.5 L 4 5.5 Q 6 5.5 6 12 L 6 16 L -6 16 Z"/>
+  </g>
+  
+  <!-- Checkmark badge (ATS approved) -->
+  <g opacity="0.95">
+    <circle cx="38" cy="10" r="7" fill="#10B981"/>
+    <path d="M 34.5 10 L 36.5 12 L 41.5 7" stroke="#FFFFFF" stroke-width="2.5" 
+          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

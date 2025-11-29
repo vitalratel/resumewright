@@ -1,0 +1,34 @@
+# Prettier ignore patterns
+
+# Build outputs
+dist/
+build/
+.output/
+target/
+pkg/
+coverage/
+.wxt/
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Generated files
+*.min.js
+*.min.css
+**/.tsbuildinfo
+
+# Lock files
+pnpm-lock.yaml
+Cargo.lock
+
+# Cache
+.cache/
+.turbo/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log

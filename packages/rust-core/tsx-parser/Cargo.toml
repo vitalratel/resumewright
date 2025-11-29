@@ -1,0 +1,23 @@
+[package]
+name = "tsx-parser"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+oxc_allocator = "0.99"
+oxc_parser = "0.99"
+oxc_ast = "0.99"
+oxc_span = "0.99"
+
+[dev-dependencies]
+criterion = { workspace = true }
+proptest = { workspace = true }
+
+[[bench]]
+name = "parsing_benchmarks"
+harness = false

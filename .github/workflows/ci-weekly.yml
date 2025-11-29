@@ -1,0 +1,240 @@
+name: CI Weekly
+
+on:
+  schedule:
+    # Weekly on Sunday at midnight UTC
+    - cron: '0 0 * * 0'
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Cross-platform Rust tests (macOS=10x, Windows=2x minute multiplier)
+  rust-cross-platform:
+    name: Rust Cross-Platform (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Rust tests
+        run: cargo test --workspace --verbose
+
+  # WASM build (needed for downstream jobs)
+  wasm-build:
+    name: Build WASM
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build WASM
+        run: pnpm build:wasm
+
+      - name: Upload WASM artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: wasm-build
+          path: |
+            pkg/
+            !pkg/.gitignore
+          retention-days: 1
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: wasm-build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download WASM artifacts
+        uses: actions/download-artifact@v6
+        with:
+          name: wasm-build
+          path: pkg/
+
+      - name: Run integration tests
+        run: pnpm test:integration
+        env:
+          CI: true
+
+  ats-compatibility:
+    name: ATS Compatibility Tests
+    runs-on: ubuntu-latest
+    needs: wasm-build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download WASM artifacts
+        uses: actions/download-artifact@v6
+        with:
+          name: wasm-build
+          path: pkg/
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(pnpm list @playwright/test --json | jq -r '.[0].devDependencies["@playwright/test"].version')" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Install Playwright deps (cached)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
+
+      - name: Run ATS compatibility tests
+        run: pnpm exec playwright test tests/ats/
+        env:
+          CI: true
+
+      - name: Upload ATS results
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: ats-test-results
+          path: packages/extension/test-results/
+          retention-days: 7
+
+  coverage-check:
+    name: Coverage Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov
+
+      - name: Run coverage
+        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+
+      - name: Extract coverage percentage
+        id: coverage
+        run: |
+          COVERAGE=$(cargo llvm-cov --all-features --workspace --summary-only | grep -oP '\d+\.\d+(?=%)' | tail -1)
+          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "Coverage: $COVERAGE%"
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=${{ steps.coverage.outputs.coverage }}
+          THRESHOLD=70.0
+
+          if awk "BEGIN {exit !($COVERAGE < $THRESHOLD)}"; then
+            echo "❌ Coverage ($COVERAGE%) is below threshold ($THRESHOLD%)"
+            exit 1
+          else
+            echo "✅ Coverage ($COVERAGE%) meets threshold ($THRESHOLD%)"
+          fi
+
+  msrv-check:
+    name: MSRV Compatibility
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Extract MSRV from Cargo.toml
+        id: msrv
+        run: |
+          MSRV=$(grep -oP 'rust-version\s*=\s*"\K[^"]+' Cargo.toml || echo "1.70")
+          echo "version=$MSRV" >> $GITHUB_OUTPUT
+          echo "MSRV: $MSRV"
+
+      - name: Setup Rust MSRV
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.msrv.outputs.version }}
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check MSRV compatibility
+        run: cargo check --all-features

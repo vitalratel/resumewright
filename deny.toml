@@ -1,0 +1,74 @@
+# ABOUTME: Configuration for cargo-deny to check dependencies for security advisories,
+# ABOUTME: license compliance, and source restrictions.
+
+[graph]
+# Include all targets for comprehensive checking
+all-features = true
+
+[advisories]
+# The database of advisories to check against
+db-path = "~/.cargo/advisory-db"
+# URLs to fetch the advisory database from
+db-urls = ["https://github.com/rustsec/advisory-db"]
+# How to handle yanked crates
+yanked = "warn"
+
+[licenses]
+# Confidence threshold for license detection
+confidence-threshold = 0.8
+
+# List of allowed licenses
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "0BSD",
+    "CC0-1.0",
+    "Unlicense",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "BSL-1.0",
+    "NCSA",
+]
+
+# Clarify specific crates with unusual license situations
+[[licenses.clarify]]
+name = "ring"
+expression = "MIT AND ISC AND OpenSSL"
+license-files = [
+    { path = "LICENSE", hash = 0xbd0eed23 }
+]
+
+[[licenses.clarify]]
+name = "webpki"
+expression = "ISC"
+license-files = [
+    { path = "LICENSE", hash = 0x001c7e6c }
+]
+
+[bans]
+# Lint level for when multiple versions of the same crate are detected
+multiple-versions = "warn"
+# Lint level for when a crate has a wildcard dependency
+wildcards = "deny"
+# Allow path/git dependencies in private crates (publish = false)
+allow-wildcard-paths = true
+# Skip specific crate versions that are known duplicates
+skip = []
+# Skip entire crate trees
+skip-tree = []
+
+[sources]
+# Crates must come from one of these sources
+unknown-registry = "deny"
+unknown-git = "warn"
+
+# Allow crates from crates.io
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+
+# Allow specific git sources if needed
+allow-git = []

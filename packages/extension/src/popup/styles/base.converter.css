@@ -1,0 +1,55 @@
+/**
+ * Base styles for CONVERTER (full-page tab)
+ * Extracted from base.css to support full-page workflow (v1.7)
+ *
+ * This file is ONLY used by entrypoints/converter/main.tsx (full-page converter)
+ */
+
+/* Custom animations for converter UI */
+@keyframes check-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-check-in {
+  animation: check-in 0.5s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 300ms ease-out;
+}
+
+/* Full-page converter - no constraints, use full viewport */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: #F9FAFB; /* Light gray background for contrast */
+}
+
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

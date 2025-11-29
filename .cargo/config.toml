@@ -1,0 +1,6 @@
+# Cargo configuration for ResumeWright project
+
+# Enable getrandom wasm_js support for WASM targets only
+# This is required for proptest (dev-dependency) to compile for wasm32-unknown-unknown
+[target.wasm32-unknown-unknown]
+rustflags = ["--cfg", "getrandom_backend=\"wasm_js\""]

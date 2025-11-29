@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradient Background (LinkedIn Blue) -->
+  <defs>
+    <linearGradient id="bg-gradient-16" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0077B5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#005E93;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background rounded rectangle -->
+  <rect x="0" y="0" width="16" height="16" rx="3" fill="url(#bg-gradient-16)"/>
+  
+  <!-- Document icon (simplified for 16x16) -->
+  <g opacity="0.95">
+    <!-- Main document shape -->
+    <rect x="4" y="2" width="8" height="11" rx="1" fill="#FFFFFF"/>
+    
+    <!-- Folded corner (subtle) -->
+    <path d="M 10 2 L 12 2 L 12 4 Z" fill="#00A0DC" opacity="0.5"/>
+  </g>
+  
+  <!-- Person silhouette (simplified) -->
+  <g transform="translate(8, 8)" fill="#005E93" opacity="0.8">
+    <!-- Head -->
+    <circle cx="0" cy="0" r="1.2"/>
+    <!-- Body (simple shape) -->
+    <path d="M -1.8 4 Q -1.8 2.2 -1 2.2 L 1 2.2 Q 1.8 2.2 1.8 4 L 1.8 5 L -1.8 5 Z"/>
+  </g>
+</svg>

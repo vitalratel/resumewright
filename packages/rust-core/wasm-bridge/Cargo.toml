@@ -1,0 +1,55 @@
+[package]
+name = "wasm-bridge"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["console_error_panic_hook"]  # Font subsetting disabled - YAGNI (adds 1MB WASM, rarely used)
+console_error_panic_hook = ["dep:console_error_panic_hook"]
+debug-logging = []
+pdfium = ["dep:pdf-test-utils"]
+advanced-fonts = ["font-toolkit/advanced-fonts", "pdf-generator/advanced-fonts"]  # Optional: Enable font subsetting (adds ~1MB to WASM)
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = [
+    '-Oz',                           # Aggressive size optimization
+    '--enable-mutable-globals',      # Enable optimization features
+    '--enable-bulk-memory',          # Enable bulk memory operations
+    '--enable-sign-ext',             # Enable sign extension operations
+    '--enable-nontrapping-float-to-int',  # Enable saturating float-to-int conversions
+    '--strip-debug',                 # Remove debug info
+    '--strip-dwarf',                 # Remove DWARF debug sections
+    '--strip-producers',             # Remove producers section
+]
+
+[dependencies]
+wasm-bindgen = { workspace = true }
+serde-wasm-bindgen = { workspace = true }
+console_error_panic_hook = { workspace = true, optional = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+getrandom = { version = "0.3", features = ["wasm_js"] }  # Enable WASM support for lopdf's rand dependency
+font-toolkit = { path = "../font-toolkit" }
+pdf-generator = { path = "../pdf-generator" }
+tsx-parser = { path = "../tsx-parser" }
+cv-domain = { path = "../cv-domain" }
+style-resolver = { path = "../style-resolver" }
+layout-engine = { path = "../layout-engine" }
+js-sys = { workspace = true }
+web-sys = { version = "0.3", features = ["console", "Window", "Performance"] }
+pdf-test-utils = { path = "../pdf-test-utils", optional = true }
+
+[dev-dependencies]
+wasm-bindgen-test = { workspace = true }
+criterion = { workspace = true }
+
+[[bench]]
+name = "full_pipeline"
+harness = false

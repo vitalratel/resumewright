@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["@playwright/test", "@types/node"],
+    "paths": {
+      "webextension-polyfill": ["./tests/__mocks__/webextension-polyfill.ts"],
+      "@/background/*": ["src/background/*"],
+      "@/content/*": ["src/content/*"],
+      "@/popup/*": ["src/popup/*"],
+      "@/shared/*": ["src/shared/*"],
+      "@pkg/*": ["../../pkg/*"]
+    }
+  },
+  "include": [
+    "tests/**/*",
+    "playwright.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".output",
+    "src",
+    ".wxt"
+  ]
+}

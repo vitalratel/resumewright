@@ -1,0 +1,66 @@
+[workspace]
+resolver = "2"
+members = [
+    "packages/rust-core/tsx-parser",
+    "packages/rust-core/cv-domain",
+    "packages/rust-core/style-resolver",
+    "packages/rust-core/layout-engine",
+    "packages/rust-core/layout-types",
+    "packages/rust-core/pdf-generator",
+    "packages/rust-core/font-toolkit",
+    "packages/rust-core/wasm-bridge",
+    "packages/rust-core/pdf-test-utils",
+    "packages/rust-core/pdf-to-png",
+    "packages/rust-core/regex-utils"
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.91"
+authors = ["ResumeWright Team"]
+license = "MIT"
+
+[workspace.dependencies]
+# WASM bindings
+wasm-bindgen = "0.2"
+serde-wasm-bindgen = "0.6"
+console_error_panic_hook = "0.1"
+js-sys = "0.3"
+web-sys = "0.3"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "2.0"
+anyhow = "1.0"
+
+
+# Regular expressions (unicode disabled for WASM size - saves ~200KB)
+regex = { version = "1.10", default-features = false, features = ["std", "perf"] }
+once_cell = "1.19"
+
+# PDF generation
+lopdf = { version = "0.38", default-features = false }
+
+# Testing
+wasm-bindgen-test = "0.3"
+
+# Benchmarking
+criterion = { version = "0.7", features = ["html_reports"] }
+
+# Property-based testing
+proptest = "1.9"
+
+# Internal crates
+regex-utils = { path = "packages/rust-core/regex-utils" }
+
+# Release profile optimizations for WASM bundle size
+[profile.release]
+lto = "fat"              # Full link-time optimization across all crates
+codegen-units = 1        # Single codegen unit for better optimization
+opt-level = "s"          # Optimize for size (more balanced than 'z')
+strip = true             # Strip debug symbols from binary
+panic = "abort"          # Smaller panic handler (no unwinding)

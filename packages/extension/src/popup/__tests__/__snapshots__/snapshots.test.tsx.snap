@@ -1,0 +1,1996 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Popup Component Snapshots > CVDetected > should match snapshot with basic props 1`] = `
+<div
+  class="w-full h-full bg-white p-6 flex flex-col items-center justify-center space-y-4"
+>
+  <svg
+    aria-hidden="true"
+    class="w-12 h-12 text-green-500"
+    data-slot="icon"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+  <h1
+    class="text-2xl font-bold tracking-tight text-gray-900 text-center"
+  >
+    CV Detected!
+  </h1>
+  <p
+    class="text-sm text-gray-700 text-center max-w-xs line-clamp-2"
+  >
+    John Doe - Software Engineer
+     - 
+    Software Engineer
+  </p>
+  <button
+    aria-busy="false"
+    aria-label="Export CV to PDF"
+    class="px-4 py-3 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ease-in-out relative overflow-hidden bg-blue-500 hover:bg-blue-600 hover:scale-[1.02] hover:shadow-lg active:bg-blue-700 active:scale-[0.98] text-white focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none w-full "
+  >
+    <span
+      class="flex items-center justify-center gap-2"
+    >
+      <span>
+        Export to PDF
+      </span>
+    </span>
+  </button>
+  <button
+    class="text-sm text-blue-500 hover:text-blue-600 hover:underline hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:rounded bg-transparent border-none cursor-pointer transition-all duration-200 ease-in-out"
+  >
+    Customize settings
+  </button>
+</div>
+`;
+
+exports[`Popup Component Snapshots > CVDetected > should match snapshot with file import button 1`] = `
+<div
+  class="w-full h-full bg-white p-6 flex flex-col items-center justify-center space-y-4"
+>
+  <svg
+    aria-hidden="true"
+    class="w-12 h-12 text-green-500"
+    data-slot="icon"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+  <h1
+    class="text-2xl font-bold tracking-tight text-gray-900 text-center"
+  >
+    CV Detected!
+  </h1>
+  <p
+    class="text-sm text-gray-700 text-center max-w-xs line-clamp-2"
+  >
+    Developer Resume
+     - 
+    Software Engineer
+  </p>
+  <button
+    aria-busy="false"
+    aria-label="Export CV to PDF"
+    class="px-4 py-3 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ease-in-out relative overflow-hidden bg-blue-500 hover:bg-blue-600 hover:scale-[1.02] hover:shadow-lg active:bg-blue-700 active:scale-[0.98] text-white focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none w-full "
+  >
+    <span
+      class="flex items-center justify-center gap-2"
+    >
+      <span>
+        Export to PDF
+      </span>
+    </span>
+  </button>
+  <button
+    class="text-sm text-blue-500 hover:text-blue-600 hover:underline hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:rounded bg-transparent border-none cursor-pointer transition-all duration-200 ease-in-out"
+  >
+    Customize settings
+  </button>
+</div>
+`;
+
+exports[`Popup Component Snapshots > CVDetected > should match snapshot with two-column layout 1`] = `
+<div
+  class="w-full h-full bg-white p-6 flex flex-col items-center justify-center space-y-4"
+>
+  <svg
+    aria-hidden="true"
+    class="w-12 h-12 text-green-500"
+    data-slot="icon"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+  <h1
+    class="text-2xl font-bold tracking-tight text-gray-900 text-center"
+  >
+    CV Detected!
+  </h1>
+  <p
+    class="text-sm text-gray-700 text-center max-w-xs line-clamp-2"
+  >
+    Jane Smith - Product Manager
+     - 
+    Software Engineer
+  </p>
+  <button
+    aria-busy="false"
+    aria-label="Export CV to PDF"
+    class="px-4 py-3 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ease-in-out relative overflow-hidden bg-blue-500 hover:bg-blue-600 hover:scale-[1.02] hover:shadow-lg active:bg-blue-700 active:scale-[0.98] text-white focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none w-full "
+  >
+    <span
+      class="flex items-center justify-center gap-2"
+    >
+      <span>
+        Export to PDF
+      </span>
+    </span>
+  </button>
+  <button
+    class="text-sm text-blue-500 hover:text-blue-600 hover:underline hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:rounded bg-transparent border-none cursor-pointer transition-all duration-200 ease-in-out"
+  >
+    Customize settings
+  </button>
+</div>
+`;
+
+exports[`Popup Component Snapshots > Converting > should match snapshot at 0% progress 1`] = `
+<div
+  class="w-full h-full bg-white p-6 flex flex-col items-center justify-center space-y-3 animate-fade-in"
+>
+  <svg
+    class="animate-spin h-8 w-8 text-blue-500"
+    fill="none"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      class="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      stroke-width="4"
+    />
+    <path
+      class="opacity-75"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      fill="currentColor"
+    />
+  </svg>
+  <h1
+    class="text-2xl font-bold tracking-tight text-gray-900 text-center"
+  >
+    Converting to PDF...
+  </h1>
+  <div
+    class="w-full space-y-2 animate-slide-up"
+  >
+    <div
+      class="w-full bg-gray-200 rounded-full h-2 overflow-hidden shadow-inner"
+    >
+      <div
+        aria-live="polite"
+        aria-valuemax="100"
+        aria-valuemin="0"
+        aria-valuenow="0"
+        class="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500 ease-out"
+        role="progressbar"
+        style="width: 0%;"
+      />
+    </div>
+  </div>
+  <p
+    class="text-lg font-semibold text-gray-900 transition-all duration-300"
+  >
+    0
+    %
+  </p>
+  <p
+    class="text-sm text-gray-600 animate-pulse-slow"
+  >
+    Starting...
+  </p>
+  <p
+    class="text-xs text-gray-600 animate-fade-in-slow"
+  >
+    ~
+    3
+     seconds remaining
+  </p>
+</div>
+`;
+
+exports[`Popup Component Snapshots > Converting > should match snapshot at 50% progress 1`] = `
+<div
+  class="w-full h-full bg-white p-6 flex flex-col items-center justify-center space-y-3 animate-fade-in"
+>
+  <svg
+    class="animate-spin h-8 w-8 text-blue-500"
+    fill="none"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      class="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      stroke-width="4"
+    />
+    <path
+      class="opacity-75"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      fill="currentColor"
+    />
+  </svg>
+  <h1
+    class="text-2xl font-bold tracking-tight text-gray-900 text-center"
+  >
+    Converting to PDF...
+  </h1>
+  <div
+    class="w-full space-y-2 animate-slide-up"
+  >
+    <div
+      class="w-full bg-gray-200 rounded-full h-2 overflow-hidden shadow-inner"
+    >
+      <div
+        aria-live="polite"
+        aria-valuemax="100"
+        aria-valuemin="0"
+        aria-valuenow="50"
+        class="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500 ease-out"
+        role="progressbar"
+        style="width: 50%;"
+      />
+    </div>
+  </div>
+  <p
+    class="text-lg font-semibold text-gray-900 transition-all duration-300"
+  >
+    50
+    %
+  </p>
+  <p
+    class="text-sm text-gray-600 animate-pulse-slow"
+  >
+    Rendering components...
+  </p>
+  <p
+    class="text-xs text-gray-600 animate-fade-in-slow"
+  >
+    ~
+    5
+     seconds remaining
+  </p>
+</div>
+`;
+
+exports[`Popup Component Snapshots > Converting > should match snapshot at 100% progress 1`] = `
+<div
+  class="w-full h-full bg-white p-6 flex flex-col items-center justify-center space-y-3 animate-fade-in"
+>
+  <svg
+    class="animate-spin h-8 w-8 text-blue-500"
+    fill="none"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      class="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      stroke-width="4"
+    />
+    <path
+      class="opacity-75"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      fill="currentColor"
+    />
+  </svg>
+  <h1
+    class="text-2xl font-bold tracking-tight text-gray-900 text-center"
+  >
+    Converting to PDF...
+  </h1>
+  <div
+    class="w-full space-y-2 animate-slide-up"
+  >
+    <div
+      class="w-full bg-gray-200 rounded-full h-2 overflow-hidden shadow-inner"
+    >
+      <div
+        aria-live="polite"
+        aria-valuemax="100"
+        aria-valuemin="0"
+        aria-valuenow="100"
+        class="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500 ease-out"
+        role="progressbar"
+        style="width: 100%;"
+      />
+    </div>
+  </div>
+  <p
+    class="text-lg font-semibold text-gray-900 transition-all duration-300"
+  >
+    100
+    %
+  </p>
+  <p
+    class="text-sm text-gray-600 animate-pulse-slow"
+  >
+    Finalizing...
+  </p>
+  <p
+    class="text-xs text-gray-600 animate-fade-in-slow"
+  >
+    ~
+    1
+     seconds remaining
+  </p>
+</div>
+`;
+
+exports[`Popup Component Snapshots > Converting > should match snapshot with cancel button 1`] = `
+<div
+  class="w-full h-full bg-white p-6 flex flex-col items-center justify-center space-y-3 animate-fade-in"
+>
+  <svg
+    class="animate-spin h-8 w-8 text-blue-500"
+    fill="none"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      class="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      stroke-width="4"
+    />
+    <path
+      class="opacity-75"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      fill="currentColor"
+    />
+  </svg>
+  <h1
+    class="text-2xl font-bold tracking-tight text-gray-900 text-center"
+  >
+    Converting to PDF...
+  </h1>
+  <div
+    class="w-full space-y-2 animate-slide-up"
+  >
+    <div
+      class="w-full bg-gray-200 rounded-full h-2 overflow-hidden shadow-inner"
+    >
+      <div
+        aria-live="polite"
+        aria-valuemax="100"
+        aria-valuemin="0"
+        aria-valuenow="75"
+        class="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500 ease-out"
+        role="progressbar"
+        style="width: 75%;"
+      />
+    </div>
+  </div>
+  <p
+    class="text-lg font-semibold text-gray-900 transition-all duration-300"
+  >
+    75
+    %
+  </p>
+  <p
+    class="text-sm text-gray-600 animate-pulse-slow"
+  >
+    Generating PDF...
+  </p>
+  <p
+    class="text-xs text-gray-600 animate-fade-in-slow"
+  >
+    ~
+    3
+     seconds remaining
+  </p>
+  <button
+    class="text-sm text-gray-500 hover:text-red-500 hover:underline hover:scale-105 mt-4 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:rounded transition-all duration-200 ease-in-out animate-fade-in"
+  >
+    Cancel
+  </button>
+</div>
+`;
+
+exports[`Popup Component Snapshots > Error > should match snapshot with basic error 1`] = `
+<div
+  class="w-full h-full bg-white p-6 flex flex-col items-center justify-start space-y-4 overflow-y-auto"
+  tabindex="-1"
+>
+  <svg
+    aria-hidden="true"
+    class="w-12 h-12 text-red-500"
+    data-slot="icon"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+  <h1
+    class="text-2xl font-bold tracking-tight text-red-500 text-center"
+  >
+    Export Failed
+  </h1>
+  <div
+    aria-live="assertive"
+    class="p-3 bg-red-50 border-red-200 border rounded-md text-sm text-red-700 w-full"
+    role="alert"
+  >
+    <p
+      class="text-gray-700"
+    >
+      Failed to parse TSX code
+    </p>
+  </div>
+  <div
+    class="w-full text-left space-y-2"
+  >
+    <p
+      class="text-xs font-semibold text-gray-700"
+    >
+      Suggestions:
+    </p>
+    <ul
+      class="text-xs text-gray-600 space-y-1 list-disc list-inside"
+    >
+      <li>
+        Remove complex nested components
+      </li>
+      <li>
+        Ensure valid JSX syntax
+      </li>
+      <li>
+        Try exporting a simpler CV first
+      </li>
+    </ul>
+  </div>
+  <div
+    class="w-full space-y-2"
+  >
+    <button
+      aria-busy="false"
+      class="px-4 py-3 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ease-in-out relative overflow-hidden bg-blue-500 hover:bg-blue-600 hover:scale-[1.02] hover:shadow-lg active:bg-blue-700 active:scale-[0.98] text-white focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none w-full "
+    >
+      <span
+        class="flex items-center justify-center gap-2"
+      >
+        <span>
+          Retry
+          <span
+            aria-hidden="true"
+            class="ml-2 text-xs opacity-60 font-mono "
+          >
+            CtrlR
+          </span>
+        </span>
+      </span>
+    </button>
+  </div>
+  <a
+    class="text-sm text-blue-500 hover:text-blue-600 hover:underline hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:rounded transition-all duration-200 ease-in-out"
+    href="#"
+  >
+    View Troubleshooting Guide
+  </a>
+</div>
+`;
+
+exports[`Popup Component Snapshots > Error > should match snapshot with custom suggestions 1`] = `
+<div
+  class="w-full h-full bg-white p-6 flex flex-col items-center justify-start space-y-4 overflow-y-auto"
+  tabindex="-1"
+>
+  <svg
+    aria-hidden="true"
+    class="w-12 h-12 text-red-500"
+    data-slot="icon"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+  <h1
+    class="text-2xl font-bold tracking-tight text-red-500 text-center"
+  >
+    Export Failed
+  </h1>
+  <div
+    aria-live="assertive"
+    class="p-3 bg-red-50 border-red-200 border rounded-md text-sm text-red-700 w-full"
+    role="alert"
+  >
+    <p
+      class="text-gray-700"
+    >
+      PDF generation failed
+    </p>
+  </div>
+  <div
+    class="w-full text-left space-y-2"
+  >
+    <p
+      class="text-xs font-semibold text-gray-700"
+    >
+      Suggestions:
+    </p>
+    <ul
+      class="text-xs text-gray-600 space-y-1 list-disc list-inside"
+    >
+      <li>
+        Check your internet connection
+      </li>
+      <li>
+        Try again in a few moments
+      </li>
+    </ul>
+  </div>
+  <div
+    class="w-full space-y-2"
+  >
+    <button
+      aria-busy="false"
+      class="px-4 py-3 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ease-in-out relative overflow-hidden bg-blue-500 hover:bg-blue-600 hover:scale-[1.02] hover:shadow-lg active:bg-blue-700 active:scale-[0.98] text-white focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none w-full "
+    >
+      <span
+        class="flex items-center justify-center gap-2"
+      >
+        <span>
+          Retry
+          <span
+            aria-hidden="true"
+            class="ml-2 text-xs opacity-60 font-mono "
+          >
+            CtrlR
+          </span>
+        </span>
+      </span>
+    </button>
+  </div>
+  <a
+    class="text-sm text-blue-500 hover:text-blue-600 hover:underline hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:rounded transition-all duration-200 ease-in-out"
+    href="#"
+  >
+    View Troubleshooting Guide
+  </a>
+</div>
+`;
+
+exports[`Popup Component Snapshots > Error > should match snapshot with report issue button 1`] = `
+<div
+  class="w-full h-full bg-white p-6 flex flex-col items-center justify-start space-y-4 overflow-y-auto"
+  tabindex="-1"
+>
+  <svg
+    aria-hidden="true"
+    class="w-12 h-12 text-red-500"
+    data-slot="icon"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+  <h1
+    class="text-2xl font-bold tracking-tight text-red-500 text-center"
+  >
+    Export Failed
+  </h1>
+  <div
+    aria-live="assertive"
+    class="p-3 bg-red-50 border-red-200 border rounded-md text-sm text-red-700 w-full"
+    role="alert"
+  >
+    <p
+      class="text-gray-700"
+    >
+      Unexpected error occurred
+    </p>
+  </div>
+  <div
+    class="w-full text-left space-y-2"
+  >
+    <p
+      class="text-xs font-semibold text-gray-700"
+    >
+      Suggestions:
+    </p>
+    <ul
+      class="text-xs text-gray-600 space-y-1 list-disc list-inside"
+    >
+      <li>
+        Remove complex nested components
+      </li>
+      <li>
+        Ensure valid JSX syntax
+      </li>
+      <li>
+        Try exporting a simpler CV first
+      </li>
+    </ul>
+  </div>
+  <div
+    class="w-full space-y-2"
+  >
+    <button
+      aria-busy="false"
+      class="px-4 py-3 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ease-in-out relative overflow-hidden bg-blue-500 hover:bg-blue-600 hover:scale-[1.02] hover:shadow-lg active:bg-blue-700 active:scale-[0.98] text-white focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none w-full "
+    >
+      <span
+        class="flex items-center justify-center gap-2"
+      >
+        <span>
+          Retry
+          <span
+            aria-hidden="true"
+            class="ml-2 text-xs opacity-60 font-mono "
+          >
+            CtrlR
+          </span>
+        </span>
+      </span>
+    </button>
+    <button
+      aria-busy="false"
+      class="px-4 py-3 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ease-in-out relative overflow-hidden bg-white hover:bg-gray-50 hover:scale-[1.01] hover:shadow-md active:bg-gray-100 active:scale-[0.99] text-blue-500 border-2 border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none w-full "
+    >
+      <span
+        class="flex items-center justify-center gap-2"
+      >
+        <span>
+          Report Issue
+        </span>
+      </span>
+    </button>
+  </div>
+  <a
+    class="text-sm text-blue-500 hover:text-blue-600 hover:underline hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:rounded transition-all duration-200 ease-in-out"
+    href="#"
+  >
+    View Troubleshooting Guide
+  </a>
+</div>
+`;
+
+exports[`Popup Component Snapshots > NoCVDetected > should match snapshot 1`] = `
+<div
+  class="w-full h-full bg-gray-50 p-6 flex flex-col items-center justify-center space-y-6"
+>
+  <svg
+    aria-hidden="true"
+    class="w-16 h-16 text-gray-500"
+    data-slot="icon"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+  <h1
+    class="text-2xl font-bold tracking-tight text-gray-900 text-center"
+  >
+    No CV Detected
+  </h1>
+  <p
+    class="text-sm text-gray-600 text-center max-w-xs"
+  >
+    Visit claude.ai and generate a CV to get started.
+  </p>
+  <a
+    class="text-sm text-blue-500 hover:text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-300 focus:rounded"
+    href="https://claude.ai"
+    rel="noopener noreferrer"
+    target="_blank"
+  >
+    How to create a CV with Claude
+  </a>
+</div>
+`;
+
+exports[`Popup Component Snapshots > Settings > should match snapshot with default settings 1`] = `
+<div
+  class="w-[360px] min-h-[200px] max-h-[600px] overflow-y-auto p-4"
+>
+  <div
+    class="flex items-center mb-4"
+  >
+    <button
+      aria-label="Back to main screen"
+      class="text-gray-600 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200 active:scale-95 p-1 rounded mr-2 relative flex items-center gap-1 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+    >
+      <svg
+        aria-hidden="true"
+        class="w-5 h-5"
+        data-slot="icon"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+      <span
+        class="text-sm font-medium"
+      >
+        Back
+      </span>
+    </button>
+    <h1
+      class="text-lg font-semibold flex items-center"
+    >
+      Settings
+    </h1>
+  </div>
+  <div
+    aria-labelledby="page-size-label"
+    class="mb-6"
+    role="group"
+  >
+    <label
+      class="block text-sm font-medium mb-2"
+      id="page-size-label"
+    >
+      Page Size
+    </label>
+    <div
+      class="space-y-2"
+    >
+      <button
+        aria-checked="true"
+        aria-label="Select Letter page size (8.5 inches by 11 inches)"
+        class="w-full text-left p-3 rounded-md border-2 transition-all duration-200 border-green-500 bg-green-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+        role="radio"
+      >
+        <div
+          class="flex items-center"
+        >
+          <div
+            class="w-4 h-4 rounded-full border-2 mr-3 border-green-500 bg-green-500"
+          />
+          <span>
+            Letter (8.5" x 11")
+          </span>
+        </div>
+      </button>
+      <button
+        aria-checked="false"
+        aria-label="Select A4 page size (210 millimeters by 297 millimeters)"
+        class="w-full text-left p-3 rounded-md border-2 transition-all duration-200 border-gray-300 hover:bg-gray-50 hover:border-gray-400 hover:shadow-sm active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+        role="radio"
+      >
+        <div
+          class="flex items-center"
+        >
+          <div
+            class="w-4 h-4 rounded-full border-2 mr-3 border-gray-300"
+          />
+          <span>
+            A4 (210mm x 297mm)
+          </span>
+        </div>
+      </button>
+      <button
+        aria-checked="false"
+        aria-label="Select Legal page size (8.5 inches by 14 inches)"
+        class="w-full text-left p-3 rounded-md border-2 transition-all duration-200 border-gray-300 hover:bg-gray-50 hover:border-gray-400 hover:shadow-sm active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+        role="radio"
+      >
+        <div
+          class="flex items-center"
+        >
+          <div
+            class="w-4 h-4 rounded-full border-2 mr-3 border-gray-300"
+          />
+          <span>
+            Legal (8.5" x 14")
+          </span>
+        </div>
+      </button>
+    </div>
+  </div>
+  <div
+    class="mb-6"
+  >
+    <label
+      class="block text-sm font-medium mb-2"
+      id="margins-label"
+    >
+      Margins
+    </label>
+    <p
+      class="text-xs text-gray-600 mb-3"
+      id="margins-help"
+    >
+      Margins in inches (0.25 - 1.5). Use arrow keys to adjust in small increments.
+    </p>
+    <div
+      aria-describedby="margins-help"
+      aria-labelledby="margins-label"
+      class="space-y-3"
+      role="group"
+    >
+      <div
+        class="flex items-center justify-between gap-3 "
+      >
+        <label
+          class="text-sm capitalize w-16 flex-shrink-0"
+          for="margin-top"
+        >
+          top
+        </label>
+        <button
+          aria-label="Decrease top margin by 0.05""
+          class="p-1.5 hover:bg-gray-100 active:bg-gray-200 rounded disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="w-4 h-4 text-gray-700"
+            data-slot="icon"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12h14"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <div
+          class="flex-1 relative"
+        >
+          <div
+            class="absolute top-1/2 -translate-y-1/2 w-full h-2 rounded-full bg-gray-200 pointer-events-none"
+          >
+            <div
+              aria-hidden="true"
+              class="absolute top-0 left-0 h-full rounded-full bg-blue-500 transition-all duration-150 ease-out"
+              style="width: 20%;"
+            />
+          </div>
+          <input
+            aria-describedby="margin-top-help"
+            aria-label="top in inches"
+            aria-valuemax="1.5"
+            aria-valuemin="0.25"
+            aria-valuenow="0.5"
+            aria-valuetext="0.50""
+            class="
+            relative w-full h-2 appearance-none bg-transparent cursor-pointer z-10
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full
+            transition-all duration-200
+            
+            /* Webkit (Chrome/Safari) thumb styling - P1-VISUAL-016: Enhanced states */
+            [&::-webkit-slider-thumb]:appearance-none
+            [&::-webkit-slider-thumb]:w-5
+            [&::-webkit-slider-thumb]:h-5
+            [&::-webkit-slider-thumb]:rounded-full
+            [&::-webkit-slider-thumb]:bg-white
+            [&::-webkit-slider-thumb]:border-2
+            [&::-webkit-slider-thumb]:border-blue-500
+            [&::-webkit-slider-thumb]:shadow-md
+            [&::-webkit-slider-thumb]:cursor-pointer
+            [&::-webkit-slider-thumb]:transition-all
+            [&::-webkit-slider-thumb]:duration-200
+            [&::-webkit-slider-thumb]:hover:scale-110
+            [&::-webkit-slider-thumb]:hover:shadow-lg
+            [&::-webkit-slider-thumb]:hover:border-blue-600
+            [&::-webkit-slider-thumb]:active:scale-105
+            [&::-webkit-slider-thumb]:active:shadow-xl
+            [&::-webkit-slider-thumb]:active:border-blue-700
+            
+            /* Firefox thumb styling - P1-VISUAL-016: Enhanced states */
+            [&::-moz-range-thumb]:appearance-none
+            [&::-moz-range-thumb]:w-5
+            [&::-moz-range-thumb]:h-5
+            [&::-moz-range-thumb]:rounded-full
+            [&::-moz-range-thumb]:bg-white
+            [&::-moz-range-thumb]:border-2
+            [&::-moz-range-thumb]:border-blue-500
+            [&::-moz-range-thumb]:shadow-md
+            [&::-moz-range-thumb]:cursor-pointer
+            [&::-moz-range-thumb]:transition-all
+            [&::-moz-range-thumb]:duration-200
+            [&::-moz-range-thumb]:hover:scale-110
+            [&::-moz-range-thumb]:hover:shadow-lg
+            [&::-moz-range-thumb]:hover:border-blue-600
+            [&::-moz-range-thumb]:active:scale-105
+            [&::-moz-range-thumb]:active:shadow-xl
+            [&::-moz-range-thumb]:active:border-blue-700
+            
+            /* Hide default track */
+            [&::-webkit-slider-runnable-track]:appearance-none
+            [&::-webkit-slider-runnable-track]:h-2
+            [&::-webkit-slider-runnable-track]:bg-transparent
+            [&::-moz-range-track]:appearance-none
+            [&::-moz-range-track]:h-2
+            [&::-moz-range-track]:bg-transparent
+          "
+            id="margin-top"
+            max="1.5"
+            min="0.25"
+            step="0.05"
+            type="range"
+            value="0.5"
+          />
+          <span
+            class="sr-only"
+            id="margin-top-help"
+          >
+            Adjust 
+            top
+             margin. Range 
+            0.25
+             to 
+            1.5
+             
+            inches
+            . Current value: 
+            0.50"
+          </span>
+        </div>
+        <button
+          aria-label="Increase top margin by 0.05""
+          class="p-1.5 hover:bg-gray-100 active:bg-gray-200 rounded disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="w-4 h-4 text-gray-700"
+            data-slot="icon"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 4.5v15m7.5-7.5h-15"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <span
+          aria-hidden="true"
+          class="text-sm w-16 text-right flex-shrink-0 tabular-nums"
+        >
+          0.50"
+        </span>
+      </div>
+      <div
+        class="flex items-center justify-between gap-3 "
+      >
+        <label
+          class="text-sm capitalize w-16 flex-shrink-0"
+          for="margin-bottom"
+        >
+          bottom
+        </label>
+        <button
+          aria-label="Decrease bottom margin by 0.05""
+          class="p-1.5 hover:bg-gray-100 active:bg-gray-200 rounded disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="w-4 h-4 text-gray-700"
+            data-slot="icon"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12h14"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <div
+          class="flex-1 relative"
+        >
+          <div
+            class="absolute top-1/2 -translate-y-1/2 w-full h-2 rounded-full bg-gray-200 pointer-events-none"
+          >
+            <div
+              aria-hidden="true"
+              class="absolute top-0 left-0 h-full rounded-full bg-blue-500 transition-all duration-150 ease-out"
+              style="width: 20%;"
+            />
+          </div>
+          <input
+            aria-describedby="margin-bottom-help"
+            aria-label="bottom in inches"
+            aria-valuemax="1.5"
+            aria-valuemin="0.25"
+            aria-valuenow="0.5"
+            aria-valuetext="0.50""
+            class="
+            relative w-full h-2 appearance-none bg-transparent cursor-pointer z-10
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full
+            transition-all duration-200
+            
+            /* Webkit (Chrome/Safari) thumb styling - P1-VISUAL-016: Enhanced states */
+            [&::-webkit-slider-thumb]:appearance-none
+            [&::-webkit-slider-thumb]:w-5
+            [&::-webkit-slider-thumb]:h-5
+            [&::-webkit-slider-thumb]:rounded-full
+            [&::-webkit-slider-thumb]:bg-white
+            [&::-webkit-slider-thumb]:border-2
+            [&::-webkit-slider-thumb]:border-blue-500
+            [&::-webkit-slider-thumb]:shadow-md
+            [&::-webkit-slider-thumb]:cursor-pointer
+            [&::-webkit-slider-thumb]:transition-all
+            [&::-webkit-slider-thumb]:duration-200
+            [&::-webkit-slider-thumb]:hover:scale-110
+            [&::-webkit-slider-thumb]:hover:shadow-lg
+            [&::-webkit-slider-thumb]:hover:border-blue-600
+            [&::-webkit-slider-thumb]:active:scale-105
+            [&::-webkit-slider-thumb]:active:shadow-xl
+            [&::-webkit-slider-thumb]:active:border-blue-700
+            
+            /* Firefox thumb styling - P1-VISUAL-016: Enhanced states */
+            [&::-moz-range-thumb]:appearance-none
+            [&::-moz-range-thumb]:w-5
+            [&::-moz-range-thumb]:h-5
+            [&::-moz-range-thumb]:rounded-full
+            [&::-moz-range-thumb]:bg-white
+            [&::-moz-range-thumb]:border-2
+            [&::-moz-range-thumb]:border-blue-500
+            [&::-moz-range-thumb]:shadow-md
+            [&::-moz-range-thumb]:cursor-pointer
+            [&::-moz-range-thumb]:transition-all
+            [&::-moz-range-thumb]:duration-200
+            [&::-moz-range-thumb]:hover:scale-110
+            [&::-moz-range-thumb]:hover:shadow-lg
+            [&::-moz-range-thumb]:hover:border-blue-600
+            [&::-moz-range-thumb]:active:scale-105
+            [&::-moz-range-thumb]:active:shadow-xl
+            [&::-moz-range-thumb]:active:border-blue-700
+            
+            /* Hide default track */
+            [&::-webkit-slider-runnable-track]:appearance-none
+            [&::-webkit-slider-runnable-track]:h-2
+            [&::-webkit-slider-runnable-track]:bg-transparent
+            [&::-moz-range-track]:appearance-none
+            [&::-moz-range-track]:h-2
+            [&::-moz-range-track]:bg-transparent
+          "
+            id="margin-bottom"
+            max="1.5"
+            min="0.25"
+            step="0.05"
+            type="range"
+            value="0.5"
+          />
+          <span
+            class="sr-only"
+            id="margin-bottom-help"
+          >
+            Adjust 
+            bottom
+             margin. Range 
+            0.25
+             to 
+            1.5
+             
+            inches
+            . Current value: 
+            0.50"
+          </span>
+        </div>
+        <button
+          aria-label="Increase bottom margin by 0.05""
+          class="p-1.5 hover:bg-gray-100 active:bg-gray-200 rounded disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="w-4 h-4 text-gray-700"
+            data-slot="icon"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 4.5v15m7.5-7.5h-15"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <span
+          aria-hidden="true"
+          class="text-sm w-16 text-right flex-shrink-0 tabular-nums"
+        >
+          0.50"
+        </span>
+      </div>
+      <div
+        class="flex items-center justify-between gap-3 "
+      >
+        <label
+          class="text-sm capitalize w-16 flex-shrink-0"
+          for="margin-left"
+        >
+          left
+        </label>
+        <button
+          aria-label="Decrease left margin by 0.05""
+          class="p-1.5 hover:bg-gray-100 active:bg-gray-200 rounded disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="w-4 h-4 text-gray-700"
+            data-slot="icon"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12h14"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <div
+          class="flex-1 relative"
+        >
+          <div
+            class="absolute top-1/2 -translate-y-1/2 w-full h-2 rounded-full bg-gray-200 pointer-events-none"
+          >
+            <div
+              aria-hidden="true"
+              class="absolute top-0 left-0 h-full rounded-full bg-blue-500 transition-all duration-150 ease-out"
+              style="width: 20%;"
+            />
+          </div>
+          <input
+            aria-describedby="margin-left-help"
+            aria-label="left in inches"
+            aria-valuemax="1.5"
+            aria-valuemin="0.25"
+            aria-valuenow="0.5"
+            aria-valuetext="0.50""
+            class="
+            relative w-full h-2 appearance-none bg-transparent cursor-pointer z-10
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full
+            transition-all duration-200
+            
+            /* Webkit (Chrome/Safari) thumb styling - P1-VISUAL-016: Enhanced states */
+            [&::-webkit-slider-thumb]:appearance-none
+            [&::-webkit-slider-thumb]:w-5
+            [&::-webkit-slider-thumb]:h-5
+            [&::-webkit-slider-thumb]:rounded-full
+            [&::-webkit-slider-thumb]:bg-white
+            [&::-webkit-slider-thumb]:border-2
+            [&::-webkit-slider-thumb]:border-blue-500
+            [&::-webkit-slider-thumb]:shadow-md
+            [&::-webkit-slider-thumb]:cursor-pointer
+            [&::-webkit-slider-thumb]:transition-all
+            [&::-webkit-slider-thumb]:duration-200
+            [&::-webkit-slider-thumb]:hover:scale-110
+            [&::-webkit-slider-thumb]:hover:shadow-lg
+            [&::-webkit-slider-thumb]:hover:border-blue-600
+            [&::-webkit-slider-thumb]:active:scale-105
+            [&::-webkit-slider-thumb]:active:shadow-xl
+            [&::-webkit-slider-thumb]:active:border-blue-700
+            
+            /* Firefox thumb styling - P1-VISUAL-016: Enhanced states */
+            [&::-moz-range-thumb]:appearance-none
+            [&::-moz-range-thumb]:w-5
+            [&::-moz-range-thumb]:h-5
+            [&::-moz-range-thumb]:rounded-full
+            [&::-moz-range-thumb]:bg-white
+            [&::-moz-range-thumb]:border-2
+            [&::-moz-range-thumb]:border-blue-500
+            [&::-moz-range-thumb]:shadow-md
+            [&::-moz-range-thumb]:cursor-pointer
+            [&::-moz-range-thumb]:transition-all
+            [&::-moz-range-thumb]:duration-200
+            [&::-moz-range-thumb]:hover:scale-110
+            [&::-moz-range-thumb]:hover:shadow-lg
+            [&::-moz-range-thumb]:hover:border-blue-600
+            [&::-moz-range-thumb]:active:scale-105
+            [&::-moz-range-thumb]:active:shadow-xl
+            [&::-moz-range-thumb]:active:border-blue-700
+            
+            /* Hide default track */
+            [&::-webkit-slider-runnable-track]:appearance-none
+            [&::-webkit-slider-runnable-track]:h-2
+            [&::-webkit-slider-runnable-track]:bg-transparent
+            [&::-moz-range-track]:appearance-none
+            [&::-moz-range-track]:h-2
+            [&::-moz-range-track]:bg-transparent
+          "
+            id="margin-left"
+            max="1.5"
+            min="0.25"
+            step="0.05"
+            type="range"
+            value="0.5"
+          />
+          <span
+            class="sr-only"
+            id="margin-left-help"
+          >
+            Adjust 
+            left
+             margin. Range 
+            0.25
+             to 
+            1.5
+             
+            inches
+            . Current value: 
+            0.50"
+          </span>
+        </div>
+        <button
+          aria-label="Increase left margin by 0.05""
+          class="p-1.5 hover:bg-gray-100 active:bg-gray-200 rounded disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="w-4 h-4 text-gray-700"
+            data-slot="icon"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 4.5v15m7.5-7.5h-15"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <span
+          aria-hidden="true"
+          class="text-sm w-16 text-right flex-shrink-0 tabular-nums"
+        >
+          0.50"
+        </span>
+      </div>
+      <div
+        class="flex items-center justify-between gap-3 "
+      >
+        <label
+          class="text-sm capitalize w-16 flex-shrink-0"
+          for="margin-right"
+        >
+          right
+        </label>
+        <button
+          aria-label="Decrease right margin by 0.05""
+          class="p-1.5 hover:bg-gray-100 active:bg-gray-200 rounded disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="w-4 h-4 text-gray-700"
+            data-slot="icon"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12h14"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <div
+          class="flex-1 relative"
+        >
+          <div
+            class="absolute top-1/2 -translate-y-1/2 w-full h-2 rounded-full bg-gray-200 pointer-events-none"
+          >
+            <div
+              aria-hidden="true"
+              class="absolute top-0 left-0 h-full rounded-full bg-blue-500 transition-all duration-150 ease-out"
+              style="width: 20%;"
+            />
+          </div>
+          <input
+            aria-describedby="margin-right-help"
+            aria-label="right in inches"
+            aria-valuemax="1.5"
+            aria-valuemin="0.25"
+            aria-valuenow="0.5"
+            aria-valuetext="0.50""
+            class="
+            relative w-full h-2 appearance-none bg-transparent cursor-pointer z-10
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full
+            transition-all duration-200
+            
+            /* Webkit (Chrome/Safari) thumb styling - P1-VISUAL-016: Enhanced states */
+            [&::-webkit-slider-thumb]:appearance-none
+            [&::-webkit-slider-thumb]:w-5
+            [&::-webkit-slider-thumb]:h-5
+            [&::-webkit-slider-thumb]:rounded-full
+            [&::-webkit-slider-thumb]:bg-white
+            [&::-webkit-slider-thumb]:border-2
+            [&::-webkit-slider-thumb]:border-blue-500
+            [&::-webkit-slider-thumb]:shadow-md
+            [&::-webkit-slider-thumb]:cursor-pointer
+            [&::-webkit-slider-thumb]:transition-all
+            [&::-webkit-slider-thumb]:duration-200
+            [&::-webkit-slider-thumb]:hover:scale-110
+            [&::-webkit-slider-thumb]:hover:shadow-lg
+            [&::-webkit-slider-thumb]:hover:border-blue-600
+            [&::-webkit-slider-thumb]:active:scale-105
+            [&::-webkit-slider-thumb]:active:shadow-xl
+            [&::-webkit-slider-thumb]:active:border-blue-700
+            
+            /* Firefox thumb styling - P1-VISUAL-016: Enhanced states */
+            [&::-moz-range-thumb]:appearance-none
+            [&::-moz-range-thumb]:w-5
+            [&::-moz-range-thumb]:h-5
+            [&::-moz-range-thumb]:rounded-full
+            [&::-moz-range-thumb]:bg-white
+            [&::-moz-range-thumb]:border-2
+            [&::-moz-range-thumb]:border-blue-500
+            [&::-moz-range-thumb]:shadow-md
+            [&::-moz-range-thumb]:cursor-pointer
+            [&::-moz-range-thumb]:transition-all
+            [&::-moz-range-thumb]:duration-200
+            [&::-moz-range-thumb]:hover:scale-110
+            [&::-moz-range-thumb]:hover:shadow-lg
+            [&::-moz-range-thumb]:hover:border-blue-600
+            [&::-moz-range-thumb]:active:scale-105
+            [&::-moz-range-thumb]:active:shadow-xl
+            [&::-moz-range-thumb]:active:border-blue-700
+            
+            /* Hide default track */
+            [&::-webkit-slider-runnable-track]:appearance-none
+            [&::-webkit-slider-runnable-track]:h-2
+            [&::-webkit-slider-runnable-track]:bg-transparent
+            [&::-moz-range-track]:appearance-none
+            [&::-moz-range-track]:h-2
+            [&::-moz-range-track]:bg-transparent
+          "
+            id="margin-right"
+            max="1.5"
+            min="0.25"
+            step="0.05"
+            type="range"
+            value="0.5"
+          />
+          <span
+            class="sr-only"
+            id="margin-right-help"
+          >
+            Adjust 
+            right
+             margin. Range 
+            0.25
+             to 
+            1.5
+             
+            inches
+            . Current value: 
+            0.50"
+          </span>
+        </div>
+        <button
+          aria-label="Increase right margin by 0.05""
+          class="p-1.5 hover:bg-gray-100 active:bg-gray-200 rounded disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="w-4 h-4 text-gray-700"
+            data-slot="icon"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 4.5v15m7.5-7.5h-15"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <span
+          aria-hidden="true"
+          class="text-sm w-16 text-right flex-shrink-0 tabular-nums"
+        >
+          0.50"
+        </span>
+      </div>
+    </div>
+    <div
+      class="mt-4"
+    >
+      <div
+        aria-label="Page margin preview: 0.5" top, 0.5" right, 0.5" bottom, 0.5" left margins on Letter page"
+        class="margin-preview "
+        role="img"
+      >
+        <div
+          class="flex flex-col items-center"
+        >
+          <div
+            class="text-xs font-semibold text-gray-700 mb-3"
+          >
+            Margin Preview
+          </div>
+          <div
+            class="relative bg-white border-2 border-gray-400 shadow-md"
+            style="width: 200px; height: 258.8235294117647px;"
+          >
+            <div
+              aria-hidden="true"
+              class="absolute top-0 left-0 right-0 bg-blue-200 border-b-2 border-blue-400 opacity-70"
+              style="height: 4.545454545454546%;"
+            >
+              <div
+                class="text-[9px] font-semibold text-blue-800 text-center mt-1"
+              >
+                0.5
+                "
+              </div>
+            </div>
+            <div
+              aria-hidden="true"
+              class="absolute top-0 left-0 bottom-0 bg-green-200 border-r-2 border-green-400 opacity-70"
+              style="width: 5.88235294117647%;"
+            >
+              <div
+                class="text-[9px] font-semibold text-green-800 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-90 whitespace-nowrap"
+              >
+                0.5
+                "
+              </div>
+            </div>
+            <div
+              aria-hidden="true"
+              class="absolute top-0 right-0 bottom-0 bg-green-200 border-l-2 border-green-400 opacity-70"
+              style="width: 5.88235294117647%;"
+            >
+              <div
+                class="text-[9px] font-semibold text-green-800 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-90 whitespace-nowrap"
+              >
+                0.5
+                "
+              </div>
+            </div>
+            <div
+              aria-hidden="true"
+              class="absolute bottom-0 left-0 right-0 bg-blue-200 border-t-2 border-blue-400 opacity-70"
+              style="height: 4.545454545454546%;"
+            >
+              <div
+                class="text-[9px] font-semibold text-blue-800 text-center mt-1"
+              >
+                0.5
+                "
+              </div>
+            </div>
+            <div
+              aria-hidden="true"
+              class="absolute bg-white flex flex-col justify-start p-1 overflow-hidden"
+              style="top: 4.545454545454546%; left: 5.88235294117647%; width: 88.23529411764707%; height: 90.9090909090909%;"
+            >
+              <div
+                class="space-y-0.5"
+              >
+                <div
+                  class="h-1 bg-gray-800 rounded"
+                  style="width: 100%;"
+                />
+                <div
+                  class="h-1 bg-gray-600 rounded"
+                  style="width: 95%;"
+                />
+                <div
+                  class="h-1 bg-gray-600 rounded"
+                  style="width: 90%;"
+                />
+                <div
+                  class="h-1 bg-gray-600 rounded"
+                  style="width: 85%;"
+                />
+                <div
+                  class="h-0.5"
+                />
+                <div
+                  class="h-1 bg-gray-600 rounded"
+                  style="width: 100%;"
+                />
+                <div
+                  class="h-1 bg-gray-600 rounded"
+                  style="width: 92%;"
+                />
+                <div
+                  class="h-1 bg-gray-600 rounded"
+                  style="width: 88%;"
+                />
+              </div>
+              <div
+                class="absolute bottom-1 right-1 text-[8px] text-gray-500 bg-white/90 px-1 rounded"
+              >
+                7.50
+                " × 
+                10.00
+                "
+              </div>
+            </div>
+          </div>
+          <div
+            class="mt-4 flex gap-4 text-[10px] text-gray-700"
+          >
+            <div
+              class="flex items-center gap-1.5"
+            >
+              <div
+                aria-hidden="true"
+                class="w-3.5 h-3.5 bg-blue-200 border-2 border-blue-400 opacity-70 rounded-sm"
+              />
+              <span>
+                Top/Bottom
+              </span>
+            </div>
+            <div
+              class="flex items-center gap-1.5"
+            >
+              <div
+                aria-hidden="true"
+                class="w-3.5 h-3.5 bg-green-200 border-2 border-green-400 opacity-70 rounded-sm"
+              />
+              <span>
+                Left/Right
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button
+    aria-busy="false"
+    aria-label="Save settings"
+    class="w-full bg-green-500 hover:bg-green-600 hover:scale-[1.01] hover:shadow-md active:bg-green-700 active:scale-[0.99] text-white px-4 py-2 rounded-md font-medium mb-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none transition-all duration-200"
+    disabled=""
+  >
+    No Changes
+  </button>
+  <button
+    aria-label="Reset settings to default values"
+    class="w-full border border-gray-300 hover:bg-gray-100 hover:border-gray-400 hover:shadow-sm active:bg-gray-200 active:scale-[0.99] px-4 py-2 rounded-md text-sm focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:outline-none transition-all duration-200"
+  >
+    Reset to Defaults
+  </button>
+</div>
+`;
+
+exports[`Popup Component Snapshots > Success > should match snapshot with auto-close timer 1`] = `
+<div
+  class="w-full h-full bg-white p-6 flex flex-col items-center justify-center space-y-4 relative animate-fade-in"
+  data-testid="success-state"
+  tabindex="-1"
+>
+  <svg
+    aria-hidden="true"
+    class="w-16 h-16 text-green-500 animate-bounce-once"
+    data-slot="icon"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+  <h1
+    class="text-2xl font-bold tracking-tight text-gray-900 text-center"
+  >
+    PDF Exported Successfully!
+  </h1>
+  <div
+    class="text-center space-y-3 w-full max-w-sm"
+  >
+    <div
+      aria-live="polite"
+      class="p-3 bg-green-50 border-green-200 border rounded-md text-sm text-green-700 p-4 space-y-3 transition-shadow hover:shadow-md duration-200"
+      role="status"
+    >
+      <div
+        class="flex items-center justify-center gap-2"
+      >
+        <svg
+          aria-hidden="true"
+          class="h-5 w-5 text-green-600"
+          data-slot="icon"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <p
+          class="text-sm font-medium text-green-800"
+        >
+          Downloaded to your computer
+        </p>
+      </div>
+      <div
+        class="space-y-2"
+      >
+        <p
+          class="text-xs text-gray-600"
+        >
+          Location: Downloads folder
+        </p>
+        <p
+          class="font-mono text-sm text-gray-900 bg-white px-3 py-1.5 rounded border border-gray-200 w-full truncate"
+        >
+          resume.pdf
+        </p>
+        <p
+          class="text-xs text-gray-600"
+        >
+          324 KB
+        </p>
+      </div>
+      <p
+        class="text-xs text-gray-600 pt-2"
+      >
+        ✓ Check your browser's Downloads folder or download bar to find your file.
+      </p>
+    </div>
+    <p
+      class="text-xs text-gray-600"
+    >
+      💡 Tip: Check your Downloads folder or browser's download bar
+    </p>
+  </div>
+  <button
+    aria-busy="false"
+    aria-label="Convert another CV file to PDF"
+    class="px-4 py-3 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ease-in-out relative overflow-hidden bg-blue-500 hover:bg-blue-600 hover:scale-[1.02] hover:shadow-lg active:bg-blue-700 active:scale-[0.98] text-white focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none w-full "
+  >
+    <span
+      class="flex items-center justify-center gap-2"
+    >
+      <span>
+        Convert Another CV
+      </span>
+    </span>
+  </button>
+  <div
+    class="absolute bottom-4 flex items-center space-x-4"
+  >
+    <p
+      class="text-xs text-gray-500"
+    >
+      Closing in 
+      5
+      s
+    </p>
+    <button
+      aria-label="Close success message"
+      class="text-xs text-blue-500 hover:text-blue-600 hover:underline hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:rounded transition-all duration-200 ease-in-out"
+    >
+      Close
+    </button>
+  </div>
+</div>
+`;
+
+exports[`Popup Component Snapshots > Success > should match snapshot with basic props 1`] = `
+<div
+  class="w-full h-full bg-white p-6 flex flex-col items-center justify-center space-y-4 relative animate-fade-in"
+  data-testid="success-state"
+  tabindex="-1"
+>
+  <svg
+    aria-hidden="true"
+    class="w-16 h-16 text-green-500 animate-bounce-once"
+    data-slot="icon"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+  <h1
+    class="text-2xl font-bold tracking-tight text-gray-900 text-center"
+  >
+    PDF Exported Successfully!
+  </h1>
+  <div
+    class="text-center space-y-3 w-full max-w-sm"
+  >
+    <div
+      aria-live="polite"
+      class="p-3 bg-green-50 border-green-200 border rounded-md text-sm text-green-700 p-4 space-y-3 transition-shadow hover:shadow-md duration-200"
+      role="status"
+    >
+      <div
+        class="flex items-center justify-center gap-2"
+      >
+        <svg
+          aria-hidden="true"
+          class="h-5 w-5 text-green-600"
+          data-slot="icon"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <p
+          class="text-sm font-medium text-green-800"
+        >
+          Downloaded to your computer
+        </p>
+      </div>
+      <div
+        class="space-y-2"
+      >
+        <p
+          class="text-xs text-gray-600"
+        >
+          Location: Downloads folder
+        </p>
+        <p
+          class="font-mono text-sm text-gray-900 bg-white px-3 py-1.5 rounded border border-gray-200 w-full truncate"
+        >
+          john-doe-resume.pdf
+        </p>
+        <p
+          class="text-xs text-gray-600"
+        >
+          324 KB
+        </p>
+      </div>
+      <p
+        class="text-xs text-gray-600 pt-2"
+      >
+        ✓ Check your browser's Downloads folder or download bar to find your file.
+      </p>
+    </div>
+    <p
+      class="text-xs text-gray-600"
+    >
+      💡 Tip: Check your Downloads folder or browser's download bar
+    </p>
+  </div>
+  <button
+    aria-busy="false"
+    aria-label="Convert another CV file to PDF"
+    class="px-4 py-3 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ease-in-out relative overflow-hidden bg-blue-500 hover:bg-blue-600 hover:scale-[1.02] hover:shadow-lg active:bg-blue-700 active:scale-[0.98] text-white focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none w-full "
+  >
+    <span
+      class="flex items-center justify-center gap-2"
+    >
+      <span>
+        Convert Another CV
+      </span>
+    </span>
+  </button>
+</div>
+`;
+
+exports[`Popup Component Snapshots > Success > should match snapshot with custom file size 1`] = `
+<div
+  class="w-full h-full bg-white p-6 flex flex-col items-center justify-center space-y-4 relative animate-fade-in"
+  data-testid="success-state"
+  tabindex="-1"
+>
+  <svg
+    aria-hidden="true"
+    class="w-16 h-16 text-green-500 animate-bounce-once"
+    data-slot="icon"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+  <h1
+    class="text-2xl font-bold tracking-tight text-gray-900 text-center"
+  >
+    PDF Exported Successfully!
+  </h1>
+  <div
+    class="text-center space-y-3 w-full max-w-sm"
+  >
+    <div
+      aria-live="polite"
+      class="p-3 bg-green-50 border-green-200 border rounded-md text-sm text-green-700 p-4 space-y-3 transition-shadow hover:shadow-md duration-200"
+      role="status"
+    >
+      <div
+        class="flex items-center justify-center gap-2"
+      >
+        <svg
+          aria-hidden="true"
+          class="h-5 w-5 text-green-600"
+          data-slot="icon"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <p
+          class="text-sm font-medium text-green-800"
+        >
+          Downloaded to your computer
+        </p>
+      </div>
+      <div
+        class="space-y-2"
+      >
+        <p
+          class="text-xs text-gray-600"
+        >
+          Location: Downloads folder
+        </p>
+        <p
+          class="font-mono text-sm text-gray-900 bg-white px-3 py-1.5 rounded border border-gray-200 w-full truncate"
+        >
+          senior-engineer-cv.pdf
+        </p>
+        <p
+          class="text-xs text-gray-600"
+        >
+          1.2 MB
+        </p>
+      </div>
+      <p
+        class="text-xs text-gray-600 pt-2"
+      >
+        ✓ Check your browser's Downloads folder or download bar to find your file.
+      </p>
+    </div>
+    <p
+      class="text-xs text-gray-600"
+    >
+      💡 Tip: Check your Downloads folder or browser's download bar
+    </p>
+  </div>
+  <button
+    aria-busy="false"
+    aria-label="Convert another CV file to PDF"
+    class="px-4 py-3 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ease-in-out relative overflow-hidden bg-blue-500 hover:bg-blue-600 hover:scale-[1.02] hover:shadow-lg active:bg-blue-700 active:scale-[0.98] text-white focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none w-full "
+  >
+    <span
+      class="flex items-center justify-center gap-2"
+    >
+      <span>
+        Convert Another CV
+      </span>
+    </span>
+  </button>
+</div>
+`;

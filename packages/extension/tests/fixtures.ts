@@ -1,0 +1,287 @@
+import type {BrowserContext} from '@playwright/test';
+import type Browser from 'webextension-polyfill';
+import type { BrowserType } from './fixtures/types';
+import fs from 'node:fs';
+import { rm } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { test as base,  chromium } from '@playwright/test';
+import { browserConfigs } from './fixtures/browser-config';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/**
+ * Extended Playwright test with custom fixtures for extension testing.
+ * Supports both Chrome and Firefox browsers.
+ *
+ * Provides:
+ * - browserType: Detected browser type ('chrome' or 'firefox')
+ * - context: Persistent browser context with extension loaded
+ * - extensionId: The ID of the loaded extension (for accessing extension pages)
+ * - backgroundPage: Service worker reference (limited in Manifest V3)
+ *
+ * Browser-specific behavior:
+ * - Chrome: Uses chrome-extension:// protocol, discovers hash-based ID
+ * - Firefox: Uses moz-extension:// protocol, reads static ID from manifest.json
+ *
+ * Usage:
+ * ```typescript
+ * import { test, expect } from './fixtures';
+ *
+ * test('extension popup', async ({ page, extensionId, browserType }) => {
+ *   const config = browserConfigs[browserType];
+ *   await page.goto(`${config.protocol}://${extensionId}/src/popup/index.html`);
+ *   await expect(page.locator('h1')).toContainText('ResumeWright');
+ * });
+ * ```
+ *
+ * Note: Tests automatically use the correct browser based on Playwright project name
+ * (e.g., "chrome" or "firefox" project).
+ */
+
+// Service worker mock interface for testing
+interface ServiceWorkerMock {
+  url: () => string;
+  evaluate: () => Promise<never>;
+}
+
+// Extend base test with custom fixtures
+export const test = base.extend<{
+  context: BrowserContext;
+  extensionId: string;
+  backgroundPage: ServiceWorkerMock;
+  browserType: BrowserType;
+}>({
+  // Detect browser type from project name
+  browserType: async ({}, use, testInfo) => {
+    const projectName = testInfo.project.name;
+    const browser: BrowserType = projectName.includes('firefox') ? 'firefox' : 'chrome';
+    await use(browser);
+  },
+
+  // Custom context fixture that loads the extension
+  context: async ({ browserType }, use, testInfo) => {
+    // Skip Firefox tests - Playwright doesn't support loading Firefox extensions
+    // Firefox extensions must be tested manually using web-ext
+    // See tests/README.md section "Firefox Testing Limitation" for manual testing instructions
+    if (browserType === 'firefox') {
+      testInfo.skip(
+        true,
+        'Firefox extension testing not supported by Playwright. Use manual testing: cd .output/firefox-mv3 && web-ext run'
+      );
+      return; // Skip fixture setup
+    }
+
+    // Get browser-specific configuration (Chrome only at this point)
+    const config = browserConfigs[browserType];
+    const pathToExtension = path.join(__dirname, '..', config.distFolder);
+
+    // Use a unique persistent user data directory with timestamp to avoid conflicts
+    // This prevents race conditions when tests run in parallel
+    const timestamp = Date.now();
+    const userDataDir = path.join(
+      __dirname,
+      `../.test-profile-${browserType}-${testInfo.workerIndex}-${timestamp}`
+    );
+
+    // Chrome: Use persistent context with extension loading arguments
+    const launcher = chromium;
+    const context: BrowserContext = await launcher.launchPersistentContext(userDataDir, {
+      headless: false,
+      args: [
+        `--disable-extensions-except=${pathToExtension}`,
+        `--load-extension=${pathToExtension}`,
+        // Disable various Chrome features for cleaner testing
+        '--disable-blink-features=AutomationControlled',
+        '--disable-web-security', // For local file access if needed
+      ],
+      viewport: { width: 1280, height: 720 },
+    });
+
+    await use(context);
+    await context.close();
+
+    // Clean up user data directory to prevent service worker caching issues
+    // This ensures each test run gets a fresh extension state
+    try {
+      await rm(userDataDir, { recursive: true, force: true });
+      console.warn(`[Fixture] Cleaned up user data directory: ${userDataDir}`);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.warn(`[Fixture] Failed to clean up user data directory: ${errorMsg}`);
+    }
+  },
+
+  // Custom fixture to get extension ID
+  extensionId: async ({ context, browserType }, use) => {
+    console.warn(`[Fixture] Looking for ${browserType} extension ID...`);
+
+    // Get browser-specific configuration
+    const config = browserConfigs[browserType];
+
+    // Verify the extension is built
+    const manifestPath = path.join(__dirname, '..', config.distFolder, 'manifest.json');
+    if (!fs.existsSync(manifestPath)) {
+      throw new Error(
+        `Extension manifest not found at ${manifestPath}. ` +
+          `Please build the extension first (run: pnpm build)`
+      );
+    }
+
+    // Discover extension ID using browser-specific logic
+    const extensionId = await config.discoverExtensionId(context, manifestPath);
+
+    // Verify extension is ready by trying to load the popup (Chrome only)
+    if (browserType === 'chrome') {
+      await verifyExtensionReady(context, config.protocol, extensionId);
+    }
+
+    await use(extensionId);
+  },
+
+  // Custom fixture to access background service worker
+  backgroundPage: async (
+    {
+      context,
+      extensionId,
+      browserType,
+    }: {
+      context: BrowserContext;
+      extensionId: string;
+      browserType: BrowserType;
+    },
+    use: (value: ServiceWorkerMock) => Promise<void>
+  ) => {
+    // WORKAROUND: Service workers in Manifest V3 may not be accessible via
+    // Playwright's context.serviceWorkers() in persistent contexts.
+    // We provide a mock/placeholder that tests can use to verify extension loaded.
+
+    // Get browser-specific configuration for correct protocol
+    const config = browserConfigs[browserType];
+
+    // Try to get actual service worker
+    const serviceWorkers = context.serviceWorkers();
+    const actualServiceWorker = serviceWorkers.length > 0 ? serviceWorkers[0] : null;
+
+    let serviceWorker: ServiceWorkerMock;
+
+    if (!actualServiceWorker) {
+      console.warn(
+        '[Fixture] Service worker not accessible via Playwright API. ' +
+          'This is a known limitation with Manifest V3 extensions. ' +
+          'Tests should verify extension functionality via popup/content script instead.'
+      );
+
+      // Provide a placeholder object with the expected interface
+      serviceWorker = {
+        url: () => `${config.protocol}://${extensionId}/background.js`,
+        evaluate: async () => {
+          throw new Error(
+            'Cannot evaluate in service worker context. ' +
+              'Use popup page or content script for testing.'
+          );
+        },
+      };
+    } else {
+      // Wrap actual service worker with our interface
+      serviceWorker = {
+        url: () => actualServiceWorker.url(),
+        evaluate: async () => {
+          throw new Error(
+            'Cannot evaluate in service worker context. ' +
+              'Use popup page or content script for testing.'
+          );
+        },
+      };
+    }
+
+    // Note: Extension will use default settings since storage initialization
+    // in service worker context is unreliable. The extension gracefully falls
+    // back to defaults when settings are unavailable.
+
+    await use(serviceWorker);
+  },
+});
+
+/**
+ * Verifies extension is ready by attempting to load the popup page.
+ * Throws error if popup cannot be accessed.
+ */
+async function verifyExtensionReady(
+  context: BrowserContext,
+  protocol: string,
+  extensionId: string
+): Promise<void> {
+  const testPage = await context.newPage();
+
+  try {
+    const popupUrl = `${protocol}://${extensionId}/popup.html`;
+    console.warn('[Fixture] Verifying extension is ready:', popupUrl);
+
+    // Try to navigate to popup - this will fail if extension isn't loaded
+    await testPage.goto(popupUrl, { timeout: 10000 });
+
+    // Wait for basic DOM to load
+    await testPage.waitForSelector('body', { timeout: 5000 });
+
+    console.warn('[Fixture] Waiting for background worker to be ready...');
+
+    // Wait for background worker to respond to messages
+    // Shorter retry with faster intervals since we're in a fixture
+    const maxRetries = 5;
+    const retryDelay = 200; // ms
+    let backgroundReady = false;
+
+    for (let i = 0; i < maxRetries; i += 1) {
+      try {
+        const response: unknown = await testPage.evaluate(async () => {
+          // Use a type that the extension should recognize
+          const message: { type: string; payload: Record<string, never> } = { type: 'GET_WASM_STATUS', payload: {} };
+          // Access webextension-polyfill browser API
+          interface WindowWithBrowser extends Window {
+            browser: typeof Browser;
+          }
+          return (window as unknown as WindowWithBrowser).browser.runtime.sendMessage(message);
+        });
+
+        // If we got a response, the background worker is ready
+        if (response !== undefined) {
+          console.warn('[Fixture] Background worker is responding to messages');
+          backgroundReady = true;
+          break;
+        }
+      } catch (err) {
+        const error = err as Error;
+        // Only retry on "Receiving end does not exist" errors
+        if (i < maxRetries - 1 && error.message.includes('Receiving end does not exist')) {
+          console.warn(`[Fixture] Attempt ${i + 1}/${maxRetries}: Background worker not ready yet`);
+          await testPage.waitForTimeout(retryDelay);
+        } else {
+          // Other errors or last retry - log and continue
+          break;
+        }
+      }
+    }
+
+    if (!backgroundReady) {
+      console.warn(
+        '[Fixture] Background worker not responding yet, but continuing (tests will retry)'
+      );
+    }
+
+    console.warn('[Fixture] Extension is ready');
+  } catch (e) {
+    const errorMsg = e instanceof Error ? e.message : String(e);
+    throw new Error(
+      `Extension loaded but popup page failed to load: ${errorMsg}. ` +
+        'This might indicate a problem with the extension build.'
+    );
+  } finally {
+    await testPage.close();
+  }
+}
+
+export type { BrowserType } from './fixtures/types';
+export { browserConfigs };
+export { expect } from '@playwright/test';

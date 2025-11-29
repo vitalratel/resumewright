@@ -1,0 +1,100 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+pkg/
+target/
+*.tsbuildinfo
+packages/extension/.output/
+
+# Binary dependencies
+lib/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+
+# Playwright test profiles
+.test-profile*
+.test-extension-id-cache
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Temporary files
+*.tmp
+.cache/
+
+# Extension packages
+*.zip
+*.crx
+*.pem
+
+# Temporary test files
+manual-test*.html
+test-download.html
+zi*
+*.skill
+
+# Manual test data (generated files)
+packages/extension/tests/manual/test-data/large-file-*.tsx
+
+# Build cache
+.build-cache.json
+.delta-cache-*.json
+
+# Test results and reports
+test-results/
+playwright-report/
+cobertura.xml
+
+# Visual regression baselines (platform-specific, generated in CI)
+**/tests/visual/baselines/
+**/tests/visual/**/*-snapshots/
+
+# Generated ATS/test reports (excludes templates)
+**/tests/**/reports/*-results.md
+
+# Development WASM builds
+pkg-no-opt/
+pkg-profiling/
+
+# Spike/experimental files
+spike-*/
+
+# Serena cache
+.serena/
+
+# Internal documentation (all excluded, public docs moved to docs-public/)
+docs/
+
+# Personal scripts directory (gitignored, use scripts/ for shared scripts)
+.scripts/
+
+# Internal project management
+CLAUDE.md
+.mcp.json
+
+# Telemetry (optional feature, users can set up themselves)
+.telemetry/
+.claude/
+packages/extension/none/

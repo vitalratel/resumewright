@@ -1,0 +1,36 @@
+[package]
+name = "font-toolkit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+description = "Font processing toolkit for ResumeWright: mapping, embedding, subsetting, and format conversion"
+
+[features]
+default = []  # Font subsetting disabled - YAGNI (adds ~1MB to WASM bundle, rarely used)
+advanced-fonts = ["dep:subsetter"]  # Optional: Enable font subsetting (adds ~1MB to WASM)
+
+[dependencies]
+# Font processing
+ttf-parser = "0.25.1"  # TrueType font parsing
+subsetter = { version = "0.2", optional = true }  # Font subsetting (by Typst) - only with 'advanced-fonts' feature
+wuff = { version = "0.2", default-features = true }  # WOFF2 decompression (pure Rust, no paste dependency)
+flate2 = "1.1"       # WOFF decompression
+
+# PDF dependencies
+lopdf = { workspace = true }  # Uses workspace config (rayon disabled)
+
+# Workspace dependencies
+serde = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+criterion = "0.7"
+
+[[bench]]
+name = "font_toolkit_bench"
+harness = false
+required-features = ["advanced-fonts"]

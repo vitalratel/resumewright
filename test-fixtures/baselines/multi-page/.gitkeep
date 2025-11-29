@@ -1,0 +1,16 @@
+# Baseline images for multi-page PDF visual regression tests
+# 
+# Baselines will be generated when tests are first run with --update-snapshots
+# 
+# Expected files:
+# - 01-two-page-traditional-page1.png
+# - 01-two-page-traditional-page2.png
+# - 02-three-page-academic-page1.png
+# - 02-three-page-academic-page2.png
+# - 02-three-page-academic-page3.png
+# - 03-six-page-executive-page1.png
+# - 03-six-page-executive-page2.png
+# - 03-six-page-executive-page3.png
+# - 03-six-page-executive-page4.png
+# - 03-six-page-executive-page5.png
+# - 03-six-page-executive-page6.png

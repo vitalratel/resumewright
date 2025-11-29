@@ -1,0 +1,22 @@
+[package]
+name = "cv-domain"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+tsx-parser = { path = "../tsx-parser" }
+regex-utils = { workspace = true }
+email_address = "0.2"
+
+[dev-dependencies]
+proptest = "1.9"
+criterion = "0.7"
+
+[[bench]]
+name = "cv_domain_bench"
+harness = false
