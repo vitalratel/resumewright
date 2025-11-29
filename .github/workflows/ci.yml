@@ -223,7 +223,7 @@ jobs:
 
       # Accessibility tests (required)
       - name: Run accessibility tests
-        run: pnpm test:accessibility
+        run: pnpm --filter extension test:a11y
         env:
           CI: true
 
