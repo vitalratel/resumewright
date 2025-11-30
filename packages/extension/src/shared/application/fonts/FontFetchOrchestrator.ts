@@ -1,14 +1,13 @@
 /**
  * Font Fetch Orchestrator
  *
- * Application service that orchestrates font fetching from multiple sources.
+ * Application service that orchestrates font fetching from Google Fonts.
  * Follows Clean Architecture: depends only on domain interfaces, not infrastructure.
  *
  * @module Application/Fonts
  */
 
 import type { FontData, FontRequirement } from '../../domain/fonts/models/Font';
-import type { ICustomFontStore } from '../../domain/fonts/repositories/ICustomFontStore';
 import type { IFontRepository } from '../../domain/fonts/repositories/IFontRepository';
 import type { ILogger } from '../../domain/logging/ILogger';
 
@@ -24,10 +23,8 @@ export type FontFetchProgressCallback = (
 /**
  * Font Fetch Orchestrator
  *
- * Coordinates font fetching from multiple sources:
- * - Google Fonts (via repository)
- * - Custom fonts (via store)
- * - Web-safe fonts (built-in, no fetch needed)
+ * Coordinates font fetching from Google Fonts.
+ * Web-safe fonts are built into the PDF generator and don't need fetching.
  *
  * Uses dependency injection for testability and flexibility.
  * All dependencies are injected via constructor (Dependency Inversion Principle).
@@ -35,7 +32,6 @@ export type FontFetchProgressCallback = (
 export class FontFetchOrchestrator {
   constructor(
     private readonly fontRepository: IFontRepository,
-    private readonly customFontStore: ICustomFontStore,
     private readonly logger: ILogger
   ) {}
 
@@ -45,8 +41,7 @@ export class FontFetchOrchestrator {
    * This function:
    * 1. Filters out web-safe fonts (no fetching needed)
    * 2. Fetches Google Fonts via repository
-   * 3. Loads custom fonts from IndexedDB
-   * 4. Returns FontData array ready for convert_tsx_to_pdf()
+   * 3. Returns FontData array ready for convert_tsx_to_pdf()
    *
    * @param requirements - Font requirements from WASM detect_fonts()
    * @param progressCallback - Optional callback for progress updates
@@ -61,8 +56,9 @@ export class FontFetchOrchestrator {
 
     // Separate requirements by source
     const googleFonts = requirements.filter((req) => req.source === 'google');
-    const customFonts = requirements.filter((req) => req.source === 'custom');
     const webSafeFonts = requirements.filter((req) => req.source === 'websafe');
+    // Custom fonts (source === 'custom') are logged but not fetched - no upload UI exists
+    const customFonts = requirements.filter((req) => req.source === 'custom');
 
     this.logger.debug('FontFetchOrchestrator', 'Font requirements:', {
       google: googleFonts.length,
@@ -74,21 +70,22 @@ export class FontFetchOrchestrator {
     // Web-safe fonts don't need fetching - PDF generator has them built-in
     this.logger.debug('FontFetchOrchestrator', `Skipping ${webSafeFonts.length} web-safe fonts (built-in)`);
 
-    let current = 0;
-    const totalToFetch = googleFonts.length + customFonts.length;
+    // Log warning for custom fonts (no upload UI exists)
+    if (customFonts.length > 0) {
+      this.logger.warn(
+        'FontFetchOrchestrator',
+        `${customFonts.length} custom font(s) requested but custom font upload is not available. Fonts will fallback to web-safe.`
+      );
+    }
+
+    const totalToFetch = googleFonts.length;
 
     // Fetch Google Fonts using recursive pattern to avoid await-in-loop
-    await this.fetchGoogleFonts(googleFonts, fontData, progressCallback, current, totalToFetch);
-    current += googleFonts.length;
-
-    // Load custom fonts from IndexedDB
-    if (customFonts.length > 0) {
-      await this.fetchCustomFonts(customFonts, fontData, progressCallback, current, totalToFetch);
-    }
+    await this.fetchGoogleFonts(googleFonts, fontData, progressCallback, 0, totalToFetch);
 
     this.logger.debug(
       'FontFetchOrchestrator',
-      `Fetched ${fontData.length} fonts (${googleFonts.length} Google + ${customFonts.length} custom)`
+      `Fetched ${fontData.length} fonts (${googleFonts.length} Google)`
     );
 
     return fontData;
@@ -134,7 +131,6 @@ export class FontFetchOrchestrator {
       this.logger.error('FontFetchOrchestrator', `✗ Failed to fetch Google Font ${req.family}:`, error);
 
       // For MVP: Log warning but continue with fallback
-      // Future: Could throw error or show user warning
       this.logger.warn(
         'FontFetchOrchestrator',
         `Continuing without ${req.family} (will fallback to web-safe font)`
@@ -142,59 +138,6 @@ export class FontFetchOrchestrator {
     }
 
     return this.fetchGoogleFonts(requirements, fontData, progressCallback, currentOffset, total, index + 1);
-  }
-
-  /**
-   * Fetch custom fonts from IndexedDB
-   */
-  private async fetchCustomFonts(
-    requirements: FontRequirement[],
-    fontData: FontData[],
-    progressCallback: FontFetchProgressCallback | undefined,
-    currentOffset: number,
-    total: number
-  ): Promise<void> {
-    const allCustomFonts = await this.customFontStore.getAllCustomFonts();
-
-    for (let i = 0; i < requirements.length; i++) {
-      const req = requirements[i];
-      const current = currentOffset + i + 1;
-      progressCallback?.(current, total, req.family);
-
-      try {
-        this.logger.debug(
-          'FontFetchOrchestrator',
-          `Loading custom font: ${req.family} ${req.weight} ${req.style}`
-        );
-
-        // Find matching custom font
-        const customFont = allCustomFonts.find(
-          (f) => f.family === req.family && f.weight === req.weight && f.style === req.style
-        );
-
-        if (customFont) {
-          fontData.push({
-            family: customFont.family,
-            weight: customFont.weight,
-            style: customFont.style,
-            bytes: customFont.bytes,
-            format: 'ttf', // Custom fonts are stored as TrueType
-          });
-
-          this.logger.debug(
-            'FontFetchOrchestrator',
-            `✓ Loaded custom font ${customFont.family} (${customFont.bytes.length} bytes)`
-          );
-        } else {
-          this.logger.warn(
-            'FontFetchOrchestrator',
-            `Custom font not found: ${req.family} ${req.weight} ${req.style}`
-          );
-        }
-      } catch (error) {
-        this.logger.error('FontFetchOrchestrator', `✗ Failed to load custom font ${req.family}:`, error);
-      }
-    }
   }
 
   /**

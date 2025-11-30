@@ -10,7 +10,6 @@ import type { ProgressTracker } from '../services/ProgressTracker';
 import type { HandlerRegistry, MessageHandler, MessageMap } from './types';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { ConversionHandler } from './conversionHandler';
-import { CustomFontsHandler } from './customFontsHandler';
 import { SettingsHandler } from './settingsHandler';
 import { WasmHandler } from './wasmHandler';
 
@@ -32,7 +31,6 @@ export function createHandlerRegistry(
   );
   const settingsHandler = new SettingsHandler();
   const wasmHandler = new WasmHandler();
-  const customFontsHandler = new CustomFontsHandler();
 
   // Helper to register a handler's message types
   // Accept any MessageHandler subtype, not just the union type
@@ -54,7 +52,6 @@ export function createHandlerRegistry(
   registerHandler(conversionHandler);
   registerHandler(settingsHandler);
   registerHandler(wasmHandler);
-  registerHandler(customFontsHandler);
 
   getLogger().info('HandlerRegistry', `Registered ${registry.size} message type handlers`);
   return registry;
@@ -82,6 +79,5 @@ export function getHandler<T extends keyof MessageMap>(
 
 // Re-export handlers for testing
 export { ConversionHandler } from './conversionHandler';
-export { CustomFontsHandler } from './customFontsHandler';
 export { SettingsHandler } from './settingsHandler';
 export { WasmHandler } from './wasmHandler';

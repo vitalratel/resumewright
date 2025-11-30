@@ -39,17 +39,3 @@ export const WEB_SAFE_FONTS = [
 ] as const;
 
 export type WebSafeFont = (typeof WEB_SAFE_FONTS)[number];
-
-/**
- * Custom font storage limits
- */
-export const CUSTOM_FONT_LIMITS = {
-  /** Maximum file size per font (2MB) */
-  MAX_FILE_SIZE: 2 * 1024 * 1024,
-
-  /** Maximum number of custom fonts */
-  MAX_FONT_COUNT: 10,
-
-  /** Maximum total storage for custom fonts (20MB) */
-  MAX_TOTAL_SIZE: 20 * 1024 * 1024,
-} as const;

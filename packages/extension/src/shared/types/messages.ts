@@ -43,12 +43,6 @@ export enum MessageType {
   RETRY_WASM_INIT = 'RETRY_WASM_INIT', // Popup → Service Worker: Retry WASM initialization
   WASM_INIT_SUCCESS = 'WASM_INIT_SUCCESS', // Service Worker → Popup: WASM init succeeded
   WASM_INIT_ERROR = 'WASM_INIT_ERROR', // Service Worker → Popup: WASM init failed
-
-  // Custom Fonts
-  LIST_CUSTOM_FONTS = 'LIST_CUSTOM_FONTS', // Popup → Service Worker: List all custom fonts
-  GET_CUSTOM_FONT_STATS = 'GET_CUSTOM_FONT_STATS', // Popup → Service Worker: Get storage stats
-  UPLOAD_CUSTOM_FONT = 'UPLOAD_CUSTOM_FONT', // Popup → Service Worker: Upload custom font
-  REMOVE_CUSTOM_FONT = 'REMOVE_CUSTOM_FONT', // Popup → Service Worker: Remove custom font
 }
 
 /**
@@ -215,80 +209,6 @@ export interface RetryWasmInitMessage { type: MessageType.RETRY_WASM_INIT; paylo
 export interface ValidateTsxMessage { type: MessageType.VALIDATE_TSX; payload: { tsx: string } }
 
 /**
- * Custom Fonts Message Payloads
- */
-
-/** Request to list all custom fonts */
-export interface ListCustomFontsPayload {
-  // Empty payload - just requests list
-}
-
-/** Response with list of custom fonts */
-export interface ListCustomFontsResponse {
-  fonts: Array<{
-    id: string;
-    family: string;
-    weight: number;
-    style: 'normal' | 'italic';
-    format: 'ttf' | 'woff' | 'woff2';
-    size: number;
-    uploadedAt: number;
-  }>;
-}
-
-/** Request to get custom font storage stats */
-export interface GetCustomFontStatsPayload {
-  // Empty payload - just requests stats
-}
-
-/** Response with storage statistics */
-export interface GetCustomFontStatsResponse {
-  count: number;
-  totalSize: number;
-  totalSizeMB: string;
-  fonts: Array<{ id: string; family: string; size: number; sizeMB: string }>;
-}
-
-/** Request to upload a custom font */
-export interface UploadCustomFontPayload {
-  fileName: string;
-  fileBytes: number[]; // Serializable array of bytes
-  metadata: {
-    family: string;
-    weight: number;
-    style: 'normal' | 'italic';
-  };
-}
-
-/** Response with uploaded font info */
-export interface UploadCustomFontResponse {
-  font: {
-    id: string;
-    family: string;
-    weight: number;
-    style: 'normal' | 'italic';
-    format: 'ttf' | 'woff' | 'woff2';
-    size: number;
-    uploadedAt: number;
-  };
-}
-
-/** Request to remove a custom font */
-export interface RemoveCustomFontPayload {
-  fontId: string;
-}
-
-/** Response confirming font removal */
-export interface RemoveCustomFontResponse {
-  success: boolean;
-}
-
-export interface ListCustomFontsMessage { type: MessageType.LIST_CUSTOM_FONTS; payload: ListCustomFontsPayload }
-export interface GetCustomFontStatsMessage { type: MessageType.GET_CUSTOM_FONT_STATS; payload: GetCustomFontStatsPayload }
-export interface UploadCustomFontMessage { type: MessageType.UPLOAD_CUSTOM_FONT; payload: UploadCustomFontPayload }
-export interface RemoveCustomFontMessage { type: MessageType.REMOVE_CUSTOM_FONT; payload: RemoveCustomFontPayload }
-
-/**
  * All possible messages - discriminated union for type-safe message handling
  */
 export type AnyMessage =
@@ -306,8 +226,4 @@ export type AnyMessage =
   | GetWasmStatusMessage
   | WasmStatusMessage
   | RetryWasmInitMessage
-  | ValidateTsxMessage
-  | ListCustomFontsMessage
-  | GetCustomFontStatsMessage
-  | UploadCustomFontMessage
-  | RemoveCustomFontMessage;
+  | ValidateTsxMessage;

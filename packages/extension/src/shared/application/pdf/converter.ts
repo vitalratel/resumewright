@@ -6,7 +6,6 @@
  */
 
 import type { FontData, FontRequirement } from '../../domain/fonts/models/Font';
-import type { ICustomFontStore } from '../../domain/fonts/repositories/ICustomFontStore';
 import type { IFontRepository } from '../../domain/fonts/repositories/IFontRepository';
 import type { ILogger } from '../../domain/logging/ILogger';
 import type { ConversionConfig } from '../../types/models';
@@ -15,7 +14,6 @@ import { FontFetchOrchestrator } from '../../application/fonts/FontFetchOrchestr
 import { convertConfigToRust } from '../../domain/pdf/config';
 import { parseWasmError } from '../../domain/pdf/errors';
 import { validatePdfBytes, validateProgressParams } from '../../domain/pdf/wasmSchemas';
-import { CustomFontStoreAdapter } from '../../infrastructure/fonts/CustomFontStoreAdapter';
 import { GoogleFontsRepository } from '../../infrastructure/fonts/GoogleFontsRepository';
 import { getLogger } from '../../infrastructure/logging';
 import { detectFonts } from '../../infrastructure/pdf/fonts';
@@ -32,8 +30,6 @@ export interface ConversionDependencies {
   logger?: ILogger;
   /** Font repository for Google Fonts (defaults to GoogleFontsRepository) */
   fontRepository?: IFontRepository;
-  /** Custom font store for user-uploaded fonts (defaults to CustomFontStoreAdapter) */
-  customFontStore?: ICustomFontStore;
 }
 
 /**
@@ -64,7 +60,6 @@ export interface ConversionDependencies {
  * const pdf = await convertTsxToPdfWithFonts(tsx, config, onProgress, onFontFetch, {
  *   logger: mockLogger,
  *   fontRepository: mockFontRepo,
- *   customFontStore: mockFontStore
  * });
  */
 export async function convertTsxToPdfWithFonts(
@@ -77,10 +72,9 @@ export async function convertTsxToPdfWithFonts(
   // Resolve dependencies with defaults (composition root)
   const logger = dependencies?.logger ?? getLogger();
   const fontRepository = dependencies?.fontRepository ?? new GoogleFontsRepository();
-  const customFontStore = dependencies?.customFontStore ?? new CustomFontStoreAdapter();
 
   // Create orchestrator with injected dependencies
-  const orchestrator = new FontFetchOrchestrator(fontRepository, customFontStore, logger);
+  const orchestrator = new FontFetchOrchestrator(fontRepository, logger);
 
   // Delegate to service
   const service = new PdfConverterService(orchestrator, logger);

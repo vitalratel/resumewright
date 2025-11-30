@@ -5,5 +5,4 @@
  * Infrastructure provides concrete implementations.
  */
 
-export type { ICustomFontStore, StorageStats } from './ICustomFontStore';
 export type { FetchedFont, FontCacheStats, IFontRepository } from './IFontRepository';

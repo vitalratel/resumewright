@@ -34,7 +34,6 @@ import { MessageType } from '../../shared/types/messages';
  *
  * Settings Schema:
  * - defaultConfig: ConversionConfig (page size, margins, fonts, etc.)
- * - customFonts: CustomFont[] (user-uploaded font files)
  * - theme: 'light' | 'dark' | 'system'
  * - onboardingCompleted: boolean
  *

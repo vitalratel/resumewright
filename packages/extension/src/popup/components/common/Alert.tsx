@@ -2,9 +2,8 @@
  * Alert Component
  * Standardized alert/message display with semantic variants
  *
- * Replaces duplicated alert patterns across 7+ files:
+ * Replaces duplicated alert patterns across multiple files:
  * - FileImport.tsx (error alerts)
- * - CustomFonts.tsx (error/success alerts)
  * - Settings.tsx (error alerts)
  * - Error.tsx, Success.tsx (state components)
  *

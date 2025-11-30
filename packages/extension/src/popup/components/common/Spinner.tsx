@@ -2,10 +2,9 @@
  * Spinner Component
  * Standardized loading spinner with size variants
  *
- * Replaces duplicated spinner patterns across 6+ files:
+ * Replaces duplicated spinner patterns across multiple files:
  * - FileImport.tsx (small spinner in button)
  * - ConvertingState.tsx (large blue spinner)
- * - CustomFonts.tsx (spinner in upload states)
  * - Various other components with loading states
  *
  * Features:

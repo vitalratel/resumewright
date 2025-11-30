@@ -6,16 +6,12 @@
 import type browser from 'webextension-polyfill';
 import type {
   ConversionRequestMessage,
-  GetCustomFontStatsMessage,
   GetSettingsMessage,
   GetWasmStatusMessage,
-  ListCustomFontsMessage,
   MessageType,
   PopupOpenedMessage,
-  RemoveCustomFontMessage,
   RetryWasmInitMessage,
   UpdateSettingsMessage,
-  UploadCustomFontMessage,
   ValidateTsxMessage,
 } from '../../shared/types/messages';
 
@@ -31,10 +27,6 @@ export interface MessageMap {
   [MessageType.GET_WASM_STATUS]: GetWasmStatusMessage;
   [MessageType.RETRY_WASM_INIT]: RetryWasmInitMessage;
   [MessageType.VALIDATE_TSX]: ValidateTsxMessage;
-  [MessageType.LIST_CUSTOM_FONTS]: ListCustomFontsMessage;
-  [MessageType.GET_CUSTOM_FONT_STATS]: GetCustomFontStatsMessage;
-  [MessageType.UPLOAD_CUSTOM_FONT]: UploadCustomFontMessage;
-  [MessageType.REMOVE_CUSTOM_FONT]: RemoveCustomFontMessage;
 }
 
 /**
