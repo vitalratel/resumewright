@@ -12,7 +12,6 @@ use cv_domain::{extract_tsx_layout_config_from_document, CVMetadata, FontComplex
 use layout_engine::calculate_layout_direct;
 use pdf_generator::config::{Margin, PDFConfig, PageSize};
 use pdf_generator::PDFGenerator;
-use std::fs;
 use std::sync::Arc;
 use tsx_parser::parse_tsx;
 
@@ -94,10 +93,9 @@ function Resume() {
         .expect("Failed to render layout");
     let pdf_bytes = generator.finalize().expect("Failed to generate PDF");
 
-    // Save for visual inspection
-    fs::write("/tmp/debug_overlap_test.pdf", &pdf_bytes).expect("Failed to write PDF");
+    // PDF bytes generated successfully - layout validated below
+    let _ = pdf_bytes; // Ensure PDF generation completes without error
 
-    println!("PDF written to /tmp/debug_overlap_test.pdf");
     println!("Layout structure:");
     println!("  Pages: {}", layout.pages.len());
 

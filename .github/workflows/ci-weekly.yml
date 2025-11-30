@@ -94,6 +94,9 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
 
+      - name: Download PDFium library
+        run: ./scripts/download-pdfium-linux.sh
+
       - name: Build pdf-to-png binary
         run: cargo build --release --bin pdf-to-png
 
@@ -119,6 +122,7 @@ jobs:
         run: pnpm test:integration
         env:
           CI: true
+          LD_LIBRARY_PATH: ${{ github.workspace }}/lib
 
   ats-compatibility:
     name: ATS Compatibility Tests
@@ -147,37 +151,10 @@ jobs:
           name: wasm-build
           path: packages/rust-core/wasm-bridge/pkg/
 
-      - name: Get Playwright version
-        id: playwright-version
-        run: echo "version=$(pnpm list @playwright/test --json | jq -r '.[0].devDependencies["@playwright/test"].version')" >> $GITHUB_OUTPUT
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
-
-      - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Install Playwright deps (cached)
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: pnpm exec playwright install-deps chromium
-
       - name: Run ATS compatibility tests
-        run: xvfb-run --auto-servernum pnpm exec playwright test tests/ats/
+        run: pnpm --filter @anthropic/resume-wright-extension test:ats
         env:
           CI: true
-
-      - name: Upload ATS results
-        if: always()
-        uses: actions/upload-artifact@v5
-        with:
-          name: ats-test-results
-          path: packages/extension/test-results/
-          retention-days: 7
 
   coverage-check:
     name: Coverage Check
