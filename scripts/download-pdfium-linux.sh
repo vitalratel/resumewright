@@ -8,7 +8,7 @@
 set -e
 
 # Configuration
-PDFIUM_VERSION="7374"  # Latest stable (Aug 2025) - compatible with pdfium-render 0.8.35
+PDFIUM_VERSION="7543"  # Compatible with pdfium-render 0.8.37
 DOWNLOAD_URL="https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F${PDFIUM_VERSION}/pdfium-linux-x64.tgz"
 TARGET_DIR="./lib"
 LIB_NAME="libpdfium.so"
