@@ -1,11 +1,10 @@
 /**
  * Visual Test Setup for Extension Testing
  * Playwright extension context setup
- * 
+ *
  * Provides utilities for:
  * - Loading extension in persistent context
  * - Accessing extension pages (popup, options, etc.)
- * - Custom font management for testing
  * - PDF rendering for visual comparison
  */
 
@@ -109,33 +108,17 @@ export const screenshotOptions = {
 export async function openSettings(page: Page): Promise<void> {
   // Click settings button (assuming it exists in popup)
   const settingsButton = page.locator('[data-testid="settings-button"]');
-  
-  if (await settingsButton.count() > 0) {
+
+  if ((await settingsButton.count()) > 0) {
     await settingsButton.click();
   } else {
     // Fallback: Settings might be a tab or route
     const settingsTab = page.locator('button:has-text("Settings")');
-    if (await settingsTab.count() > 0) {
+    if ((await settingsTab.count()) > 0) {
       await settingsTab.click();
     }
   }
-  
+
   // Wait for settings panel to be visible
   await page.waitForLoadState('networkidle');
-}
-
-/**
- * Navigate to Custom Fonts section in Settings
- */
-export async function openCustomFonts(page: Page): Promise<void> {
-  await openSettings(page);
-  
-  // Scroll to Custom Fonts section (it's at the bottom)
-  const customFontsSection = page.locator('h2:has-text("Custom Fonts")');
-  if (await customFontsSection.count() > 0) {
-    await customFontsSection.scrollIntoViewIfNeeded();
-  }
-  
-  // Wait for any animations to complete
-  await page.waitForTimeout(500);
 }

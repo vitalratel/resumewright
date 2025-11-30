@@ -7,9 +7,6 @@
  * 3. convert_tsx_to_pdf() - Accepts FontData[]
  */
 
-// Re-export constants for backward compatibility
-export { CUSTOM_FONT_LIMITS } from '../constants';
-
 /**
  * Font source type
  */
@@ -70,90 +67,10 @@ export interface FontData {
 }
 
 /**
- * Custom font stored in IndexedDB
- */
-export interface CustomFont {
-  /** Unique ID (UUID) */
-  id: string;
-
-  /** Font family name */
-  family: string;
-
-  /** Font weight */
-  weight: FontWeight;
-
-  /** Font style */
-  style: FontStyle;
-
-  /** Font format */
-  format: FontFormat;
-
-  /** Raw font file bytes (TrueType format after decompression) */
-  bytes: Uint8Array;
-
-  /** Upload timestamp */
-  uploadedAt: number;
-
-  /** File size in bytes */
-  fileSize: number;
-}
-
-/**
- * Font validation result
- */
-export interface FontValidationResult {
-  /** Whether font is valid */
-  valid: boolean;
-
-  /** Error message if invalid */
-  error?: string;
-
-  /** Extracted font metadata if valid */
-  metadata?: {
-    family: string;
-    weight: FontWeight;
-    style: FontStyle;
-    format: FontFormat;
-    fileSize: number;
-  };
-}
-
-/**
  * Detected font information (from TSX parsing)
  */
 export interface DetectedFont {
   family: string;
   weight: FontWeight;
   style: FontStyle;
-}
-
-/**
- * Custom font format type (for backward compatibility)
- */
-export type CustomFontFormat = FontFormat;
-
-/**
- * Custom font upload error types
- */
-export enum CustomFontErrorType {
-  INVALID_FORMAT = 'INVALID_FORMAT',
-  FILE_TOO_LARGE = 'FILE_TOO_LARGE',
-  STORAGE_QUOTA_EXCEEDED = 'STORAGE_QUOTA_EXCEEDED',
-  TOO_MANY_FONTS = 'TOO_MANY_FONTS',
-  DECOMPRESSION_FAILED = 'DECOMPRESSION_FAILED',
-  VALIDATION_FAILED = 'VALIDATION_FAILED',
-  STORAGE_ERROR = 'STORAGE_ERROR',
-}
-
-/**
- * Custom font upload error
- */
-export class CustomFontError extends Error {
-  constructor(
-    public type: CustomFontErrorType,
-    message: string,
-  ) {
-    super(message);
-    this.name = 'CustomFontError';
-  }
 }

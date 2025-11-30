@@ -97,14 +97,6 @@ ${error.stack}`
 }
 
 /**
- * Check if WASM is ready for conversion operations.
- * Allows the message handler to respond with appropriate errors when WASM is not initialized.
- */
-export async function isWasmReady(): Promise<boolean> {
-  return stateManager.isReady();
-}
-
-/**
  * Get detailed WASM status for error messages.
  */
 export async function getWasmStatus(): Promise<WasmStatusInfo> {

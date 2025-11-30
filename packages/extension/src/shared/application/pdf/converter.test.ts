@@ -56,10 +56,6 @@ vi.mock('../../infrastructure/fonts/GoogleFontsRepository', () => ({
   GoogleFontsRepository: class MockGoogleFontsRepository {},
 }));
 
-vi.mock('../../infrastructure/fonts/CustomFontStoreAdapter', () => ({
-  CustomFontStoreAdapter: class MockCustomFontStoreAdapter {},
-}));
-
 vi.mock('../../infrastructure/logging', () => ({
   getLogger: vi.fn(() => ({
     debug: vi.fn(),
