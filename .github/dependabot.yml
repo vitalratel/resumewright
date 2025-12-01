@@ -1,42 +1,45 @@
 version: 2
 updates:
   # Rust dependencies
-  - package-ecosystem: "cargo"
-    directory: "/"
+  - package-ecosystem: 'cargo'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     commit-message:
-      prefix: "deps(rust)"
+      prefix: 'deps(rust)'
     open-pull-requests-limit: 10
     groups:
+      oxc:
+        patterns:
+          - 'oxc*'
       rust-minor:
         patterns:
-          - "*"
+          - '*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
   # npm/pnpm dependencies
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     commit-message:
-      prefix: "deps(npm)"
+      prefix: 'deps(npm)'
     open-pull-requests-limit: 10
     groups:
       npm-minor:
         patterns:
-          - "*"
+          - '*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
   # GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     commit-message:
-      prefix: "ci"
+      prefix: 'ci'
     open-pull-requests-limit: 5
