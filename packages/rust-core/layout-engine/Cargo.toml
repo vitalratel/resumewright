@@ -25,6 +25,6 @@ taffy = "0.9"
 [dev-dependencies]
 cv-domain = { path = "../cv-domain" }
 serde_json = { workspace = true }
-criterion = { version = "0.7", features = ["html_reports"] }
+criterion = { version = "0.8", features = ["html_reports"] }
 tsx-parser = { path = "../tsx-parser" }
 pdf-generator = { path = "../pdf-generator" }

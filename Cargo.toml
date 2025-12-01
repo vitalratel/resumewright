@@ -49,7 +49,7 @@ lopdf = { version = "0.38", default-features = false }
 wasm-bindgen-test = "0.3"
 
 # Benchmarking
-criterion = { version = "0.7", features = ["html_reports"] }
+criterion = { version = "0.8", features = ["html_reports"] }
 
 # Property-based testing
 proptest = "1.9"
