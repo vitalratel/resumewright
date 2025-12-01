@@ -1,364 +1,193 @@
-/**
- * Message Handler Tests
- *
- * Comprehensive tests for background message handler.
- * Coverage: Message validation, handler registry, error handling
- * Target: >85% coverage
- */
+// ABOUTME: Tests for background message handler setup.
+// ABOUTME: Verifies handler registration and error handling paths.
 
-import type { Runtime } from 'webextension-polyfill';
-import type { AnyMessage } from '../../shared/types/messages';
-import { fakeBrowser } from '@webext-core/fake-browser';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { parseMessage } from '@/shared/domain/validation/validators/messages';
-import { MessageType } from '../../shared/types/messages';
-import * as messageHandlers from '../handlers';
-import { setupMessageHandler } from '../messageHandler';
+import type { LifecycleManager } from '../core/lifecycle/lifecycleManager';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// webextension-polyfill is mocked globally with fakeBrowser
+// Track registered handlers for testing
+const registeredHandlers = new Map<string, (args: { data: unknown }) => unknown>();
 
-// Mock dependencies
-vi.mock('@/shared/domain/validation/validators/messages');
-// Use real logging implementation
+// Mock @webext-core/messaging - we need to capture registered handlers
+vi.mock('@/shared/messaging', () => ({
+  sendMessage: vi.fn(),
+  onMessage: vi.fn((type: string, handler: (args: { data: unknown }) => unknown) => {
+    registeredHandlers.set(type, handler);
+  }),
+}));
+
+// Mock browser storage - true external boundary
+vi.mock('wxt/browser', () => ({
+  browser: {
+    storage: {
+      sync: {
+        get: vi.fn().mockResolvedValue({}),
+        set: vi.fn().mockResolvedValue(undefined),
+      },
+      local: {
+        get: vi.fn().mockResolvedValue({}),
+        set: vi.fn().mockResolvedValue(undefined),
+      },
+      onChanged: {
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+      },
+    },
+  },
+}));
+
+// Mock WASM - true external boundary
+vi.mock('@pkg/wasm_bridge', () => ({
+  extract_cv_metadata: vi.fn(),
+}));
+
+vi.mock('@/shared/infrastructure/wasm', () => ({
+  createConverterInstance: vi.fn(() => ({
+    validateTsx: vi.fn().mockResolvedValue(true),
+    convert: vi.fn().mockResolvedValue(new Uint8Array()),
+    free: vi.fn(),
+  })),
+  isWASMInitialized: vi.fn().mockReturnValue(true),
+}));
+
+vi.mock('../wasmInit', () => ({
+  getWasmStatus: vi.fn().mockResolvedValue({ status: 'success' }),
+  retryWasmInit: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('../../shared/domain/pdf/validation', () => ({
+  validateTsxSyntax: vi.fn().mockResolvedValue(true),
+}));
+
+// Mock PDF converter - uses WASM internally
+vi.mock('../../shared/application/pdf/converter', () => ({
+  convertTsxToPdfWithFonts: vi.fn().mockResolvedValue(new Uint8Array([0x25, 0x50, 0x44, 0x46])),
+}));
+
+// Silence logging
+vi.mock('@/shared/infrastructure/logging', () => ({
+  getLogger: () => ({
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  }),
+}));
+
+// Mock storage for settings
+vi.mock('@/shared/infrastructure/storage', () => ({
+  localExtStorage: {
+    getItem: vi.fn().mockResolvedValue('success'),
+    setItem: vi.fn().mockResolvedValue(undefined),
+    removeItem: vi.fn().mockResolvedValue(undefined),
+  },
+}));
 
 // Mock LifecycleManager
-const mockLifecycleManager = {
+const mockLifecycleManager: LifecycleManager = {
   saveJobCheckpoint: vi.fn(),
   clearJobCheckpoint: vi.fn(),
   getActiveJobIds: vi.fn(() => []),
   hasJob: vi.fn(() => false),
   initialize: vi.fn(),
-};
-
-vi.mock('../handlers', () => ({
-  createHandlerRegistry: vi.fn((_lifecycleManager, _conversionService, _progressTracker) => new Map()),
-  getHandler: vi.fn((_registry, type) => {
-    if (type === MessageType.CONVERSION_REQUEST) {
-      return {
-        handle: vi.fn().mockResolvedValue({ success: true, data: 'conversion-started' }),
-      };
-    }
-    if (type === MessageType.GET_SETTINGS) {
-      return {
-        handle: vi.fn().mockResolvedValue({ success: true, settings: {} }),
-      };
-    }
-    return undefined;
-  }),
-}));
+} as unknown as LifecycleManager;
 
 describe('messageHandler', () => {
-  let messageListener: ((message: unknown, sender: Runtime.MessageSender) => Promise<unknown>) | null = null;
-
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    messageListener = null;
+    registeredHandlers.clear();
 
-    // Create spy for fakeBrowser.runtime.onMessage.addListener
-    vi.spyOn(fakeBrowser.runtime.onMessage, 'addListener').mockImplementation((listener) => {
-      messageListener = listener as typeof messageListener;
-    });
+    // Import and setup after mocks
+    const { setupMessageHandler } = await import('../messageHandler');
+    setupMessageHandler(mockLifecycleManager);
+  });
 
-    // Reset getHandler to default mock implementation
-    vi.mocked(messageHandlers.getHandler).mockImplementation((_registry, type) => {
-      if (type === MessageType.CONVERSION_REQUEST) {
-        return {
-          type: MessageType.CONVERSION_REQUEST,
-          handle: vi.fn().mockResolvedValue({ success: true, data: 'conversion-started' }),
-        };
+  describe('handler registration', () => {
+    it('should register all expected message handlers', async () => {
+      const expectedHandlers = [
+        'getWasmStatus',
+        'retryWasmInit',
+        'validateTsx',
+        'startConversion',
+        'getSettings',
+        'updateSettings',
+        'popupOpened',
+        'ping',
+      ];
+
+      for (const handler of expectedHandlers) {
+        expect(registeredHandlers.has(handler)).toBe(true);
       }
-      if (type === MessageType.GET_SETTINGS) {
-        return {
-          type: MessageType.GET_SETTINGS,
-          handle: vi.fn().mockResolvedValue({ success: true, settings: {} }),
-        };
-      }
-      return undefined;
+      expect(registeredHandlers.size).toBe(8);
     });
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+  describe('ping handler', () => {
+    it('should respond with pong', () => {
+      const pingHandler = registeredHandlers.get('ping');
+      expect(pingHandler).toBeDefined();
 
-  describe('setupMessageHandler', () => {
-    it('should register message listener', () => {
-      setupMessageHandler(mockLifecycleManager as any);
-
-      expect(fakeBrowser.runtime.onMessage.addListener).toHaveBeenCalledOnce();
-      expect(messageListener).toBeTruthy();
-    });
-
-    it('should create handler registry on setup', () => {
-      setupMessageHandler(mockLifecycleManager as any);
-
-      expect(vi.mocked(messageHandlers.createHandlerRegistry)).toHaveBeenCalledOnce();
+      const result = pingHandler!({ data: {} });
+      expect(result).toEqual({ pong: true });
     });
   });
 
-  describe('message validation', () => {
-    it('should validate incoming messages', async () => {
-      const mockParseMessage = vi.mocked(parseMessage);
-      mockParseMessage.mockReturnValue({
-        success: true,
-        data: { type: MessageType.CONVERSION_REQUEST, payload: {} },
-      });
+  describe('getSettings handler', () => {
+    it('should return settings successfully', async () => {
+      const handler = registeredHandlers.get('getSettings');
+      expect(handler).toBeDefined();
 
-      setupMessageHandler(mockLifecycleManager as any);
-
-      const sender: Runtime.MessageSender = { tab: { id: 123 } } as Runtime.MessageSender;
-      await messageListener!({ type: MessageType.CONVERSION_REQUEST, payload: {} }, sender);
-
-      expect(mockParseMessage).toHaveBeenCalledWith({ type: MessageType.CONVERSION_REQUEST, payload: {} });
-    });
-
-    it('should reject invalid messages', async () => {
-      const mockParseMessage = vi.mocked(parseMessage);
-      mockParseMessage.mockReturnValue({
-        success: false,
-        error: 'Invalid message format',
-      });
-
-      setupMessageHandler(mockLifecycleManager as any);
-
-      const sender: Runtime.MessageSender = { tab: { id: 123 } } as Runtime.MessageSender;
-      const result = await messageListener!({ invalid: 'message' }, sender);
-
-      expect(result).toEqual({
-        success: false,
-        error: 'Invalid message format: Invalid message format',
-      });
-    });
-
-    it('should handle messages from popup (no tab ID)', async () => {
-      const mockParseMessage = vi.mocked(parseMessage);
-      mockParseMessage.mockReturnValue({
-        success: true,
-        data: { type: MessageType.GET_SETTINGS, payload: {} },
-      });
-
-      setupMessageHandler(mockLifecycleManager as any);
-
-      const sender: Runtime.MessageSender = {} as Runtime.MessageSender;
-      const result = await messageListener!({ type: MessageType.GET_SETTINGS, payload: {} }, sender);
-
-      expect(result).toEqual({
-        success: true,
-        settings: {},
-      });
-    });
-
-    it('should handle messages from content script (with tab ID)', async () => {
-      const mockParseMessage = vi.mocked(parseMessage);
-      mockParseMessage.mockReturnValue({
-        success: true,
-        data: { type: MessageType.CONVERSION_REQUEST, payload: {} },
-      });
-
-      setupMessageHandler(mockLifecycleManager as any);
-
-      const sender: Runtime.MessageSender = {
-        tab: { id: 456 },
-      } as Runtime.MessageSender;
-      const result = await messageListener!({ type: MessageType.CONVERSION_REQUEST, payload: {} }, sender);
-
-      expect(result).toEqual({
-        success: true,
-        data: 'conversion-started',
-      });
-    });
-  });
-
-  describe('message routing', () => {
-    it('should route to appropriate handler', async () => {
-      const mockParseMessage = vi.mocked(parseMessage);
-
-      mockParseMessage.mockReturnValue({
-        success: true,
-        data: { type: MessageType.CONVERSION_REQUEST, payload: { tsx: '<div>Test</div>' } },
-      });
-
-      setupMessageHandler(mockLifecycleManager as any);
-
-      const sender: Runtime.MessageSender = { tab: { id: 123 } } as Runtime.MessageSender;
-      await messageListener!({ type: MessageType.CONVERSION_REQUEST, payload: { tsx: '<div>Test</div>' } }, sender);
-
-      expect(vi.mocked(messageHandlers.getHandler)).toHaveBeenCalled();
-    });
-
-    it('should return error for unknown message type', async () => {
-      const mockParseMessage = vi.mocked(parseMessage);
-
-      // Mock getHandler to return undefined for unknown type
-      vi.mocked(messageHandlers.getHandler).mockReturnValue(undefined);
-
-      mockParseMessage.mockReturnValue({
-        success: true,
-        data: { type: 'UNKNOWN_TYPE' as MessageType, payload: {} } as AnyMessage,
-      });
-
-      setupMessageHandler(mockLifecycleManager as any);
-
-      const sender: Runtime.MessageSender = { tab: { id: 123 } } as Runtime.MessageSender;
-      const result = await messageListener!({ type: 'UNKNOWN_TYPE', payload: {} }, sender);
-
-      expect(result).toEqual({
-        success: false,
-        error: 'Unknown message type',
-      });
-    });
-
-    it('should handle multiple message types', async () => {
-      const mockParseMessage = vi.mocked(parseMessage);
-
-      setupMessageHandler(mockLifecycleManager as any);
-
-      const sender: Runtime.MessageSender = { tab: { id: 123 } } as Runtime.MessageSender;
-
-      // Test CONVERSION_REQUEST
-      mockParseMessage.mockReturnValue({
-        success: true,
-        data: { type: MessageType.CONVERSION_REQUEST, payload: {} },
-      });
-      const result1 = await messageListener!({ type: MessageType.CONVERSION_REQUEST, payload: {} }, sender);
-      expect(result1).toHaveProperty('success', true);
-
-      // Test GET_SETTINGS
-      mockParseMessage.mockReturnValue({
-        success: true,
-        data: { type: MessageType.GET_SETTINGS, payload: {} },
-      });
-      const result2 = await messageListener!({ type: MessageType.GET_SETTINGS, payload: {} }, sender);
-      expect(result2).toHaveProperty('success', true);
-    });
-  });
-
-  describe('error handling', () => {
-    it('should catch handler errors and return error response', async () => {
-      const mockParseMessage = vi.mocked(parseMessage);
-
-      mockParseMessage.mockReturnValue({
-        success: true,
-        data: { type: MessageType.CONVERSION_REQUEST, payload: {} },
-      });
-
-      // Mock handler that throws error
-      vi.mocked(messageHandlers.getHandler).mockReturnValue({
-        type: MessageType.CONVERSION_REQUEST,
-        handle: vi.fn().mockRejectedValue(new Error('Handler error')),
-      });
-
-      setupMessageHandler(mockLifecycleManager as any);
-
-      const sender: Runtime.MessageSender = { tab: { id: 123 } } as Runtime.MessageSender;
-      const result = await messageListener!({ type: MessageType.CONVERSION_REQUEST, payload: {} }, sender);
-
-      expect(result).toEqual({
-        success: false,
-        error: 'Error: Handler error',
-      });
-    });
-
-    it('should handle synchronous handler errors', async () => {
-      const mockParseMessage = vi.mocked(parseMessage);
-
-      mockParseMessage.mockReturnValue({
-        success: true,
-        data: { type: MessageType.CONVERSION_REQUEST, payload: {} },
-      });
-
-      // Mock handler that throws synchronously
-      vi.mocked(messageHandlers.getHandler).mockReturnValue({
-        type: MessageType.CONVERSION_REQUEST,
-        handle: vi.fn().mockImplementation(() => {
-          throw new Error('Sync handler error');
-        }),
-      });
-
-      setupMessageHandler(mockLifecycleManager as any);
-
-      const sender: Runtime.MessageSender = { tab: { id: 123 } } as Runtime.MessageSender;
-      const result = await messageListener!({ type: MessageType.CONVERSION_REQUEST, payload: {} }, sender);
-
-      expect(result).toEqual({
-        success: false,
-        error: 'Error: Sync handler error',
-      });
-    });
-
-    it('should handle non-Error exceptions', async () => {
-      const mockParseMessage = vi.mocked(parseMessage);
-
-      mockParseMessage.mockReturnValue({
-        success: true,
-        data: { type: MessageType.CONVERSION_REQUEST, payload: {} },
-      });
-
-      // Mock handler that throws non-Error
-      vi.mocked(messageHandlers.getHandler).mockReturnValue({
-        type: MessageType.CONVERSION_REQUEST,
-        handle: vi.fn().mockRejectedValue('String error'),
-      });
-
-      setupMessageHandler(mockLifecycleManager as any);
-
-      const sender: Runtime.MessageSender = { tab: { id: 123 } } as Runtime.MessageSender;
-      const result = await messageListener!({ type: MessageType.CONVERSION_REQUEST, payload: {} }, sender);
-
-      expect(result).toEqual({
-        success: false,
-        error: 'String error',
-      });
-    });
-  });
-
-  describe('edge cases', () => {
-    it('should handle null payload', async () => {
-      const mockParseMessage = vi.mocked(parseMessage);
-
-      mockParseMessage.mockReturnValue({
-        success: true,
-        data: { type: MessageType.CONVERSION_REQUEST, payload: null } as unknown as AnyMessage,
-      });
-
-      setupMessageHandler(mockLifecycleManager as any);
-
-      const sender: Runtime.MessageSender = { tab: { id: 123 } } as Runtime.MessageSender;
-      const result = await messageListener!({ type: MessageType.CONVERSION_REQUEST, payload: null }, sender);
+      const result = await handler!({ data: {} });
 
       expect(result).toHaveProperty('success', true);
+      expect(result).toHaveProperty('settings');
     });
 
-    it('should handle undefined payload', async () => {
-      const mockParseMessage = vi.mocked(parseMessage);
+    it('should handle settings load failure', async () => {
+      // Force settingsStore to throw
+      const { settingsStore } = await import(
+        '@/shared/infrastructure/settings/SettingsStore'
+      );
+      vi.spyOn(settingsStore, 'loadSettings').mockRejectedValueOnce(
+        new Error('Storage unavailable')
+      );
 
-      mockParseMessage.mockReturnValue({
-        success: true,
-        data: { type: MessageType.GET_SETTINGS, payload: undefined } as unknown as AnyMessage,
-      });
+      const handler = registeredHandlers.get('getSettings');
+      const result = await handler!({ data: {} });
 
-      setupMessageHandler(mockLifecycleManager as any);
-
-      const sender: Runtime.MessageSender = { tab: { id: 123 } } as Runtime.MessageSender;
-      const result = await messageListener!({ type: MessageType.GET_SETTINGS, payload: undefined }, sender);
-
-      expect(result).toHaveProperty('success', true);
+      expect(result).toHaveProperty('success', false);
+      expect(result).toHaveProperty('error');
     });
+  });
 
-    it('should handle sender with no tab info', async () => {
-      const mockParseMessage = vi.mocked(parseMessage);
+  describe('popupOpened handler', () => {
+    it('should return success', async () => {
+      const handler = registeredHandlers.get('popupOpened');
+      expect(handler).toBeDefined();
 
-      mockParseMessage.mockReturnValue({
-        success: true,
-        data: { type: MessageType.GET_SETTINGS, payload: {} },
-      });
+      const result = await handler!({ data: { requestProgressUpdate: false } });
+      expect(result).toEqual({ success: true });
+    });
+  });
 
-      setupMessageHandler(mockLifecycleManager as any);
+  describe('validateTsx handler', () => {
+    it('should validate tsx content', async () => {
+      const handler = registeredHandlers.get('validateTsx');
+      expect(handler).toBeDefined();
 
-      const sender: Runtime.MessageSender = {} as Runtime.MessageSender;
-      const result = await messageListener!({ type: MessageType.GET_SETTINGS, payload: {} }, sender);
+      const result = await handler!({ data: { tsx: '<div>Test</div>' } });
+      expect(result).toEqual({ valid: true });
+    });
+  });
 
-      expect(result).toHaveProperty('success', true);
+  describe('getWasmStatus handler', () => {
+    it('should return WASM status from storage', async () => {
+      const handler = registeredHandlers.get('getWasmStatus');
+      expect(handler).toBeDefined();
+
+      const result = await handler!({ data: {} });
+
+      // With mocked storage returning 'success'
+      expect(result).toHaveProperty('initialized', true);
     });
   });
 });

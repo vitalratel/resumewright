@@ -1,10 +1,8 @@
-/**
- * PDF Validation Tests
- */
+// ABOUTME: Tests for TSX file and syntax validation.
+// ABOUTME: Verifies file checks, WASM status polling, and syntax validation.
 
 import type { ILogger } from '../logging/ILogger';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MessageType } from '../../types';
 import { validateTsxFile, validateTsxSyntax } from './validation';
 
 const mockLogger: ILogger = {
@@ -16,12 +14,14 @@ const mockLogger: ILogger = {
   error: vi.fn(),
 };
 
-vi.mock('webextension-polyfill', () => ({
-  default: {
-    runtime: {
-      sendMessage: vi.fn(),
-    },
-  },
+// Mock messaging using vi.hoisted for proper hoisting
+const mocks = vi.hoisted(() => ({
+  sendMessage: vi.fn(),
+}));
+
+vi.mock('@/shared/messaging', () => ({
+  sendMessage: mocks.sendMessage,
+  onMessage: vi.fn(),
 }));
 
 vi.mock('../../infrastructure/wasm', () => ({
@@ -37,6 +37,7 @@ vi.mock('./wasmSchemas', () => ({
 describe('validation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.sendMessage.mockReset();
   });
 
   describe('validateTsxFile', () => {
@@ -55,8 +56,7 @@ describe('validation', () => {
     });
 
     it('should warn on large files', async () => {
-      const browser = (await import('webextension-polyfill')).default;
-      vi.mocked(browser.runtime.sendMessage)
+      mocks.sendMessage
         .mockResolvedValueOnce({ initialized: true })
         .mockResolvedValueOnce({ valid: true });
 
@@ -83,8 +83,7 @@ describe('validation', () => {
     });
 
     it('should wait for WASM initialization', async () => {
-      const browser = (await import('webextension-polyfill')).default;
-      vi.mocked(browser.runtime.sendMessage)
+      mocks.sendMessage
         .mockResolvedValueOnce({ initialized: false })
         .mockResolvedValueOnce({ initialized: true })
         .mockResolvedValueOnce({ valid: true });
@@ -94,9 +93,8 @@ describe('validation', () => {
     });
 
     it('should handle WASM initialization errors', async () => {
-      const browser = (await import('webextension-polyfill')).default;
       let callCount = 0;
-      vi.mocked(browser.runtime.sendMessage).mockImplementation(async () => {
+      mocks.sendMessage.mockImplementation(async () => {
         callCount += 1;
         if (callCount === 1) {
           return Promise.resolve({ initialized: false, error: 'WASM failed' });
@@ -110,23 +108,19 @@ describe('validation', () => {
     });
 
     it('should validate syntax via background worker', async () => {
-      const browser = (await import('webextension-polyfill')).default;
-      vi.mocked(browser.runtime.sendMessage)
+      mocks.sendMessage
         .mockResolvedValueOnce({ initialized: true })
         .mockResolvedValueOnce({ valid: true });
 
       const result = await validateTsxFile(validContent, 1000, 'file.tsx', mockLogger);
 
       expect(result.valid).toBe(true);
-      expect(browser.runtime.sendMessage).toHaveBeenCalledWith({
-        type: MessageType.VALIDATE_TSX,
-        payload: { tsx: validContent },
-      });
+      expect(mocks.sendMessage).toHaveBeenCalledWith('getWasmStatus', {});
+      expect(mocks.sendMessage).toHaveBeenCalledWith('validateTsx', { tsx: validContent });
     });
 
     it('should handle invalid syntax', async () => {
-      const browser = (await import('webextension-polyfill')).default;
-      vi.mocked(browser.runtime.sendMessage)
+      mocks.sendMessage
         .mockResolvedValueOnce({ initialized: true })
         .mockResolvedValueOnce({ valid: false });
 

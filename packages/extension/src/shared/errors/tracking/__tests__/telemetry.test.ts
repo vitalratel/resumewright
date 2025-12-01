@@ -16,7 +16,6 @@
 
 import type { ErrorDetails, ErrorEvent } from '../telemetry';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import browser from 'webextension-polyfill';
 import {
   clearStoredErrors,
   copyToClipboard,
@@ -29,18 +28,27 @@ import {
   trackError,
 } from '../telemetry';
 
+// Use vi.hoisted to ensure mock functions are available when vi.mock factory runs
+const { mockStorageLocalGet, mockStorageLocalSet, mockStorageLocalRemove, mockGetManifest } =
+  vi.hoisted(() => ({
+    mockStorageLocalGet: vi.fn().mockResolvedValue({}),
+    mockStorageLocalSet: vi.fn().mockResolvedValue(undefined),
+    mockStorageLocalRemove: vi.fn().mockResolvedValue(undefined),
+    mockGetManifest: vi.fn(() => ({ version: '1.0.0' })),
+  }));
+
 // Mock dependencies
-vi.mock('webextension-polyfill', () => ({
-  default: {
+vi.mock('wxt/browser', () => ({
+  browser: {
     storage: {
       local: {
-        get: vi.fn(),
-        set: vi.fn(),
-        remove: vi.fn(),
+        get: mockStorageLocalGet,
+        set: mockStorageLocalSet,
+        remove: mockStorageLocalRemove,
       },
     },
     runtime: {
-      getManifest: vi.fn(() => ({ version: '1.0.0' })),
+      getManifest: mockGetManifest,
     },
   },
 }));
@@ -130,20 +138,20 @@ describe('Error Telemetry', () => {
 
     beforeEach(() => {
       // Mock settings with telemetry enabled
-      vi.mocked(browser.storage.local.get).mockImplementation(async (key) => {
+      mockStorageLocalGet.mockImplementation(async (key) => {
         if (key === 'settings') {
           return { settings: { telemetryEnabled: true } };
         }
         return { errorTelemetry: [] };
       });
-      vi.mocked(browser.storage.local.set).mockResolvedValue(undefined);
+      mockStorageLocalSet.mockResolvedValue(undefined);
     });
 
     it('should track error when telemetry is enabled', async () => {
       await trackError(mockErrorDetails);
 
-      expect(browser.storage.local.set).toHaveBeenCalled();
-      const callArgs = vi.mocked(browser.storage.local.set).mock.calls[0][0];
+      expect(mockStorageLocalSet).toHaveBeenCalled();
+      const callArgs = mockStorageLocalSet.mock.calls[0][0];
       const storedErrors = Object.values(callArgs)[0] as ErrorEvent[];
 
       expect(storedErrors).toHaveLength(1);
@@ -156,19 +164,19 @@ describe('Error Telemetry', () => {
     });
 
     it('should skip tracking when telemetry is disabled', async () => {
-      vi.mocked(browser.storage.local.get).mockResolvedValue({
+      mockStorageLocalGet.mockResolvedValue({
         settings: { telemetryEnabled: false },
       });
 
       await trackError(mockErrorDetails);
 
-      expect(browser.storage.local.set).not.toHaveBeenCalled();
+      expect(mockStorageLocalSet).not.toHaveBeenCalled();
     });
 
     it('should include context information', async () => {
       await trackError(mockErrorDetails);
 
-      const callArgs = vi.mocked(browser.storage.local.set).mock.calls[0][0];
+      const callArgs = mockStorageLocalSet.mock.calls[0][0];
       const storedErrors = Object.values(callArgs)[0] as ErrorEvent[];
       const errorEvent = storedErrors[0];
 
@@ -177,7 +185,7 @@ describe('Error Telemetry', () => {
     });
 
     it('should handle storage errors gracefully', async () => {
-      vi.mocked(browser.storage.local.get).mockRejectedValue(new Error('Storage error'));
+      mockStorageLocalGet.mockRejectedValue(new Error('Storage error'));
 
       // Should not throw
       await expect(trackError(mockErrorDetails)).resolves.not.toThrow();
@@ -197,7 +205,7 @@ describe('Error Telemetry', () => {
         },
       ];
 
-      vi.mocked(browser.storage.local.get).mockResolvedValue({
+      mockStorageLocalGet.mockResolvedValue({
         errorTelemetry: mockErrors,
       });
 
@@ -207,7 +215,7 @@ describe('Error Telemetry', () => {
     });
 
     it('should return empty array when no errors stored', async () => {
-      vi.mocked(browser.storage.local.get).mockResolvedValue({});
+      mockStorageLocalGet.mockResolvedValue({});
 
       const errors = await getStoredErrors();
 
@@ -215,7 +223,7 @@ describe('Error Telemetry', () => {
     });
 
     it('should handle storage errors gracefully', async () => {
-      vi.mocked(browser.storage.local.get).mockRejectedValue(new Error('Storage error'));
+      mockStorageLocalGet.mockRejectedValue(new Error('Storage error'));
 
       const errors = await getStoredErrors();
 
@@ -225,15 +233,15 @@ describe('Error Telemetry', () => {
 
   describe('clearStoredErrors', () => {
     it('should clear stored errors', async () => {
-      vi.mocked(browser.storage.local.remove).mockResolvedValue(undefined);
+      mockStorageLocalRemove.mockResolvedValue(undefined);
 
       await clearStoredErrors();
 
-      expect(browser.storage.local.remove).toHaveBeenCalledWith('errorTelemetry');
+      expect(mockStorageLocalRemove).toHaveBeenCalledWith('errorTelemetry');
     });
 
     it('should throw on removal errors', async () => {
-      vi.mocked(browser.storage.local.remove).mockRejectedValue(new Error('Remove error'));
+      mockStorageLocalRemove.mockRejectedValue(new Error('Remove error'));
 
       await expect(clearStoredErrors()).rejects.toThrow('Remove error');
     });
@@ -253,7 +261,7 @@ describe('Error Telemetry', () => {
         },
       ];
 
-      vi.mocked(browser.storage.local.get).mockResolvedValue({
+      mockStorageLocalGet.mockResolvedValue({
         errorTelemetry: mockErrors,
       });
 
@@ -283,7 +291,7 @@ describe('Error Telemetry', () => {
         },
       ];
 
-      vi.mocked(browser.storage.local.get).mockImplementation(async (key) => {
+      mockStorageLocalGet.mockImplementation(async (key) => {
         if (key === 'errorTelemetry') {
           return { errorTelemetry: mockErrors };
         }
@@ -303,7 +311,7 @@ describe('Error Telemetry', () => {
     });
 
     it('should export empty array when no errors', async () => {
-      vi.mocked(browser.storage.local.get).mockImplementation(async (key) => {
+      mockStorageLocalGet.mockImplementation(async (key) => {
         if (key === 'errorTelemetry') {
           return { errorTelemetry: [] };
         }
@@ -363,12 +371,15 @@ describe('Error Telemetry', () => {
   });
 
   describe('copyToClipboard', () => {
+    let writeTextMock: ReturnType<typeof vi.fn>;
+
     beforeEach(() => {
-      // Mock clipboard API
-      Object.assign(navigator, {
-        clipboard: {
-          writeText: vi.fn().mockResolvedValue(undefined),
-        },
+      // Mock clipboard API using defineProperty for happy-dom compatibility
+      writeTextMock = vi.fn().mockResolvedValue(undefined);
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText: writeTextMock },
+        writable: true,
+        configurable: true,
       });
     });
 
@@ -377,11 +388,11 @@ describe('Error Telemetry', () => {
 
       await copyToClipboard(text);
 
-      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(text);
+      expect(writeTextMock).toHaveBeenCalledWith(text);
     });
 
     it('should handle clipboard errors gracefully', async () => {
-      vi.mocked(navigator.clipboard.writeText).mockRejectedValue(new Error('Clipboard error'));
+      writeTextMock.mockRejectedValue(new Error('Clipboard error'));
 
       await expect(copyToClipboard('test')).resolves.not.toThrow();
     });
@@ -402,7 +413,7 @@ describe('Error Telemetry', () => {
         },
       ];
 
-      vi.mocked(browser.storage.local.get).mockResolvedValue({
+      mockStorageLocalGet.mockResolvedValue({
         errorTelemetry: malformedErrors,
       });
 
@@ -448,7 +459,7 @@ describe('Error Telemetry', () => {
         },
       ];
 
-      vi.mocked(browser.storage.local.get).mockResolvedValue({
+      mockStorageLocalGet.mockResolvedValue({
         errorTelemetry: mockErrors,
       });
 
@@ -462,7 +473,7 @@ describe('Error Telemetry', () => {
     });
 
     it('should handle empty error list', async () => {
-      vi.mocked(browser.storage.local.get).mockResolvedValue({
+      mockStorageLocalGet.mockResolvedValue({
         errorTelemetry: [],
       });
 
@@ -494,7 +505,7 @@ describe('Error Telemetry', () => {
         },
       ];
 
-      vi.mocked(browser.storage.local.get).mockResolvedValue({
+      mockStorageLocalGet.mockResolvedValue({
         errorTelemetry: mockErrors,
       });
 

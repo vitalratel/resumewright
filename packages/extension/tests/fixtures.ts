@@ -1,5 +1,4 @@
 import type {BrowserContext} from '@playwright/test';
-import type Browser from 'webextension-polyfill';
 import type { BrowserType } from './fixtures/types';
 import fs from 'node:fs';
 import { rm } from 'node:fs/promises';
@@ -184,80 +183,42 @@ export const test = base.extend<{
 });
 
 /**
- * Verifies extension is ready by attempting to load the popup page.
- * Throws error if popup cannot be accessed.
+ * Verifies extension is ready by attempting to load the converter page.
+ * Uses converter.html directly (popup.html just redirects to it).
+ * Throws error if page cannot be accessed.
  */
 async function verifyExtensionReady(
   context: BrowserContext,
   protocol: string,
   extensionId: string
 ): Promise<void> {
-  const testPage = await context.newPage();
+  let testPage;
 
   try {
-    const popupUrl = `${protocol}://${extensionId}/popup.html`;
-    console.warn('[Fixture] Verifying extension is ready:', popupUrl);
+    testPage = await context.newPage();
+    // Use converter.html directly - popup.html redirects and closes itself
+    const converterUrl = `${protocol}://${extensionId}/converter.html`;
+    console.warn('[Fixture] Verifying extension is ready:', converterUrl);
 
-    // Try to navigate to popup - this will fail if extension isn't loaded
-    await testPage.goto(popupUrl, { timeout: 10000 });
+    // Navigate to converter page - this will fail if extension isn't loaded
+    await testPage.goto(converterUrl, { timeout: 10000 });
 
-    // Wait for basic DOM to load
-    await testPage.waitForSelector('body', { timeout: 5000 });
-
-    console.warn('[Fixture] Waiting for background worker to be ready...');
-
-    // Wait for background worker to respond to messages
-    // Shorter retry with faster intervals since we're in a fixture
-    const maxRetries = 5;
-    const retryDelay = 200; // ms
-    let backgroundReady = false;
-
-    for (let i = 0; i < maxRetries; i += 1) {
-      try {
-        const response: unknown = await testPage.evaluate(async () => {
-          // Use a type that the extension should recognize
-          const message: { type: string; payload: Record<string, never> } = { type: 'GET_WASM_STATUS', payload: {} };
-          // Access webextension-polyfill browser API
-          interface WindowWithBrowser extends Window {
-            browser: typeof Browser;
-          }
-          return (window as unknown as WindowWithBrowser).browser.runtime.sendMessage(message);
-        });
-
-        // If we got a response, the background worker is ready
-        if (response !== undefined) {
-          console.warn('[Fixture] Background worker is responding to messages');
-          backgroundReady = true;
-          break;
-        }
-      } catch (err) {
-        const error = err as Error;
-        // Only retry on "Receiving end does not exist" errors
-        if (i < maxRetries - 1 && error.message.includes('Receiving end does not exist')) {
-          console.warn(`[Fixture] Attempt ${i + 1}/${maxRetries}: Background worker not ready yet`);
-          await testPage.waitForTimeout(retryDelay);
-        } else {
-          // Other errors or last retry - log and continue
-          break;
-        }
-      }
-    }
-
-    if (!backgroundReady) {
-      console.warn(
-        '[Fixture] Background worker not responding yet, but continuing (tests will retry)'
-      );
-    }
+    // Wait for React app to mount (look for actual app content in #root)
+    await testPage.waitForSelector('#root > *', { timeout: 5000 });
 
     console.warn('[Fixture] Extension is ready');
   } catch (e) {
     const errorMsg = e instanceof Error ? e.message : String(e);
     throw new Error(
-      `Extension loaded but popup page failed to load: ${errorMsg}. ` +
+      `Extension loaded but converter page failed to load: ${errorMsg}. ` +
         'This might indicate a problem with the extension build.'
     );
   } finally {
-    await testPage.close();
+    if (testPage) {
+      await testPage.close().catch(() => {
+        // Page may already be closed if context was closed
+      });
+    }
   }
 }
 

@@ -343,25 +343,6 @@ export interface ConversionConfig {
   atsWeights?: ATSWeights;
 }
 
-/**
- * Default conversion configuration
- *
- * US Letter size with 0.5" margins, 12pt font, no compression.
- */
-export const DEFAULT_CONVERSION_CONFIG: ConversionConfig = {
-  pageSize: 'Letter',
-  margin: {
-    top: 0.5,
-    right: 0.5,
-    bottom: 0.5,
-    left: 0.5,
-  },
-  fontSize: 12,
-  fontFamily: 'Arial',
-  compress: false,
-  atsOptimization: false,
-  includeMetadata: true,
-};
 
 /**
  * Conversion Job

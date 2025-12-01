@@ -1,104 +1,222 @@
-/**
- * Message Handler
- *
- * Central message routing for background script using modular handler architecture.
- */
+// ABOUTME: Central message routing for background script using @webext-core/messaging.
+// ABOUTME: Registers typed message handlers for all popup ↔ background communication.
 
+import type { TsxToPdfConverter } from '../shared/domain/pdf/types';
+import type { ConversionStatus } from '../shared/types/models';
 import type { LifecycleManager } from './core/lifecycle/lifecycleManager';
-import type { MessageMap } from './handlers/types';
-import browser from 'webextension-polyfill';
-import { parseMessage } from '@/shared/domain/validation/validators/messages';
 import { getLogger } from '@/shared/infrastructure/logging';
-import { MessageType } from '../shared/types/messages';
-import { createHandlerRegistry, getHandler } from './handlers';
+import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
+import { localExtStorage } from '@/shared/infrastructure/storage';
+import { createConverterInstance, isWASMInitialized } from '@/shared/infrastructure/wasm';
+import { onMessage, sendMessage } from '@/shared/messaging';
+import { validateTsxSyntax } from '../shared/domain/pdf/validation';
 import { ConversionService } from './services/ConversionService';
 import { ProgressTracker } from './services/ProgressTracker';
-
-// Maximum message size to prevent performance issues
-// Chrome extension message size limit to avoid runtime.sendMessage errors
-const MAX_MESSAGE_SIZE = 2 * 1024 * 1024; // 2MB
+import { parseConversionError } from './utils/errorParser';
+import { getWasmStatus, retryWasmInit } from './wasmInit';
 
 /**
- * Setup message listener for extension communication
- * Uses modular handler registry for clean separation of concerns
+ * Setup message handlers for extension communication
+ * Uses @webext-core/messaging for type-safe message passing
  */
 export function setupMessageHandler(lifecycleManager: LifecycleManager): void {
-  // Instantiate services for dependency injection
   const conversionService = new ConversionService();
   const progressTracker = new ProgressTracker();
+  const getConverterInstance: () => TsxToPdfConverter = createConverterInstance;
 
-  // Create handler registry with injected dependencies (Proper DI)
-  const handlerRegistry = createHandlerRegistry(
-    lifecycleManager,
-    conversionService,
-    progressTracker
-  );
+  // === WASM Status Handlers ===
 
-  browser.runtime.onMessage.addListener(
-    async (message: unknown, sender: browser.Runtime.MessageSender) => {
-      const senderId = sender.tab?.id ?? 'popup';
+  onMessage('getWasmStatus', async () => {
+    try {
+      const status = await localExtStorage.getItem('wasmStatus');
+      const initTime = await localExtStorage.getItem('wasmInitTime');
+      const error = await localExtStorage.getItem('wasmInitError');
 
-      // Validate message structure with Valibot
-      const validationResult = parseMessage(message);
-      if (!validationResult.success) {
-        getLogger().error(
-          'MessageHandler',
-          `Invalid message from ${senderId}`,
-          validationResult.error
-        );
+      if (status === null || status === 'failed') {
         return {
-          success: false,
-          error: `Invalid message format: ${validationResult.error}`,
+          initialized: false,
+          error: error ?? 'WASM initialization failed',
         };
       }
 
-      const msg = validationResult.data;
-      getLogger().debug('MessageHandler', `Received message: ${msg.type} from ${senderId}`);
-
-      // Validate message size for conversion requests
-      if (msg.type === MessageType.CONVERSION_REQUEST) {
-        const payload = msg.payload;
-        if (
-          payload !== null &&
-          payload !== undefined &&
-          payload.tsx !== null &&
-          payload.tsx !== undefined &&
-          payload.tsx !== ''
-        ) {
-          const tsxSize = new TextEncoder().encode(payload.tsx).length;
-          if (tsxSize > MAX_MESSAGE_SIZE) {
-            const sizeMB = (tsxSize / (1024 * 1024)).toFixed(2);
-            getLogger().warn('Background', `TSX content too large: ${sizeMB}MB (max: 2MB)`);
-            return {
-              success: false,
-              error: `TSX content is too large (${sizeMB}MB). Maximum size is 2MB. Please reduce the content or split into multiple files.`,
-            };
-          }
-        }
+      if (status === 'initializing') {
+        return { initialized: false };
       }
 
-      try {
-        // Use handler registry for modular message handling
-        // Type assertion: runtime lookup guarantees type compatibility
-        const handler = getHandler(handlerRegistry, msg.type as keyof MessageMap);
-
-        if (handler) {
-          // Type assertion: handler was retrieved by msg.type, so it accepts this message
-          // Runtime safety: getHandler ensures type compatibility
-          return await handler.handle(
-            msg as unknown as Parameters<typeof handler.handle>[0],
-            sender
-          );
-        } else {
-          getLogger().warn('Background', `No handler for message type: ${msg.type}`);
-          return { success: false, error: 'Unknown message type' };
-        }
-      } catch (error) {
-        getLogger().error('MessageHandler', `Error handling message ${msg.type}`, error);
-        return { success: false, error: String(error) };
+      if (status === 'success') {
+        return {
+          initialized: true,
+          initTime: initTime ?? undefined,
+        };
       }
+
+      return {
+        initialized: false,
+        error: 'Invalid WASM status in storage',
+      };
+    } catch (error: unknown) {
+      return {
+        initialized: false,
+        error: error instanceof Error ? error.message : 'Failed to check WASM status',
+      };
     }
-  );
+  });
 
-  getLogger().info('Background', 'Message handler initialized');
+  onMessage('retryWasmInit', async () => {
+    try {
+      await retryWasmInit();
+      await localExtStorage.removeItem('wasmInitError');
+      return { initialized: true };
+    } catch (error: unknown) {
+      return {
+        initialized: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  });
+
+  // === TSX Validation ===
+
+  onMessage('validateTsx', async ({ data }) => {
+    const isValid = await validateTsxSyntax(data.tsx, getLogger(), getConverterInstance());
+    return { valid: isValid };
+  });
+
+  // === Conversion ===
+
+  onMessage('startConversion', async ({ data: payload }) => {
+    const jobId = crypto.randomUUID();
+    const startTime = performance.now();
+
+    // Validate WASM is ready (check both storage state AND in-memory state)
+    // Storage might show 'success' from a previous session while the current
+    // service worker instance hasn't finished initializing yet
+    const wasmStatus = await getWasmStatus();
+    const wasmModuleReady = isWASMInitialized();
+
+    if (wasmStatus.status !== 'success' || !wasmModuleReady) {
+      let errorMessage: string;
+      if (!wasmModuleReady && wasmStatus.status === 'success') {
+        // Storage says success but module not ready - race condition on startup
+        errorMessage = 'PDF generation engine is still loading. Please wait a moment and try again.';
+      } else if (wasmStatus.status === 'initializing') {
+        errorMessage = 'PDF generation engine is initializing. Please wait a moment and try again.';
+      } else if (wasmStatus.status === 'failed') {
+        errorMessage = `PDF generation engine failed to initialize: ${wasmStatus.error ?? 'Unknown error'}. Please try reloading the extension.`;
+      } else {
+        errorMessage = 'PDF generation engine status unknown. Please try reloading the extension.';
+      }
+      return { success: false, error: errorMessage };
+    }
+
+    try {
+      getLogger().info('MessageHandler', `Starting PDF conversion (job: ${jobId})`);
+
+      await lifecycleManager.saveJobCheckpoint(jobId, 'queued');
+      progressTracker.startTracking(jobId);
+
+      const onProgress = (stage: string, percentage: number) => {
+        void lifecycleManager.saveJobCheckpoint(jobId, stage as ConversionStatus);
+        progressTracker.createProgressCallback(jobId)(stage, percentage);
+      };
+
+      const onRetry = (attempt: number, delay: number, error: Error) => {
+        getLogger().warn('MessageHandler', `Conversion retry attempt ${attempt}/3 after ${delay}ms delay`, { error: error.message });
+        progressTracker.sendRetryProgress(jobId, attempt, 3, delay, error);
+      };
+
+      const result = await conversionService.convert(payload, onProgress, onRetry);
+      const duration = performance.now() - startTime;
+
+      // Send completion broadcast
+      void sendMessage('conversionComplete', {
+        jobId,
+        filename: result.filename,
+        fileSize: result.pdfBytes.length,
+        duration,
+        pdfBytes: result.pdfBytes,
+      });
+
+      getLogger().info('MessageHandler', `PDF conversion completed (job: ${jobId})`, {
+        duration: duration.toFixed(0),
+        filename: result.filename,
+        fileSize: result.pdfBytes.length,
+      });
+
+      return { success: true };
+    } catch (error: unknown) {
+      // Log the ORIGINAL error before parsing/sanitization
+      getLogger().error('MessageHandler', `[${jobId}] RAW ERROR:`, {
+        errorType: typeof error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        errorString: String(error),
+      });
+
+      const conversionError = parseConversionError(error, jobId);
+
+      getLogger().error('MessageHandler', `[${jobId}] ${conversionError.code}: ${conversionError.message}`, {
+        stage: conversionError.stage,
+        error,
+      });
+
+      // Send error broadcast
+      void sendMessage('conversionError', {
+        jobId,
+        error: conversionError,
+      });
+
+      return { success: false };
+    } finally {
+      progressTracker.stopTracking(jobId);
+      await lifecycleManager.clearJobCheckpoint(jobId);
+    }
+  });
+
+  // === Settings ===
+
+  onMessage('getSettings', async () => {
+    try {
+      const settings = await settingsStore.loadSettings();
+      return { success: true, settings };
+    } catch (error: unknown) {
+      getLogger().error('MessageHandler', 'Failed to load settings', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to load settings',
+      };
+    }
+  });
+
+  onMessage('updateSettings', async ({ data: payload }) => {
+    try {
+      const currentSettings = await settingsStore.loadSettings();
+      const updatedSettings = { ...currentSettings, ...payload.settings };
+      await settingsStore.saveSettings(updatedSettings);
+      return { success: true };
+    } catch (error: unknown) {
+      getLogger().error('MessageHandler', 'Failed to update settings', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update settings',
+      };
+    }
+  });
+
+  // === Popup Lifecycle ===
+
+  onMessage('popupOpened', async ({ data: payload }) => {
+    if (payload.requestProgressUpdate) {
+      await progressTracker.synchronizeProgress();
+    }
+    return { success: true };
+  });
+
+  // === Health Check ===
+
+  onMessage('ping', () => {
+    return { pong: true };
+  });
+
+  getLogger().info('Background', 'Message handlers initialized');
 }

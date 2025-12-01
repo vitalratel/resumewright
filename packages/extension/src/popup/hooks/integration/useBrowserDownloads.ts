@@ -9,7 +9,6 @@
  */
 
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import browser from 'webextension-polyfill';
 import { getLogger } from '@/shared/infrastructure/logging';
 
 // ============================================================================
@@ -205,11 +204,13 @@ function useDownloadActions(
     }
 
     setActionError(null);
-    browser.downloads.show(downloadId).catch((err) => {
+    try {
+      browser.downloads.show(downloadId);
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       getLogger().error('BrowserDownloads', 'Failed to show download in folder', { message });
       setActionError(`Failed to show in folder: ${message}`);
-    });
+    }
   }, [downloadId, apiAvailable]);
 
   return { openDownload, showInFolder, actionError };

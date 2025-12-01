@@ -5,7 +5,6 @@
  * Uses Manifest V3 badge API (browser.action).
  */
 
-import browser from 'webextension-polyfill';
 import { getLogger } from '@/shared/infrastructure/logging';
 
 /**

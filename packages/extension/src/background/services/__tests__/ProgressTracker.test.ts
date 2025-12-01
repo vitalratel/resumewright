@@ -1,22 +1,20 @@
-/**
- * Tests for ProgressTracker
- *
- * Tests progress tracking and UI update logic:
- * - Starting and stopping conversion tracking
- * - Progress callback creation and throttling
- * - Retry progress updates
- * - Popup synchronization
- */
+// ABOUTME: Tests for ProgressTracker service.
+// ABOUTME: Verifies progress tracking, throttling, retry updates, and popup synchronization.
 
-import { fakeBrowser } from '@webext-core/fake-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MessageType } from '../../../shared/types/messages';
 import { ProgressTracker } from '../ProgressTracker';
 
-// Mock dependencies
-// webextension-polyfill is mocked globally with fakeBrowser
+// Mock sendMessage from @/shared/messaging using vi.hoisted for proper hoisting
+const mocks = vi.hoisted(() => ({
+  sendMessage: vi.fn(),
+}));
 
-vi.mock('../../../shared/logging', () => ({
+vi.mock('@/shared/messaging', () => ({
+  sendMessage: mocks.sendMessage,
+  onMessage: vi.fn(() => vi.fn()),
+}));
+
+vi.mock('@/shared/infrastructure/logging', () => ({
   getLogger: vi.fn(() => ({
     info: vi.fn(),
     debug: vi.fn(),
@@ -34,46 +32,29 @@ describe('ProgressTracker', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
-    // Create spy for fakeBrowser runtime.sendMessage
-    vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockResolvedValue(undefined);
-    
+    mocks.sendMessage.mockReset();
+    mocks.sendMessage.mockResolvedValue(undefined);
+
     tracker = new ProgressTracker();
   });
 
   describe('startTracking', () => {
-    it('should send CONVERSION_STARTED message', async () => {
-      const jobId = 'test-job-123';
-
-      await tracker.startTracking(jobId);
-
-      expect(fakeBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-        type: MessageType.CONVERSION_STARTED,
-        payload: {
-          jobId,
-          estimatedDuration: 5000,
-        },
-      });
-    });
-
     it('should initialize active conversion state', async () => {
       const jobId = 'test-job-456';
 
-      await tracker.startTracking(jobId);
+      tracker.startTracking(jobId);
 
       // Verify by synchronizing - should send progress for this job
       await tracker.synchronizeProgress();
 
-      expect(fakeBrowser.runtime.sendMessage).toHaveBeenCalledWith(
+      expect(mocks.sendMessage).toHaveBeenCalledWith(
+        'conversionProgress',
         expect.objectContaining({
-          type: MessageType.CONVERSION_PROGRESS,
-          payload: expect.objectContaining({
-            jobId,
-            progress: expect.objectContaining({
-              stage: 'queued',
-              percentage: 0,
-              currentOperation: 'Starting conversion...',
-            }),
+          jobId,
+          progress: expect.objectContaining({
+            stage: 'queued',
+            percentage: 0,
+            currentOperation: 'Starting conversion...',
           }),
         })
       );
@@ -81,137 +62,129 @@ describe('ProgressTracker', () => {
   });
 
   describe('createProgressCallback', () => {
-    it('should create callback that sends progress updates', async () => {
+    it('should create callback that sends progress updates', () => {
       const jobId = 'test-job-789';
-      await tracker.startTracking(jobId);
+      tracker.startTracking(jobId);
 
       const progressCallback = tracker.createProgressCallback(jobId);
       progressCallback('parsing', 25);
 
-      expect(fakeBrowser.runtime.sendMessage).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: MessageType.CONVERSION_PROGRESS,
-          payload: {
-            jobId,
-            progress: {
-              stage: 'parsing',
-              percentage: 25,
-              currentOperation: 'Parsing TSX code...',
-            },
+      expect(mocks.sendMessage).toHaveBeenCalledWith(
+        'conversionProgress',
+        {
+          jobId,
+          progress: {
+            stage: 'parsing',
+            percentage: 25,
+            currentOperation: 'Parsing TSX code...',
           },
-        })
+        }
       );
     });
 
     it('should update active conversion state', async () => {
       const jobId = 'test-job-101';
-      await tracker.startTracking(jobId);
-      vi.clearAllMocks();
+      tracker.startTracking(jobId);
 
       const progressCallback = tracker.createProgressCallback(jobId);
       progressCallback('rendering', 50);
 
       // Synchronize to verify state was updated
+      mocks.sendMessage.mockClear();
       await tracker.synchronizeProgress();
 
-      expect(fakeBrowser.runtime.sendMessage).toHaveBeenCalledWith(
+      expect(mocks.sendMessage).toHaveBeenCalledWith(
+        'conversionProgress',
         expect.objectContaining({
-          payload: expect.objectContaining({
-            progress: expect.objectContaining({
-              stage: 'rendering',
-              percentage: 50,
-            }),
+          progress: expect.objectContaining({
+            stage: 'rendering',
+            percentage: 50,
           }),
         })
       );
     });
 
-    it('should handle unknown stage gracefully', async () => {
+    it('should handle unknown stage gracefully', () => {
       const jobId = 'test-job-202';
-      await tracker.startTracking(jobId);
+      tracker.startTracking(jobId);
 
       const progressCallback = tracker.createProgressCallback(jobId);
       progressCallback('unknown-stage', 75);
 
-      expect(fakeBrowser.runtime.sendMessage).toHaveBeenCalledWith(
+      expect(mocks.sendMessage).toHaveBeenCalledWith(
+        'conversionProgress',
         expect.objectContaining({
-          payload: expect.objectContaining({
-            progress: expect.objectContaining({
-              currentOperation: 'Processing (unknown-stage)...',
-            }),
+          progress: expect.objectContaining({
+            currentOperation: 'Processing (unknown-stage)...',
           }),
         })
       );
     });
 
-    it('should handle message send failures gracefully', async () => {
+    it('should handle message send failures gracefully', () => {
       const jobId = 'test-job-303';
-      await tracker.startTracking(jobId);
+      tracker.startTracking(jobId);
 
-      vi.mocked(fakeBrowser.runtime.sendMessage).mockRejectedValue(new Error('Send failed'));
+      mocks.sendMessage.mockRejectedValue(new Error('Send failed'));
 
       const progressCallback = tracker.createProgressCallback(jobId);
-      
+
       // Should not throw
       expect(() => progressCallback('parsing', 30)).not.toThrow();
     });
   });
 
   describe('sendRetryProgress', () => {
-    it('should send retry progress update', async () => {
+    it('should send retry progress update', () => {
       const jobId = 'test-job-404';
-      await tracker.startTracking(jobId);
-      vi.clearAllMocks();
+      tracker.startTracking(jobId);
+      mocks.sendMessage.mockClear();
 
       const error = new Error('Conversion failed temporarily');
       tracker.sendRetryProgress(jobId, 2, 3, 2000, error);
 
-      expect(fakeBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-        type: MessageType.CONVERSION_PROGRESS,
-        payload: {
-          jobId,
-          progress: {
-            stage: 'queued',
-            percentage: 0,
-            currentOperation: 'Conversion attempt 2/3... retrying in 2.0s',
-            retryAttempt: 2,
-            lastError: 'Conversion failed temporarily',
-          },
+      expect(mocks.sendMessage).toHaveBeenCalledWith('conversionProgress', {
+        jobId,
+        progress: {
+          stage: 'queued',
+          percentage: 0,
+          currentOperation: 'Conversion attempt 2/3... retrying in 2.0s',
+          retryAttempt: 2,
+          lastError: 'Conversion failed temporarily',
         },
       });
     });
 
     it('should update active conversion state with retry info', async () => {
       const jobId = 'test-job-505';
-      await tracker.startTracking(jobId);
+      tracker.startTracking(jobId);
 
       const error = new Error('Network timeout');
       tracker.sendRetryProgress(jobId, 1, 3, 1000, error);
 
       // Verify state was updated by synchronizing
-      vi.clearAllMocks();
+      mocks.sendMessage.mockClear();
       await tracker.synchronizeProgress();
 
-      expect(fakeBrowser.runtime.sendMessage).toHaveBeenCalledWith(
+      expect(mocks.sendMessage).toHaveBeenCalledWith(
+        'conversionProgress',
         expect.objectContaining({
-          payload: expect.objectContaining({
-            progress: expect.objectContaining({
-              retryAttempt: 1,
-              lastError: 'Network timeout',
-            }),
+          progress: expect.objectContaining({
+            retryAttempt: 1,
+            lastError: 'Network timeout',
           }),
         })
       );
     });
 
-    it('should handle message send failures gracefully', async () => {
+    it('should handle message send failures gracefully', () => {
       const jobId = 'test-job-606';
-      await tracker.startTracking(jobId);
+      tracker.startTracking(jobId);
 
-      vi.mocked(fakeBrowser.runtime.sendMessage).mockRejectedValue(new Error('Send failed'));
+      mocks.sendMessage.mockRejectedValue(new Error('Send failed'));
 
       const error = new Error('Test error');
-      
+
       // Should not throw
       expect(() => tracker.sendRetryProgress(jobId, 1, 3, 1000, error)).not.toThrow();
     });
@@ -222,49 +195,46 @@ describe('ProgressTracker', () => {
       const jobId1 = 'job-1';
       const jobId2 = 'job-2';
 
-      await tracker.startTracking(jobId1);
-      await tracker.startTracking(jobId2);
+      tracker.startTracking(jobId1);
+      tracker.startTracking(jobId2);
 
-      vi.clearAllMocks();
+      mocks.sendMessage.mockClear();
       await tracker.synchronizeProgress();
 
       // Should send progress for both jobs
-      expect(fakeBrowser.runtime.sendMessage).toHaveBeenCalledTimes(2);
-      expect(fakeBrowser.runtime.sendMessage).toHaveBeenCalledWith(
-        expect.objectContaining({
-          payload: expect.objectContaining({ jobId: jobId1 }),
-        })
+      expect(mocks.sendMessage).toHaveBeenCalledTimes(2);
+      expect(mocks.sendMessage).toHaveBeenCalledWith(
+        'conversionProgress',
+        expect.objectContaining({ jobId: jobId1 })
       );
-      expect(fakeBrowser.runtime.sendMessage).toHaveBeenCalledWith(
-        expect.objectContaining({
-          payload: expect.objectContaining({ jobId: jobId2 }),
-        })
+      expect(mocks.sendMessage).toHaveBeenCalledWith(
+        'conversionProgress',
+        expect.objectContaining({ jobId: jobId2 })
       );
     });
 
     it('should not send messages when no active conversions', async () => {
       await tracker.synchronizeProgress();
 
-      expect(fakeBrowser.runtime.sendMessage).not.toHaveBeenCalled();
+      expect(mocks.sendMessage).not.toHaveBeenCalled();
     });
 
     it('should send latest progress state', async () => {
       const jobId = 'job-sync-test';
-      await tracker.startTracking(jobId);
+      tracker.startTracking(jobId);
 
       const progressCallback = tracker.createProgressCallback(jobId);
       progressCallback('layout', 80);
 
-      vi.clearAllMocks();
+      mocks.sendMessage.mockClear();
       await tracker.synchronizeProgress();
 
-      expect(fakeBrowser.runtime.sendMessage).toHaveBeenCalledWith(
+      expect(mocks.sendMessage).toHaveBeenCalledWith(
+        'conversionProgress',
         expect.objectContaining({
-          payload: expect.objectContaining({
-            progress: expect.objectContaining({
-              stage: 'layout',
-              percentage: 80,
-            }),
+          progress: expect.objectContaining({
+            stage: 'layout',
+            percentage: 80,
           }),
         })
       );
@@ -274,15 +244,15 @@ describe('ProgressTracker', () => {
   describe('stopTracking', () => {
     it('should remove job from active conversions', async () => {
       const jobId = 'test-job-cleanup';
-      await tracker.startTracking(jobId);
+      tracker.startTracking(jobId);
 
       tracker.stopTracking(jobId);
 
       // Verify by synchronizing - should not send progress for this job
-      vi.clearAllMocks();
+      mocks.sendMessage.mockClear();
       await tracker.synchronizeProgress();
 
-      expect(fakeBrowser.runtime.sendMessage).not.toHaveBeenCalled();
+      expect(mocks.sendMessage).not.toHaveBeenCalled();
     });
 
     it('should be idempotent', () => {
@@ -295,9 +265,9 @@ describe('ProgressTracker', () => {
   });
 
   describe('getOperationDescription', () => {
-    it('should map known stages to descriptions', async () => {
+    it('should map known stages to descriptions', () => {
       const jobId = 'test-stages';
-      await tracker.startTracking(jobId);
+      tracker.startTracking(jobId);
       const progressCallback = tracker.createProgressCallback(jobId);
 
       const stages = [
@@ -310,15 +280,14 @@ describe('ProgressTracker', () => {
       ];
 
       for (const { stage, expected } of stages) {
-        vi.clearAllMocks();
+        mocks.sendMessage.mockClear();
         progressCallback(stage, 50);
 
-        expect(fakeBrowser.runtime.sendMessage).toHaveBeenCalledWith(
+        expect(mocks.sendMessage).toHaveBeenCalledWith(
+          'conversionProgress',
           expect.objectContaining({
-            payload: expect.objectContaining({
-              progress: expect.objectContaining({
-                currentOperation: expected,
-              }),
+            progress: expect.objectContaining({
+              currentOperation: expected,
             }),
           })
         );

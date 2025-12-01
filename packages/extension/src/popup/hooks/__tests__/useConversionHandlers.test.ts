@@ -114,7 +114,7 @@ describe('useConversionHandlers', () => {
   describe('handleExportClick', () => {
     it('starts conversion with valid file', async () => {
       mockAppState.importedFile = { name: 'test.tsx', size: 1024, content: '<CV>Test</CV>' };
-      vi.mocked(extensionAPI.startConversion).mockResolvedValue({ jobId: testJobId, estimatedDuration: 5000 });
+      vi.mocked(extensionAPI.startConversion).mockResolvedValue({ success: true });
 
       const { result } = renderHook(() =>
         useConversionHandlers(defaultProps()),
@@ -158,7 +158,7 @@ describe('useConversionHandlers', () => {
 
     it('handles large files correctly', async () => {
       mockAppState.importedFile = { name: 'large.tsx', size: 2 * 1024 * 1024, content: '<CV>Large</CV>' };
-      vi.mocked(extensionAPI.startConversion).mockResolvedValue({ jobId: testJobId, estimatedDuration: 5000 });
+      vi.mocked(extensionAPI.startConversion).mockResolvedValue({ success: true });
 
       const { result } = renderHook(() =>
         useConversionHandlers(defaultProps()),
@@ -199,7 +199,7 @@ describe('useConversionHandlers', () => {
 
     it('updates progress store', async () => {
       mockAppState.importedFile = { name: 'test.tsx', size: 1024, content: '<CV>Test</CV>' };
-      vi.mocked(extensionAPI.startConversion).mockResolvedValue({ jobId: testJobId, estimatedDuration: 5000 });
+      vi.mocked(extensionAPI.startConversion).mockResolvedValue({ success: true });
 
       const { result } = renderHook(() =>
         useConversionHandlers(defaultProps()),

@@ -81,35 +81,6 @@ export default defineConfig({
 
   // Vite configuration
   vite: () => ({
-    test: {
-      globals: true,
-      environment: 'jsdom',
-      setupFiles: ['./src/__tests__/setup.ts'],
-
-      // Force cleanup between tests
-      clearMocks: true,
-      mockReset: true,
-      restoreMocks: true,
-
-      // Timeout adjustments (Increased from 10s to 15s for CI robustness)
-      testTimeout: 15000, // 15s per test (increased for slower CI environments)
-      hookTimeout: 5000, // 5s for beforeEach/afterEach
-
-      // Coverage configuration
-      coverage: {
-        provider: 'v8',
-        reporter: ['text', 'json', 'html'],
-        reportsDirectory: './coverage',
-        clean: true,
-        include: ['src/**/*.{ts,tsx}'],
-        exclude: [
-          'src/**/__tests__/**',
-          'src/**/*.test.{ts,tsx}',
-          'src/test/**',
-          'src/__tests__/setup.ts',
-        ],
-      },
-    },
     plugins: [
       // Stub out Node.js-specific loader for browser build
       {

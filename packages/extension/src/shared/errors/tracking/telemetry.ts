@@ -6,7 +6,6 @@
  * Users can export error logs for bug reports.
  */
 
-import browser from 'webextension-polyfill';
 import { getLogger } from '../../infrastructure/logging';
 
 /**

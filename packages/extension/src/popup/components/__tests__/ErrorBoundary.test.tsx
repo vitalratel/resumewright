@@ -4,11 +4,11 @@
 
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import browser from 'webextension-polyfill';
+import { browser } from 'wxt/browser';
 import { ErrorBoundary, SectionErrorBoundary } from '../ErrorBoundary';
 
-vi.mock('webextension-polyfill', () => ({
-  default: {
+vi.mock('wxt/browser', () => ({
+  browser: {
     runtime: {
       getManifest: vi.fn(),
     },
@@ -167,7 +167,7 @@ describe('ErrorBoundary', () => {
         version: '1.2.3',
         name: 'Test Extension',
         manifest_version: 3,
-      } as browser.Manifest.WebExtensionManifest);
+      } as ReturnType<typeof browser.runtime.getManifest>);
 
       const { logErrorToService } = await import('@/shared/errors/tracking/telemetry');
 
@@ -193,7 +193,7 @@ describe('ErrorBoundary', () => {
       vi.stubEnv('PROD', true);
       vi.stubEnv('DEV', false);
 
-      vi.mocked(browser.runtime.getManifest).mockReturnValue(undefined as unknown as browser.Manifest.WebExtensionManifest);
+      vi.mocked(browser.runtime.getManifest).mockReturnValue(undefined as unknown as ReturnType<typeof browser.runtime.getManifest>);
 
       const { logErrorToService } = await import('@/shared/errors/tracking/telemetry');
 

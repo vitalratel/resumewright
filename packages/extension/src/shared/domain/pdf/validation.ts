@@ -1,15 +1,9 @@
-/**
- * Unified TSX Validation Module
- *
- * Consolidates all validation logic from popup utils and validator service.
- * Provides both comprehensive file validation and fast syntax-only validation.
- */
+// ABOUTME: Unified TSX validation module for file and syntax validation.
+// ABOUTME: Provides comprehensive file validation and fast syntax-only validation.
 
-import type { WasmStatusPayload } from '../../types/messages';
 import type { ILogger } from '../logging/ILogger';
 import type { TsxToPdfConverter } from './types';
-import browser from 'webextension-polyfill';
-import { MessageType } from '../../types/messages';
+import { sendMessage } from '@/shared/messaging';
 import { FILE_SIZE_LIMITS as SIZE_LIMITS } from './constants';
 import { parseFontRequirements } from './wasmSchemas';
 
@@ -41,14 +35,6 @@ export interface TsxValidationResult {
  * @param fileSize - File size in bytes
  * @param fileName - File name (for extension check)
  * @returns Validation result with error/warnings
- *
- * @example
- * ```typescript
- * const result = await validateTsxFile(content, fileSize, 'resume.tsx');
- * if (!result.valid) {
- *   console.error(result.error);
- * }
- * ```
  */
 export async function validateTsxFile(
   content: string,
@@ -98,37 +84,26 @@ export async function validateTsxFile(
   }
 
   // Check 4: Wait for WASM to be ready
-  // In browser environment, WASM is initialized in the background worker.
-  // Query the background worker's WASM status via messaging.
-  // React 19 pattern: Use recursion instead of await in while loop
   try {
-    const maxWaitMs = 15000; // 15 seconds max (WASM typically initializes in ~5s)
+    const maxWaitMs = 15000;
     const checkIntervalMs = 500;
     const startTime = Date.now();
 
     /**
      * Recursive function to poll WASM status
-     * Avoids await-in-loop ESLint warning by using recursion
      */
     async function pollWasmStatus(): Promise<{ ready: boolean; error?: string }> {
-      // Check timeout
       if (Date.now() - startTime >= maxWaitMs) {
         return { ready: false };
       }
 
       try {
-        const response = await browser.runtime.sendMessage({
-          type: MessageType.GET_WASM_STATUS,
-          payload: {},
-        });
-
-        const status = response as WasmStatusPayload;
+        const status = await sendMessage('getWasmStatus', {});
 
         if (status.initialized) {
           return { ready: true };
         }
 
-        // If there's a permanent error, stop waiting
         if (status.error != null) {
           logger.error('TsxValidation', 'WASM initialization failed', { error: status.error });
           return {
@@ -137,19 +112,17 @@ export async function validateTsxFile(
           };
         }
 
-        // Still initializing, wait and retry recursively
         await new Promise(resolve => setTimeout(resolve, checkIntervalMs));
         return await pollWasmStatus();
       }
       catch (err) {
         const error = err as Error;
-        // If background worker not responding, wait and retry
         if (error.message.includes('Receiving end does not exist')) {
           await new Promise(resolve => setTimeout(resolve, checkIntervalMs));
           return pollWasmStatus();
         }
         else {
-          throw err; // Other errors should bubble up
+          throw err;
         }
       }
     }
@@ -157,7 +130,7 @@ export async function validateTsxFile(
     const result = await pollWasmStatus();
 
     if (!result.ready) {
-      if (result.error !== null && result.error !== undefined) {
+      if (result.error != null) {
         return { valid: false, error: result.error };
       }
       logger.error('TsxValidation', 'WASM initialization timeout', { maxWaitMs });
@@ -177,13 +150,7 @@ export async function validateTsxFile(
 
   // Check 5: TSX syntax validation (WASM-based via background worker)
   try {
-    // Send TSX to background worker for validation
-    const response = await browser.runtime.sendMessage({
-      type: MessageType.VALIDATE_TSX,
-      payload: { tsx: content },
-    });
-
-    const result = response as { valid: boolean };
+    const result = await sendMessage('validateTsx', { tsx: content });
 
     if (!result.valid) {
       return {
@@ -210,19 +177,6 @@ export async function validateTsxFile(
  * Validate TSX syntax only (fast validation)
  *
  * Uses WASM detect_fonts() which parses TSX without full conversion.
- * This is faster than convert_tsx_to_pdf() for validation-only scenarios.
- *
- * @param tsx - TSX source code
- * @param logger - Logger instance for error reporting
- * @param converter - WASM converter instance (injected dependency)
- * @returns True if syntax is valid, false otherwise
- *
- * @example
- * ```typescript
- * if (await validateTsxSyntax(tsx)) {
- *   // Proceed with conversion
- * }
- * ```
  */
 export async function validateTsxSyntax(
   tsx: string,
@@ -234,16 +188,10 @@ export async function validateTsxSyntax(
   }
 
   try {
-
-    // Use detect_fonts() which parses TSX and returns font requirements
-    // If parsing fails, this will throw an error
     const fontsJson = converter.detect_fonts(tsx);
 
-    // Use Valibot validation via parseFontRequirements
-    // This validates both JSON syntax AND structure/types
     try {
       const fonts = parseFontRequirements(fontsJson);
-      // If we got a validated array of fonts (even empty), parsing succeeded
       return Array.isArray(fonts);
     }
     catch (parseError) {
@@ -252,7 +200,6 @@ export async function validateTsxSyntax(
     }
   }
   catch (error) {
-    // Any error means TSX is invalid (parse error, invalid structure, etc.)
     logger.error('TsxValidation', 'validateTsxSyntax failed', error);
     return false;
   }
@@ -260,16 +207,10 @@ export async function validateTsxSyntax(
 
 /**
  * Generate detailed error message based on content analysis
- *
- * Provides specific guidance for common TSX issues.
- *
- * @param content - TSX content to analyze
- * @returns Detailed error message with guidance
  */
 function generateDetailedErrorMessage(content: string): string {
   let error = 'This file doesn\'t appear to be a valid CV file from Claude.';
 
-  // Provide specific guidance based on common issues
   if (!content.includes('export')) {
     error += ' Missing export statement - make sure the file exports a CV component.';
   }
@@ -291,17 +232,6 @@ function generateDetailedErrorMessage(content: string): string {
 
 /**
  * Validate file extension
- *
- * @param fileName - File name to check
- * @param acceptedExtensions - Array of valid extensions (e.g., ['.tsx', '.ts'])
- * @returns True if extension is valid
- *
- * @example
- * ```typescript
- * if (!validateFileExtension('resume.pdf', ['.tsx', '.ts'])) {
- *   console.error('Invalid file type');
- * }
- * ```
  */
 export function validateFileExtension(
   fileName: string,
@@ -313,14 +243,6 @@ export function validateFileExtension(
 
 /**
  * Get file extension from filename
- *
- * @param fileName - File name
- * @returns Lowercase file extension (e.g., '.tsx')
- *
- * @example
- * ```typescript
- * const ext = getFileExtension('resume.TSX'); // '.tsx'
- * ```
  */
 export function getFileExtension(fileName: string): string {
   return fileName.substring(fileName.lastIndexOf('.')).toLowerCase();

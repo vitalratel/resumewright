@@ -3,22 +3,22 @@
  * Provides mock factories and utilities to reduce test verbosity
  */
 
-import type browser from 'webextension-polyfill';
+import type { Browser } from 'wxt/browser';
 import type { AppState } from '../integration/useAppState';
 import { vi } from 'vitest';
 
 // Mock Download Item Factory
-export function mockDownloadItem(id: number, filename: string, startTime = '2025-01-01T00:00:00Z'): browser.Downloads.DownloadItem {
+export function mockDownloadItem(id: number, filename: string, startTime = '2025-01-01T00:00:00Z'): Browser.downloads.DownloadItem {
   return {
     id,
     filename,
     state: 'complete',
     startTime,
-  } as unknown as browser.Downloads.DownloadItem;
+  } as unknown as Browser.downloads.DownloadItem;
 }
 
 // Mock search result helper
-export function mockSearchResult(items: browser.Downloads.DownloadItem[]) {
+export function mockSearchResult(items: Browser.downloads.DownloadItem[]) {
   return items;
 }
 

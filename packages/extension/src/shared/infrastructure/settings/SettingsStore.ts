@@ -8,13 +8,13 @@
  * Storage Key: "resumewright-settings"
  */
 
+import type { Browser } from 'wxt/browser';
 import type { BaseIssue } from '@/shared/domain/validation/valibot';
 import type {
   UserSettings,
   ValidationError,
   ValidationResult,
 } from '@/shared/types/settings';
-import browser from 'webextension-polyfill';
 import {
   CURRENT_SETTINGS_VERSION,
   DEFAULT_USER_SETTINGS,
@@ -41,7 +41,7 @@ class SettingsStore {
       const result = await browser.storage.sync.get(STORAGE_KEY);
 
       if (result[STORAGE_KEY] !== null && result[STORAGE_KEY] !== undefined) {
-        const stored = result[STORAGE_KEY];
+        const stored: unknown = result[STORAGE_KEY];
 
         // Apply migrations if needed
         const rawString = JSON.stringify(stored);
@@ -82,7 +82,7 @@ class SettingsStore {
     try {
       const result = await browser.storage.local.get(STORAGE_KEY);
       if (result[STORAGE_KEY] !== null && result[STORAGE_KEY] !== undefined) {
-        const stored = result[STORAGE_KEY];
+        const stored: unknown = result[STORAGE_KEY];
         const rawString = JSON.stringify(stored);
         const migrationResult = migrateUserSettings(stored, rawString, getLogger());
 
@@ -195,7 +195,7 @@ class SettingsStore {
    */
   onSettingsChanged(callback: (settings: UserSettings) => void): () => void {
     const listener = (
-      changes: Record<string, browser.Storage.StorageChange>,
+      changes: Record<string, Browser.storage.StorageChange>,
       areaName: string,
     ) => {
       if (areaName === 'sync' && (changes[STORAGE_KEY]?.newValue !== null && changes[STORAGE_KEY]?.newValue !== undefined)) {

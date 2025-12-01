@@ -7,7 +7,6 @@
  * CSP-FIX: No inline styles (causes CPU throttling from CSP violations)
  */
 
-import browser from 'webextension-polyfill';
 import './popup.css';
 
 void (async () => {

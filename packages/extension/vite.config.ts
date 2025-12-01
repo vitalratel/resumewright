@@ -5,20 +5,6 @@ import { defineConfig } from 'vite';
 import wasm from 'vite-plugin-wasm';
 
 export default defineConfig({
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/__tests__/setup.ts'],
-
-    // Force cleanup between tests
-    clearMocks: true,
-    mockReset: true,
-    restoreMocks: true,
-
-    // Timeout adjustments
-    testTimeout: 10000, // 10s per test
-    hookTimeout: 5000, // 5s for beforeEach/afterEach
-  },
   plugins: [
     // Stub out Node.js-specific loader for browser build
     {

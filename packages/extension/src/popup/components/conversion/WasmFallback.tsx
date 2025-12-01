@@ -14,7 +14,6 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import React, { useState } from 'react';
-import browser from 'webextension-polyfill';
 import { WEBASSEMBLY_URLS } from '@/shared/config/externalUrls';
 import { reportIssue } from '@/shared/errors/presentation/formatting';
 import { generateErrorId } from '@/shared/errors/tracking/telemetry';

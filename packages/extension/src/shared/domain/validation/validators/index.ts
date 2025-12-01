@@ -21,6 +21,4 @@ export { parseCVDocument } from '../schemas/cv';
 
 export { parseHistoryEntry, validateHistoryEntry } from '../schemas/history';
 
-export { parseMessage } from '../schemas/messages';
-
 export { parseUserSettings } from '../schemas/settings';

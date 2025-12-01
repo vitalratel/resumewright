@@ -1,6 +1,5 @@
-/**
- * PDF Downloader Tests
- */
+// ABOUTME: Tests for PDF download functionality.
+// ABOUTME: Verifies browser.downloads API usage and blob URL handling.
 
 import type { Logger } from '../../infrastructure/logging';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -11,10 +10,15 @@ import { downloadPDF } from './downloader';
 global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
 global.URL.revokeObjectURL = vi.fn();
 
-vi.mock('webextension-polyfill', () => ({
-  default: {
+// Mock browser downloads API using vi.hoisted for proper hoisting
+const mocks = vi.hoisted(() => ({
+  download: vi.fn(),
+}));
+
+vi.mock('wxt/browser', () => ({
+  browser: {
     downloads: {
-      download: vi.fn(),
+      download: mocks.download,
     },
   },
 }));
@@ -44,13 +48,12 @@ describe('downloader', () => {
     const mockPdfBytes = new Uint8Array([37, 80, 68, 70, 45, 49, 46, 52]); // "%PDF-1.4"
 
     it('should download PDF with browser.downloads API', async () => {
-      const browser = (await import('webextension-polyfill')).default;
-      vi.mocked(browser.downloads.download).mockResolvedValue(123);
+      mocks.download.mockResolvedValue(123);
 
       await downloadPDF(mockPdfBytes, 'test.pdf');
 
       expect(global.URL.createObjectURL).toHaveBeenCalled();
-      expect(browser.downloads.download).toHaveBeenCalledWith({
+      expect(mocks.download).toHaveBeenCalledWith({
         url: 'blob:mock-url',
         filename: 'test.pdf',
         saveAs: false,
@@ -58,20 +61,18 @@ describe('downloader', () => {
     });
 
     it('should use generated filename when not provided', async () => {
-      const browser = (await import('webextension-polyfill')).default;
-      vi.mocked(browser.downloads.download).mockResolvedValue(123);
+      mocks.download.mockResolvedValue(123);
 
       await downloadPDF(mockPdfBytes);
 
-      const call = vi.mocked(browser.downloads.download).mock.calls[0][0];
+      const call = mocks.download.mock.calls[0][0];
       expect(call.filename).toMatch(/Resume_\d{4}-\d{2}-\d{2}\.pdf/);
       expect(call.saveAs).toBe(false);
       expect(call.url).toBe('blob:mock-url');
     });
 
     it('should revoke blob URL after timeout', async () => {
-      const browser = (await import('webextension-polyfill')).default;
-      vi.mocked(browser.downloads.download).mockResolvedValue(123);
+      mocks.download.mockResolvedValue(123);
 
       await downloadPDF(mockPdfBytes, 'test.pdf');
 
@@ -83,9 +84,9 @@ describe('downloader', () => {
     });
 
     it('should throw when browser.downloads not available', async () => {
-      const module = await import('webextension-polyfill');
-      const originalDownloads = module.default.downloads;
-      Object.defineProperty(module.default, 'downloads', {
+      const { browser } = await import('wxt/browser');
+      const originalDownloads = browser.downloads;
+      Object.defineProperty(browser, 'downloads', {
         value: undefined,
         writable: true,
         configurable: true,
@@ -95,7 +96,7 @@ describe('downloader', () => {
         'browser.downloads API not available',
       );
 
-      Object.defineProperty(module.default, 'downloads', {
+      Object.defineProperty(browser, 'downloads', {
         value: originalDownloads,
         writable: true,
         configurable: true,
@@ -103,8 +104,7 @@ describe('downloader', () => {
     });
 
     it('should revoke URL on download error', async () => {
-      const browser = (await import('webextension-polyfill')).default;
-      vi.mocked(browser.downloads.download).mockRejectedValue(new Error('Download failed'));
+      mocks.download.mockRejectedValue(new Error('Download failed'));
 
       await expect(downloadPDF(mockPdfBytes, 'test.pdf')).rejects.toThrow('Download failed');
 
@@ -112,13 +112,12 @@ describe('downloader', () => {
     });
 
     it('should handle empty PDF bytes', async () => {
-      const browser = (await import('webextension-polyfill')).default;
-      vi.mocked(browser.downloads.download).mockResolvedValue(123);
+      mocks.download.mockResolvedValue(123);
       const emptyBytes = new Uint8Array([]);
 
       await downloadPDF(emptyBytes, 'test.pdf');
 
-      expect(browser.downloads.download).toHaveBeenCalled();
+      expect(mocks.download).toHaveBeenCalled();
     });
   });
 });

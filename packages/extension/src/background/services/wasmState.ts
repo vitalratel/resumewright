@@ -5,7 +5,6 @@
  * Provides type-safe access to WASM status with validation.
  */
 
-import browser from 'webextension-polyfill';
 import { null_, number, picklist, string } from '@/shared/domain/validation/valibot';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { setValidatedStorage } from '@/shared/infrastructure/storage';

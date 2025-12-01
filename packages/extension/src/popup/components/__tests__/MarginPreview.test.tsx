@@ -376,8 +376,10 @@ describe('MarginPreview', () => {
       expect(pageContainer?.style.width).toBe('200px');
 
       // Height should be calculated based on aspect ratio (11/8.5 * 200)
+      // Use approximate match to handle floating point precision differences
+      const height = Number.parseFloat(pageContainer?.style.height ?? '0');
       const expectedHeight = (11 / 8.5) * 200;
-      expect(pageContainer?.style.height).toBe(`${expectedHeight}px`);
+      expect(height).toBeCloseTo(expectedHeight, 4);
     });
 
     it('should render simulated text lines in content area', () => {

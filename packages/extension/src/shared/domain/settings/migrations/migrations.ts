@@ -1,55 +1,18 @@
-/**
- * Schema Migration Utilities
- *
- * Handles backward-compatible schema migrations for settings and data structures.
- * Ensures user data is never lost during schema version upgrades.
- */
+// ABOUTME: Schema migration utilities for settings.
+// ABOUTME: Handles version upgrades while preserving user data.
 
 import type { ConversionConfig } from '@/shared/types/models';
 import type { UserSettings } from '@/shared/types/settings';
 import { UserSettingsSchema } from '@/shared/domain/validation/schemas/settings';
 import { safeParse } from '@/shared/domain/validation/valibot';
 import { getLogger } from '@/shared/infrastructure/logging';
+import {
+  CURRENT_SETTINGS_VERSION,
+  DEFAULT_CONVERSION_CONFIG,
+  DEFAULT_USER_SETTINGS,
+} from '../defaults';
 
-/**
- * Current schema version for UserSettings
- * Increment when making breaking changes to UserSettings schema
- */
-export const CURRENT_SETTINGS_VERSION = 1;
-
-/**
- * Default conversion configuration
- * Used as fallback when config is invalid or missing
- */
-export const DEFAULT_CONVERSION_CONFIG: ConversionConfig = {
-  pageSize: 'Letter',
-  margin: {
-    top: 0.5,
-    right: 0.5,
-    bottom: 0.5,
-    left: 0.5,
-  },
-  fontSize: 11,
-  fontFamily: 'Helvetica',
-  compress: true,
-  atsOptimization: false,
-  includeMetadata: true,
-};
-
-/**
- * Default user settings
- * Used as fallback when settings are invalid or missing
- */
-export const DEFAULT_USER_SETTINGS: UserSettings = {
-  theme: 'auto',
-  defaultConfig: DEFAULT_CONVERSION_CONFIG,
-  autoDetectCV: true,
-  showConvertButtons: true,
-  telemetryEnabled: false,
-  retentionDays: 30,
-  settingsVersion: CURRENT_SETTINGS_VERSION,
-  lastUpdated: Date.now(),
-};
+export { CURRENT_SETTINGS_VERSION, DEFAULT_CONVERSION_CONFIG, DEFAULT_USER_SETTINGS };
 
 /**
  * Migration result indicating success or failure

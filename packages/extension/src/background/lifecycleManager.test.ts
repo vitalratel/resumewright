@@ -7,7 +7,7 @@
 import type { ConversionStatus } from '../shared/types';
 import type { LifecycleManager } from './core/lifecycle/lifecycleManager';
 
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Type definitions for browser mock
 interface MockBrowser {
@@ -32,9 +32,9 @@ interface MockBrowser {
   };
 }
 
-// Mock webextension-polyfill module before importing lifecycle manager
-vi.mock('webextension-polyfill', () => {
-  const mockBrowser: MockBrowser = {
+// Use vi.hoisted to create mock functions that are available at mock time
+const { mockBrowserInstance } = vi.hoisted(() => {
+  const instance: MockBrowser = {
     runtime: {
       onInstalled: {
         addListener: vi.fn(),
@@ -55,41 +55,39 @@ vi.mock('webextension-polyfill', () => {
       },
     },
   };
-  return { default: mockBrowser };
+  return { mockBrowserInstance: instance };
 });
+
+// Mock wxt/browser module before importing lifecycle manager
+vi.mock('wxt/browser', () => ({
+  browser: mockBrowserInstance,
+}));
 
 describe('LifecycleManager', () => {
   let lifecycleManager: LifecycleManager;
-  // Properly typed mock variables
-  let mockBrowser: MockBrowser;
   let onStartupListener: (() => void) | null;
   let onInstalledListener: ((details: { reason: string; previousVersion?: string }) => void) | null;
   const STORAGE_KEY = 'resumewright_job_states';
 
-  beforeAll(async () => {
-    // Get the mocked browser instance
-    mockBrowser = (await import('webextension-polyfill')).default as unknown as MockBrowser;
-  });
-
   beforeEach(async () => {
     vi.clearAllMocks();
-    
+
     // Create fresh instance for each test
     const { LifecycleManager: LM } = await import('./core/lifecycle/lifecycleManager');
     lifecycleManager = new LM();
-    
+
     // Capture listeners after instance creation (registered in constructor)
-    const startupCalls = mockBrowser.runtime.onStartup.addListener.mock.calls;
-    const installedCalls = mockBrowser.runtime.onInstalled.addListener.mock.calls;
+    const startupCalls = mockBrowserInstance.runtime.onStartup.addListener.mock.calls;
+    const installedCalls = mockBrowserInstance.runtime.onInstalled.addListener.mock.calls;
     onStartupListener = startupCalls.length > 0 ? startupCalls[startupCalls.length - 1][0] : null;
     onInstalledListener = installedCalls.length > 0 ? installedCalls[installedCalls.length - 1][0] : null;
-    
+
     // Reset mock implementations
-    mockBrowser.storage.local.get.mockResolvedValue({});
-    mockBrowser.storage.local.set.mockResolvedValue(undefined);
-    mockBrowser.storage.local.remove.mockResolvedValue(undefined);
-    mockBrowser.storage.sync.get.mockResolvedValue({});
-    mockBrowser.storage.sync.set.mockResolvedValue(undefined);
+    mockBrowserInstance.storage.local.get.mockResolvedValue({});
+    mockBrowserInstance.storage.local.set.mockResolvedValue(undefined);
+    mockBrowserInstance.storage.local.remove.mockResolvedValue(undefined);
+    mockBrowserInstance.storage.sync.get.mockResolvedValue({});
+    mockBrowserInstance.storage.sync.set.mockResolvedValue(undefined);
   });
 
   describe('initialization', () => {
@@ -111,7 +109,7 @@ describe('LifecycleManager', () => {
         lastUpdate: Date.now() - 5000,
       };
 
-      mockBrowser.storage.local.get.mockResolvedValue({
+      mockBrowserInstance.storage.local.get.mockResolvedValue({
         [STORAGE_KEY]: {
           'test-job': orphanedJob,
         },
@@ -121,7 +119,7 @@ describe('LifecycleManager', () => {
       onStartupListener();
 
       // Should have checked storage for checkpoints
-      expect(mockBrowser.storage.local.get).toHaveBeenCalledWith(STORAGE_KEY);
+      expect(mockBrowserInstance.storage.local.get).toHaveBeenCalledWith(STORAGE_KEY);
     });
   });
 
@@ -131,11 +129,11 @@ describe('LifecycleManager', () => {
       const status: ConversionStatus = 'parsing';
       const tsx = 'const CV = () => <div>Test</div>';
 
-      mockBrowser.storage.local.get.mockResolvedValue({});
+      mockBrowserInstance.storage.local.get.mockResolvedValue({});
 
       await lifecycleManager.saveJobCheckpoint(jobId, status, tsx);
 
-      expect(mockBrowser.storage.local.set).toHaveBeenCalledWith({
+      expect(mockBrowserInstance.storage.local.set).toHaveBeenCalledWith({
         [STORAGE_KEY]: expect.objectContaining({
           [jobId]: expect.objectContaining({
             jobId,
@@ -152,11 +150,11 @@ describe('LifecycleManager', () => {
       const jobId = 'test-job-456';
       const status: ConversionStatus = 'queued';
 
-      mockBrowser.storage.local.get.mockResolvedValue({});
+      mockBrowserInstance.storage.local.get.mockResolvedValue({});
 
       await lifecycleManager.saveJobCheckpoint(jobId, status);
 
-      expect(mockBrowser.storage.local.set).toHaveBeenCalledWith({
+      expect(mockBrowserInstance.storage.local.set).toHaveBeenCalledWith({
         [STORAGE_KEY]: expect.objectContaining({
           [jobId]: expect.objectContaining({
             jobId,
@@ -171,7 +169,7 @@ describe('LifecycleManager', () => {
       const jobId = 'test-job-789';
       const status: ConversionStatus = 'parsing';
 
-      mockBrowser.storage.local.get.mockRejectedValue(new Error('Storage quota exceeded'));
+      mockBrowserInstance.storage.local.get.mockRejectedValue(new Error('Storage quota exceeded'));
 
       // Should not throw
       await expect(
@@ -184,7 +182,7 @@ describe('LifecycleManager', () => {
     it('should remove checkpoint after job completion', async () => {
       const jobId = 'completed-job';
 
-      mockBrowser.storage.local.get.mockResolvedValue({
+      mockBrowserInstance.storage.local.get.mockResolvedValue({
         [STORAGE_KEY]: {
           [jobId]: {
             jobId,
@@ -198,7 +196,7 @@ describe('LifecycleManager', () => {
       await lifecycleManager.clearJobCheckpoint(jobId);
 
       // Should update storage with the job removed
-      expect(mockBrowser.storage.local.set).toHaveBeenCalledWith({
+      expect(mockBrowserInstance.storage.local.set).toHaveBeenCalledWith({
         [STORAGE_KEY]: {},
       });
     });
@@ -206,7 +204,7 @@ describe('LifecycleManager', () => {
     it('should handle cleanup errors gracefully', async () => {
       const jobId = 'test-job';
 
-      mockBrowser.storage.local.get.mockRejectedValue(new Error('Storage error'));
+      mockBrowserInstance.storage.local.get.mockRejectedValue(new Error('Storage error'));
 
       // Should not throw
       await expect(
@@ -228,7 +226,7 @@ describe('LifecycleManager', () => {
         lastUpdate: Date.now() - 40000, // Last updated 40 seconds ago
       };
 
-      mockBrowser.storage.local.get.mockResolvedValue({
+      mockBrowserInstance.storage.local.get.mockResolvedValue({
         [STORAGE_KEY]: {
           'orphaned-123': orphanedJob,
         },
@@ -240,7 +238,7 @@ describe('LifecycleManager', () => {
 
       // Wait for async operations to complete
       await vi.waitFor(() => {
-        expect(mockBrowser.storage.local.get).toHaveBeenCalled();
+        expect(mockBrowserInstance.storage.local.get).toHaveBeenCalled();
       });
 
       // Check that orphaned job warning was logged (message format may vary)
@@ -265,7 +263,7 @@ describe('LifecycleManager', () => {
         lastUpdate: Date.now() - 6 * 60 * 1000, // Updated 6 minutes ago (beyond threshold)
       };
 
-      mockBrowser.storage.local.get.mockResolvedValue({
+      mockBrowserInstance.storage.local.get.mockResolvedValue({
         [STORAGE_KEY]: {
           'old-456': oldJob,
         },
@@ -286,7 +284,7 @@ describe('LifecycleManager', () => {
         throw new Error('onStartupListener not captured');
       }
 
-      mockBrowser.storage.local.get.mockResolvedValue({});
+      mockBrowserInstance.storage.local.get.mockResolvedValue({});
 
       // Should not throw
       expect(onStartupListener).toBeDefined();
@@ -299,12 +297,12 @@ describe('LifecycleManager', () => {
       const jobId = 'track-test-123';
       const status: ConversionStatus = 'parsing';
 
-      mockBrowser.storage.local.get.mockResolvedValue({});
+      mockBrowserInstance.storage.local.get.mockResolvedValue({});
 
       await lifecycleManager.saveJobCheckpoint(jobId, status);
 
       // Verify job is tracked internally (checkpoint should include startTime)
-      expect(mockBrowser.storage.local.set).toHaveBeenCalledWith({
+      expect(mockBrowserInstance.storage.local.set).toHaveBeenCalledWith({
         [STORAGE_KEY]: expect.objectContaining({
           [jobId]: expect.objectContaining({
             startTime: expect.any(Number),
@@ -316,15 +314,15 @@ describe('LifecycleManager', () => {
     it('should preserve start time across multiple checkpoints', async () => {
       const jobId = 'multi-checkpoint-789';
 
-      mockBrowser.storage.local.get.mockResolvedValue({});
+      mockBrowserInstance.storage.local.get.mockResolvedValue({});
 
       // First checkpoint
       await lifecycleManager.saveJobCheckpoint(jobId, 'queued');
-      const firstCall = mockBrowser.storage.local.set.mock.calls[0][0];
+      const firstCall = mockBrowserInstance.storage.local.set.mock.calls[0][0];
       const firstStartTime = firstCall[STORAGE_KEY][jobId].startTime;
 
       // Set up mock to return the existing job state for the second call
-      mockBrowser.storage.local.get.mockResolvedValue({
+      mockBrowserInstance.storage.local.get.mockResolvedValue({
         [STORAGE_KEY]: {
           [jobId]: {
             jobId,
@@ -340,7 +338,7 @@ describe('LifecycleManager', () => {
 
       // Second checkpoint
       await lifecycleManager.saveJobCheckpoint(jobId, 'parsing');
-      const secondCall = mockBrowser.storage.local.set.mock.calls[1][0];
+      const secondCall = mockBrowserInstance.storage.local.set.mock.calls[1][0];
       const secondStartTime = secondCall[STORAGE_KEY][jobId].startTime;
 
       // Start time should be preserved
@@ -354,7 +352,7 @@ describe('LifecycleManager', () => {
         throw new Error('onStartupListener not captured');
       }
 
-      mockBrowser.storage.local.get.mockRejectedValue(new Error('Storage unavailable'));
+      mockBrowserInstance.storage.local.get.mockRejectedValue(new Error('Storage unavailable'));
 
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
