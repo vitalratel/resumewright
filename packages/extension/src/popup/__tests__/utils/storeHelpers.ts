@@ -9,7 +9,7 @@ import type { CVMetadata, UIState  } from '../../store';
 import type { ConversionError, ConversionProgress } from '@/shared/types/models';
 import { ErrorCategory, ErrorCode } from '@/shared/types/errors';
 import { DEFAULT_JOB_ID } from '../../constants/app';
-import { usePersistedStore, useUIStore  } from '../../store';
+import { usePopupStore } from '../../store';
 import { useProgressStore } from '../../store/progressStore';
 
 /**
@@ -70,7 +70,7 @@ export function createMockProgressState(_jobId: string = DEFAULT_JOB_ID, overrid
  * Convenience function to set up all stores for converting state
  */
 export function setupConvertingState(jobId: string = DEFAULT_JOB_ID, progress?: Partial<ConversionProgress>) {
-  useUIStore.getState().setUIState('converting');
+  usePopupStore.getState().setUIState('converting');
   useProgressStore.getState().startConversion(jobId);
 
   if (progress) {
@@ -100,9 +100,9 @@ export function setupFileValidatedState(
     ...metadata,
   };
 
-  usePersistedStore.getState().setImportedFile(filename, content.length, content);
-  usePersistedStore.getState().setCVDetected(defaultMetadata);
-  useUIStore.getState().setUIState('file_validated');
+  usePopupStore.getState().setImportedFile(filename, content.length, content);
+  usePopupStore.getState().setCVDetected(defaultMetadata);
+  usePopupStore.getState().setUIState('file_validated');
 }
 
 /**
@@ -121,14 +121,14 @@ export function setupErrorState(error?: Partial<ConversionError>) {
     ...error,
   };
 
-  useUIStore.getState().setError(defaultError);
+  usePopupStore.getState().setError(defaultError);
 }
 
 /**
  * Set up success state in stores
  */
 export function setupSuccessState(filename: string = 'test-cv.pdf') {
-  useUIStore.getState().setSuccess(filename);
+  usePopupStore.getState().setSuccess(filename);
 }
 
 /**
@@ -137,8 +137,7 @@ export function setupSuccessState(filename: string = 'test-cv.pdf') {
  * Call in beforeEach/afterEach to ensure clean state
  */
 export function resetAllStores() {
-  useUIStore.getState().reset();
-  usePersistedStore.getState().reset();
+  usePopupStore.getState().reset();
   useProgressStore.getState().clearConversion(DEFAULT_JOB_ID);
 }
 
@@ -147,8 +146,7 @@ export function resetAllStores() {
  */
 export function getAllStoreState() {
   return {
-    ui: useUIStore.getState(),
-    persisted: usePersistedStore.getState(),
+    popup: usePopupStore.getState(),
     progress: useProgressStore.getState().getProgress(DEFAULT_JOB_ID),
   };
 }

@@ -25,13 +25,12 @@ import {
   useKeyboardShortcuts,
   useScreenReaderAnnouncement,
 } from './hooks/ui';
-import { usePersistedStore } from './store';
+import { usePopupStore } from './store';
 import { useProgressStore } from './store/progressStore';
 
 function App() {
-  // React 19 + Zustand 5 pattern: Track hydration state directly from store
-  const hasHydrated = usePersistedStore((state) => state._hasHydrated);
-  const hydrationError = usePersistedStore((state) => state._hydrationError);
+  const hasHydrated = usePopupStore((state) => state._hasHydrated);
+  const hydrationError = usePopupStore((state) => state._hydrationError);
 
   // State management (view routing and modal visibility)
   const [currentView, setCurrentView] = useState<'main' | 'settings' | 'help'>('main');

@@ -120,15 +120,12 @@ export class Logger implements DomainILogger {
 
   /**
    * Log debug message (development only)
-   * Supports both old API (message, data) and new API (context, message, data)
    */
-  debug(contextOrMessage: string, messageOrData?: string | unknown, data?: unknown): void {
+  debug(context: string, message: string, data?: unknown): void {
     if (this.config.level <= LogLevel.DEBUG) {
-      // Determine if using old or new API
-      const [context, message, logData] = this.parseArgs(contextOrMessage, messageOrData, data);
       const formatted = this.formatMessage('DEBUG', context, message);
-      if (logData !== undefined) {
-        console.debug(formatted, logData);
+      if (data !== undefined) {
+        console.debug(formatted, data);
       } else {
         console.debug(formatted);
       }
@@ -137,14 +134,12 @@ export class Logger implements DomainILogger {
 
   /**
    * Log informational message
-   * Supports both old API (message, data) and new API (context, message, data)
    */
-  info(contextOrMessage: string, messageOrData?: string | unknown, data?: unknown): void {
+  info(context: string, message: string, data?: unknown): void {
     if (this.config.level <= LogLevel.INFO) {
-      const [context, message, logData] = this.parseArgs(contextOrMessage, messageOrData, data);
       const formatted = this.formatMessage('INFO', context, message);
-      if (logData !== undefined) {
-        console.log(formatted, logData);
+      if (data !== undefined) {
+        console.log(formatted, data);
       } else {
         console.log(formatted);
       }
@@ -153,14 +148,12 @@ export class Logger implements DomainILogger {
 
   /**
    * Log warning message
-   * Supports both old API (message, data) and new API (context, message, data)
    */
-  warn(contextOrMessage: string, messageOrData?: string | unknown, data?: unknown): void {
+  warn(context: string, message: string, data?: unknown): void {
     if (this.config.level <= LogLevel.WARN) {
-      const [context, message, logData] = this.parseArgs(contextOrMessage, messageOrData, data);
       const formatted = this.formatMessage('WARN', context, message);
-      if (logData !== undefined) {
-        console.warn(formatted, logData);
+      if (data !== undefined) {
+        console.warn(formatted, data);
       } else {
         console.warn(formatted);
       }
@@ -169,35 +162,15 @@ export class Logger implements DomainILogger {
 
   /**
    * Log error message (always logged except in NONE mode)
-   * Supports both old API (message, error) and new API (context, message, error)
    */
-  error(contextOrMessage: string, messageOrError?: string | unknown, error?: unknown): void {
+  error(context: string, message: string, error?: unknown): void {
     if (this.config.level <= LogLevel.ERROR) {
-      const [context, message, logError] = this.parseArgs(contextOrMessage, messageOrError, error);
       const formatted = this.formatMessage('ERROR', context, message);
-      if (logError !== undefined) {
-        console.error(formatted, logError);
+      if (error !== undefined) {
+        console.error(formatted, error);
       } else {
         console.error(formatted);
       }
     }
-  }
-
-  /**
-   * Parse arguments to support both old and new logger API
-   * Old API: (message, data?)
-   * New API: (context, message, data?)
-   */
-  private parseArgs(
-    arg1: string,
-    arg2?: string | unknown,
-    arg3?: unknown
-  ): [string, string, unknown] {
-    // If arg2 is a string, assume new API with context
-    if (typeof arg2 === 'string') {
-      return [arg1, arg2, arg3];
-    }
-    // Otherwise, old API: arg1 is message, arg2 is data
-    return ['', arg1, arg2];
   }
 }

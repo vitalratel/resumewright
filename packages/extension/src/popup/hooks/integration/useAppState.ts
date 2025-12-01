@@ -11,12 +11,12 @@
 
 import type { ConversionError, ConversionProgress } from '@/shared/types/models/conversion';
 import { useCallback, useMemo } from 'react';
-import { usePersistedStore, useUIStore } from '../../store';
+import { usePopupStore } from '../../store';
 import { useProgressStore } from '../../store/progressStore';
 
 export interface AppState {
   // UI State
-  uiState: ReturnType<typeof useUIStore.getState>['uiState'];
+  uiState: ReturnType<typeof usePopupStore.getState>['uiState'];
   validationError: string | null;
   isValidating: boolean;
   lastError: ConversionError | null;
@@ -35,7 +35,7 @@ export interface AppState {
   startConversion: () => void;
   setSuccess: (filename?: string) => void;
   setError: (error: ConversionError) => void;
-  setUIState: (state: ReturnType<typeof useUIStore.getState>['uiState']) => void;
+  setUIState: (state: ReturnType<typeof usePopupStore.getState>['uiState']) => void;
 
   // Persisted Actions
   setImportedFile: (name: string, size: number, content: string) => void;
@@ -51,30 +51,25 @@ export interface AppState {
  * Direct subscriptions prevent constant object recreation
  */
 export function useAppState(): AppState {
-  // UI State data - individual subscriptions (stable primitive values)
-  const uiState = useUIStore((state) => state.uiState);
-  const validationError = useUIStore((state) => state.validationError);
-  const isValidating = useUIStore((state) => state.isValidating);
-  const lastError = useUIStore((state) => state.lastError);
-  const lastFilename = useUIStore((state) => state.lastFilename);
+  // State data - individual subscriptions (stable primitive values)
+  const uiState = usePopupStore((state) => state.uiState);
+  const validationError = usePopupStore((state) => state.validationError);
+  const isValidating = usePopupStore((state) => state.isValidating);
+  const lastError = usePopupStore((state) => state.lastError);
+  const lastFilename = usePopupStore((state) => state.lastFilename);
+  const importedFile = usePopupStore((state) => state.importedFile);
 
-  // UI Actions - direct function references (stable)
-  const setValidating = useUIStore((state) => state.setValidating);
-  const setValidationError = useUIStore((state) => state.setValidationError);
-  const clearValidationError = useUIStore((state) => state.clearValidationError);
-  const startConversion = useUIStore((state) => state.startConversion);
-  const setSuccess = useUIStore((state) => state.setSuccess);
-  const setError = useUIStore((state) => state.setError);
-  const setUIState = useUIStore((state) => state.setUIState);
-  const resetUI = useUIStore((state) => state.reset);
-
-  // Persisted data
-  const importedFile = usePersistedStore((state) => state.importedFile);
-
-  // Persisted actions - direct function references (stable)
-  const setImportedFile = usePersistedStore((state) => state.setImportedFile);
-  const clearImportedFileData = usePersistedStore((state) => state.clearImportedFile);
-  const resetPersisted = usePersistedStore((state) => state.reset);
+  // Actions - direct function references (stable)
+  const setValidating = usePopupStore((state) => state.setValidating);
+  const setValidationError = usePopupStore((state) => state.setValidationError);
+  const clearValidationError = usePopupStore((state) => state.clearValidationError);
+  const startConversion = usePopupStore((state) => state.startConversion);
+  const setSuccess = usePopupStore((state) => state.setSuccess);
+  const setError = usePopupStore((state) => state.setError);
+  const setUIState = usePopupStore((state) => state.setUIState);
+  const setImportedFile = usePopupStore((state) => state.setImportedFile);
+  const clearImportedFileData = usePopupStore((state) => state.clearImportedFile);
+  const resetStore = usePopupStore((state) => state.reset);
 
   // Progress store - direct function reference (stable)
   const getProgress = useProgressStore((state) => state.getProgress);
@@ -88,9 +83,8 @@ export function useAppState(): AppState {
 
   // Combined reset action
   const reset = useCallback(() => {
-    resetUI();
-    resetPersisted();
-  }, [resetUI, resetPersisted]);
+    resetStore();
+  }, [resetStore]);
 
   // Firefox fix: useMemo with stable primitive/function dependencies
   // No more object spread from useShallow - all subscriptions are direct

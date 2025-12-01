@@ -7,11 +7,12 @@
  * to ensure shortcuts array only recreates when actual handler functions change.
  */
 
+import type { UIState } from '../../store';
 import type { ShortcutConfig } from './useKeyboardShortcuts';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 export interface UseAppKeyboardShortcutsOptions {
-  uiState: 'waiting_for_import' | 'file_validated' | 'validation_error' | 'converting' | 'success' | 'error';
+  uiState: UIState;
   importedFile: { name: string; content: string; size: number } | null;
   showShortcutsModal: boolean;
   currentView: 'main' | 'settings' | 'help';

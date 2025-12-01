@@ -28,7 +28,7 @@
 import { getContainerClass } from '../constants/app';
 import { useWasmCompatibility } from '../hooks/integration/useWasmCompatibility';
 import { useDarkMode } from '../hooks/ui';
-import { usePersistedStore } from '../store';
+import { usePopupStore } from '../store';
 import { WasmFallback } from './conversion/WasmFallback';
 import { LoadingScreen } from './layout';
 
@@ -53,8 +53,7 @@ export function AppShell({ children }: AppShellProps): React.ReactElement | null
   // Initialize dark mode (applies theme class to <html>)
   useDarkMode();
 
-  // React 19 + Zustand 5 pattern: Track store hydration via store state
-  const storeHydrated = usePersistedStore(state => state._hasHydrated);
+  const storeHydrated = usePopupStore(state => state._hasHydrated);
 
   // Check WASM compatibility
   const { wasmInitialized, wasmReport } = useWasmCompatibility();

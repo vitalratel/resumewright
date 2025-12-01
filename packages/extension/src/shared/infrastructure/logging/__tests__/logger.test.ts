@@ -139,10 +139,10 @@ describe('Logger', () => {
     it('should respect log level - DEBUG logs everything', () => {
       const logger = new Logger({ level: LogLevel.DEBUG });
 
-      logger.debug('Debug message');
-      logger.info('Info message');
-      logger.warn('Warn message');
-      logger.error('Error message');
+      logger.debug('Test', 'Debug message');
+      logger.info('Test', 'Info message');
+      logger.warn('Test', 'Warn message');
+      logger.error('Test', 'Error message');
 
       expect(mockConsole.debug).toHaveBeenCalled();
       expect(mockConsole.log).toHaveBeenCalled();
@@ -153,10 +153,10 @@ describe('Logger', () => {
     it('should respect log level - INFO skips debug', () => {
       const logger = new Logger({ level: LogLevel.INFO });
 
-      logger.debug('Debug message');
-      logger.info('Info message');
-      logger.warn('Warn message');
-      logger.error('Error message');
+      logger.debug('Test', 'Debug message');
+      logger.info('Test', 'Info message');
+      logger.warn('Test', 'Warn message');
+      logger.error('Test', 'Error message');
 
       expect(mockConsole.debug).not.toHaveBeenCalled();
       expect(mockConsole.log).toHaveBeenCalled();
@@ -167,10 +167,10 @@ describe('Logger', () => {
     it('should respect log level - WARN skips debug and info', () => {
       const logger = new Logger({ level: LogLevel.WARN });
 
-      logger.debug('Debug message');
-      logger.info('Info message');
-      logger.warn('Warn message');
-      logger.error('Error message');
+      logger.debug('Test', 'Debug message');
+      logger.info('Test', 'Info message');
+      logger.warn('Test', 'Warn message');
+      logger.error('Test', 'Error message');
 
       expect(mockConsole.debug).not.toHaveBeenCalled();
       expect(mockConsole.log).not.toHaveBeenCalled();
@@ -181,10 +181,10 @@ describe('Logger', () => {
     it('should respect log level - ERROR only logs errors', () => {
       const logger = new Logger({ level: LogLevel.ERROR });
 
-      logger.debug('Debug message');
-      logger.info('Info message');
-      logger.warn('Warn message');
-      logger.error('Error message');
+      logger.debug('Test', 'Debug message');
+      logger.info('Test', 'Info message');
+      logger.warn('Test', 'Warn message');
+      logger.error('Test', 'Error message');
 
       expect(mockConsole.debug).not.toHaveBeenCalled();
       expect(mockConsole.log).not.toHaveBeenCalled();
@@ -195,10 +195,10 @@ describe('Logger', () => {
     it('should respect log level - NONE logs nothing', () => {
       const logger = new Logger({ level: LogLevel.NONE });
 
-      logger.debug('Debug message');
-      logger.info('Info message');
-      logger.warn('Warn message');
-      logger.error('Error message');
+      logger.debug('Test', 'Debug message');
+      logger.info('Test', 'Info message');
+      logger.warn('Test', 'Warn message');
+      logger.error('Test', 'Error message');
 
       expect(mockConsole.debug).not.toHaveBeenCalled();
       expect(mockConsole.log).not.toHaveBeenCalled();
@@ -211,7 +211,7 @@ describe('Logger', () => {
     it('should include prefix in log messages', () => {
       const logger = new Logger({ level: LogLevel.INFO, prefix: '[TestApp]' });
 
-      logger.info('Test message');
+      logger.info('Test', 'Test message');
 
       expect(mockConsole.log).toHaveBeenCalledWith(
         expect.stringContaining('[TestApp]'),
@@ -240,49 +240,15 @@ describe('Logger', () => {
     it('should include timestamp when enabled', () => {
       const logger = new Logger({ level: LogLevel.INFO, includeTimestamp: true });
 
-      logger.info('Test message');
+      logger.info('Test', 'Test message');
 
       // Should contain ISO timestamp format
       expect(mockConsole.log).toHaveBeenCalledWith(
         expect.stringMatching(/\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/),
       );
     });
-  });
 
-  describe('API Compatibility', () => {
-    it('should support old API - info(message)', () => {
-      const logger = new Logger({ level: LogLevel.INFO });
-
-      logger.info('Test message');
-
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        expect.stringContaining('Test message'),
-      );
-    });
-
-    it('should support old API - info(message, data)', () => {
-      const logger = new Logger({ level: LogLevel.INFO });
-      const data = { key: 'value' };
-
-      logger.info('Test message', data);
-
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        expect.stringContaining('Test message'),
-        data,
-      );
-    });
-
-    it('should support new API - info(context, message)', () => {
-      const logger = new Logger({ level: LogLevel.INFO, includeContext: true });
-
-      logger.info('Context', 'Test message');
-
-      const call = mockConsole.log.mock.calls[0][0];
-      expect(call).toContain('[Context]');
-      expect(call).toContain('Test message');
-    });
-
-    it('should support new API - info(context, message, data)', () => {
+    it('should log with context, message, and data', () => {
       const logger = new Logger({ level: LogLevel.INFO, includeContext: true });
       const data = { key: 'value' };
 
@@ -300,7 +266,7 @@ describe('Logger', () => {
       const logger = new Logger({ level: LogLevel.DEBUG });
       const data = { debug: true };
 
-      logger.debug('Debug message', data);
+      logger.debug('Test', 'Debug message', data);
 
       expect(mockConsole.debug).toHaveBeenCalledWith(
         expect.stringContaining('[DEBUG]'),
@@ -312,7 +278,7 @@ describe('Logger', () => {
       const logger = new Logger({ level: LogLevel.WARN });
       const data = { warning: true };
 
-      logger.warn('Warning message', data);
+      logger.warn('Test', 'Warning message', data);
 
       expect(mockConsole.warn).toHaveBeenCalledWith(
         expect.stringContaining('[WARN]'),
@@ -324,7 +290,7 @@ describe('Logger', () => {
       const logger = new Logger({ level: LogLevel.ERROR });
       const error = new Error('Test error');
 
-      logger.error('Error occurred', error);
+      logger.error('Test', 'Error occurred', error);
 
       expect(mockConsole.error).toHaveBeenCalledWith(
         expect.stringContaining('[ERROR]'),
@@ -335,7 +301,7 @@ describe('Logger', () => {
     it('should log error messages without error object', () => {
       const logger = new Logger({ level: LogLevel.ERROR });
 
-      logger.error('Error occurred');
+      logger.error('Test', 'Error occurred');
 
       expect(mockConsole.error).toHaveBeenCalledWith(
         expect.stringContaining('Error occurred'),

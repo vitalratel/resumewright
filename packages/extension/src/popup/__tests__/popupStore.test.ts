@@ -1,14 +1,12 @@
 /**
  * Popup Store Tests
  * State management with Zustand
- *
- * REFACTORED: Tests split stores (persistedStore + uiStore)
  */
 
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ErrorCategory, ErrorCode } from '../../shared/types/errors/codes';
-import { usePersistedStore, usePopupStore, useUIStore } from '../store';
+import { usePopupStore } from '../store';
 
 // Mock webextension-polyfill
 vi.mock('webextension-polyfill', () => ({
@@ -31,23 +29,22 @@ vi.mock('webextension-polyfill', () => ({
   },
 }));
 
-describe('usePersistedStore', () => {
+describe('usePopupStore - Persisted State', () => {
   beforeEach(() => {
-    // Reset store to initial state before each test
-    const { result } = renderHook(() => usePersistedStore());
+    const { result } = renderHook(() => usePopupStore());
     act(() => {
       result.current.reset();
     });
   });
 
   it('initializes with null importedFile', () => {
-    const { result } = renderHook(() => usePersistedStore());
+    const { result } = renderHook(() => usePopupStore());
     expect(result.current.importedFile).toBeNull();
     expect(result.current.cvMetadata).toBeNull();
   });
 
   it('stores imported file data', () => {
-    const { result } = renderHook(() => usePersistedStore());
+    const { result } = renderHook(() => usePopupStore());
 
     act(() => {
       result.current.setImportedFile('test.tsx', 1024, 'const CV = () => <div>Test</div>');
@@ -61,7 +58,7 @@ describe('usePersistedStore', () => {
   });
 
   it('stores CV metadata', () => {
-    const { result } = renderHook(() => usePersistedStore());
+    const { result } = renderHook(() => usePopupStore());
     const metadata = {
       name: 'John Doe',
       role: 'Software Engineer',
@@ -79,7 +76,7 @@ describe('usePersistedStore', () => {
   });
 
   it('clears imported file', () => {
-    const { result } = renderHook(() => usePersistedStore());
+    const { result } = renderHook(() => usePopupStore());
 
     act(() => {
       result.current.setImportedFile('test.tsx', 1024, 'content');
@@ -89,8 +86,8 @@ describe('usePersistedStore', () => {
     expect(result.current.importedFile).toBeNull();
   });
 
-  it('resets to initial state', () => {
-    const { result } = renderHook(() => usePersistedStore());
+  it('resets persisted state', () => {
+    const { result } = renderHook(() => usePopupStore());
 
     act(() => {
       result.current.setImportedFile('test.tsx', 1024, 'content');
@@ -108,22 +105,21 @@ describe('usePersistedStore', () => {
   });
 });
 
-describe('useUIStore', () => {
+describe('usePopupStore - UI State', () => {
   beforeEach(() => {
-    // Reset store to initial state before each test
-    const { result } = renderHook(() => useUIStore());
+    const { result } = renderHook(() => usePopupStore());
     act(() => {
       result.current.reset();
     });
   });
 
   it('initializes with "waiting_for_import" state', () => {
-    const { result } = renderHook(() => useUIStore());
+    const { result } = renderHook(() => usePopupStore());
     expect(result.current.uiState).toBe('waiting_for_import');
   });
 
   it('sets UI state directly', () => {
-    const { result } = renderHook(() => useUIStore());
+    const { result } = renderHook(() => usePopupStore());
 
     act(() => {
       result.current.setUIState('file_validated');
@@ -133,7 +129,7 @@ describe('useUIStore', () => {
   });
 
   it('starts conversion', () => {
-    const { result } = renderHook(() => useUIStore());
+    const { result } = renderHook(() => usePopupStore());
 
     act(() => {
       result.current.startConversion();
@@ -144,7 +140,7 @@ describe('useUIStore', () => {
   });
 
   it('sets success state with filename', () => {
-    const { result } = renderHook(() => useUIStore());
+    const { result } = renderHook(() => usePopupStore());
 
     act(() => {
       result.current.setSuccess('CV_John_Doe_2025-10-13.pdf');
@@ -156,7 +152,7 @@ describe('useUIStore', () => {
   });
 
   it('sets error state with error info', () => {
-    const { result } = renderHook(() => useUIStore());
+    const { result } = renderHook(() => usePopupStore());
 
     act(() => {
       result.current.setError({
@@ -177,7 +173,7 @@ describe('useUIStore', () => {
   });
 
   it('sets validation error', () => {
-    const { result } = renderHook(() => useUIStore());
+    const { result } = renderHook(() => usePopupStore());
 
     act(() => {
       result.current.setValidationError('Invalid CV format');
@@ -189,7 +185,7 @@ describe('useUIStore', () => {
   });
 
   it('clears validation error', () => {
-    const { result } = renderHook(() => useUIStore());
+    const { result } = renderHook(() => usePopupStore());
 
     act(() => {
       result.current.setValidationError('Invalid CV format');
@@ -200,8 +196,8 @@ describe('useUIStore', () => {
     expect(result.current.isValidating).toBe(false);
   });
 
-  it('resets to initial state', () => {
-    const { result } = renderHook(() => useUIStore());
+  it('resets UI state', () => {
+    const { result } = renderHook(() => usePopupStore());
 
     act(() => {
       result.current.setError({
@@ -223,13 +219,12 @@ describe('useUIStore', () => {
   });
 
   it('triggers synchronous re-renders (no persist middleware)', () => {
-    // This test verifies the fix: UI store updates should be synchronous
-    const { result } = renderHook(() => useUIStore());
+    const { result } = renderHook(() => usePopupStore());
 
     let renderCount = 0;
     const { result: trackingResult } = renderHook(() => {
       renderCount += 1;
-      return useUIStore(state => state.uiState);
+      return usePopupStore(state => state.uiState);
     });
 
     const initialRenderCount = renderCount;
@@ -247,28 +242,23 @@ describe('useUIStore', () => {
       });
     });
 
-    // Should trigger re-render immediately (renderCount increases)
     expect(renderCount).toBeGreaterThan(initialRenderCount);
     expect(trackingResult.current).toBe('error');
   });
 });
 
-describe('Store Integration', () => {
+describe('usePopupStore - Integration', () => {
   it('unified store combines persisted and UI state', () => {
     const { result } = renderHook(() => usePopupStore());
 
     act(() => {
-      // Set persisted data
       result.current.setImportedFile('test.tsx', 1024, 'content');
-
-      // Set UI state
       result.current.setUIState('file_validated');
     });
 
     expect(result.current.importedFile?.name).toBe('test.tsx');
     expect(result.current.uiState).toBe('file_validated');
 
-    // Partial reset - only UI state
     act(() => {
       result.current.resetUI();
     });
@@ -276,7 +266,6 @@ describe('Store Integration', () => {
     expect(result.current.importedFile?.name).toBe('test.tsx');
     expect(result.current.uiState).toBe('waiting_for_import');
 
-    // Full reset - both persisted and UI
     act(() => {
       result.current.setUIState('converting');
       result.current.reset();
@@ -284,19 +273,5 @@ describe('Store Integration', () => {
 
     expect(result.current.importedFile).toBeNull();
     expect(result.current.uiState).toBe('waiting_for_import');
-  });
-
-  it('backward compatible exports work', () => {
-    // usePersistedStore and useUIStore are the same store
-    const { result: persistedResult } = renderHook(() => usePersistedStore());
-    const { result: uiResult } = renderHook(() => useUIStore());
-
-    act(() => {
-      persistedResult.current.setImportedFile('test.tsx', 1024, 'content');
-    });
-
-    // Both hooks access the same store
-    expect(uiResult.current.importedFile?.name).toBe('test.tsx');
-    expect(persistedResult.current.importedFile?.name).toBe('test.tsx');
   });
 });
