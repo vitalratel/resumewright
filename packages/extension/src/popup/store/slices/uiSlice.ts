@@ -14,7 +14,7 @@ import type { ConversionError } from '../../../shared/types/models';
 
 export type UIState = 'waiting_for_import' | 'file_validated' | 'validation_error' | 'converting' | 'success' | 'error';
 
-// Kept ErrorInfo as alias for backward compatibility
+// Re-export for convenience
 export type ErrorInfo = ConversionError;
 
 export interface UISlice {

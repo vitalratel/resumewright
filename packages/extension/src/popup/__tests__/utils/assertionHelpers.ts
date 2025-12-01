@@ -8,14 +8,14 @@
 import type { UIState } from '../../store';
 import type { ConversionError, ConversionProgress, CVMetadata } from '@/shared/types/models';
 import { expect } from 'vitest';
-import { usePersistedStore, useUIStore  } from '../../store';
+import { usePopupStore } from '../../store';
 import { useProgressStore } from '../../store/progressStore';
 
 /**
- * Assert UI store state matches expected values
+ * Assert popup store state matches expected values
  */
-export function assertUIStoreState(expected: Partial<ReturnType<typeof useUIStore.getState>>) {
-  const actual = useUIStore.getState();
+export function assertPopupStoreState(expected: Partial<ReturnType<typeof usePopupStore.getState>>) {
+  const actual = usePopupStore.getState();
 
   Object.entries(expected).forEach(([key, value]) => {
     expect(actual[key as keyof typeof actual]).toEqual(value);
@@ -26,19 +26,8 @@ export function assertUIStoreState(expected: Partial<ReturnType<typeof useUIStor
  * Assert current UI state
  */
 export function assertUIState(expectedState: UIState) {
-  const actualState = useUIStore.getState().uiState;
+  const actualState = usePopupStore.getState().uiState;
   expect(actualState).toBe(expectedState);
-}
-
-/**
- * Assert persisted store state matches expected values
- */
-export function assertPersistedStoreState(expected: Partial<ReturnType<typeof usePersistedStore.getState>>) {
-  const actual = usePersistedStore.getState();
-
-  Object.entries(expected).forEach(([key, value]) => {
-    expect(actual[key as keyof typeof actual]).toEqual(value);
-  });
 }
 
 /**
@@ -49,7 +38,7 @@ export function assertImportedFile(expected: {
   size?: number;
   content?: string;
 }) {
-  const actual = usePersistedStore.getState().importedFile;
+  const actual = usePopupStore.getState().importedFile;
 
   expect(actual).toBeTruthy();
 
@@ -68,7 +57,7 @@ export function assertImportedFile(expected: {
  * Assert CV metadata exists and matches expected data
  */
 export function assertCVMetadata(expected: Partial<CVMetadata>) {
-  const actual = usePersistedStore.getState().cvMetadata;
+  const actual = usePopupStore.getState().cvMetadata;
 
   expect(actual).toBeTruthy();
   expect(actual).toMatchObject(expected);
@@ -96,7 +85,7 @@ export function assertNoProgress(jobId: string) {
  * Assert last error matches expected error
  */
 export function assertLastError(expected: Partial<ConversionError>) {
-  const actual = useUIStore.getState().lastError;
+  const actual = usePopupStore.getState().lastError;
 
   expect(actual).toBeTruthy();
   expect(actual).toMatchObject(expected);
@@ -106,7 +95,7 @@ export function assertLastError(expected: Partial<ConversionError>) {
  * Assert no error exists
  */
 export function assertNoError() {
-  const actual = useUIStore.getState().lastError;
+  const actual = usePopupStore.getState().lastError;
   expect(actual).toBeNull();
 }
 
@@ -114,7 +103,7 @@ export function assertNoError() {
  * Assert validation error exists with expected message
  */
 export function assertValidationError(expectedMessage?: string) {
-  const actual = useUIStore.getState().validationError;
+  const actual = usePopupStore.getState().validationError;
 
   expect(actual).toBeTruthy();
 
@@ -127,7 +116,7 @@ export function assertValidationError(expectedMessage?: string) {
  * Assert no validation error exists
  */
 export function assertNoValidationError() {
-  const actual = useUIStore.getState().validationError;
+  const actual = usePopupStore.getState().validationError;
   expect(actual).toBeNull();
 }
 
@@ -138,7 +127,7 @@ export function assertSuccessState(expectedFilename?: string) {
   assertUIState('success');
 
   if (expectedFilename !== undefined) {
-    const actual = useUIStore.getState().lastFilename;
+    const actual = usePopupStore.getState().lastFilename;
     expect(actual).toBe(expectedFilename);
   }
 }
@@ -147,14 +136,13 @@ export function assertSuccessState(expectedFilename?: string) {
  * Assert stores are in clean initial state
  */
 export function assertStoresClean() {
-  const uiState = useUIStore.getState();
-  const persistedState = usePersistedStore.getState();
+  const state = usePopupStore.getState();
 
-  expect(uiState.uiState).toBe('waiting_for_import');
-  expect(uiState.validationError).toBeNull();
-  expect(uiState.lastError).toBeNull();
-  expect(persistedState.importedFile).toBeNull();
-  expect(persistedState.cvMetadata).toBeNull();
+  expect(state.uiState).toBe('waiting_for_import');
+  expect(state.validationError).toBeNull();
+  expect(state.lastError).toBeNull();
+  expect(state.importedFile).toBeNull();
+  expect(state.cvMetadata).toBeNull();
 }
 
 /**
@@ -177,9 +165,9 @@ export function assertConversionInProgress(jobId: string, expectedStage?: Conver
 export function assertFileValidatedState() {
   assertUIState('file_validated');
 
-  const persistedState = usePersistedStore.getState();
-  expect(persistedState.importedFile).toBeTruthy();
-  expect(persistedState.cvMetadata).toBeTruthy();
+  const state = usePopupStore.getState();
+  expect(state.importedFile).toBeTruthy();
+  expect(state.cvMetadata).toBeTruthy();
 }
 
 /**
@@ -197,24 +185,22 @@ export function assertStoreState(expected: {
     assertUIState(expected.uiState);
   }
 
+  const state = usePopupStore.getState();
+
   if (expected.hasImportedFile !== undefined) {
-    const importedFile = usePersistedStore.getState().importedFile;
-    expect(!!importedFile).toBe(expected.hasImportedFile);
+    expect(!!state.importedFile).toBe(expected.hasImportedFile);
   }
 
   if (expected.hasCVMetadata !== undefined) {
-    const cvMetadata = usePersistedStore.getState().cvMetadata;
-    expect(!!cvMetadata).toBe(expected.hasCVMetadata);
+    expect(!!state.cvMetadata).toBe(expected.hasCVMetadata);
   }
 
   if (expected.hasError !== undefined) {
-    const error = useUIStore.getState().lastError;
-    expect(!!error).toBe(expected.hasError);
+    expect(!!state.lastError).toBe(expected.hasError);
   }
 
   if (expected.hasValidationError !== undefined) {
-    const validationError = useUIStore.getState().validationError;
-    expect(validationError != null).toBe(expected.hasValidationError);
+    expect(state.validationError != null).toBe(expected.hasValidationError);
   }
 
   if (expected.hasProgress !== undefined) {

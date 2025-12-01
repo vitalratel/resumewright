@@ -11,7 +11,7 @@
 import { cleanup } from '@testing-library/react';
 import { fakeBrowser } from '@webext-core/fake-browser';
 import { afterEach, beforeEach, vi } from 'vitest';
-import { usePersistedStore, useUIStore } from '@/popup/store/index';
+import { usePopupStore } from '@/popup/store/index';
 
 /**
  * WASM module (@pkg/wasm_bridge) is handled via Vitest config alias
@@ -85,8 +85,7 @@ afterEach(() => {
   fakeBrowser.reset();
 
   // Reset all Zustand stores to initial state
-  useUIStore.getState().reset();
-  usePersistedStore.getState().reset();
+  usePopupStore.getState().reset();
   useProgressStore.getState().reset();
 
   // Clear all timers (setTimeout, setInterval, etc.)

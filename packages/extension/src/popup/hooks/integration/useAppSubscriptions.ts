@@ -1,24 +1,11 @@
 /**
  * useAppSubscriptions Hook
- * Extracted from App.tsx to follow Single Responsibility Principle
+ * Manages extensionAPI message subscriptions for the popup.
  *
- * Manages all extensionAPI message subscriptions for the popup:
+ * Subscribes to:
  * - onProgress: Updates conversion progress in progressStore
- * - onSuccess: Triggers PDF download and updates UI state to success
+ * - onSuccess: Triggers PDF download and updates UI state
  * - onError: Updates UI state with error details
- *
- * This hook is purely side-effect based - it subscribes to messages and updates
- * stores directly without returning any values. All state updates go through
- * Zustand stores (useProgressStore, useUIStore).
- *
- * Performance:
- * - Uses stable store action references via getState()
- * - Empty dependency array prevents subscription recreation
- * - Proper cleanup on unmount
- *
- * @see {@link useProgressStore} for progress state management
- * @see {@link useUIStore} for UI state management
- * @see {@link extensionAPI} for message passing interface
  */
 
 import { useEffect } from 'react';
@@ -26,34 +13,16 @@ import { getLogger } from '@/shared/infrastructure/logging';
 import { downloadPDF } from '../../../shared/infrastructure/pdf/downloader';
 import { ErrorCode } from '../../../shared/types/errors/codes';
 import { extensionAPI } from '../../services/extensionAPI';
-import { useUIStore } from '../../store';
+import { usePopupStore } from '../../store';
 import { useProgressStore } from '../../store/progressStore';
 
-/**
- * Hook to manage extensionAPI message subscriptions
- *
- * Sets up subscriptions to:
- * - Progress updates during PDF conversion
- * - Success events with PDF download handling
- * - Error events with user-friendly error display
- *
- * @example
- * ```tsx
- * function App() {
- *   // Initialize message subscriptions
- *   useAppSubscriptions();
- *
- *   // Rest of app logic...
- * }
- * ```
- */
 export function useAppSubscriptions(): void {
   useEffect(() => {
     getLogger().debug('AppSubscriptions', 'CREATING message subscriptions');
 
     // Get store actions directly - these are stable references
     const { updateProgress } = useProgressStore.getState();
-    const { setSuccess, setError } = useUIStore.getState();
+    const { setSuccess, setError } = usePopupStore.getState();
 
     // Subscribe to progress updates
     const unsubProgress = extensionAPI.onProgress((progressPayload) => {

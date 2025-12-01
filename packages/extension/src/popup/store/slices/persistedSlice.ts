@@ -23,7 +23,7 @@ export interface PersistedSlice {
   cvMetadata: CVMetadata | null;
   importedFile: { name: string; size: number; content: string } | null;
   
-  // Hydration state (not persisted - React 19 + Zustand 5 pattern)
+  // Hydration state (not persisted)
   _hasHydrated: boolean;
   _hydrationError: Error | null;
 

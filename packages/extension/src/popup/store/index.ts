@@ -59,7 +59,7 @@ export type PopupStore = PersistedSlice & UISlice & {
   reset: () => void;
 };
 
-// Re-export types for backward compatibility
+// Re-export types from slices
 export type { CVMetadata, ErrorInfo, UIState };
 
 // Store debounced setter at module level so tests can cancel pending operations
@@ -136,9 +136,6 @@ const chromeStorage = createJSONStorage(() => {
   };
 });
 
-// Note: Hydration coordination has been moved to persistedStore.ts
-// The new pattern uses store state (_hasHydrated, _hydrationError) instead of promises
-// See persistedStore.ts for the modernized React 19 + Zustand 5 pattern
 
 /**
  * Unified Popup Store
@@ -184,7 +181,6 @@ export const usePopupStore = create<PopupStore>()(
         ...currentState,
         ...persistedState as Partial<PopupStore>,
       }),
-      // Track hydration completion using store state (React 19 + Zustand 5 pattern)
       onRehydrateStorage: () => {
         return (state, error) => {
           if (error !== null && error !== undefined) {
@@ -199,6 +195,3 @@ export const usePopupStore = create<PopupStore>()(
   ),
 );
 
-// Backward compatibility exports
-export const usePersistedStore = usePopupStore;
-export const useUIStore = usePopupStore;

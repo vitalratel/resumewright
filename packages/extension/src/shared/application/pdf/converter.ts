@@ -35,32 +35,16 @@ export interface ConversionDependencies {
 /**
  * Convert TSX to PDF with automatic font detection and fetching
  *
- * Two-step API:
+ * Pipeline:
  * 1. Detect fonts from TSX (WASM)
  * 2. Fetch fonts from Google Fonts (TypeScript + IndexedDB)
  * 3. Convert with pre-fetched fonts (WASM)
  *
- * This function supports dependency injection for testability while maintaining
- * backward compatibility with sensible defaults.
- *
- * @param {string} tsx - TSX source code
- * @param {ConversionConfig} config - Conversion configuration
- * @param {Function} onProgress - Optional progress callback (stage, percentage)
- * @param {Function} onFontFetch - Optional font fetch progress callback
- * @param {ConversionDependencies} dependencies - Optional dependencies for DI
- * @returns {Promise<Uint8Array>} PDF bytes
- * @throws {Error} If conversion fails
- *
- * @example
- * // Simple usage (backward compatible)
- * const pdf = await convertTsxToPdfWithFonts(tsx, config);
- *
- * @example
- * // With dependency injection (testable)
- * const pdf = await convertTsxToPdfWithFonts(tsx, config, onProgress, onFontFetch, {
- *   logger: mockLogger,
- *   fontRepository: mockFontRepo,
- * });
+ * @param tsx - TSX source code
+ * @param config - Conversion configuration
+ * @param onProgress - Optional progress callback (stage, percentage)
+ * @param onFontFetch - Optional font fetch progress callback
+ * @param dependencies - Optional dependencies for testing
  */
 export async function convertTsxToPdfWithFonts(
   tsx: string,

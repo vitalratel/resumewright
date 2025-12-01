@@ -19,7 +19,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ErrorCode } from '../shared/types/errors';
 import App from './App';
-import { usePersistedStore, useUIStore } from './store';
+import { usePopupStore } from './store';
 import { useProgressStore } from './store/progressStore';
 
 // Suppress expected unhandled rejections from hydration error tests
@@ -136,9 +136,7 @@ vi.mock('../shared/wasm/compatibility', () => ({
 describe('App Integration Tests', () => {
   describe('Hydration State Management', () => {
     it('should show loading screen when store is not hydrated', async () => {
-      // React 19 + Zustand 5 pattern: Test loading state
-      // Set hydration to false BEFORE rendering
-      usePersistedStore.getState().setHasHydrated(false);
+      usePopupStore.getState().setHasHydrated(false);
 
       render(<App />);
 
@@ -148,7 +146,7 @@ describe('App Integration Tests', () => {
       });
 
       // Now simulate hydration completing
-      usePersistedStore.getState().setHasHydrated(true);
+      usePopupStore.getState().setHasHydrated(true);
 
       // Should transition to main content
       await waitFor(() => {
@@ -157,12 +155,11 @@ describe('App Integration Tests', () => {
     });
 
     it('should show error screen when hydration fails', async () => {
-      // React 19 + Zustand 5 pattern: Test error state
       const hydrationError = new Error('Failed to load persisted state');
 
       // Set hydration error
-      usePersistedStore.getState().setHydrationError(hydrationError);
-      usePersistedStore.getState().setHasHydrated(true); // Mark as hydrated even with error
+      usePopupStore.getState().setHydrationError(hydrationError);
+      usePopupStore.getState().setHasHydrated(true); // Mark as hydrated even with error
 
       render(<App />);
 
@@ -175,10 +172,8 @@ describe('App Integration Tests', () => {
     });
 
     it('should render normally when hydrated successfully', async () => {
-      // React 19 + Zustand 5 pattern: Test success state
-      // Set hydration complete with no errors
-      usePersistedStore.getState().setHasHydrated(true);
-      usePersistedStore.getState().setHydrationError(null);
+      usePopupStore.getState().setHasHydrated(true);
+      usePopupStore.getState().setHydrationError(null);
 
       render(<App />);
 
@@ -190,15 +185,10 @@ describe('App Integration Tests', () => {
   });
 
   beforeEach(() => {
-    // Reset all stores to initial state before each test
-    useUIStore.getState().reset();
-    usePersistedStore.getState().reset();
+    usePopupStore.getState().reset();
     useProgressStore.getState().reset();
-
-    // React 19 + Zustand 5 pattern: Ensure hydration is complete by default for tests
-    usePersistedStore.getState().setHasHydrated(true);
-    usePersistedStore.getState().setHydrationError(null);
-
+    usePopupStore.getState().setHasHydrated(true);
+    usePopupStore.getState().setHydrationError(null);
     vi.clearAllMocks();
   });
 
@@ -232,8 +222,8 @@ describe('App Integration Tests', () => {
       });
 
       // Verify store state
-      expect(useUIStore.getState().uiState).toBe('waiting_for_import');
-      expect(usePersistedStore.getState().importedFile).toBeNull();
+      expect(usePopupStore.getState().uiState).toBe('waiting_for_import');
+      expect(usePopupStore.getState().importedFile).toBeNull();
     });
 
     it('should render header with settings button', async () => {
@@ -266,19 +256,19 @@ describe('App Integration Tests', () => {
       });
 
       // Simulate file import via store action
-      usePersistedStore
+      usePopupStore
         .getState()
         .setImportedFile(
           'test-resume.tsx',
           2048,
           'export default function Resume() { return <div>Test</div>; }'
         );
-      useUIStore.getState().setUIState('file_validated');
+      usePopupStore.getState().setUIState('file_validated');
 
       await waitFor(() => {
         // Should show file validation success and export button
-        expect(useUIStore.getState().uiState).toBe('file_validated');
-        expect(usePersistedStore.getState().importedFile).toMatchObject({
+        expect(usePopupStore.getState().uiState).toBe('file_validated');
+        expect(usePopupStore.getState().importedFile).toMatchObject({
           name: 'test-resume.tsx',
           size: 2048,
         });
@@ -295,11 +285,11 @@ describe('App Integration Tests', () => {
       // Simulate validation error state transition
       // Note: Actual validation errors are displayed by FileImport component's local state
       // This test verifies the UIStore state transition only
-      useUIStore.getState().setValidationError('Invalid TSX format');
+      usePopupStore.getState().setValidationError('Invalid TSX format');
 
       await waitFor(() => {
-        expect(useUIStore.getState().uiState).toBe('validation_error');
-        expect(useUIStore.getState().validationError).toBe('Invalid TSX format');
+        expect(usePopupStore.getState().uiState).toBe('validation_error');
+        expect(usePopupStore.getState().validationError).toBe('Invalid TSX format');
       });
     });
   });
@@ -362,24 +352,24 @@ describe('App Integration Tests', () => {
       render(<App />);
 
       // Setup: Import file first
-      usePersistedStore
+      usePopupStore
         .getState()
         .setImportedFile(
           'test-resume.tsx',
           2048,
           'export default function Resume() { return <div>Test</div>; }'
         );
-      useUIStore.getState().setUIState('file_validated');
+      usePopupStore.getState().setUIState('file_validated');
 
       await waitFor(() => {
-        expect(usePersistedStore.getState().importedFile).not.toBeNull();
+        expect(usePopupStore.getState().importedFile).not.toBeNull();
       });
 
       // Trigger conversion
-      useUIStore.getState().startConversion();
+      usePopupStore.getState().startConversion();
 
       await waitFor(() => {
-        expect(useUIStore.getState().uiState).toBe('converting');
+        expect(usePopupStore.getState().uiState).toBe('converting');
       });
     });
 
@@ -387,14 +377,14 @@ describe('App Integration Tests', () => {
       render(<App />);
 
       // Setup: Start conversion
-      usePersistedStore
+      usePopupStore
         .getState()
         .setImportedFile(
           'test-resume.tsx',
           2048,
           'export default function Resume() { return <div>Test</div>; }'
         );
-      useUIStore.getState().startConversion();
+      usePopupStore.getState().startConversion();
 
       // Simulate progress update
       useProgressStore.getState().updateProgress('default', {
@@ -415,21 +405,21 @@ describe('App Integration Tests', () => {
       render(<App />);
 
       // Setup and convert
-      usePersistedStore
+      usePopupStore
         .getState()
         .setImportedFile(
           'test-resume.tsx',
           2048,
           'export default function Resume() { return <div>Test</div>; }'
         );
-      useUIStore.getState().startConversion();
+      usePopupStore.getState().startConversion();
 
       // Simulate success
-      useUIStore.getState().setSuccess('resume-2025-10-29.pdf');
+      usePopupStore.getState().setSuccess('resume-2025-10-29.pdf');
 
       await waitFor(() => {
-        expect(useUIStore.getState().uiState).toBe('success');
-        expect(useUIStore.getState().lastFilename).toBe('resume-2025-10-29.pdf');
+        expect(usePopupStore.getState().uiState).toBe('success');
+        expect(usePopupStore.getState().lastFilename).toBe('resume-2025-10-29.pdf');
       });
     });
 
@@ -437,17 +427,17 @@ describe('App Integration Tests', () => {
       render(<App />);
 
       // Setup and convert
-      usePersistedStore
+      usePopupStore
         .getState()
         .setImportedFile(
           'test-resume.tsx',
           2048,
           'export default function Resume() { return <div>Test</div>; }'
         );
-      useUIStore.getState().startConversion();
+      usePopupStore.getState().startConversion();
 
       // Simulate error
-      useUIStore.getState().setError({
+      usePopupStore.getState().setError({
         message: 'PDF generation failed',
         code: ErrorCode.WASM_EXECUTION_ERROR,
         stage: 'generating-pdf',
@@ -458,8 +448,8 @@ describe('App Integration Tests', () => {
       });
 
       await waitFor(() => {
-        expect(useUIStore.getState().uiState).toBe('error');
-        expect(useUIStore.getState().lastError?.message).toBe('PDF generation failed');
+        expect(usePopupStore.getState().uiState).toBe('error');
+        expect(usePopupStore.getState().lastError?.message).toBe('PDF generation failed');
       });
     });
   });
@@ -469,28 +459,28 @@ describe('App Integration Tests', () => {
       render(<App />);
 
       // Setup: Import file and set success state
-      usePersistedStore
+      usePopupStore
         .getState()
         .setImportedFile(
           'test-resume.tsx',
           2048,
           'export default function Resume() { return <div>Test</div>; }'
         );
-      useUIStore.getState().setSuccess('resume.pdf');
+      usePopupStore.getState().setSuccess('resume.pdf');
 
       await waitFor(() => {
-        expect(useUIStore.getState().uiState).toBe('success');
+        expect(usePopupStore.getState().uiState).toBe('success');
       });
 
       // Reset
-      useUIStore.getState().reset();
-      usePersistedStore.getState().reset();
+      usePopupStore.getState().reset();
+      usePopupStore.getState().reset();
 
       await waitFor(() => {
         // Should be back to initial state
-        expect(useUIStore.getState().uiState).toBe('waiting_for_import');
-        expect(useUIStore.getState().lastFilename).toBeNull();
-        expect(usePersistedStore.getState().importedFile).toBeNull();
+        expect(usePopupStore.getState().uiState).toBe('waiting_for_import');
+        expect(usePopupStore.getState().lastFilename).toBeNull();
+        expect(usePopupStore.getState().importedFile).toBeNull();
       });
     });
   });
@@ -502,13 +492,13 @@ describe('App Integration Tests', () => {
       // The App component uses useAppState which subscribes to multiple stores
       // Verify stores are reactive
 
-      usePersistedStore.getState().setImportedFile('test.tsx', 1024, 'content');
-      useUIStore.getState().setUIState('file_validated');
+      usePopupStore.getState().setImportedFile('test.tsx', 1024, 'content');
+      usePopupStore.getState().setUIState('file_validated');
 
       await waitFor(() => {
         // Component should react to store changes
-        expect(usePersistedStore.getState().importedFile?.name).toBe('test.tsx');
-        expect(useUIStore.getState().uiState).toBe('file_validated');
+        expect(usePopupStore.getState().importedFile?.name).toBe('test.tsx');
+        expect(usePopupStore.getState().uiState).toBe('file_validated');
       });
     });
 
@@ -522,7 +512,7 @@ describe('App Integration Tests', () => {
       await waitFor(() => {
         // Store state should be stable (same reference)
         // This test verifies fix - subscriptions shouldn't recreate
-        const currentState = useUIStore.getState();
+        const currentState = usePopupStore.getState();
         expect(currentState).toBeDefined();
         expect(typeof currentState.setUIState).toBe('function');
       });

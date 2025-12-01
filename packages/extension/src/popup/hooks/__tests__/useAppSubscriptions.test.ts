@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { downloadPDF } from '../../../shared/infrastructure/pdf/downloader';
 import { ErrorCode } from '../../../shared/types/errors/codes';
 import { extensionAPI } from '../../services/extensionAPI';
-import { useUIStore } from '../../store';
+import { usePopupStore } from '../../store';
 import { useProgressStore } from '../../store/progressStore';
 import { useAppSubscriptions } from '../integration/useAppSubscriptions';
 
@@ -42,7 +42,7 @@ describe('useAppSubscriptions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useProgressStore.getState().reset();
-    useUIStore.getState().reset();
+    usePopupStore.getState().reset();
 
     // Reset callbacks
     progressCallback = null;
@@ -185,7 +185,7 @@ describe('useAppSubscriptions', () => {
       });
 
       // Verify UI state was updated
-      const uiState = useUIStore.getState();
+      const uiState = usePopupStore.getState();
       expect(uiState.uiState).toBe('success');
       expect(uiState.lastFilename).toBe(testFilename);
     });
@@ -233,7 +233,7 @@ describe('useAppSubscriptions', () => {
         expect(downloadPDF).toHaveBeenCalledWith(testPdfBytes, undefined);
       });
 
-      const uiState = useUIStore.getState();
+      const uiState = usePopupStore.getState();
       expect(uiState.uiState).toBe('success');
     });
 
@@ -254,7 +254,7 @@ describe('useAppSubscriptions', () => {
       });
 
       await vi.waitFor(() => {
-        const uiState = useUIStore.getState();
+        const uiState = usePopupStore.getState();
         expect(uiState.uiState).toBe('error');
         expect(uiState.lastError?.code).toBe(ErrorCode.DOWNLOAD_FAILED);
         expect(uiState.lastError?.message).toBe('Failed to download PDF file');
@@ -279,7 +279,7 @@ describe('useAppSubscriptions', () => {
       expect(downloadPDF).not.toHaveBeenCalled();
 
       // Should still set success state
-      const uiState = useUIStore.getState();
+      const uiState = usePopupStore.getState();
       expect(uiState.uiState).toBe('success');
       expect(uiState.lastFilename).toBe('test.pdf');
     });
@@ -302,7 +302,7 @@ describe('useAppSubscriptions', () => {
 
       errorCallback?.({ jobId: 'test-job-123', error: testError });
 
-      const uiState = useUIStore.getState();
+      const uiState = usePopupStore.getState();
       expect(uiState.uiState).toBe('error');
       expect(uiState.lastError).toEqual(testError);
     });
@@ -331,10 +331,10 @@ describe('useAppSubscriptions', () => {
       };
 
       errorCallback?.({ jobId: 'test-job-123', error: error1 });
-      expect(useUIStore.getState().lastError).toEqual(error1);
+      expect(usePopupStore.getState().lastError).toEqual(error1);
 
       errorCallback?.({ jobId: 'test-job-123', error: error2 });
-      expect(useUIStore.getState().lastError).toEqual(error2);
+      expect(usePopupStore.getState().lastError).toEqual(error2);
     });
   });
 
