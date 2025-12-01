@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for A4 and Letter paper sizes
 - Google Fonts integration
 - ATS-optimized PDF output
-- Comprehensive test suite (750 Rust tests, 396 TypeScript tests, 159 Playwright tests)
+- Comprehensive test suite (Rust, TypeScript, Playwright)
 
 ### Performance
 - Single-page CV conversion: 1-2s (25x faster than 10s target)

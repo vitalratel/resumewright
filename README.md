@@ -477,7 +477,7 @@ pnpm build
 | `pnpm typecheck` | Run TypeScript type checking without building |
 | `pnpm test` | Run all tests (TypeScript + Rust) with type checking |
 | `pnpm test:ts` | Run TypeScript/Vitest tests only |
-| `pnpm test:rust` | Run Rust/Cargo tests (750 tests) |
+| `pnpm test:rust` | Run Rust/Cargo tests |
 | `pnpm test:e2e` | Run Playwright E2E tests |
 | `pnpm test:visual` | Run Playwright visual regression tests |
 | `pnpm lint` | Run ESLint on TypeScript code |

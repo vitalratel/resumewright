@@ -168,7 +168,7 @@ pnpm test:coverage        # With coverage report
 ### Rust Tests (Cargo)
 
 ```bash
-pnpm test:rust            # All Rust tests (~750 tests)
+pnpm test:rust            # All Rust tests
 cd packages/rust-core
 cargo test --package tsx-parser  # Specific crate
 ```

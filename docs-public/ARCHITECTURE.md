@@ -104,8 +104,8 @@ graph TB
 | Technology | Purpose |
 |-----------|---------|
 | **Vitest** | TypeScript unit/component tests |
-| **cargo test** | Rust unit/integration tests (750 tests) |
-| **Playwright** | E2E and visual regression tests (159 tests) |
+| **cargo test** | Rust unit/integration tests |
+| **Playwright** | E2E and visual regression tests |
 
 ---
 
@@ -382,8 +382,8 @@ pnpm test
 pnpm build:wasm          # Build Rust → WASM (1.43 MB gzipped)
 pnpm build               # Full production build
 pnpm typecheck           # TypeScript type checking
-pnpm test:rust           # Rust tests (750 tests)
-pnpm test:ts             # TypeScript tests (396 tests)
+pnpm test:rust           # Rust tests
+pnpm test:ts             # TypeScript tests
 pnpm test:e2e            # Playwright E2E tests
 pnpm test:visual         # Visual regression tests
 pnpm lint                # ESLint
