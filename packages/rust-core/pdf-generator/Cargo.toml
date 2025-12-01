@@ -34,7 +34,7 @@ js-sys = "0.3"
 
 [dev-dependencies]
 serde_json = { workspace = true }
-criterion = { version = "0.7", features = ["html_reports"] }
+criterion = { version = "0.8", features = ["html_reports"] }
 
 [[bench]]
 name = "pdf_generation"
