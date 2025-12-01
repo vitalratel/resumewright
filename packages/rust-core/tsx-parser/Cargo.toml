@@ -9,7 +9,7 @@ publish = false
 [dependencies]
 serde = { workspace = true }
 thiserror = { workspace = true }
-oxc_allocator = "0.99"
+oxc_allocator = "0.100"
 oxc_parser = "0.99"
 oxc_ast = "0.99"
 oxc_span = "0.99"
