@@ -101,25 +101,6 @@ describe('WASM Loader', () => {
       });
     });
 
-    describe('Service Worker Window Mock', () => {
-      it('should document service worker window mock behavior', () => {
-        // This test documents the module-level guard that executes before imports
-        // The guard at lines 11-22 checks: typeof window === 'undefined' && typeof self !== 'undefined'
-        // If true, it creates a minimal window mock on globalThis
-
-        // In Vitest test environment with JSDOM:
-        // - typeof window !== 'undefined' (window exists via JSDOM)
-        // - typeof self !== 'undefined' (self is defined)
-        // Therefore, the mock is NOT created in tests (first condition fails)
-
-        // The guard only activates in true service worker environments
-        const hasWindow = typeof window !== 'undefined';
-        const hasSelf = typeof self !== 'undefined';
-
-        // Document the condition: window must be undefined AND self must be defined
-        expect(hasWindow || !hasSelf).toBe(true); // Mock not created when this is true
-      });
-    });
   });
 
   beforeEach(() => {

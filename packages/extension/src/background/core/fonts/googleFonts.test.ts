@@ -3,6 +3,7 @@
  * Unit tests for font fetching
  */
 
+import type { FontStyle, FontWeight } from '@/shared/domain/fonts/models/Font';
 import {
   GoogleFontsRepository,
 } from '@/shared/infrastructure/fonts/GoogleFontsRepository';
@@ -10,7 +11,7 @@ import {
 // Create repository instance for tests
 let repository: GoogleFontsRepository;
 const clearFontCache = () => repository.clearCache();
-const fetchGoogleFont = async (family: string, weight: any, style: any) => 
+const fetchGoogleFont = async (family: string, weight: FontWeight, style: FontStyle) =>
   repository.fetchGoogleFont(family, weight, style);
 const getFontCacheStats = () => repository.getCacheStats();
 

@@ -8,7 +8,7 @@ import type { AppState } from '../integration/useAppState';
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { validateTsxFile } from '@/shared/domain/pdf';
-import { reportIssue } from '@/shared/errors/presentation/formatting';
+import { copyToClipboard } from '@/shared/errors';
 import { ErrorCode } from '@/shared/types/errors';
 import { extensionAPI } from '../../services/extensionAPI';
 import { useProgressStore } from '../../store/progressStore';
@@ -27,13 +27,14 @@ vi.mock('@/shared/domain/pdf', async () => {
   };
 });
 
-vi.mock('@/shared/errors/presentation/formatting', () => ({
-  reportIssue: vi.fn(),
-}));
-
-vi.mock('@/shared/errors/tracking/telemetry', () => ({
-  generateErrorId: () => 'error-123',
-}));
+vi.mock('@/shared/errors', async () => {
+  const actual = await vi.importActual('@/shared/errors');
+  return {
+    ...actual,
+    copyToClipboard: vi.fn().mockResolvedValue(true),
+    generateErrorId: () => 'error-123',
+  };
+});
 
 // Use real logging implementation
 
@@ -259,7 +260,7 @@ describe('useConversionHandlers', () => {
   });
 
   describe('handleReportIssue', () => {
-    it('reports issue when error exists', () => {
+    it('copies error details to clipboard when error exists', async () => {
       const testError = {
         stage: 'parsing' as const,
         code: ErrorCode.TSX_PARSE_ERROR,
@@ -273,17 +274,17 @@ describe('useConversionHandlers', () => {
 
       const { result } = renderHook(() => useConversionHandlers(defaultProps()));
 
-      act(() => result.current.handleReportIssue());
+      await act(async () => { await result.current.handleReportIssue(); });
 
-      expect(reportIssue).toHaveBeenCalledWith(testError);
+      expect(copyToClipboard).toHaveBeenCalledWith(expect.stringContaining('error-123'));
     });
 
-    it('does not report when no error exists', () => {
+    it('does not copy when no error exists', async () => {
       const { result } = renderHook(() => useConversionHandlers(defaultProps()));
 
-      act(() => result.current.handleReportIssue());
+      await act(async () => { await result.current.handleReportIssue(); });
 
-      expect(reportIssue).not.toHaveBeenCalled();
+      expect(copyToClipboard).not.toHaveBeenCalled();
     });
   });
 

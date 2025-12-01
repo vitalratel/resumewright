@@ -4,10 +4,10 @@
  */
 
 import type { ConversionError } from '@/shared/types/models';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import * as issueReporter from '@/shared/errors/presentation/formatting';
+import * as errorsModule from '@/shared/errors';
 import { ErrorCategory, ErrorCode } from '@/shared/types/errors/codes';
 import { ErrorState } from '../ErrorState';
 
@@ -195,22 +195,24 @@ describe('ErrorState', () => {
       expect(mockReportIssue).toHaveBeenCalledTimes(1);
     });
 
-    it('should use default reportIssue handler when onReportIssue not provided', async () => {
+    it('should use default copyToClipboard when onReportIssue not provided', async () => {
       (import.meta.env as { DEV?: boolean }).DEV = true;
       const user = userEvent.setup();
 
-      // Spy on the reportIssue function
-      const reportIssueSpy = vi.spyOn(issueReporter, 'reportIssue');
+      // Spy on the copyToClipboard function
+      const copyToClipboardSpy = vi.spyOn(errorsModule, 'copyToClipboard').mockResolvedValue(true);
 
       render(<ErrorState error={baseError} />);
 
       const reportButton = screen.getByText('Copy Error Details');
       await user.click(reportButton);
 
-      // Should call reportIssue with the error
-      expect(reportIssueSpy).toHaveBeenCalledWith(baseError);
+      // Should call copyToClipboard with formatted error details
+      await waitFor(() => {
+        expect(copyToClipboardSpy).toHaveBeenCalledWith(expect.stringContaining(baseError.errorId));
+      });
 
-      reportIssueSpy.mockRestore();
+      copyToClipboardSpy.mockRestore();
     });
   });
 

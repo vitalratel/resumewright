@@ -5,7 +5,7 @@
  * Timeout increased from 10s to 30s with exponential backoff retry
  */
 
-import type { FontRequirement, FontWeight } from '../../../shared/domain/fonts/models/Font';
+import type { FontRequirement, FontStyle, FontWeight } from '../../../shared/domain/fonts/models/Font';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FontFetchError, FontFetchErrorType, GoogleFontsRepository } from '@/shared/infrastructure/fonts/GoogleFontsRepository';
 import { ExponentialBackoffRetryPolicy } from '@/shared/infrastructure/retry/ExponentialBackoffRetryPolicy';
@@ -50,7 +50,7 @@ const testRetryPolicy = new ExponentialBackoffRetryPolicy({
 // Create repository instance for tests
 let repository: GoogleFontsRepository;
 const clearFontCache = () => repository.clearCache();
-const fetchGoogleFont = async (family: string, weight: any, style: any) =>
+const fetchGoogleFont = async (family: string, weight: FontWeight, style: FontStyle) =>
   repository.fetchGoogleFont(family, weight, style);
 
 // Mock fetch globally

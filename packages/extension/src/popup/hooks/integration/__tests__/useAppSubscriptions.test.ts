@@ -4,19 +4,19 @@
  */
 
 import type { Mock } from 'vitest';
-import type { ConversionCompletePayload, ConversionErrorPayload, ConversionProgressPayload } from '../../../shared/types/messages';
-import type { ConversionProgress } from '../../../shared/types/models';
+import type { ConversionCompletePayload, ConversionErrorPayload, ConversionProgressPayload } from '../../../../shared/types/messages';
+import type { ConversionProgress } from '../../../../shared/types/models';
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { downloadPDF } from '../../../shared/infrastructure/pdf/downloader';
-import { ErrorCode } from '../../../shared/types/errors/codes';
-import { extensionAPI } from '../../services/extensionAPI';
-import { usePopupStore } from '../../store';
-import { useProgressStore } from '../../store/progressStore';
-import { useAppSubscriptions } from '../integration/useAppSubscriptions';
+import { downloadPDF } from '../../../../shared/infrastructure/pdf/downloader';
+import { ErrorCode } from '../../../../shared/types/errors/codes';
+import { extensionAPI } from '../../../services/extensionAPI';
+import { usePopupStore } from '../../../store';
+import { useProgressStore } from '../../../store/progressStore';
+import { useAppSubscriptions } from '../useAppSubscriptions';
 
 // Mock extensionAPI
-vi.mock('../../services/extensionAPI', () => ({
+vi.mock('../../../services/extensionAPI', () => ({
   extensionAPI: {
     onProgress: vi.fn(),
     onSuccess: vi.fn(),
@@ -25,7 +25,7 @@ vi.mock('../../services/extensionAPI', () => ({
 }));
 
 // Mock downloadPDF
-vi.mock('../../../shared/infrastructure/pdf/downloader', () => ({
+vi.mock('../../../../shared/infrastructure/pdf/downloader', () => ({
   downloadPDF: vi.fn(),
 }));
 

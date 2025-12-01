@@ -103,59 +103,6 @@ export function isConversionErrorObject(value: unknown): value is ConversionErro
 }
 
 /**
- * Type guard for conversion status - in progress.
- *
- * JSDoc example for type guard usage
- * @example
- * ```ts
- * function updateUI(status: string) {
- *   if (isConversionInProgress(status)) {
- *     showProgressIndicator();
- *   }
- * }
- * ```
- */
-export function isConversionInProgress(status: string): boolean {
-  return (
-    status === 'queued'
-    || status === 'parsing'
-    || status === 'extracting-metadata'
-    || status === 'rendering'
-    || status === 'laying-out'
-    || status === 'optimizing'
-    || status === 'generating-pdf'
-  );
-}
-
-/**
- * Type guard for conversion status - complete.
- */
-export function isConversionComplete(status: string): boolean {
-  return status === 'completed';
-}
-
-/**
- * Type guard for conversion status - failed.
- */
-export function isConversionFailed(status: string): boolean {
-  return status === 'failed';
-}
-
-/**
- * Type guard for conversion status - cancelled.
- */
-export function isConversionCancelled(status: string): boolean {
-  return status === 'cancelled';
-}
-
-/**
- * Type guard for conversion status - terminal state.
- */
-export function isConversionTerminal(status: string): boolean {
-  return isConversionComplete(status) || isConversionFailed(status) || isConversionCancelled(status);
-}
-
-/**
  * Type guard for non-null values.
  *
  * JSDoc example for type guard usage

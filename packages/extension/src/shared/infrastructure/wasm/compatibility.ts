@@ -65,6 +65,12 @@ function parseBrowserInfo(userAgent: string): {
   browserName: string;
   browserVersion: string;
 } {
+  // Edge (must check before Chrome - Edge UA contains "Chrome")
+  if (/Edg\/\d+/.test(userAgent)) {
+    const match = userAgent.match(/Edg\/(\d+)/);
+    return { browserName: 'Edge', browserVersion: match![1] };
+  }
+
   // Chrome/Chromium
   if (/Chrome\/\d+/.test(userAgent)) {
     const match = userAgent.match(/Chrome\/(\d+)/);
@@ -77,16 +83,10 @@ function parseBrowserInfo(userAgent: string): {
     return { browserName: 'Firefox', browserVersion: match![1] };
   }
 
-  // Safari
-  if (/Safari\/\d+/.test(userAgent) && !/Chrome/.test(userAgent)) {
+  // Safari (must check after Chrome - Safari UA doesn't contain "Chrome")
+  if (/Safari\/\d+/.test(userAgent)) {
     const match = userAgent.match(/Version\/(\d+)/);
     return { browserName: 'Safari', browserVersion: match ? match[1] : 'Unknown' };
-  }
-
-  // Edge
-  if (/Edg\/\d+/.test(userAgent)) {
-    const match = userAgent.match(/Edg\/(\d+)/);
-    return { browserName: 'Edge', browserVersion: match![1] };
   }
 
   return { browserName: 'Unknown', browserVersion: 'Unknown' };

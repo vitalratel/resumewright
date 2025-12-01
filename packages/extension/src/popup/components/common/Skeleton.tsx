@@ -58,39 +58,6 @@ export const Skeleton = React.memo(({
 });
 
 /**
- * Skeleton for text lines (convenience component)
- *
- * @example
- * <SkeletonText lines={3} />
- */
-interface SkeletonTextProps {
-  /** Number of text lines to display */
-  lines?: number;
-  /** Width of last line (for natural text appearance) */
-  lastLineWidth?: string;
-  /** Additional CSS classes */
-  className?: string;
-}
-
-export const SkeletonText = React.memo(({
-  lines = 1,
-  lastLineWidth = '75%',
-  className = '',
-}: SkeletonTextProps) => {
-  return (
-    <div className={`${tokens.spacing.gapSmall} ${className}`.trim()} aria-hidden="true">
-      {Array.from({ length: lines }, (_, i) => (
-        <div
-          key={i}
-          className={`animate-pulse ${tokens.colors.neutral.bg} h-4 ${tokens.borders.rounded} ${i === lines - 1 ? '' : 'w-full'}`}
-          style={i === lines - 1 ? { width: lastLineWidth } : undefined}
-        />
-      ))}
-    </div>
-  );
-});
-
-/**
  * Skeleton for the file import area
  * Mimics the drag-and-drop zone layout
  */

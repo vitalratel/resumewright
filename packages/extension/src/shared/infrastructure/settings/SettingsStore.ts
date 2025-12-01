@@ -8,7 +8,6 @@
  * Storage Key: "resumewright-settings"
  */
 
-import type { Browser } from 'wxt/browser';
 import type { BaseIssue } from '@/shared/domain/validation/valibot';
 import type {
   UserSettings,
@@ -18,13 +17,11 @@ import type {
 import {
   CURRENT_SETTINGS_VERSION,
   DEFAULT_USER_SETTINGS,
-  migrateUserSettings,
-} from '@/shared/domain/settings/migrations';
+} from '@/shared/domain/settings/defaults';
 import { UserSettingsSchema } from '@/shared/domain/validation';
 import { safeParse } from '@/shared/domain/validation/valibot';
 import { getLogger } from '@/shared/infrastructure/logging';
-
-const STORAGE_KEY = 'resumewright-settings';
+import { localExtStorage, syncExtStorage } from '@/shared/infrastructure/storage';
 
 /**
  * SettingsStore manages user settings persistence.
@@ -32,35 +29,25 @@ const STORAGE_KEY = 'resumewright-settings';
  */
 class SettingsStore {
   /**
-   * Load user settings from storage with migration support.
-   * Returns default settings if none exist.
-   * Automatically migrates old schema versions to current version.
+   * Load user settings from storage.
+   * Returns default settings if none exist or validation fails.
    */
   async loadSettings(): Promise<UserSettings> {
     try {
-      const result = await browser.storage.sync.get(STORAGE_KEY);
+      const stored = await syncExtStorage.getItem('resumewright-settings');
 
-      if (result[STORAGE_KEY] !== null && result[STORAGE_KEY] !== undefined) {
-        const stored: unknown = result[STORAGE_KEY];
-
-        // Apply migrations if needed
-        const rawString = JSON.stringify(stored);
-        const migrationResult = migrateUserSettings(stored, rawString, getLogger());
-
-        if (!migrationResult.success) {
-          getLogger().warn('SettingsStore', 'Migration failed, using defaults', migrationResult.error);
-          const defaults = DEFAULT_USER_SETTINGS;
-          await this.saveSettings(defaults);
-          return defaults;
+      if (stored !== null) {
+        // Validate stored settings
+        const parseResult = safeParse(UserSettingsSchema, stored);
+        if (parseResult.success) {
+          return parseResult.output;
         }
 
-        // If migrated, save updated settings back to storage
-        if (migrationResult.migrated) {
-          getLogger().info('SettingsStore', 'Settings migrated, saving to storage');
-          await this.saveSettings(migrationResult.data);
-        }
-
-        return migrationResult.data;
+        // Invalid settings - use defaults
+        getLogger().warn('SettingsStore', 'Invalid stored settings, using defaults');
+        const defaults = DEFAULT_USER_SETTINGS;
+        await this.saveSettings(defaults);
+        return defaults;
       }
 
       // First time user: initialize with defaults
@@ -76,21 +63,16 @@ class SettingsStore {
   }
 
   /**
-   * Fallback: Load settings from local storage with migration support.
+   * Fallback: Load settings from local storage.
    */
   private async loadSettingsLocal(): Promise<UserSettings> {
     try {
-      const result = await browser.storage.local.get(STORAGE_KEY);
-      if (result[STORAGE_KEY] !== null && result[STORAGE_KEY] !== undefined) {
-        const stored: unknown = result[STORAGE_KEY];
-        const rawString = JSON.stringify(stored);
-        const migrationResult = migrateUserSettings(stored, rawString, getLogger());
-
-        if (migrationResult.success && migrationResult.migrated) {
-          await browser.storage.local.set({ [STORAGE_KEY]: migrationResult.data });
+      const stored = await localExtStorage.getItem('resumewright-settings');
+      if (stored !== null) {
+        const parseResult = safeParse(UserSettingsSchema, stored);
+        if (parseResult.success) {
+          return parseResult.output;
         }
-
-        return migrationResult.data;
       }
       return DEFAULT_USER_SETTINGS;
     }
@@ -121,12 +103,12 @@ class SettingsStore {
     };
 
     try {
-      await browser.storage.sync.set({ [STORAGE_KEY]: toSave });
+      await syncExtStorage.setItem('resumewright-settings', toSave);
     }
     catch (error) {
       getLogger().error('SettingsStore', 'Failed to save settings to sync storage', error);
       // Fallback to local storage
-      await browser.storage.local.set({ [STORAGE_KEY]: toSave });
+      await localExtStorage.setItem('resumewright-settings', toSave);
     }
   }
 
@@ -194,19 +176,11 @@ class SettingsStore {
    * Listen for settings changes across extension contexts.
    */
   onSettingsChanged(callback: (settings: UserSettings) => void): () => void {
-    const listener = (
-      changes: Record<string, Browser.storage.StorageChange>,
-      areaName: string,
-    ) => {
-      if (areaName === 'sync' && (changes[STORAGE_KEY]?.newValue !== null && changes[STORAGE_KEY]?.newValue !== undefined)) {
-        callback(changes[STORAGE_KEY].newValue as UserSettings);
+    return syncExtStorage.onChange('resumewright-settings', (newValue) => {
+      if (newValue !== null) {
+        callback(newValue);
       }
-    };
-
-    browser.storage.onChanged.addListener(listener);
-
-    // Return unsubscribe function
-    return () => browser.storage.onChanged.removeListener(listener);
+    });
   }
 }
 

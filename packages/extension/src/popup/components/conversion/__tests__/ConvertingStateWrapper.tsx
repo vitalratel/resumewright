@@ -47,7 +47,7 @@ export function ConvertingStateWrapper({ jobId, filename, onCancel }: Converting
     handleCancelConversion: onCancel ?? undefined,
     handleRetry: () => {},
     handleDismissError: () => {},
-    handleReportIssue: () => {},
+    handleReportIssue: async () => {},
     handleImportDifferent: () => {},
   };
 

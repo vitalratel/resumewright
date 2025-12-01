@@ -6,6 +6,7 @@
  */
 
 import { getLogger } from '@/shared/infrastructure/logging';
+import { localExtStorage } from '@/shared/infrastructure/storage';
 
 /**
  * Badge Manager for Extension Toolbar Icon
@@ -60,12 +61,10 @@ export class BadgeManager {
     getLogger().error('BadgeManager', `Failed to update badge (${context})`, error);
 
     try {
-      await browser.storage.local.set({
-        wasmBadgeError: {
-          timestamp: Date.now(),
-          message: 'Badge update failed (non-critical)',
-          context,
-        },
+      await localExtStorage.setItem('wasmBadgeError', {
+        hasError: true,
+        errorMessage: 'Badge update failed (non-critical)',
+        timestamp: Date.now(),
       });
     }
     catch {

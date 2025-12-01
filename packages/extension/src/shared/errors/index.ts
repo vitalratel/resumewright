@@ -54,7 +54,6 @@ export type { CodeContext } from './factory/enrichment';
 
 export {
   formatCodeContext,
-  formatCodeContextAsHtml,
   formatCodeContextWithColumn,
 } from './presentation/formatting';
 // Presentation exports

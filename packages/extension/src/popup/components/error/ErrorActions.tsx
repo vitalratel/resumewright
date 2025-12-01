@@ -10,7 +10,7 @@
 
 import type { ConversionError } from '@/shared/types/models';
 import { memo, useCallback } from 'react';
-import { reportIssue } from '@/shared/errors/presentation/formatting';
+import { copyToClipboard, formatErrorDetailsForClipboard, formatErrorTimestamp } from '@/shared/errors';
 import { useLoadingState } from '../../hooks/ui/useLoadingState';
 import { tokens } from '../../styles/tokens';
 import { Button } from '../common/Button';
@@ -26,7 +26,7 @@ interface ErrorActionsProps {
   onDismiss?: () => void;
 
   /** Report issue callback (dev mode only) */
-  onReportIssue?: () => void;
+  onReportIssue?: () => void | Promise<void>;
 
   /** Number of retry attempts (for button label) */
   retryAttempt: number;
@@ -62,13 +62,22 @@ export const ErrorActions = memo(({
   }, [onRetry, executeRetry]);
 
   // Handle issue reporting (memoized)
-  const handleReportIssue = useCallback(() => {
+  const handleReportIssue = useCallback(async () => {
     if (onReportIssue) {
-      onReportIssue();
+      await onReportIssue();
     }
     else {
-      // Default behavior: open GitHub issue with pre-filled template
-      reportIssue(error);
+      // Copy error details to clipboard
+      const details = formatErrorDetailsForClipboard({
+        errorId: error.errorId,
+        timestamp: formatErrorTimestamp(new Date(error.timestamp)),
+        code: error.code,
+        message: error.message,
+        category: error.category,
+        technicalDetails: error.technicalDetails,
+        metadata: error.metadata as Record<string, unknown> | undefined,
+      });
+      await copyToClipboard(details);
     }
   }, [onReportIssue, error]);
 
@@ -139,7 +148,7 @@ export const ErrorActions = memo(({
       {isDevMode && (
         <button
           type="button"
-          onClick={handleReportIssue}
+          onClick={() => { void handleReportIssue(); }}
           className={`w-full ${tokens.buttons.default.secondary} ${tokens.typography.small} ${tokens.colors.neutral.textMuted} ${tokens.colors.neutral.hover} ${tokens.borders.roundedLg} ${tokens.transitions.default} ${tokens.effects.focusRing}`.trim().replace(/\s+/g, ' ')}
           aria-label="Copy error details and open GitHub issue template"
           data-testid="report-issue-button"

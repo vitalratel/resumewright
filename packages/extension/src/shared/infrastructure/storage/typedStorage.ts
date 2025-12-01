@@ -6,7 +6,7 @@
  */
 
 import type { ErrorEvent } from '@/shared/errors/tracking/telemetry';
-import type { UserSettings } from '@/shared/types/settings';
+import type { ConversionStatus, UserSettings } from '@/shared/types';
 import { defineExtensionStorage } from '@webext-core/storage';
 import { browser } from 'wxt/browser';
 
@@ -15,7 +15,7 @@ import { browser } from 'wxt/browser';
  */
 export interface JobState {
   jobId: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: ConversionStatus;
   startTime: number;
   lastUpdate: number;
   tsx?: string;

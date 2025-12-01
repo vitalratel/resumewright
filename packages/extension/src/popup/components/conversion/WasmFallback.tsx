@@ -15,8 +15,12 @@ import {
 } from '@heroicons/react/24/outline';
 import React, { useState } from 'react';
 import { WEBASSEMBLY_URLS } from '@/shared/config/externalUrls';
-import { reportIssue } from '@/shared/errors/presentation/formatting';
-import { generateErrorId } from '@/shared/errors/tracking/telemetry';
+import {
+  copyToClipboard,
+  formatErrorDetailsForClipboard,
+  formatErrorTimestamp,
+  generateErrorId,
+} from '@/shared/errors';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { ErrorCategory, ErrorCode } from '@/shared/types/errors/';
 import { useLoadingState } from '../../hooks/ui/useLoadingState';
@@ -71,7 +75,7 @@ export const WasmFallback = React.memo(
       });
     };
 
-    const handleReportIssue = () => {
+    const handleReportIssue = async () => {
       // Create error object for reporting
       const wasmError: ConversionError = error || {
         stage: 'queued',
@@ -90,7 +94,17 @@ export const WasmFallback = React.memo(
         },
       };
 
-      reportIssue(wasmError);
+      // Copy error details to clipboard
+      const details = formatErrorDetailsForClipboard({
+        errorId: wasmError.errorId,
+        timestamp: formatErrorTimestamp(new Date(wasmError.timestamp)),
+        code: wasmError.code,
+        message: wasmError.message,
+        category: wasmError.category,
+        technicalDetails: wasmError.technicalDetails,
+        metadata: wasmError.metadata as Record<string, unknown> | undefined,
+      });
+      await copyToClipboard(details);
     };
 
     return (
@@ -103,7 +117,7 @@ export const WasmFallback = React.memo(
       >
         {/* Warning Icon */}
         <div
-          className={`flex-shrink-0 w-16 h-16 ${tokens.colors.error.bg} ${tokens.borders.full} flex items-center justify-center`}
+          className={`shrink-0 w-16 h-16 ${tokens.colors.error.bg} ${tokens.borders.full} flex items-center justify-center`}
         >
           <ExclamationTriangleIcon
             className={`${tokens.icons.xl} ${tokens.colors.error.icon}`}
@@ -267,7 +281,9 @@ export const WasmFallback = React.memo(
           {isDevMode && (
             <button
               type="button"
-              onClick={handleReportIssue}
+              onClick={() => {
+                void handleReportIssue();
+              }}
               className={`w-full px-4 py-2 ${tokens.typography.small} ${tokens.colors.neutral.textMuted} hover:${tokens.colors.neutral.text} ${tokens.colors.neutral.hover} ${tokens.borders.roundedLg} ${tokens.transitions.default} ${tokens.effects.focusRingLight}`
                 .trim()
                 .replace(/\s+/g, ' ')}
@@ -302,7 +318,7 @@ export const WasmFallback = React.memo(
               id="technical-details"
               className={`${tokens.spacing.marginMedium} ${tokens.spacing.alert} ${tokens.colors.neutral.bg} ${tokens.borders.roundedLg} ${tokens.typography.xs} font-mono overflow-x-auto`}
             >
-              <pre className="whitespace-pre-wrap break-words">
+              <pre className="whitespace-pre-wrap wrap-break-words">
                 {JSON.stringify(
                   {
                     compatible: report.compatible,

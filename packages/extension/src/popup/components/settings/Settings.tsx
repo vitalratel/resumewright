@@ -33,11 +33,11 @@
 
 import type { UserSettings } from '@/shared/types/settings';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import { DEBOUNCE_DELAYS, UI_DELAYS } from '../../constants/timings';
 import { useUnsavedChanges } from '../../hooks';
 import { useBeforeUnload } from '../../hooks/core';
-import { debounce } from '../../utils';
 import { ResetConfirmationModal } from '../ResetConfirmationModal';
 import { SettingsView } from './SettingsView';
 
@@ -104,27 +104,15 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
   }, []);
 
   // Debounced auto-save function (500ms delay)
-  // Use ref to stabilize debounced function and prevent callback recreations
-  const debouncedAutoSaveRef = useRef(debounce(saveImmediate, DEBOUNCE_DELAYS.SETTINGS_AUTOSAVE));
-
-  // Update ref when saveImmediate changes (shouldn't happen, but stay defensive)
-  useEffect(() => {
-    debouncedAutoSaveRef.current = debounce(saveImmediate, DEBOUNCE_DELAYS.SETTINGS_AUTOSAVE);
-  }, [saveImmediate]);
-
-  // Cleanup debounce on unmount
-  useEffect(() => {
-    return () => {
-      debouncedAutoSaveRef.current.cancel();
-    };
-  }, []);
+  // useDebouncedCallback provides stable reference and auto-cleanup on unmount
+  const debouncedAutoSave = useDebouncedCallback(saveImmediate, DEBOUNCE_DELAYS.SETTINGS_AUTOSAVE);
 
   // Last-ditch save attempt on browser close/refresh (race condition fix)
   // Note: handleBack() handles save on navigation, this is for window close/refresh only
   useEffect(() => {
     const handleWindowUnload = () => {
       // Cancel debounce to prevent any pending saves from firing
-      debouncedAutoSaveRef.current.cancel();
+      debouncedAutoSave.cancel();
 
       // Wait for all pending saves to complete first
       void Promise.all(pendingSavesRef.current);
@@ -137,10 +125,9 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
 
     window.addEventListener('beforeunload', handleWindowUnload);
     return () => window.removeEventListener('beforeunload', handleWindowUnload);
-  }, [isDirty, settings, saveImmediate]);
+  }, [isDirty, settings, saveImmediate, debouncedAutoSave]);
 
   // Memoize callbacks for stable references + auto-save
-  // No dependencies needed - debouncedAutoSaveRef is stable
   const handlePageSizeChange = useCallback((pageSize: 'Letter' | 'A4' | 'Legal') => {
     setSettings((prev) => {
       if (!prev) return prev;
@@ -149,10 +136,10 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
         defaultConfig: { ...prev.defaultConfig, pageSize },
       };
       // Trigger auto-save
-      debouncedAutoSaveRef.current(newSettings);
+      void debouncedAutoSave(newSettings);
       return newSettings;
     });
-  }, []);
+  }, [debouncedAutoSave]);
 
   const handleMarginChange = useCallback(
     (side: 'top' | 'right' | 'bottom' | 'left', value: number) => {
@@ -166,11 +153,11 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
           },
         };
         // Trigger auto-save
-        debouncedAutoSaveRef.current(newSettings);
+        void debouncedAutoSave(newSettings);
         return newSettings;
       });
     },
-    []
+    [debouncedAutoSave]
   );
 
   // Show confirmation modal instead of native confirm
@@ -197,7 +184,7 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
     void (async () => {
       if (isDirty && settings) {
         // Cancel debounced save and save immediately
-        debouncedAutoSaveRef.current.cancel();
+        debouncedAutoSave.cancel();
         const success = await saveImmediate(settings);
         // Only navigate if save succeeds
         if (success) {
@@ -209,7 +196,7 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
         onBack();
       }
     })();
-  }, [isDirty, settings, saveImmediate, onBack]);
+  }, [isDirty, settings, saveImmediate, onBack, debouncedAutoSave]);
 
   return (
     <>

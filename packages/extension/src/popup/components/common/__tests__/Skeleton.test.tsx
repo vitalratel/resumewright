@@ -14,7 +14,6 @@ import {
   SkeletonFileImport,
   SkeletonHeader,
   SkeletonSettings,
-  SkeletonText,
 } from '../Skeleton';
 
 describe('Skeleton', () => {
@@ -62,36 +61,6 @@ describe('Skeleton', () => {
       const skeleton = container.firstChild as HTMLElement;
 
       expect(skeleton).toHaveClass('animate-pulse');
-    });
-  });
-
-  describe('SkeletonText Component', () => {
-    it('renders single line by default', () => {
-      const { container } = render(<SkeletonText />);
-      const skeletons = container.querySelectorAll('.animate-pulse');
-
-      expect(skeletons).toHaveLength(1);
-    });
-
-    it('renders multiple lines', () => {
-      const { container } = render(<SkeletonText lines={3} />);
-      const skeletons = container.querySelectorAll('.animate-pulse');
-
-      expect(skeletons).toHaveLength(3);
-    });
-
-    it('last line has custom width', () => {
-      const { container } = render(<SkeletonText lines={2} lastLineWidth="60%" />);
-      const skeletons = container.querySelectorAll('.animate-pulse');
-      const lastSkeleton = skeletons[skeletons.length - 1] as HTMLElement;
-
-      expect(lastSkeleton.style.width).toBe('60%');
-    });
-
-    it('applies custom className', () => {
-      const { container } = render(<SkeletonText className="custom-spacing" />);
-
-      expect(container.querySelector('.custom-spacing')).toBeInTheDocument();
     });
   });
 
@@ -202,7 +171,6 @@ describe('Skeleton', () => {
     it('all skeleton components have aria-hidden', () => {
       const components = [
         <Skeleton key="skeleton" />,
-        <SkeletonText key="text" />,
         <SkeletonFileImport key="file" />,
         <SkeletonSettings key="settings" />,
         <SkeletonHeader key="header" />,
@@ -260,7 +228,6 @@ describe('Skeleton', () => {
     it('all skeletons use same color (gray-200)', () => {
       const components = [
         <Skeleton key="skeleton" />,
-        <SkeletonText key="text" />,
         <SkeletonFileImport key="file" />,
         <SkeletonSettings key="settings" />,
         <SkeletonHeader key="header" />,

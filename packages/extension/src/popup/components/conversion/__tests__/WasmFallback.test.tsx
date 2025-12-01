@@ -27,10 +27,14 @@ import {
 // Note: wxt/browser is mocked globally in vitest.setup.ts with fakeBrowser
 // We spy on fakeBrowser methods to control behavior
 
-// Mock issueReporter
-vi.mock('@/shared/errors/presentation/formatting', () => ({
-  reportIssue: vi.fn(),
-}));
+// Mock clipboard functions
+vi.mock('@/shared/errors', async () => {
+  const actual = await vi.importActual('@/shared/errors');
+  return {
+    ...actual,
+    copyToClipboard: vi.fn().mockResolvedValue(true),
+  };
+});
 
 describe('WasmFallback', () => {
   beforeEach(() => {
@@ -219,8 +223,8 @@ describe('WasmFallback', () => {
       vi.unstubAllEnvs();
     });
 
-    it('should call reportIssue with error when Copy Error Details clicked', async () => {
-      const { reportIssue } = await import('@/shared/errors/presentation/formatting');
+    it('should copy error details to clipboard when Copy Error Details clicked', async () => {
+      const { copyToClipboard } = await import('@/shared/errors');
       vi.stubEnv('DEV', true);
 
       render(<WasmFallback report={compatibleReport} />);
@@ -230,13 +234,11 @@ describe('WasmFallback', () => {
       });
       fireEvent.click(button);
 
-      expect(reportIssue).toHaveBeenCalledTimes(1);
-      expect(reportIssue).toHaveBeenCalledWith(
-        expect.objectContaining({
-          code: 'WASM_INIT_FAILED',
-          message: 'Failed to initialize WASM converter',
-          recoverable: true,
-        })
+      await waitFor(() => {
+        expect(copyToClipboard).toHaveBeenCalledTimes(1);
+      });
+      expect(copyToClipboard).toHaveBeenCalledWith(
+        expect.stringContaining('WASM_INIT_FAILED')
       );
 
       vi.unstubAllEnvs();

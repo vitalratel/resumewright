@@ -3,6 +3,7 @@
 
 import type { CVMetadata as WasmCVMetadata } from '@pkg/wasm_bridge';
 import type { ConversionRequestPayload } from '../../../shared/types/messages';
+import type { ConversionConfig } from '../../../shared/types/models';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConversionService } from '../ConversionService';
 
@@ -283,7 +284,8 @@ describe('ConversionService', () => {
 
     it('should use hardcoded defaults when config is completely invalid', async () => {
       // Test the fallback path when settings.defaultConfig is missing/invalid
-      // This requires mocking settingsStore directly since it's a singleton
+      // This simulates corrupt storage or failed migration - defaultConfig should never be null
+      // but we need to handle it gracefully
       const { settingsStore } = await import(
         '@/shared/infrastructure/settings/SettingsStore'
       );
@@ -295,7 +297,8 @@ describe('ConversionService', () => {
         retentionDays: 30,
         settingsVersion: 1,
         lastUpdated: Date.now(),
-        defaultConfig: null as any, // Invalid config - triggers fallback
+        // Simulate corrupt/invalid storage data - null is not a valid ConversionConfig
+        defaultConfig: null as unknown as ConversionConfig,
       });
 
       const payload: ConversionRequestPayload = { tsx: 'test' };

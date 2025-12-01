@@ -22,7 +22,6 @@ export {
   SkeletonFileImport,
   SkeletonHeader,
   SkeletonSettings,
-  SkeletonText,
 } from './Skeleton';
 
 export { Spinner } from './Spinner';

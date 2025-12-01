@@ -7,12 +7,12 @@
 
 import type { AppState } from '../integration/useAppState';
 import { useCallback } from 'react';
-import { reportIssue } from '@/shared/errors/presentation/formatting';
+import { copyToClipboard, formatErrorDetailsForClipboard, formatErrorTimestamp } from '@/shared/errors';
 
 export interface ConversionCleanupHandlers {
   handleRetry: () => void;
   handleDismissError: () => void;
-  handleReportIssue: () => void;
+  handleReportIssue: () => Promise<void>;
 }
 
 interface UseConversionCleanupOptions {
@@ -35,10 +35,19 @@ export function useConversionCleanup({ appState }: UseConversionCleanupOptions):
     reset();
   }, [reset]);
 
-  // Handle report issue
-  const handleReportIssue = useCallback(() => {
+  // Handle report issue - copy error details to clipboard
+  const handleReportIssue = useCallback(async () => {
     if (lastError) {
-      reportIssue(lastError);
+      const details = formatErrorDetailsForClipboard({
+        errorId: lastError.errorId,
+        timestamp: formatErrorTimestamp(new Date(lastError.timestamp)),
+        code: lastError.code,
+        message: lastError.message,
+        category: lastError.category,
+        technicalDetails: lastError.technicalDetails,
+        metadata: lastError.metadata as Record<string, unknown> | undefined,
+      });
+      await copyToClipboard(details);
     }
   }, [lastError]);
 

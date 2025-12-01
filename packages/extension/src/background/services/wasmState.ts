@@ -7,7 +7,7 @@
 
 import { null_, number, picklist, string } from '@/shared/domain/validation/valibot';
 import { getLogger } from '@/shared/infrastructure/logging';
-import { setValidatedStorage } from '@/shared/infrastructure/storage';
+import { localExtStorage, setValidatedStorage } from '@/shared/infrastructure/storage';
 
 /**
  * WASM initialization status types
@@ -78,8 +78,8 @@ export class WasmStateManager {
    */
   async isReady(): Promise<boolean> {
     try {
-      const result = await browser.storage.local.get('wasmStatus');
-      return result.wasmStatus === 'success';
+      const status = await localExtStorage.getItem('wasmStatus');
+      return status === 'success';
     }
     catch (error) {
       getLogger().error('WasmStateManager', 'Failed to check WASM status', error);
@@ -94,12 +94,11 @@ export class WasmStateManager {
    */
   async getStatus(): Promise<WasmStatusInfo> {
     try {
-      const result = await browser.storage.local.get(['wasmStatus', 'wasmInitError']);
-      const status = (result.wasmStatus as 'initializing' | 'success' | 'failed' | undefined) || 'unknown';
-      const error = result.wasmInitError as string | undefined;
+      const status = await localExtStorage.getItem('wasmStatus');
+      const error = await localExtStorage.getItem('wasmInitError');
       return {
-        status,
-        error,
+        status: status ?? 'unknown',
+        error: error ?? undefined,
       };
     }
     catch (error) {
