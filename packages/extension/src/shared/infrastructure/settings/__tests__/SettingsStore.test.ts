@@ -6,33 +6,40 @@
 
 import type { UserSettings } from '@/shared/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-// Import after mocking
-import browser from 'webextension-polyfill';
 
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
 import { settingsStore } from '../SettingsStore';
 
-// Mock webextension-polyfill
-vi.mock('webextension-polyfill', () => ({
-  default: {
+// Use vi.hoisted to ensure mock functions are available when vi.mock factory runs
+const { mockSyncGet, mockSyncSet, mockLocalGet, mockLocalSet, mockAddListener, mockRemoveListener } =
+  vi.hoisted(() => ({
+    mockSyncGet: vi.fn(),
+    mockSyncSet: vi.fn(),
+    mockLocalGet: vi.fn(),
+    mockLocalSet: vi.fn(),
+    mockAddListener: vi.fn(),
+    mockRemoveListener: vi.fn(),
+  }));
+
+// Mock wxt/browser
+vi.mock('wxt/browser', () => ({
+  browser: {
     storage: {
       sync: {
-        get: vi.fn(),
-        set: vi.fn(),
+        get: mockSyncGet,
+        set: mockSyncSet,
       },
       local: {
-        get: vi.fn(),
-        set: vi.fn(),
+        get: mockLocalGet,
+        set: mockLocalSet,
       },
       onChanged: {
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
+        addListener: mockAddListener,
+        removeListener: mockRemoveListener,
       },
     },
   },
 }));
-
-const mockStorage = browser.storage;
 
 describe('SettingsStore', () => {
   beforeEach(() => {
@@ -41,7 +48,7 @@ describe('SettingsStore', () => {
 
   describe('loadSettings', () => {
     it('returns default settings when storage is empty', async () => {
-      (mockStorage.sync.get as ReturnType<typeof vi.fn>).mockResolvedValue({});
+      mockSyncGet.mockResolvedValue({});
 
       const settings = await settingsStore.loadSettings();
 
@@ -67,7 +74,7 @@ describe('SettingsStore', () => {
           },
         },
       };
-      (mockStorage.sync.get as ReturnType<typeof vi.fn>).mockResolvedValue({
+      mockSyncGet.mockResolvedValue({
         'resumewright-settings': storedSettings,
       });
 
@@ -78,17 +85,15 @@ describe('SettingsStore', () => {
     });
 
     it('falls back to local storage on sync failure', async () => {
-      (mockStorage.sync.get as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error('Sync storage unavailable')
-      );
-      (mockStorage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({
+      mockSyncGet.mockRejectedValue(new Error('Sync storage unavailable'));
+      mockLocalGet.mockResolvedValue({
         'resumewright-settings': DEFAULT_USER_SETTINGS,
       });
 
       const settings = await settingsStore.loadSettings();
 
       expect(settings).toBeDefined();
-      expect(mockStorage.local.get).toHaveBeenCalled();
+      expect(mockLocalGet).toHaveBeenCalled();
     });
 
     describe('browser.storage.local.set error handling', () => {
@@ -98,15 +103,11 @@ describe('SettingsStore', () => {
           settingsVersion: 0, // Old version to trigger migration
         };
 
-        (mockStorage.sync.get as ReturnType<typeof vi.fn>).mockRejectedValue(
-          new Error('Sync unavailable')
-        );
-        (mockStorage.local.get as ReturnType<typeof vi.fn>).mockResolvedValue({
+        mockSyncGet.mockRejectedValue(new Error('Sync unavailable'));
+        mockLocalGet.mockResolvedValue({
           'resumewright-settings': oldSettings,
         });
-        (mockStorage.local.set as ReturnType<typeof vi.fn>).mockRejectedValue(
-          new Error('Storage quota exceeded')
-        );
+        mockLocalSet.mockRejectedValue(new Error('Storage quota exceeded'));
 
         const settings = await settingsStore.loadSettings();
 
@@ -118,12 +119,8 @@ describe('SettingsStore', () => {
 
     describe('Error handling returns DEFAULT_USER_SETTINGS', () => {
       it('should return DEFAULT_USER_SETTINGS when loadSettingsLocal fails', async () => {
-        (mockStorage.sync.get as ReturnType<typeof vi.fn>).mockRejectedValue(
-          new Error('Sync unavailable')
-        );
-        (mockStorage.local.get as ReturnType<typeof vi.fn>).mockRejectedValue(
-          new Error('Local storage access denied')
-        );
+        mockSyncGet.mockRejectedValue(new Error('Sync unavailable'));
+        mockLocalGet.mockRejectedValue(new Error('Local storage access denied'));
 
         const settings = await settingsStore.loadSettings();
 
@@ -134,11 +131,11 @@ describe('SettingsStore', () => {
 
   describe('saveSettings', () => {
     it('saves valid settings to chrome.storage.sync', async () => {
-      (mockStorage.sync.set as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+      mockSyncSet.mockResolvedValue(undefined);
 
       await settingsStore.saveSettings(DEFAULT_USER_SETTINGS);
 
-      expect(mockStorage.sync.set).toHaveBeenCalledWith({
+      expect(mockSyncSet).toHaveBeenCalledWith({
         'resumewright-settings': expect.objectContaining({
           defaultConfig: expect.objectContaining({
             pageSize: 'Letter',
@@ -154,36 +151,34 @@ describe('SettingsStore', () => {
     });
 
     it('updates lastUpdated timestamp when saving', async () => {
-      (mockStorage.sync.set as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+      mockSyncSet.mockResolvedValue(undefined);
       const beforeSave = Date.now();
 
       await settingsStore.saveSettings(DEFAULT_USER_SETTINGS);
 
-      const savedSettings = (mockStorage.sync.set as ReturnType<typeof vi.fn>).mock.calls[0][0][
+      const savedSettings = mockSyncSet.mock.calls[0][0][
         'resumewright-settings'
       ] as UserSettings;
       expect(savedSettings.lastUpdated).toBeGreaterThanOrEqual(beforeSave);
     });
 
     it('falls back to local storage on sync failure', async () => {
-      (mockStorage.sync.set as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error('Sync storage unavailable')
-      );
-      (mockStorage.local.set as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+      mockSyncSet.mockRejectedValue(new Error('Sync storage unavailable'));
+      mockLocalSet.mockResolvedValue(undefined);
 
       await settingsStore.saveSettings(DEFAULT_USER_SETTINGS);
 
-      expect(mockStorage.local.set).toHaveBeenCalled();
+      expect(mockLocalSet).toHaveBeenCalled();
     });
   });
 
   describe('resetSettings', () => {
     it('resets settings to defaults', async () => {
-      (mockStorage.sync.set as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+      mockSyncSet.mockResolvedValue(undefined);
 
       await settingsStore.resetSettings();
 
-      expect(mockStorage.sync.set).toHaveBeenCalledWith({
+      expect(mockSyncSet).toHaveBeenCalledWith({
         'resumewright-settings': expect.objectContaining({
           defaultConfig: expect.objectContaining({
             pageSize: 'Letter',
@@ -357,7 +352,7 @@ describe('SettingsStore', () => {
 
       const unsubscribe = settingsStore.onSettingsChanged(callback);
 
-      expect(mockStorage.onChanged.addListener).toHaveBeenCalled();
+      expect(mockAddListener).toHaveBeenCalled();
       expect(typeof unsubscribe).toBe('function');
     });
 
@@ -367,7 +362,7 @@ describe('SettingsStore', () => {
       const unsubscribe = settingsStore.onSettingsChanged(callback);
       unsubscribe();
 
-      expect(mockStorage.onChanged.removeListener).toHaveBeenCalled();
+      expect(mockRemoveListener).toHaveBeenCalled();
     });
   });
 });

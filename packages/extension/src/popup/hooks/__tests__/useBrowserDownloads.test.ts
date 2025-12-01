@@ -1,22 +1,25 @@
-/**
- * Tests for useBrowserDownloads hook
- * Custom hooks testing
- * Error handling in hooks
- * Browser API availability detection
- */
+// ABOUTME: Tests for useBrowserDownloads hook.
+// ABOUTME: Verifies browser downloads API availability and file operations.
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import browser from 'webextension-polyfill';
+import { browser } from 'wxt/browser';
 import { useBrowserDownloads } from '../integration/useBrowserDownloads';
 import { mockDownloadItem, mockSearchResult } from './helpers';
 
-vi.mock('webextension-polyfill', () => ({
-  default: {
+// Mock browser downloads API using vi.hoisted for proper hoisting
+const mocks = vi.hoisted(() => ({
+  search: vi.fn(),
+  open: vi.fn(),
+  show: vi.fn(),
+}));
+
+vi.mock('wxt/browser', () => ({
+  browser: {
     downloads: {
-      search: vi.fn(),
-      open: vi.fn(),
-      show: vi.fn(),
+      search: mocks.search,
+      open: mocks.open,
+      show: mocks.show,
     },
   },
 }));
@@ -59,9 +62,9 @@ describe('useBrowserDownloads', () => {
     originalDownloads = browser.downloads;
     
     // Set default mock behaviors
-    vi.mocked(browser.downloads.search).mockResolvedValue([]);
-    vi.mocked(browser.downloads.open).mockResolvedValue(undefined as unknown as void);
-    vi.mocked(browser.downloads.show).mockResolvedValue(true as unknown as boolean);
+    mocks.search.mockResolvedValue([]);
+    mocks.open.mockResolvedValue(undefined);
+    mocks.show.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -159,7 +162,7 @@ describe('useBrowserDownloads', () => {
 
   describe('Download Search', () => {
     it('searches for download by filename', async () => {
-      vi.mocked(browser.downloads.search).mockResolvedValue(
+      mocks.search.mockResolvedValue(
         mockSearchResult([mockDownloadItem(123, 'test.pdf')]),
       );
 
@@ -169,7 +172,7 @@ describe('useBrowserDownloads', () => {
         expect(result.current).toMatchObject({ downloadId: 123, isAvailable: true });
       });
 
-      expect(browser.downloads.search).toHaveBeenCalledWith({
+      expect(mocks.search).toHaveBeenCalledWith({
         filename: 'test.pdf',
         orderBy: ['-startTime'],
         limit: 1,
@@ -178,7 +181,7 @@ describe('useBrowserDownloads', () => {
 
     it('handles no downloads found', async () => {
       // Explicitly mock empty result since previous test may have changed the mock
-      vi.mocked(browser.downloads.search).mockResolvedValue([]);
+      mocks.search.mockResolvedValue([]);
 
       const { result } = renderHook(() => useBrowserDownloads('nonexistent.pdf'));
 
@@ -194,7 +197,7 @@ describe('useBrowserDownloads', () => {
         expect(result.current).toMatchObject({ downloadId: null, isAvailable: false });
       });
 
-      expect(browser.downloads.search).not.toHaveBeenCalled();
+      expect(mocks.search).not.toHaveBeenCalled();
     });
 
     it('does not search when API unavailable', async () => {
@@ -210,7 +213,7 @@ describe('useBrowserDownloads', () => {
         expect(result.current.apiAvailable).toBe(false);
       });
 
-      expect(vi.mocked(orig.search)).not.toHaveBeenCalled();
+      expect(mocks.search).not.toHaveBeenCalled();
 
       Object.defineProperty(browser, 'downloads', {
         value: orig,
@@ -219,7 +222,7 @@ describe('useBrowserDownloads', () => {
     });
 
     it('selects most recent download when multiple exist', async () => {
-      vi.mocked(browser.downloads.search).mockResolvedValue(
+      mocks.search.mockResolvedValue(
         mockSearchResult([
           mockDownloadItem(456, 'test.pdf', '2025-01-02T00:00:00Z'),
           mockDownloadItem(123, 'test.pdf', '2025-01-01T00:00:00Z'),
@@ -235,7 +238,7 @@ describe('useBrowserDownloads', () => {
 
     it('handles search error gracefully', async () => {
       const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      vi.mocked(browser.downloads.search).mockRejectedValue(new Error('Permission denied'));
+      mocks.search.mockRejectedValue(new Error('Permission denied'));
 
       const { result } = renderHook(() => useBrowserDownloads('test.pdf'));
 
@@ -248,7 +251,7 @@ describe('useBrowserDownloads', () => {
     });
 
     it('updates search when filename changes', async () => {
-      vi.mocked(browser.downloads.search)
+      mocks.search
         .mockResolvedValueOnce(mockSearchResult([mockDownloadItem(1, 'first.pdf')]))
         .mockResolvedValueOnce(mockSearchResult([mockDownloadItem(2, 'second.pdf')]));
 
@@ -262,13 +265,13 @@ describe('useBrowserDownloads', () => {
       rerender({ filename: 'second.pdf' });
 
       await waitFor(() => expect(result.current.downloadId).toBe(2));
-      expect(browser.downloads.search).toHaveBeenCalledTimes(2);
+      expect(mocks.search).toHaveBeenCalledTimes(2);
     });
   });
 
   describe('openDownload', () => {
     it('opens download when available', async () => {
-      vi.mocked(browser.downloads.search).mockResolvedValue(
+      mocks.search.mockResolvedValue(
         mockSearchResult([mockDownloadItem(123, 'test.pdf')]),
       );
 
@@ -278,7 +281,7 @@ describe('useBrowserDownloads', () => {
 
       act(() => result.current.openDownload());
 
-      expect(browser.downloads.open).toHaveBeenCalledWith(123);
+      expect(mocks.open).toHaveBeenCalledWith(123);
     });
 
     it('does not call API when download ID is null', async () => {
@@ -290,7 +293,7 @@ describe('useBrowserDownloads', () => {
 
       act(() => result.current.openDownload());
 
-      expect(browser.downloads.open).not.toHaveBeenCalled();
+      expect(mocks.open).not.toHaveBeenCalled();
     });
 
     it('does not call API when downloads API unavailable', async () => {
@@ -308,7 +311,7 @@ describe('useBrowserDownloads', () => {
 
       act(() => result.current.openDownload());
 
-      expect(vi.mocked(orig.open)).not.toHaveBeenCalled();
+      expect(mocks.open).not.toHaveBeenCalled();
 
       Object.defineProperty(browser, 'downloads', {
         value: orig,
@@ -318,10 +321,10 @@ describe('useBrowserDownloads', () => {
 
     it('handles open error gracefully', async () => {
       const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      vi.mocked(browser.downloads.search).mockResolvedValue(
+      mocks.search.mockResolvedValue(
         mockSearchResult([mockDownloadItem(123, 'test.pdf')]),
       );
-      vi.mocked(browser.downloads.open).mockRejectedValue(new Error('File not found'));
+      mocks.open.mockRejectedValue(new Error('File not found'));
 
       const { result } = renderHook(() => useBrowserDownloads('test.pdf'));
 
@@ -339,7 +342,7 @@ describe('useBrowserDownloads', () => {
 
   describe('showInFolder', () => {
     it('shows download in folder when available', async () => {
-      vi.mocked(browser.downloads.search).mockResolvedValue(
+      mocks.search.mockResolvedValue(
         mockSearchResult([mockDownloadItem(123, 'test.pdf')]),
       );
 
@@ -349,7 +352,7 @@ describe('useBrowserDownloads', () => {
 
       act(() => result.current.showInFolder());
 
-      expect(browser.downloads.show).toHaveBeenCalledWith(123);
+      expect(mocks.show).toHaveBeenCalledWith(123);
     });
 
     it('does not call API when download ID is null', async () => {
@@ -361,7 +364,7 @@ describe('useBrowserDownloads', () => {
 
       act(() => result.current.showInFolder());
 
-      expect(browser.downloads.show).not.toHaveBeenCalled();
+      expect(mocks.show).not.toHaveBeenCalled();
     });
 
     it('does not call API when downloads API unavailable', async () => {
@@ -379,7 +382,7 @@ describe('useBrowserDownloads', () => {
 
       act(() => result.current.showInFolder());
 
-      expect(vi.mocked(orig.show)).not.toHaveBeenCalled();
+      expect(mocks.show).not.toHaveBeenCalled();
 
       Object.defineProperty(browser, 'downloads', {
         value: orig,
@@ -389,18 +392,20 @@ describe('useBrowserDownloads', () => {
 
     it('handles show error gracefully', async () => {
       const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      vi.mocked(browser.downloads.search).mockResolvedValue(
+      mocks.search.mockResolvedValue(
         mockSearchResult([mockDownloadItem(123, 'test.pdf')]),
       );
-      vi.mocked(browser.downloads.show).mockRejectedValue(new Error('Folder not found'));
+      // show() is called synchronously with try/catch, so we need to throw synchronously
+      mocks.show.mockImplementation(() => {
+        throw new Error('Folder not found');
+      });
 
       const { result } = renderHook(() => useBrowserDownloads('test.pdf'));
 
       await waitFor(() => expect(result.current.downloadId).toBe(123));
 
-      await act(async () => {
+      act(() => {
         result.current.showInFolder();
-        await new Promise(resolve => setTimeout(resolve, 10));
       });
 
       expect(spy).toHaveBeenCalledWith('[ResumeWright] [BrowserDownloads] [ERROR] Failed to show download in folder', { message: 'Folder not found' });
@@ -410,7 +415,7 @@ describe('useBrowserDownloads', () => {
 
   describe('isAvailable', () => {
     it('is true when API available and download found', async () => {
-      vi.mocked(browser.downloads.search).mockResolvedValue(
+      mocks.search.mockResolvedValue(
         mockSearchResult([mockDownloadItem(123, 'test.pdf')]),
       );
 
@@ -455,7 +460,7 @@ describe('useBrowserDownloads', () => {
 
   describe('Hook Stability', () => {
     it('returns stable function references', async () => {
-      vi.mocked(browser.downloads.search).mockResolvedValue(
+      mocks.search.mockResolvedValue(
         mockSearchResult([mockDownloadItem(123, 'test.pdf')]),
       );
 
@@ -474,7 +479,7 @@ describe('useBrowserDownloads', () => {
     });
 
     it('updates when downloadId changes', async () => {
-      vi.mocked(browser.downloads.search)
+      mocks.search
         .mockResolvedValueOnce(mockSearchResult([mockDownloadItem(1, 'first.pdf')]))
         .mockResolvedValueOnce(mockSearchResult([mockDownloadItem(2, 'second.pdf')]));
 
@@ -499,12 +504,12 @@ describe('useBrowserDownloads', () => {
         expect(result.current).toMatchObject({ downloadId: null, isAvailable: false });
       });
       
-      expect(browser.downloads.search).not.toHaveBeenCalled();
+      expect(mocks.search).not.toHaveBeenCalled();
     });
 
     it('handles special characters in filename', async () => {
       const filename = 'résumé-john_doe (2024).pdf';
-      vi.mocked(browser.downloads.search).mockResolvedValue(
+      mocks.search.mockResolvedValue(
         mockSearchResult([mockDownloadItem(123, filename)]),
       );
 
@@ -512,7 +517,7 @@ describe('useBrowserDownloads', () => {
 
       await waitFor(() => expect(result.current.downloadId).toBe(123));
 
-      expect(browser.downloads.search).toHaveBeenCalledWith({
+      expect(mocks.search).toHaveBeenCalledWith({
         filename,
         orderBy: ['-startTime'],
         limit: 1,
@@ -520,7 +525,7 @@ describe('useBrowserDownloads', () => {
     });
 
     it('handles null browser downloads object mid-operation', async () => {
-      vi.mocked(browser.downloads.search).mockResolvedValue(
+      mocks.search.mockResolvedValue(
         mockSearchResult([mockDownloadItem(123, 'test.pdf')]),
       );
 

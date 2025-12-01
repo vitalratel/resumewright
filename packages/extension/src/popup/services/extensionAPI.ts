@@ -1,22 +1,13 @@
-/**
- * Extension API Service
- *
- * Wraps chrome.runtime message passing for popup use cases.
- * Handles TSX validation, conversion requests, and progress/success/error subscriptions.
- */
+// ABOUTME: Wraps messaging for popup use cases.
+// ABOUTME: Handles TSX validation, conversion requests, and message subscriptions.
 
 import type {
   ConversionCompletePayload,
   ConversionErrorPayload,
   ConversionProgressPayload,
-  ConversionRequestPayload,
-  ConversionStartPayload,
-  Message,
 } from '../../shared/types/messages';
-import browser from 'webextension-polyfill';
 import { getLogger } from '@/shared/infrastructure/logging';
-import { MessageType } from '../../shared/types/messages';
-import { isMessageType } from '../../shared/utils/typeGuards';
+import { onMessage, sendMessage } from '@/shared/messaging';
 
 class ExtensionAPI {
   /**
@@ -24,13 +15,8 @@ class ExtensionAPI {
    */
   async validateTsx(tsxContent: string): Promise<boolean> {
     try {
-      const message: Message<{ tsx: string }> = {
-        type: MessageType.VALIDATE_TSX,
-        payload: { tsx: tsxContent },
-      };
-
-      const response = await browser.runtime.sendMessage(message);
-      return (response as { valid: boolean }).valid;
+      const response = await sendMessage('validateTsx', { tsx: tsxContent });
+      return response.valid;
     }
     catch (error) {
       getLogger().error('ExtensionAPI', 'TSX validation failed', error);
@@ -44,12 +30,11 @@ class ExtensionAPI {
   async startConversion(
     tsxContent: string,
     fileName: string,
-  ): Promise<ConversionStartPayload> {
+  ): Promise<{ success: boolean; error?: string }> {
     // Check if service worker is alive
     getLogger().info('ExtensionAPI', 'Checking service worker status...');
     try {
-      // Try to ping the service worker first
-      await browser.runtime.sendMessage({ type: 'PING' });
+      await sendMessage('ping', {});
       getLogger().info('ExtensionAPI', 'Service worker is alive');
     }
     catch (pingError) {
@@ -57,24 +42,18 @@ class ExtensionAPI {
       getLogger().error('ExtensionAPI', 'This usually means the background script is not running');
     }
 
-    const message: Message<ConversionRequestPayload> = {
-      type: MessageType.CONVERSION_REQUEST,
-      payload: {
-        tsx: tsxContent,
-        fileName,
-      },
-    };
-
-    getLogger().info('ExtensionAPI', 'About to send message to background', {
-      type: message.type,
+    getLogger().info('ExtensionAPI', 'About to send startConversion message', {
       contentLength: tsxContent.length,
       fileName,
     });
 
     try {
-      const response = await browser.runtime.sendMessage(message);
+      const response = await sendMessage('startConversion', {
+        tsx: tsxContent,
+        fileName,
+      });
       getLogger().info('ExtensionAPI', 'Received response from background', response);
-      return response as ConversionStartPayload;
+      return response;
     }
     catch (error) {
       getLogger().error('ExtensionAPI', 'sendMessage failed', error);
@@ -88,55 +67,29 @@ class ExtensionAPI {
 
   /**
    * Subscribe to conversion progress updates
-   * Uses message listener for broadcast messages
    */
   onProgress(callback: (progress: ConversionProgressPayload) => void): () => void {
-    const listener = (message: unknown) => {
-      if (isMessageType(message, MessageType.CONVERSION_PROGRESS) && (message.payload !== null && message.payload !== undefined)) {
-        callback(message.payload as ConversionProgressPayload);
-      }
-    };
-
-    browser.runtime.onMessage.addListener(listener);
-
-    // Return unsubscribe function
-    return () => {
-      browser.runtime.onMessage.removeListener(listener);
-    };
+    return onMessage('conversionProgress', ({ data }) => {
+      callback(data);
+    });
   }
 
   /**
    * Subscribe to conversion success
    */
   onSuccess(callback: (result: ConversionCompletePayload) => void): () => void {
-    const listener = (message: unknown) => {
-      if (isMessageType(message, MessageType.CONVERSION_COMPLETE) && (message.payload !== null && message.payload !== undefined)) {
-        callback(message.payload as ConversionCompletePayload);
-      }
-    };
-
-    browser.runtime.onMessage.addListener(listener);
-
-    return () => {
-      browser.runtime.onMessage.removeListener(listener);
-    };
+    return onMessage('conversionComplete', ({ data }) => {
+      callback(data);
+    });
   }
 
   /**
    * Subscribe to conversion errors
    */
   onError(callback: (error: ConversionErrorPayload) => void): () => void {
-    const listener = (message: unknown) => {
-      if (isMessageType(message, MessageType.CONVERSION_ERROR) && (message.payload !== null && message.payload !== undefined)) {
-        callback(message.payload as ConversionErrorPayload);
-      }
-    };
-
-    browser.runtime.onMessage.addListener(listener);
-
-    return () => {
-      browser.runtime.onMessage.removeListener(listener);
-    };
+    return onMessage('conversionError', ({ data }) => {
+      callback(data);
+    });
   }
 }
 

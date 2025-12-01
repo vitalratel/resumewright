@@ -1,45 +1,15 @@
-/**
- * Conversion Service
- *
- * Handles core PDF conversion business logic including:
- * - CV metadata extraction from TSX
- * - Conversion configuration management
- * - PDF conversion with retry logic
- * - Filename generation
- *
- * This service encapsulates all conversion-related business logic,
- * separating it from message handling concerns.
- *
- * @module ConversionService
- */
+// ABOUTME: PDF conversion business logic service.
+// ABOUTME: Handles metadata extraction, config loading, and PDF generation.
 
 import type { ConversionRequestPayload } from '../../shared/types/messages';
 import type { ConversionConfig } from '../../shared/types/models';
 import { extract_cv_metadata } from '@pkg/wasm_bridge';
+import { DEFAULT_CONVERSION_CONFIG } from '@/shared/domain/settings/defaults';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import { convertTsxToPdfWithFonts } from '../../shared/application/pdf/converter';
 import { ExponentialBackoffRetryPolicy } from '../../shared/infrastructure/retry/ExponentialBackoffRetryPolicy';
 import { generateFilename } from '../../shared/utils/filenameSanitization';
-
-/**
- * Default conversion configuration fallback
- * Used when payload config is missing or invalid
- */
-const DEFAULT_CONVERSION_CONFIG: ConversionConfig = {
-  pageSize: 'Letter',
-  margin: {
-    top: 0.5,
-    right: 0.5,
-    bottom: 0.5,
-    left: 0.5,
-  },
-  fontSize: 12,
-  fontFamily: 'Arial',
-  compress: false,
-  atsOptimization: false,
-  includeMetadata: true,
-};
 
 /**
  * CV metadata extracted from TSX content

@@ -5,13 +5,12 @@
 
 import type { UserSettings } from '../../../shared/types/settings';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import browser from 'webextension-polyfill';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import { LifecycleManager } from './lifecycleManager';
 
 // Mock browser API
-vi.mock('webextension-polyfill', () => ({
-  default: {
+vi.mock('wxt/browser', () => ({
+  browser: {
     runtime: {
       onInstalled: {
         addListener: vi.fn(),

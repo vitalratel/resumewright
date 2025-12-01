@@ -7,24 +7,14 @@
 
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { fakeBrowser } from '@webext-core/fake-browser';
 import { beforeEach, describe, expect, vi } from 'vitest';
-import browser from 'webextension-polyfill';
+import { browser } from 'wxt/browser';
 import { EXTERNAL_LINKS } from '../../../../shared/config/externalLinks';
 import { AppFooter } from '../AppFooter';
 
-// Mock webextension-polyfill
-vi.mock('webextension-polyfill', () => ({
-  default: {
-    tabs: {
-      create: vi.fn(),
-    },
-    runtime: {
-      getManifest: vi.fn(() => ({
-        version: '1.2.3',
-      })),
-    },
-  },
-}));
+// Note: wxt/browser is mocked globally in vitest.setup.ts with fakeBrowser
+// We spy on fakeBrowser methods to control behavior
 
 // Test constants matching component text
 const FOOTER_TEXT = {
@@ -38,6 +28,14 @@ const FOOTER_TEXT = {
 describe('AppFooter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Mock getManifest since fakeBrowser doesn't implement it
+    vi.spyOn(fakeBrowser.runtime, 'getManifest').mockReturnValue({
+      manifest_version: 3,
+      name: 'Test Extension',
+      version: '1.2.3',
+    });
+    // Spy on tabs.create so we can verify it was called
+    vi.spyOn(fakeBrowser.tabs, 'create');
   });
 
   describe('Rendering', () => {

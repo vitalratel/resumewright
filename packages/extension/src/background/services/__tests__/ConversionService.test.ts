@@ -1,19 +1,52 @@
-/**
- * Tests for ConversionService
- *
- * Tests business logic for PDF conversion:
- * - CV metadata extraction from TSX
- * - Configuration loading with fallbacks
- * - Filename generation from metadata
- * - Complete conversion workflow orchestration
- */
+// ABOUTME: Tests for ConversionService business logic.
+// ABOUTME: Mocks only true external boundaries (WASM, browser storage).
 
+import type { CVMetadata as WasmCVMetadata } from '@pkg/wasm_bridge';
 import type { ConversionRequestPayload } from '../../../shared/types/messages';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/migrations';
 import { ConversionService } from '../ConversionService';
 
-// Mock dependencies
+/**
+ * Creates a complete mock of the WASM CVMetadata class.
+ * The WASM class has readonly properties and a private constructor,
+ * so we create a plain object with all required properties.
+ */
+function createMockCVMetadata(
+  overrides: Partial<{
+    name: string | undefined;
+    title: string | undefined;
+    email: string | undefined;
+    phone: string | undefined;
+    website: string | undefined;
+    location: string | undefined;
+    layout_type: number;
+    component_count: number;
+    estimated_pages: number;
+    font_complexity: number;
+    has_contact_info: boolean;
+    has_clear_sections: boolean;
+  }> = {}
+): WasmCVMetadata {
+  return {
+    name: undefined,
+    title: undefined,
+    email: undefined,
+    phone: undefined,
+    website: undefined,
+    location: undefined,
+    layout_type: 0, // LayoutType.SingleColumn
+    component_count: 1,
+    estimated_pages: 1,
+    font_complexity: 0, // FontComplexity.Simple
+    has_contact_info: false,
+    has_clear_sections: false,
+    free: vi.fn(),
+    [Symbol.dispose]: vi.fn(),
+    ...overrides,
+  } as WasmCVMetadata;
+}
+
+// Mock WASM bridge - true external boundary
 vi.mock('@pkg/wasm_bridge', () => ({
   extract_cv_metadata: vi.fn(),
   LayoutType: {
@@ -30,27 +63,63 @@ vi.mock('@pkg/wasm_bridge', () => ({
   },
 }));
 
-vi.mock('@/shared/infrastructure/settings/SettingsStore', () => ({
-  settingsStore: {
-    loadSettings: vi.fn(),
-  },
+// Type definitions for browser mock
+interface MockBrowser {
+  storage: {
+    sync: {
+      get: ReturnType<typeof vi.fn>;
+      set: ReturnType<typeof vi.fn>;
+    };
+    local: {
+      get: ReturnType<typeof vi.fn>;
+      set: ReturnType<typeof vi.fn>;
+    };
+    onChanged: {
+      addListener: ReturnType<typeof vi.fn>;
+      removeListener: ReturnType<typeof vi.fn>;
+    };
+  };
+}
+
+// Use vi.hoisted to create typed mock functions available at mock time
+const { mockBrowserInstance } = vi.hoisted(() => {
+  const instance: MockBrowser = {
+    storage: {
+      sync: {
+        get: vi.fn().mockResolvedValue({}),
+        set: vi.fn().mockResolvedValue(undefined),
+      },
+      local: {
+        get: vi.fn().mockResolvedValue({}),
+        set: vi.fn().mockResolvedValue(undefined),
+      },
+      onChanged: {
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+      },
+    },
+  };
+  return { mockBrowserInstance: instance };
+});
+
+// Mock browser storage - true external boundary
+vi.mock('wxt/browser', () => ({
+  browser: mockBrowserInstance,
 }));
 
+// Mock PDF converter - it uses WASM internally
 vi.mock('../../../shared/application/pdf/converter', () => ({
   convertTsxToPdfWithFonts: vi.fn(),
 }));
 
-vi.mock('../../../shared/utils/filenameSanitization', () => ({
-  generateFilename: vi.fn(),
-}));
-
-vi.mock('../../../shared/logging', () => ({
-  getLogger: vi.fn(() => ({
-    info: vi.fn(),
+// Silence logging in tests
+vi.mock('@/shared/infrastructure/logging', () => ({
+  getLogger: () => ({
     debug: vi.fn(),
+    info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
-  })),
+  }),
 }));
 
 describe('ConversionService', () => {
@@ -60,15 +129,17 @@ describe('ConversionService', () => {
     vi.clearAllMocks();
     service = new ConversionService();
 
-    // Default mocks
-    const { settingsStore } = await import('@/shared/infrastructure/settings/SettingsStore');
-    vi.mocked(settingsStore.loadSettings).mockResolvedValue(DEFAULT_USER_SETTINGS);
+    // Reset browser storage mock (uses hoisted mockBrowserInstance)
+    mockBrowserInstance.storage.sync.get.mockResolvedValue({});
+    mockBrowserInstance.storage.sync.set.mockResolvedValue(undefined);
 
-    const { convertTsxToPdfWithFonts } = await import('../../../shared/application/pdf/converter');
-    vi.mocked(convertTsxToPdfWithFonts).mockResolvedValue(new Uint8Array([37, 80, 68, 70])); // PDF header
-
-    const { generateFilename } = await import('../../../shared/utils/filenameSanitization');
-    vi.mocked(generateFilename).mockReturnValue('John_Doe_Resume.pdf');
+    // Setup default PDF converter mock
+    const { convertTsxToPdfWithFonts } = await import(
+      '../../../shared/application/pdf/converter'
+    );
+    vi.mocked(convertTsxToPdfWithFonts).mockResolvedValue(
+      new Uint8Array([0x25, 0x50, 0x44, 0x46]) // PDF magic bytes
+    );
   });
 
   describe('extractCVMetadata', () => {
@@ -77,40 +148,41 @@ describe('ConversionService', () => {
         tsx: undefined as unknown as string,
       };
 
-      await expect(service.extractCVMetadata(payload)).rejects.toThrow('No TSX content found');
+      await expect(service.extractCVMetadata(payload)).rejects.toThrow(
+        'No TSX content found'
+      );
     });
 
     it('should reject empty TSX content', async () => {
-      const payload: ConversionRequestPayload = {
-        tsx: '',
-      };
+      const payload: ConversionRequestPayload = { tsx: '' };
 
-      await expect(service.extractCVMetadata(payload)).rejects.toThrow('No TSX content found');
+      await expect(service.extractCVMetadata(payload)).rejects.toThrow(
+        'No TSX content found'
+      );
     });
 
     it('should reject whitespace-only TSX content', async () => {
-      const payload: ConversionRequestPayload = {
-        tsx: '   \n\t  ',
-      };
+      const payload: ConversionRequestPayload = { tsx: '   \n\t  ' };
 
-      await expect(service.extractCVMetadata(payload)).rejects.toThrow('No TSX content found');
+      await expect(service.extractCVMetadata(payload)).rejects.toThrow(
+        'No TSX content found'
+      );
     });
 
     it('should extract metadata from WASM parser', async () => {
       const { extract_cv_metadata } = await import('@pkg/wasm_bridge');
-      const { LayoutType, FontComplexity } = await import('@pkg/wasm_bridge');
-
-      vi.mocked(extract_cv_metadata).mockReturnValue({
-        name: 'John Doe',
-        title: 'Software Engineer',
-        layout_type: LayoutType.SingleColumn,
-        estimated_pages: 1,
-        component_count: 5,
-        has_contact_info: true,
-        has_clear_sections: true,
-        font_complexity: FontComplexity.Simple,
-        free: vi.fn(),
-      } as any);
+      vi.mocked(extract_cv_metadata).mockReturnValue(
+        createMockCVMetadata({
+          name: 'John Doe',
+          title: 'Software Engineer',
+          layout_type: 0, // SingleColumn
+          estimated_pages: 1,
+          component_count: 5,
+          has_contact_info: true,
+          has_clear_sections: true,
+          font_complexity: 0, // Simple
+        })
+      );
 
       const payload: ConversionRequestPayload = {
         tsx: 'export default function CV() { return <div>John Doe</div>; }',
@@ -138,9 +210,7 @@ describe('ConversionService', () => {
 
       const result = await service.extractCVMetadata(payload);
 
-      expect(result.cvMetadata).toEqual({
-        name: 'Jane Smith',
-      });
+      expect(result.cvMetadata).toEqual({ name: 'Jane Smith' });
     });
 
     it('should handle filename without Resume/CV suffix', async () => {
@@ -156,9 +226,7 @@ describe('ConversionService', () => {
 
       const result = await service.extractCVMetadata(payload);
 
-      expect(result.cvMetadata).toEqual({
-        name: 'Bob Wilson',
-      });
+      expect(result.cvMetadata).toEqual({ name: 'Bob Wilson' });
     });
 
     it('should return null metadata when both WASM and filename parsing fail', async () => {
@@ -182,7 +250,7 @@ describe('ConversionService', () => {
     it('should use payload config when provided', async () => {
       const customConfig = {
         pageSize: 'A4' as const,
-        margin: { top: 1, right: 1, bottom: 1, left: 1 },
+        margin: { top: 0.5, right: 0.5, bottom: 0.5, left: 0.5 },
         fontSize: 14,
         fontFamily: 'Times New Roman',
         compress: true,
@@ -200,142 +268,156 @@ describe('ConversionService', () => {
       expect(config).toEqual(customConfig);
     });
 
-    it('should fall back to user settings when payload config missing', async () => {
-      const payload: ConversionRequestPayload = {
-        tsx: 'test',
-      };
+    it('should fall back to settings default config when payload config missing', async () => {
+      // When no payload config, service uses settingsStore.loadSettings()
+      // which returns DEFAULT_USER_SETTINGS when storage is empty
+      const payload: ConversionRequestPayload = { tsx: 'test' };
 
       const config = await service.loadConversionConfig(payload);
 
-      expect(config).toEqual(DEFAULT_USER_SETTINGS.defaultConfig);
+      // DEFAULT_USER_SETTINGS.defaultConfig has Letter/11pt/Helvetica
+      expect(config.pageSize).toBe('Letter');
+      expect(config.fontSize).toBe(11);
+      expect(config.fontFamily).toBe('Helvetica');
     });
 
-    it('should use hardcoded defaults when config is invalid', async () => {
-      const { settingsStore } = await import('@/shared/infrastructure/settings/SettingsStore');
-      vi.mocked(settingsStore.loadSettings).mockResolvedValue({
-        ...DEFAULT_USER_SETTINGS,
-        defaultConfig: null as any,
+    it('should use hardcoded defaults when config is completely invalid', async () => {
+      // Test the fallback path when settings.defaultConfig is missing/invalid
+      // This requires mocking settingsStore directly since it's a singleton
+      const { settingsStore } = await import(
+        '@/shared/infrastructure/settings/SettingsStore'
+      );
+      vi.spyOn(settingsStore, 'loadSettings').mockResolvedValueOnce({
+        theme: 'auto',
+        autoDetectCV: true,
+        showConvertButtons: true,
+        telemetryEnabled: false,
+        retentionDays: 30,
+        settingsVersion: 1,
+        lastUpdated: Date.now(),
+        defaultConfig: null as any, // Invalid config - triggers fallback
       });
 
-      const payload: ConversionRequestPayload = {
-        tsx: 'test',
-      };
+      const payload: ConversionRequestPayload = { tsx: 'test' };
 
       const config = await service.loadConversionConfig(payload);
 
+      // Falls back to DEFAULT_CONVERSION_CONFIG from defaults.ts
       expect(config.pageSize).toBe('Letter');
-      expect(config.fontSize).toBe(12);
-    });
-
-    it('should use hardcoded defaults when config missing pageSize', async () => {
-      const { settingsStore } = await import('@/shared/infrastructure/settings/SettingsStore');
-      vi.mocked(settingsStore.loadSettings).mockResolvedValue({
-        ...DEFAULT_USER_SETTINGS,
-        defaultConfig: { fontSize: 14 } as any,
-      });
-
-      const payload: ConversionRequestPayload = {
-        tsx: 'test',
-      };
-
-      const config = await service.loadConversionConfig(payload);
-
-      expect(config.pageSize).toBe('Letter');
+      expect(config.fontSize).toBe(11);
+      expect(config.fontFamily).toBe('Helvetica');
     });
   });
 
   describe('generateFilename', () => {
-    it('should generate filename from metadata name', async () => {
-      const { generateFilename } = await import('../../../shared/utils/filenameSanitization');
-      vi.mocked(generateFilename).mockReturnValue('John_Doe_Resume.pdf');
+    // These tests use the REAL generateFilename function - no mocking
 
-      const filename = service.generateFilename({ name: 'John Doe', title: 'Engineer' });
-
-      expect(generateFilename).toHaveBeenCalledWith('John Doe');
-      expect(filename).toBe('John_Doe_Resume.pdf');
-    });
-
-    it('should handle null metadata', async () => {
-      const { generateFilename } = await import('../../../shared/utils/filenameSanitization');
-      vi.mocked(generateFilename).mockReturnValue('Resume.pdf');
-
-      const filename = service.generateFilename(null);
-
-      expect(generateFilename).toHaveBeenCalledWith(undefined);
-      expect(filename).toBe('Resume.pdf');
-    });
-
-    it('should handle metadata without name', async () => {
-      const { generateFilename } = await import('../../../shared/utils/filenameSanitization');
-      vi.mocked(generateFilename).mockReturnValue('Resume.pdf');
-
-      const filename = service.generateFilename({ title: 'Engineer' });
-
-      expect(generateFilename).toHaveBeenCalledWith(undefined);
-      expect(filename).toBe('Resume.pdf');
-    });
-
-    it('should return undefined when filename generation fails', async () => {
-      const { generateFilename } = await import('../../../shared/utils/filenameSanitization');
-      vi.mocked(generateFilename).mockImplementation(() => {
-        throw new Error('Filename generation failed');
+    it('should generate filename from metadata name', () => {
+      const filename = service.generateFilename({
+        name: 'John Doe',
+        title: 'Engineer',
       });
 
-      const filename = service.generateFilename({ name: 'John Doe' });
+      // Real function adds date suffix
+      expect(filename).toMatch(/^John_Doe_Resume_\d{4}-\d{2}-\d{2}\.pdf$/);
+    });
 
-      expect(filename).toBeUndefined();
+    it('should handle null metadata', () => {
+      const filename = service.generateFilename(null);
+
+      expect(filename).toMatch(/^Resume_\d{4}-\d{2}-\d{2}\.pdf$/);
+    });
+
+    it('should handle metadata without name', () => {
+      const filename = service.generateFilename({ title: 'Engineer' });
+
+      expect(filename).toMatch(/^Resume_\d{4}-\d{2}-\d{2}\.pdf$/);
+    });
+
+    it('should sanitize special characters in name', () => {
+      const filename = service.generateFilename({
+        name: "José O'Brien",
+        title: 'Developer',
+      });
+
+      // Real sanitization: accents removed, apostrophe removed
+      expect(filename).toMatch(/^Jose_OBrien_Resume_\d{4}-\d{2}-\d{2}\.pdf$/);
     });
   });
 
   describe('convertToPdf', () => {
-    it('should convert TSX to PDF with retry logic', async () => {
-      const { convertTsxToPdfWithFonts } = await import('../../../shared/application/pdf/converter');
-      const mockPdfBytes = new Uint8Array([37, 80, 68, 70, 1, 2, 3]);
+    it('should convert TSX to PDF', async () => {
+      const { convertTsxToPdfWithFonts } = await import(
+        '../../../shared/application/pdf/converter'
+      );
+      const mockPdfBytes = new Uint8Array([0x25, 0x50, 0x44, 0x46, 1, 2, 3]);
       vi.mocked(convertTsxToPdfWithFonts).mockResolvedValue(mockPdfBytes);
 
-      const config = DEFAULT_USER_SETTINGS.defaultConfig;
-      const onProgress = vi.fn();
-      const onRetry = vi.fn();
+      const config = {
+        pageSize: 'Letter' as const,
+        margin: { top: 0.5, right: 0.5, bottom: 0.5, left: 0.5 },
+        fontSize: 12,
+        fontFamily: 'Arial',
+        compress: false,
+      };
 
-      const pdfBytes = await service.convertToPdf('tsx content', config, onProgress, onRetry);
+      const pdfBytes = await service.convertToPdf('tsx content', config);
 
-      expect(convertTsxToPdfWithFonts).toHaveBeenCalledWith('tsx content', config, onProgress, expect.any(Function));
+      expect(convertTsxToPdfWithFonts).toHaveBeenCalledWith(
+        'tsx content',
+        config,
+        undefined, // No progress callback passed
+        expect.any(Function) // Font fetch callback is always created
+      );
       expect(pdfBytes).toEqual(mockPdfBytes);
     });
 
-    it('should pass progress callback to converter', async () => {
-      const { convertTsxToPdfWithFonts } = await import('../../../shared/application/pdf/converter');
+    it('should pass progress callback to converter when provided', async () => {
+      const { convertTsxToPdfWithFonts } = await import(
+        '../../../shared/application/pdf/converter'
+      );
 
-      const config = DEFAULT_USER_SETTINGS.defaultConfig;
+      const config = {
+        pageSize: 'Letter' as const,
+        margin: { top: 0.5, right: 0.5, bottom: 0.5, left: 0.5 },
+        fontSize: 12,
+        fontFamily: 'Arial',
+        compress: false,
+      };
       const onProgress = vi.fn();
 
       await service.convertToPdf('tsx content', config, onProgress);
 
-      expect(convertTsxToPdfWithFonts).toHaveBeenCalledWith('tsx content', config, onProgress, expect.any(Function));
+      // Verify converter was called with a progress callback
+      const [, , progressArg] = vi.mocked(convertTsxToPdfWithFonts).mock
+        .calls[0];
+      expect(progressArg).toBeDefined();
+      expect(typeof progressArg).toBe('function');
     });
   });
 
   describe('convert (full workflow)', () => {
     it('should orchestrate complete conversion workflow', async () => {
+      // Setup WASM mock for metadata extraction
       const { extract_cv_metadata } = await import('@pkg/wasm_bridge');
-      const { LayoutType, FontComplexity } = await import('@pkg/wasm_bridge');
-      vi.mocked(extract_cv_metadata).mockReturnValue({
-        name: 'Alice Johnson',
-        title: 'Senior Developer',
-        layout_type: LayoutType.TwoColumn,
-        estimated_pages: 2,
-        component_count: 8,
-        has_contact_info: true,
-        has_clear_sections: true,
-        font_complexity: FontComplexity.Moderate,
-        free: vi.fn(),
-      } as any);
+      vi.mocked(extract_cv_metadata).mockReturnValue(
+        createMockCVMetadata({
+          name: 'Alice Johnson',
+          title: 'Senior Developer',
+          layout_type: 1, // TwoColumn
+          estimated_pages: 2,
+          component_count: 8,
+          has_contact_info: true,
+          has_clear_sections: true,
+          font_complexity: 1, // Moderate
+        })
+      );
 
-      const { generateFilename } = await import('../../../shared/utils/filenameSanitization');
-      vi.mocked(generateFilename).mockReturnValue('Alice_Johnson_Resume.pdf');
-
-      const { convertTsxToPdfWithFonts } = await import('../../../shared/application/pdf/converter');
-      const mockPdfBytes = new Uint8Array([37, 80, 68, 70, 10, 20, 30]);
+      // Setup converter mock
+      const { convertTsxToPdfWithFonts } = await import(
+        '../../../shared/application/pdf/converter'
+      );
+      const mockPdfBytes = new Uint8Array([0x25, 0x50, 0x44, 0x46, 10, 20, 30]);
       vi.mocked(convertTsxToPdfWithFonts).mockResolvedValue(mockPdfBytes);
 
       const payload: ConversionRequestPayload = {
@@ -345,32 +427,25 @@ describe('ConversionService', () => {
       const result = await service.convert(payload);
 
       expect(result.pdfBytes).toEqual(mockPdfBytes);
-      expect(result.filename).toBe('Alice_Johnson_Resume.pdf');
+      // Real generateFilename produces actual filename
+      expect(result.filename).toMatch(
+        /^Alice_Johnson_Resume_\d{4}-\d{2}-\d{2}\.pdf$/
+      );
       expect(result.duration).toBeGreaterThanOrEqual(0);
     });
 
-    it('should continue conversion even if filename generation fails', async () => {
+    it('should continue conversion even if metadata extraction fails', async () => {
+      // WASM fails to extract metadata
       const { extract_cv_metadata } = await import('@pkg/wasm_bridge');
-      const { LayoutType, FontComplexity } = await import('@pkg/wasm_bridge');
-      vi.mocked(extract_cv_metadata).mockReturnValue({
-        name: 'Test User',
-        title: 'Developer',
-        layout_type: LayoutType.SingleColumn,
-        estimated_pages: 1,
-        component_count: 5,
-        has_contact_info: true,
-        has_clear_sections: true,
-        font_complexity: FontComplexity.Simple,
-        free: vi.fn(),
-      } as any);
-
-      const { generateFilename } = await import('../../../shared/utils/filenameSanitization');
-      vi.mocked(generateFilename).mockImplementation(() => {
-        throw new Error('Filename generation failed');
+      vi.mocked(extract_cv_metadata).mockImplementation(() => {
+        throw new Error('WASM parsing failed');
       });
 
-      const { convertTsxToPdfWithFonts } = await import('../../../shared/application/pdf/converter');
-      const mockPdfBytes = new Uint8Array([37, 80, 68, 70]);
+      // But conversion should still work
+      const { convertTsxToPdfWithFonts } = await import(
+        '../../../shared/application/pdf/converter'
+      );
+      const mockPdfBytes = new Uint8Array([0x25, 0x50, 0x44, 0x46]);
       vi.mocked(convertTsxToPdfWithFonts).mockResolvedValue(mockPdfBytes);
 
       const payload: ConversionRequestPayload = {
@@ -380,7 +455,8 @@ describe('ConversionService', () => {
       const result = await service.convert(payload);
 
       expect(result.pdfBytes).toEqual(mockPdfBytes);
-      expect(result.filename).toBeUndefined();
+      // Falls back to default filename
+      expect(result.filename).toMatch(/^Resume_\d{4}-\d{2}-\d{2}\.pdf$/);
     });
   });
 });

@@ -10,7 +10,6 @@ import process from 'node:process';
 // Service workers don't have 'window', but some bundled code might check for it.
 // This guard must run BEFORE any imports to prevent ReferenceError.
 import init from '@pkg/wasm_bridge';
-import browser from 'webextension-polyfill';
 import { getLogger } from '../../infrastructure/logging';
 
 if (typeof window === 'undefined' && typeof self !== 'undefined') {
@@ -124,7 +123,9 @@ export async function initWASM(wasmPath?: string): Promise<void> {
       // The file is guaranteed to be at 'wasm_bridge_bg.wasm' in the extension root
       const wasmPath = 'wasm_bridge_bg.wasm';
       const browserPolyfill = getBrowserPolyfill();
-      const resolvedWasmUrl = browserPolyfill.runtime.getURL(wasmPath);
+      // Type assertion needed because WXT's PublicPath type doesn't include WASM files
+      // (copied at build time by modules/wasm-bridge.ts)
+      const resolvedWasmUrl = (browserPolyfill.runtime.getURL as (path: string) => string)(wasmPath);
       logger.debug('WasmLoader', 'Resolved WASM URL', { url: resolvedWasmUrl });
 
       logger.debug('WasmLoader', 'Fetching WASM...');
@@ -150,7 +151,9 @@ export async function initWASM(wasmPath?: string): Promise<void> {
       // Same as service worker - the file is at 'wasm_bridge_bg.wasm' in the extension root
       const wasmPath = 'wasm_bridge_bg.wasm';
       const browserPolyfill = getBrowserPolyfill();
-      const resolvedWasmUrl = browserPolyfill.runtime.getURL(wasmPath);
+      // Type assertion needed because WXT's PublicPath type doesn't include WASM files
+      // (copied at build time by modules/wasm-bridge.ts)
+      const resolvedWasmUrl = (browserPolyfill.runtime.getURL as (path: string) => string)(wasmPath);
       logger.debug('WasmLoader', 'Resolved WASM URL', { url: resolvedWasmUrl });
 
       logger.debug('WasmLoader', 'Fetching WASM...');

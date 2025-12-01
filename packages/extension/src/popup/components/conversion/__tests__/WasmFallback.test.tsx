@@ -14,6 +14,7 @@
  */
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fakeBrowser } from '@webext-core/fake-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { WasmFallback } from '../WasmFallback';
 import {
@@ -23,14 +24,8 @@ import {
   reportWithoutMemory,
 } from './__fixtures__/wasmReports';
 
-// Mock browser API
-vi.mock('webextension-polyfill', () => ({
-  default: {
-    runtime: {
-      reload: vi.fn(),
-    },
-  },
-}));
+// Note: wxt/browser is mocked globally in vitest.setup.ts with fakeBrowser
+// We spy on fakeBrowser methods to control behavior
 
 // Mock issueReporter
 vi.mock('@/shared/errors/presentation/formatting', () => ({
@@ -40,6 +35,8 @@ vi.mock('@/shared/errors/presentation/formatting', () => ({
 describe('WasmFallback', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Mock reload since fakeBrowser doesn't implement it
+    vi.spyOn(fakeBrowser.runtime, 'reload').mockImplementation(() => {});
   });
 
   describe('Rendering', () => {
@@ -189,7 +186,7 @@ describe('WasmFallback', () => {
     });
 
     it('should call browser.runtime.reload on Clear Cache click', async () => {
-      const { default: browser } = await import('webextension-polyfill');
+      const { browser } = await import('wxt/browser');
       render(<WasmFallback report={compatibleReport} />);
 
       const button = screen.getByRole('button', { name: /Clear cache and reload/i });

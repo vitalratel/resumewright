@@ -6,7 +6,6 @@
  */
 
 import type { FontData } from '../domain/fonts/models/Font';
-import type { Message, MessageType } from '../types/messages';
 import type {
   ConversionConfig,
   ConversionError,
@@ -50,50 +49,6 @@ export function isConversionError(
   result: ConversionResult,
 ): result is { success: false; error: ConversionError } {
   return result.success === false;
-}
-
-/**
- * Type guard for Message interface.
- * Checks if an unknown value is a valid Message.
- *
- * JSDoc example for type guard usage
- * @example
- * ```ts
- * browser.runtime.onMessage.addListener((msg) => {
- *   if (isMessage(msg)) {
- *     // msg.type and msg.payload are now safely accessible
- *     handleMessage(msg.type, msg.payload);
- *   }
- * });
- * ```
- */
-export function isMessage(value: unknown): value is Message<unknown> {
-  return (
-    typeof value === 'object'
-    && value !== null
-    && 'type' in value
-    && 'payload' in value
-    && typeof (value as { type: unknown }).type === 'string'
-  );
-}
-
-/**
- * Type guard for specific message types.
- * Narrows Message<unknown> to a specific message type.
- *
- * @example
- * ```ts
- * if (isMessageType(msg, MessageType.CONVERSION_COMPLETE)) {
- *   // msg is now typed as Message with CONVERSION_COMPLETE payload
- *   console.log(msg.payload.pdfBytes);
- * }
- * ```
- */
-export function isMessageType<T extends MessageType>(
-  message: unknown,
-  type: T,
-): message is Message<unknown> & { type: T } {
-  return isMessage(message) && message.type === type;
 }
 
 /**
@@ -198,48 +153,6 @@ export function isConversionCancelled(status: string): boolean {
  */
 export function isConversionTerminal(status: string): boolean {
   return isConversionComplete(status) || isConversionFailed(status) || isConversionCancelled(status);
-}
-
-/**
- * Type guard for CONVERSION_REQUEST message.
- */
-export function isConversionRequestMessage(message: unknown): message is Message<unknown> {
-  return isMessage(message) && message.type === 'CONVERSION_REQUEST';
-}
-
-/**
- * Type guard for CONVERSION_PROGRESS message.
- */
-export function isConversionProgressMessage(message: unknown): message is Message<unknown> {
-  return isMessage(message) && message.type === 'CONVERSION_PROGRESS';
-}
-
-/**
- * Type guard for CONVERSION_COMPLETE message.
- */
-export function isConversionCompleteMessage(message: unknown): message is Message<unknown> {
-  return isMessage(message) && message.type === 'CONVERSION_COMPLETE';
-}
-
-/**
- * Type guard for CONVERSION_ERROR message.
- */
-export function isConversionErrorMessage(message: unknown): message is Message<unknown> {
-  return isMessage(message) && message.type === 'CONVERSION_ERROR';
-}
-
-/**
- * Type guard for GET_SETTINGS message.
- */
-export function isGetSettingsMessage(message: unknown): message is Message<unknown> {
-  return isMessage(message) && message.type === 'GET_SETTINGS';
-}
-
-/**
- * Type guard for UPDATE_SETTINGS message.
- */
-export function isUpdateSettingsMessage(message: unknown): message is Message<unknown> {
-  return isMessage(message) && message.type === 'UPDATE_SETTINGS';
 }
 
 /**

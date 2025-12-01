@@ -74,8 +74,8 @@ const { localStorage } = vi.hoisted(() => {
   return { localStorage: new InMemoryStorage() };
 });
 
-vi.mock('webextension-polyfill', () => ({
-  default: {
+vi.mock('wxt/browser', () => ({
+  browser: {
     storage: {
       local: localStorage,
     },

@@ -14,7 +14,6 @@
 
 import type { CVMetadata, PersistedSlice } from './slices/persistedSlice';
 import type { ErrorInfo, UISlice, UIState } from './slices/uiSlice';
-import browser from 'webextension-polyfill';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -94,7 +93,7 @@ const chromeStorage = createJSONStorage(() => {
   return {
     getItem: async (name: string): Promise<string | null> => {
       const result = await browser.storage.local.get(name);
-      const value = result[name];
+      const value: unknown = result[name];
       return (value !== null && value !== undefined) ? JSON.stringify(value) : null;
     },
     setItem: async (name: string, value: string): Promise<void> => {

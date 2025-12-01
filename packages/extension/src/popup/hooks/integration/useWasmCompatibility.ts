@@ -1,17 +1,11 @@
-/**
- * useWasmCompatibility Hook
- *
- * Manages WASM compatibility checking and initialization state.
- * Queries background worker for WASM status with retry logic.
- */
+// ABOUTME: Manages WASM compatibility checking and initialization state.
+// ABOUTME: Queries background worker for WASM status with retry logic.
 
-import type { WasmStatusPayload } from '../../../shared/types/messages';
 import type { WasmCompatibilityReport } from '@/shared/infrastructure/wasm/compatibility';
 import { useEffect, useState } from 'react';
-import browser from 'webextension-polyfill';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { WasmCompatibilityChecker } from '@/shared/infrastructure/wasm/compatibility';
-import { MessageType } from '../../../shared/types/messages';
+import { sendMessage } from '@/shared/messaging';
 
 const logger = getLogger();
 
@@ -53,32 +47,21 @@ export function useWasmCompatibility(): UseWasmCompatibilityReturn {
         }
 
         // Query WASM initialization status from background worker
-        // (Background worker is responsible for WASM initialization)
         // Retry mechanism to handle service worker startup timing
-        // React 19 pattern: Use recursion instead of await in loop
         const maxRetries = 5;
         const retryDelay = 500; // ms
 
         /**
          * Recursive retry function to avoid await-in-loop
-         * React 19 best practice: Use recursion for retry logic instead of for/while with await
          */
         async function attemptWasmStatusQuery(
           attempt: number
-        ): Promise<{ status?: WasmStatusPayload; error?: Error }> {
+        ): Promise<{ status?: { initialized: boolean; error?: string }; error?: Error }> {
           try {
-            const response = await browser.runtime.sendMessage({
-              type: MessageType.GET_WASM_STATUS,
-              payload: {},
-            });
-
-            const status = response as WasmStatusPayload;
+            const status = await sendMessage('getWasmStatus', {});
 
             // If WASM is initialized or has a permanent error, return success
-            if (
-              status.initialized ||
-              (status.error !== null && status.error !== undefined && status.error !== '')
-            ) {
+            if (status.initialized || (status.error != null && status.error !== '')) {
               return { status };
             }
 
@@ -101,7 +84,6 @@ export function useWasmCompatibility(): UseWasmCompatibilityReturn {
             const error = err as Error;
 
             // If it's a "Receiving end does not exist" error, the background worker isn't ready yet
-            // Wait and retry
             if (
               attempt < maxRetries - 1 &&
               error.message.includes('Receiving end does not exist')
@@ -158,7 +140,7 @@ export function useWasmCompatibility(): UseWasmCompatibilityReturn {
           logger.error('useWasmCompatibility', 'WASM not initialized', status.error);
 
           // Update report with initialization error
-          if (status.error !== null && status.error !== undefined && status.error !== '') {
+          if (status.error != null && status.error !== '') {
             report.issues.push({
               severity: 'error',
               category: 'wasm',

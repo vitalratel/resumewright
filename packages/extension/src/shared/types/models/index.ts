@@ -1,21 +1,10 @@
-/**
- * Models Barrel Export
- *
- * Re-exports all model types from domain-specific files for backward compatibility.
- * This ensures existing imports continue to work without changes.
- *
- * REFACTORED: models.ts has been split into domain-specific files:
- * - cv.ts: CV-related types (CVMetadata, CVDocument)
- * - conversion.ts: Conversion-related types (ConversionStatus, ConversionProgress, ConversionConfig, ConversionJob, ConversionError, ConversionResult)
- * - pdf.ts: PDF-related types (PDFMetadata)
- * - history.ts: History-related types (HistoryEntry)
- *
- * WHY: Reduces token waste by 50-88% when editing domain-specific types.
- * Before: 420 lines loaded for ANY edit
- * After: 50-200 lines loaded for focused domain work
- */
+// ABOUTME: Barrel export for model types.
+// ABOUTME: Re-exports types from domain-specific files (cv, conversion, pdf, history).
 
-// Conversion types - Added ErrorMetadata discriminated union types
+// Default config - canonical source is @/shared/domain/settings/defaults
+export { DEFAULT_CONVERSION_CONFIG } from '../../domain/settings/defaults';
+
+// Conversion types
 export type {
   ConversionConfig,
   ConversionError,
@@ -31,9 +20,8 @@ export type {
   WasmErrorMetadata,
 } from './conversion';
 
-// Export constant and type guards
+// Type guards for error metadata
 export {
-  DEFAULT_CONVERSION_CONFIG,
   isLocationErrorMetadata,
   isParseErrorMetadata,
   isRetryErrorMetadata,

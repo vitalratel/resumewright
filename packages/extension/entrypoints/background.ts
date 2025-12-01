@@ -4,7 +4,6 @@
  * Handles WASM initialization, message routing, and extension lifecycle.
  */
 
-import browser from 'webextension-polyfill';
 import { LifecycleManager } from '../src/background/core/lifecycle/lifecycleManager';
 // Track service worker start time
 import { getServiceWorkerStartTime, resetServiceWorkerStartTime } from '../src/background/infrastructure/serviceWorkerState';

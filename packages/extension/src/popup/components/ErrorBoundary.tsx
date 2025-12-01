@@ -8,7 +8,6 @@
 import type { ErrorInfo, ReactNode } from 'react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { Component } from 'react';
-import browser from 'webextension-polyfill';
 import { formatErrorTimestamp, logErrorToService } from '@/shared/errors/tracking/telemetry';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { tokens } from '../styles/tokens';

@@ -4,7 +4,6 @@
  * Handles PDF file downloads using browser API.
  */
 
-import browser from 'webextension-polyfill';
 import { getLogger } from '../../infrastructure/logging';
 import { generateFilename } from '../../utils/filenameSanitization';
 

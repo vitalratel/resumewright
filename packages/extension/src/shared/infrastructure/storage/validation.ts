@@ -5,7 +5,6 @@
  */
 
 import type { BaseIssue, BaseSchema, InferOutput } from '@/shared/domain/validation/valibot';
-import browser from 'webextension-polyfill';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { validateWithSchema } from './helpers';
 
@@ -33,7 +32,7 @@ export async function getValidatedStorage<
 ): Promise<InferOutput<TSchema> | null> {
   try {
     const result = await browser.storage.local.get(key);
-    const value = result[key];
+    const value: unknown = result[key];
 
     if (value === undefined || value === null) {
       return null;
@@ -115,7 +114,7 @@ export async function getMultipleValidatedStorage<
       }
 
       const key = keys[index];
-      const value = result[key];
+      const value: unknown = result[key];
 
       if (value === undefined || value === null) {
         return validateKey(index + 1);

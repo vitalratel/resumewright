@@ -13,7 +13,6 @@
  */
 
 import type { ConversionStatus } from '../../../shared/types/models';
-import browser from 'webextension-polyfill';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 

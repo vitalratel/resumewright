@@ -5,7 +5,6 @@
  */
 
 import { CheckCircleIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
-import browser from 'webextension-polyfill';
 import { EXTERNAL_LINKS } from '../../../shared/config/externalLinks';
 import { tokens } from '../../styles/tokens';
 

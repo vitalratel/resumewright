@@ -5,7 +5,6 @@
  */
 
 import type { ILogger as DomainILogger } from '../../domain/logging/ILogger';
-import browser from 'webextension-polyfill';
 
 /* eslint-disable no-console */
 

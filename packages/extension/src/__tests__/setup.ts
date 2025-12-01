@@ -1,31 +1,22 @@
 /**
  * Global Test Setup
- * Phase 3: Infrastructure improvements to prevent memory leaks
  *
- * This file runs AFTER/BEFORE every test in every test file.
- * It ensures proper cleanup and state reset to prevent memory leaks.
+ * Uses WxtVitest plugin which provides:
+ * - Browser API polyfill via @webext-core/fake-browser
+ * - WXT aliases and auto-imports
  *
- * Configured in vite.config.ts: setupFiles: ['./src/__tests__/setup.ts']
+ * This file handles additional test setup:
+ * - React Testing Library cleanup
+ * - Zustand store resets
+ * - Mock cleanup
  */
 
 import { cleanup } from '@testing-library/react';
-import { fakeBrowser } from '@webext-core/fake-browser';
 import { afterEach, beforeEach, vi } from 'vitest';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { usePopupStore } from '@/popup/store/index';
-
-/**
- * WASM module (@pkg/wasm_bridge) is handled via Vitest config alias
- * pointing to ../../pkg/wasm_bridge.js - no mock needed here.
- * Tests use the real WASM module.
- */
-
 import { useProgressStore } from '@/popup/store/progressStore';
 import '@testing-library/jest-dom';
-
-/**
- * webextension-polyfill is mocked globally in vitest.setup.ts using @webext-core/fake-browser
- * No need to mock it again here - fakeBrowser provides a complete, type-safe browser API mock
- */
 
 /**
  * Mock IndexedDB for custom font storage tests
@@ -57,7 +48,12 @@ Object.defineProperty(window, 'matchMedia', {
  * - Clearing mocks here would break those test-specific setups
  * - Tests that need mock clearing should do it explicitly
  */
-beforeEach(() => {
+beforeEach(async () => {
+  // Create a focused window so fakeBrowser.tabs.create() works
+  // fakeBrowser.tabs.create() calls windows.getCurrent() which returns undefined
+  // when no window has focus, causing "Cannot read properties of undefined" errors
+  await fakeBrowser.windows.create({ focused: true });
+
   // Mock browser.downloads.search (not implemented in fakeBrowser)
   // This is needed for Success component tests that use useBrowserDownloads hook
   vi.spyOn(fakeBrowser.downloads, 'search').mockResolvedValue([]);

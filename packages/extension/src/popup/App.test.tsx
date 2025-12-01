@@ -38,40 +38,52 @@ process.on('unhandledRejection', (reason) => {
   // Silently ignore expected errors
 });
 
-// Mock browser API (external dependency)
-vi.mock('webextension-polyfill', () => ({
-  default: {
-    runtime: {
-      getManifest: () => ({ version: '1.0.0-test' }),
-      sendMessage: vi.fn().mockImplementation(async (message) => {
-        // Mock GET_WASM_STATUS response
-        if (message.type === 'GET_WASM_STATUS') {
-          return Promise.resolve({
-            initialized: true,
-            error: null,
-          });
-        }
-        return Promise.resolve({});
-      }),
-      onMessage: {
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-      },
-    },
-    storage: {
-      local: {
-        get: vi.fn().mockResolvedValue({}),
-        set: vi.fn().mockResolvedValue(undefined),
-        remove: vi.fn().mockResolvedValue(undefined),
-      },
-      sync: {
-        get: vi.fn().mockResolvedValue({}),
-        set: vi.fn().mockResolvedValue(undefined),
-        remove: vi.fn().mockResolvedValue(undefined),
-      },
-    },
-  },
+// Mock @webext-core/messaging (used by @/shared/messaging)
+vi.mock('@/shared/messaging', () => ({
+  sendMessage: vi.fn().mockImplementation(async (type: string) => {
+    if (type === 'getWasmStatus') {
+      return { initialized: true, error: null };
+    }
+    if (type === 'getSettings') {
+      return {
+        success: true,
+        settings: {
+          defaultConfig: {
+            pageSize: 'Letter',
+            margin: { top: 0.5, right: 0.5, bottom: 0.5, left: 0.5 },
+            fontFamily: 'Inter',
+            fontSize: 10,
+            lineHeight: 1.5,
+            color: '#000000',
+          },
+          settingsVersion: 1,
+          lastUpdated: Date.now(),
+        },
+      };
+    }
+    return {};
+  }),
+  onMessage: vi.fn(() => vi.fn()), // Returns unsubscribe function
 }));
+
+// Mock browser.runtime.getManifest (not implemented in @webext-core/fake-browser)
+const browserMocks = vi.hoisted(() => ({
+  getManifest: vi.fn(() => ({ version: '1.0.0-test' })),
+}));
+
+vi.mock('wxt/browser', async () => {
+  const wxtBrowser = await import('wxt/browser');
+  return {
+    ...wxtBrowser,
+    browser: {
+      ...wxtBrowser.browser,
+      runtime: {
+        ...wxtBrowser.browser.runtime,
+        getManifest: browserMocks.getManifest,
+      },
+    },
+  };
+});
 
 // Mock extensionAPI (external service - message passing)
 vi.mock('./services/extensionAPI', () => ({

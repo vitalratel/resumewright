@@ -425,4 +425,4 @@ jobs:
             exit 1
           fi
           echo "✅ All required checks passed"
-          echo "ℹ️ Cross-platform, integration, and ATS tests run weekly (see ci-weekly.yml)"
+          echo "ℹ️ Cross-platform tests and coverage checks run weekly (see ci-weekly.yml)"

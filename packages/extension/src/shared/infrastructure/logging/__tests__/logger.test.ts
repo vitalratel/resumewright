@@ -1,17 +1,18 @@
-/**
- * Logger Tests
- * Tests for logging functionality and extension boundary handling
- */
+// ABOUTME: Tests for Logger class functionality.
+// ABOUTME: Verifies log levels, formatting, and extension boundary handling.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import browser from 'webextension-polyfill';
 import { Logger, LogLevel } from '../logger';
 
-// Mock browser API
-vi.mock('webextension-polyfill', () => ({
-  default: {
+// Mock browser API using vi.hoisted for proper hoisting
+const mocks = vi.hoisted(() => ({
+  getManifest: vi.fn(),
+}));
+
+vi.mock('wxt/browser', () => ({
+  browser: {
     runtime: {
-      getManifest: vi.fn(),
+      getManifest: mocks.getManifest,
     },
   },
 }));
@@ -77,7 +78,7 @@ describe('Logger', () => {
     it('should handle browser API failure gracefully - Error exception', () => {
       // Test that browser.runtime.getManifest() failures are handled
       // Mock browser.runtime.getManifest to throw (browser API unavailable)
-      vi.mocked(browser.runtime.getManifest).mockImplementation(() => {
+      mocks.getManifest.mockImplementation(() => {
         throw new Error('API unavailable');
       });
 
@@ -93,7 +94,7 @@ describe('Logger', () => {
     it('should handle browser API failure gracefully - TypeError', () => {
       // Test non-extension context (browser API undefined)
       // Mock browser.runtime.getManifest to throw TypeError (not in extension context)
-      vi.mocked(browser.runtime.getManifest).mockImplementation(() => {
+      mocks.getManifest.mockImplementation(() => {
         throw new TypeError('browser.runtime is undefined');
       });
 
@@ -107,7 +108,7 @@ describe('Logger', () => {
 
     it('should handle browser API failure gracefully - null/undefined', () => {
       // Test various failure modes
-      vi.mocked(browser.runtime.getManifest).mockImplementation(() => {
+      mocks.getManifest.mockImplementation(() => {
         throw new Error('Manifest unavailable');
       });
 
@@ -125,7 +126,7 @@ describe('Logger', () => {
         version: '1.0.0',
         manifest_version: 3,
       };
-      vi.mocked(browser.runtime.getManifest).mockReturnValue(manifest as never);
+      mocks.getManifest.mockReturnValue(manifest);
 
       // Should successfully create logger without errors
       const logger = new Logger();

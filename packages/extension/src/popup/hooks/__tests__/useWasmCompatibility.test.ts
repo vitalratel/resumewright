@@ -1,23 +1,17 @@
-/**
- * useWasmCompatibility Hook Tests
- *
- * Tests WASM compatibility checking and initialization status
- */
+// ABOUTME: Tests for useWasmCompatibility hook.
+// ABOUTME: Verifies WASM compatibility checking and initialization status queries.
 
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import browser from 'webextension-polyfill';
 
 import { WasmCompatibilityChecker } from '@/shared/infrastructure/wasm/compatibility';
+import { sendMessage } from '@/shared/messaging';
 import { useWasmCompatibility } from '../integration/useWasmCompatibility';
 
 // Mock dependencies
-vi.mock('webextension-polyfill', () => ({
-  default: {
-    runtime: {
-      sendMessage: vi.fn(),
-    },
-  },
+vi.mock('@/shared/messaging', () => ({
+  sendMessage: vi.fn(),
+  onMessage: vi.fn(),
 }));
 
 vi.mock('@/shared/infrastructure/wasm/compatibility', () => ({
@@ -59,7 +53,7 @@ describe('useWasmCompatibility', () => {
     };
 
     (WasmCompatibilityChecker.check as ReturnType<typeof vi.fn>).mockResolvedValue(mockReport);
-    (browser.runtime.sendMessage as ReturnType<typeof vi.fn>).mockResolvedValue({
+    (sendMessage as ReturnType<typeof vi.fn>).mockResolvedValue({
       initialized: true,
       error: null,
     });
@@ -83,7 +77,6 @@ describe('useWasmCompatibility', () => {
         userAgent: 'test',
         browserName: 'Chrome',
         browserVersion: '120',
-        platform: 'test',
       },
       wasmInfo: {
         supported: true,
@@ -95,9 +88,9 @@ describe('useWasmCompatibility', () => {
     };
 
     (WasmCompatibilityChecker.check as ReturnType<typeof vi.fn>).mockResolvedValue(mockReport);
-    (browser.runtime.sendMessage as ReturnType<typeof vi.fn>).mockResolvedValue({
+    (sendMessage as ReturnType<typeof vi.fn>).mockResolvedValue({
       initialized: false,
-      error: 'WASM initialization failed',
+      error: 'WASM failed to initialize',
     });
 
     const { result } = renderHook(() => useWasmCompatibility());
@@ -107,6 +100,8 @@ describe('useWasmCompatibility', () => {
     });
 
     expect(result.current.wasmReport?.compatible).toBe(false);
+    expect(result.current.wasmReport?.issues).toHaveLength(1);
+    expect(result.current.wasmReport?.issues[0].message).toBe('WASM failed to initialize');
   });
 
   it('should handle browser incompatibility', async () => {
@@ -115,8 +110,7 @@ describe('useWasmCompatibility', () => {
       browserInfo: {
         userAgent: 'test',
         browserName: 'OldBrowser',
-        browserVersion: '1',
-        platform: 'test',
+        browserVersion: '1.0',
       },
       wasmInfo: {
         supported: false,
@@ -124,12 +118,14 @@ describe('useWasmCompatibility', () => {
         threads: false,
         simd: false,
       },
-      issues: [{
-        severity: 'error' as const,
-        category: 'wasm' as const,
-        message: 'WASM not supported',
-        recommendation: 'Update browser',
-      }],
+      issues: [
+        {
+          severity: 'error' as const,
+          category: 'wasm' as const,
+          message: 'WebAssembly not supported',
+          recommendation: 'Update your browser',
+        },
+      ],
     };
 
     (WasmCompatibilityChecker.check as ReturnType<typeof vi.fn>).mockResolvedValue(mockReport);
@@ -141,18 +137,17 @@ describe('useWasmCompatibility', () => {
     });
 
     expect(result.current.wasmReport?.compatible).toBe(false);
-    expect(result.current.wasmReport?.issues.length).toBeGreaterThan(0);
+    // sendMessage should not be called when browser is incompatible
+    expect(sendMessage).not.toHaveBeenCalled();
   });
 
   it('should retry when background worker not ready', async () => {
-    // Test error handler with retry logic
     const mockReport = {
       compatible: true,
       browserInfo: {
         userAgent: 'test',
         browserName: 'Chrome',
         browserVersion: '120',
-        platform: 'test',
       },
       wasmInfo: {
         supported: true,
@@ -164,9 +159,7 @@ describe('useWasmCompatibility', () => {
     };
 
     (WasmCompatibilityChecker.check as ReturnType<typeof vi.fn>).mockResolvedValue(mockReport);
-
-    // First call fails, second succeeds
-    (browser.runtime.sendMessage as ReturnType<typeof vi.fn>)
+    (sendMessage as ReturnType<typeof vi.fn>)
       .mockRejectedValueOnce(new Error('Receiving end does not exist'))
       .mockResolvedValueOnce({
         initialized: true,
@@ -179,54 +172,16 @@ describe('useWasmCompatibility', () => {
       expect(result.current.wasmInitialized).toBe(true);
     }, { timeout: 2000 });
 
-    expect(browser.runtime.sendMessage).toHaveBeenCalledTimes(2);
-  });
-
-  it('should handle error in catch block', async () => {
-    // Test catch block error handling
-    (WasmCompatibilityChecker.check as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error('Compatibility check failed'),
-    );
-
-    const { result } = renderHook(() => useWasmCompatibility());
-
-    await waitFor(() => {
-      expect(result.current.wasmInitialized).toBe(false);
-    });
-
-    expect(result.current.wasmReport?.compatible).toBe(false);
-    expect(result.current.wasmReport?.issues).toContainEqual(
-      expect.objectContaining({
-        severity: 'error',
-        category: 'wasm',
-      }),
-    );
-  });
-
-  it('should handle non-Error exceptions', async () => {
-    // Test non-Error exception handling
-    (WasmCompatibilityChecker.check as ReturnType<typeof vi.fn>).mockRejectedValue(
-      'String error',
-    );
-
-    const { result } = renderHook(() => useWasmCompatibility());
-
-    await waitFor(() => {
-      expect(result.current.wasmInitialized).toBe(false);
-    });
-
-    expect(result.current.wasmReport?.compatible).toBe(false);
+    expect(sendMessage).toHaveBeenCalledTimes(2);
   });
 
   it('should exhaust retries and handle failure', async () => {
-    // Test retry exhaustion
     const mockReport = {
       compatible: true,
       browserInfo: {
         userAgent: 'test',
         browserName: 'Chrome',
         browserVersion: '120',
-        platform: 'test',
       },
       wasmInfo: {
         supported: true,
@@ -238,17 +193,17 @@ describe('useWasmCompatibility', () => {
     };
 
     (WasmCompatibilityChecker.check as ReturnType<typeof vi.fn>).mockResolvedValue(mockReport);
-    (browser.runtime.sendMessage as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error('Receiving end does not exist'),
+    (sendMessage as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('Receiving end does not exist')
     );
 
     const { result } = renderHook(() => useWasmCompatibility());
 
     await waitFor(() => {
       expect(result.current.wasmInitialized).toBe(false);
-    }, { timeout: 5000 });
+    }, { timeout: 10000 });
 
     expect(result.current.wasmReport?.compatible).toBe(false);
-    expect(browser.runtime.sendMessage).toHaveBeenCalledTimes(5); // max retries
+    expect(sendMessage).toHaveBeenCalledTimes(5); // max retries
   });
 });

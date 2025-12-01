@@ -1,5 +1,8 @@
 /**
- * Global mock for webextension-polyfill
+ * Global mock for wxt/browser
  * Uses @webext-core/fake-browser for in-memory browser API implementation
  */
-export { fakeBrowser as default } from '@webext-core/fake-browser';
+import { fakeBrowser } from '@webext-core/fake-browser';
+
+export { fakeBrowser as browser };
+export default fakeBrowser;

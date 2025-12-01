@@ -1,32 +1,14 @@
-/**
- * Progress Tracking Service
- *
- * Manages conversion progress state and UI updates including:
- * - Active conversion state tracking
- * - Throttled progress message sending
- * - Retry progress updates
- * - Popup synchronization
- *
- * This service encapsulates all progress tracking concerns,
- * separating them from conversion business logic.
- *
- * @module ProgressTracker
- */
+// ABOUTME: Manages conversion progress state and UI updates.
+// ABOUTME: Handles throttled progress messaging and popup synchronization.
 
-import type {
-  ConversionProgressPayload,
-  ConversionStartPayload,
-} from '../../shared/types/messages';
 import type { ConversionProgress, ConversionStatus } from '../../shared/types/models';
-import browser from 'webextension-polyfill';
 import { getLogger } from '@/shared/infrastructure/logging';
-import { MessageType } from '../../shared/types/messages';
+import { sendMessage } from '@/shared/messaging';
 import { throttleProgress } from '../../shared/utils/progressThrottle';
 
 /**
  * Configuration constants for progress behavior
  */
-const CONVERSION_DURATION_MS = 5000; // Target conversion time (5 seconds)
 const PROGRESS_THROTTLE_MS = 100;    // Throttle progress updates to every 100ms
 
 /**
@@ -51,7 +33,7 @@ interface ActiveConversion {
  * @example
  * ```ts
  * const tracker = new ProgressTracker();
- * await tracker.startTracking(jobId);
+ * tracker.startTracking(jobId);
  * const onProgress = tracker.createProgressCallback(jobId);
  * await convertToPdf(tsx, config, onProgress);
  * tracker.stopTracking(jobId);
@@ -67,13 +49,11 @@ export class ProgressTracker {
   /**
    * Starts tracking a new conversion job
    *
-   * Initializes active conversion state and sends initial CONVERSION_STARTED message to UI.
+   * Initializes active conversion state for progress synchronization.
    *
    * @param jobId - Unique conversion job identifier
-   * @returns Promise resolving when start message sent
    */
-  async startTracking(jobId: string): Promise<void> {
-    // Initialize active conversion state
+  startTracking(jobId: string): void {
     this.conversions.set(jobId, {
       jobId,
       startTime: Date.now(),
@@ -82,16 +62,6 @@ export class ProgressTracker {
         percentage: 0,
         currentOperation: 'Starting conversion...',
       },
-    });
-
-    // Send initial CONVERSION_STARTED message to UI
-    const startPayload: ConversionStartPayload = {
-      jobId,
-      estimatedDuration: CONVERSION_DURATION_MS,
-    };
-    await browser.runtime.sendMessage({
-      type: MessageType.CONVERSION_STARTED,
-      payload: startPayload,
     });
   }
 
@@ -123,14 +93,7 @@ export class ProgressTracker {
       }
 
       // Send progress update to UI (fire-and-forget - errors logged but not thrown)
-      const progressPayload: ConversionProgressPayload = {
-        jobId,
-        progress,
-      };
-      browser.runtime.sendMessage({
-        type: MessageType.CONVERSION_PROGRESS,
-        payload: progressPayload,
-      }).catch(err => {
+      sendMessage('conversionProgress', { jobId, progress }).catch(err => {
         getLogger().error('ProgressTracker', 'Failed to send progress message', err);
       });
     }, PROGRESS_THROTTLE_MS);
@@ -172,10 +135,7 @@ export class ProgressTracker {
     }
 
     // Send retry progress update (fire-and-forget)
-    browser.runtime.sendMessage({
-      type: MessageType.CONVERSION_PROGRESS,
-      payload: { jobId, progress: retryProgress },
-    }).catch(err => {
+    sendMessage('conversionProgress', { jobId, progress: retryProgress }).catch(err => {
       getLogger().error('ProgressTracker', 'Failed to send retry progress message', err);
     });
   }
@@ -191,13 +151,9 @@ export class ProgressTracker {
   async synchronizeProgress(): Promise<void> {
     await Promise.all(
       Array.from(this.conversions.entries()).map(async ([jobId, conversion]) => {
-        const progressPayload: ConversionProgressPayload = {
+        await sendMessage('conversionProgress', {
           jobId,
           progress: conversion.currentProgress,
-        };
-        await browser.runtime.sendMessage({
-          type: MessageType.CONVERSION_PROGRESS,
-          payload: progressPayload,
         });
       })
     );
