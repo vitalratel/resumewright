@@ -7,6 +7,7 @@
  */
 
 import { getLogger } from '../../infrastructure/logging';
+import { localExtStorage } from '../../infrastructure/storage';
 
 /**
  * Generate a unique error ID based on timestamp and random component
@@ -140,11 +141,6 @@ export interface ErrorEvent {
 }
 
 /**
- * Telemetry storage key
- */
-const TELEMETRY_STORAGE_KEY = 'errorTelemetry';
-
-/**
  * Maximum number of errors to store (prevent unbounded growth)
  */
 const MAX_STORED_ERRORS = 100;
@@ -168,8 +164,7 @@ const logger = getLogger();
 export async function trackError(details: ErrorDetails): Promise<void> {
   try {
     // Check if telemetry is enabled
-    const result = await browser.storage.local.get('settings');
-    const settings = result.settings as { telemetryEnabled?: boolean } | undefined;
+    const settings = await localExtStorage.getItem('resumewright-settings');
     if (settings?.telemetryEnabled === false) {
       logger.debug('ErrorTelemetry', 'Telemetry disabled, skipping error tracking');
       return;
@@ -192,8 +187,7 @@ export async function trackError(details: ErrorDetails): Promise<void> {
     };
 
     // Get existing errors
-    const storageResult = await browser.storage.local.get(TELEMETRY_STORAGE_KEY);
-    let errors: ErrorEvent[] = (storageResult[TELEMETRY_STORAGE_KEY] as ErrorEvent[] | undefined) || [];
+    let errors: ErrorEvent[] = await localExtStorage.getItem('errorTelemetry') ?? [];
 
     // Clean old errors
     const now = Date.now();
@@ -208,7 +202,7 @@ export async function trackError(details: ErrorDetails): Promise<void> {
     }
 
     // Save back to storage
-    await browser.storage.local.set({ [TELEMETRY_STORAGE_KEY]: errors });
+    await localExtStorage.setItem('errorTelemetry', errors);
 
     logger.debug('ErrorTelemetry', 'Error tracked', {
       errorId: details.errorId,
@@ -229,8 +223,7 @@ export async function trackError(details: ErrorDetails): Promise<void> {
  */
 export async function getStoredErrors(): Promise<ErrorEvent[]> {
   try {
-    const result = await browser.storage.local.get(TELEMETRY_STORAGE_KEY);
-    return (result[TELEMETRY_STORAGE_KEY] as ErrorEvent[] | undefined) || [];
+    return await localExtStorage.getItem('errorTelemetry') ?? [];
   }
   catch (error) {
     logger.error('ErrorTelemetry', 'Failed to get stored errors', error);
@@ -245,7 +238,7 @@ export async function getStoredErrors(): Promise<ErrorEvent[]> {
  */
 export async function clearStoredErrors(): Promise<void> {
   try {
-    await browser.storage.local.remove(TELEMETRY_STORAGE_KEY);
+    await localExtStorage.removeItem('errorTelemetry');
     logger.info('ErrorTelemetry', 'Cleared all stored errors');
   }
   catch (error) {

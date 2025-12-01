@@ -2,14 +2,10 @@
  * Error Formatting Utilities
  *
  * Utilities for formatting code context for display in the UI.
- * This module is separated from enrichment to focus on presentation concerns.
  */
-
-import type { CodeContext } from '../factory/enrichment';
 
 /**
  * Format code context for display
- * Re-exported from enrichment for convenience
  */
 export function formatCodeContext(
   lines: Array<{ lineNumber: number; content: string; isError: boolean }>,
@@ -63,26 +59,3 @@ export function formatCodeContextWithColumn(
     .join('\n');
 }
 
-/**
- * Format code context as HTML for rich display
- * (Future enhancement - currently returns plain text)
- */
-export function formatCodeContextAsHtml(context: CodeContext): string {
-  // For now, wrap in <pre> tag
-  // Future: Add syntax highlighting
-  return `<pre class="code-context">${context.formatted}</pre>`;
-}
-
-/**
- * Report an issue (stub for backward compatibility)
- * TODO: Implement proper issue reporting or remove this feature
- */
-export function reportIssue(details: {
-  errorId: string;
-  message: string;
-  technicalDetails?: string;
-}): void {
-  // Stub implementation - log to console for now
-  console.warn('Issue reporting not yet implemented:', details);
-  // Future: Open GitHub issue template or email client
-}

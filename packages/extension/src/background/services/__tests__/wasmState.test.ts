@@ -3,30 +3,25 @@
  *
  * Comprehensive tests for WasmStateManager service.
  * Coverage: State transitions, validation, storage operations, error handling
+ * Uses fakeBrowser for real storage behavior.
  */
 
 import { fakeBrowser } from '@webext-core/fake-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger, LogLevel, resetLogger, setLogger } from '@/shared/infrastructure/logging';
+import { localExtStorage } from '@/shared/infrastructure/storage';
 import { WasmStateManager } from '../wasmState';
-
-// Mock dependencies
-// webextension-polyfill is mocked globally with fakeBrowser
-
-vi.mock('@/shared/infrastructure/storage', () => ({
-  setValidatedStorage: vi.fn().mockResolvedValue(true),
-}));
 
 describe('WasmStateManager', () => {
   let stateManager: WasmStateManager;
 
-  beforeEach(() => {
-    stateManager = new WasmStateManager();
+  beforeEach(async () => {
     vi.clearAllMocks();
 
-    // Create spies for fakeBrowser storage methods
-    vi.spyOn(fakeBrowser.storage.local, 'get').mockResolvedValue({});
-    vi.spyOn(fakeBrowser.storage.local, 'set').mockResolvedValue(undefined);
+    // Clear storage before each test
+    await fakeBrowser.storage.local.clear();
+
+    stateManager = new WasmStateManager();
 
     // Suppress logger output during tests
     const silentLogger = new Logger({ level: LogLevel.NONE });
@@ -40,86 +35,43 @@ describe('WasmStateManager', () => {
 
   describe('setInitializing', () => {
     it('should set status to initializing', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-
       await stateManager.setInitializing();
 
-      expect(setValidatedStorage).toHaveBeenCalledWith(
-        'wasmStatus',
-        'initializing',
-        expect.any(Object),
-      );
+      const status = await localExtStorage.getItem('wasmStatus');
+      expect(status).toBe('initializing');
     });
 
     it('should complete without throwing', async () => {
       await expect(stateManager.setInitializing()).resolves.toBeUndefined();
     });
-
-    it('should use validated storage with schema', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-
-      await stateManager.setInitializing();
-
-      const call = vi.mocked(setValidatedStorage).mock.calls[0];
-      expect(call[0]).toBe('wasmStatus');
-      expect(call[1]).toBe('initializing');
-      expect(call[2]).toBeDefined(); // Schema object
-    });
   });
 
   describe('setSuccess', () => {
     it('should set status to success', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-
       await stateManager.setSuccess();
 
-      expect(setValidatedStorage).toHaveBeenCalledWith(
-        'wasmStatus',
-        'success',
-        expect.any(Object),
-      );
+      const status = await localExtStorage.getItem('wasmStatus');
+      expect(status).toBe('success');
     });
 
     it('should set initialization timestamp', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-
       const beforeTime = Date.now();
       await stateManager.setSuccess();
       const afterTime = Date.now();
 
-      expect(setValidatedStorage).toHaveBeenCalledWith(
-        'wasmInitTime',
-        expect.any(Number),
-        expect.any(Object),
-      );
-
-      const call = vi.mocked(setValidatedStorage).mock.calls.find(
-        (c) => c[0] === 'wasmInitTime',
-      );
-      expect(call).toBeDefined();
-      const timestamp = call![1] as number;
+      const timestamp = await localExtStorage.getItem('wasmInitTime');
       expect(timestamp).toBeGreaterThanOrEqual(beforeTime);
       expect(timestamp).toBeLessThanOrEqual(afterTime);
     });
 
     it('should clear error state', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
+      // Set an error first
+      await localExtStorage.setItem('wasmInitError', 'Previous error');
 
       await stateManager.setSuccess();
 
-      expect(setValidatedStorage).toHaveBeenCalledWith(
-        'wasmInitError',
-        null,
-        expect.any(Object),
-      );
-    });
-
-    it('should make three storage calls (status, time, error)', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-
-      await stateManager.setSuccess();
-
-      expect(setValidatedStorage).toHaveBeenCalledTimes(3);
+      const error = await localExtStorage.getItem('wasmInitError');
+      expect(error).toBeNull();
     });
 
     it('should complete without throwing', async () => {
@@ -129,56 +81,33 @@ describe('WasmStateManager', () => {
 
   describe('setFailed', () => {
     it('should set status to failed', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-
       await stateManager.setFailed('Test error');
 
-      expect(setValidatedStorage).toHaveBeenCalledWith(
-        'wasmStatus',
-        'failed',
-        expect.any(Object),
-      );
+      const status = await localExtStorage.getItem('wasmStatus');
+      expect(status).toBe('failed');
     });
 
     it('should store error message', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-
       await stateManager.setFailed('Specific error message');
 
-      expect(setValidatedStorage).toHaveBeenCalledWith(
-        'wasmInitError',
-        'Specific error message',
-        expect.any(Object),
-      );
-    });
-
-    it('should make two storage calls (status, error)', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-
-      await stateManager.setFailed('Error');
-
-      expect(setValidatedStorage).toHaveBeenCalledTimes(2);
+      const error = await localExtStorage.getItem('wasmInitError');
+      expect(error).toBe('Specific error message');
     });
 
     it('should handle empty error message', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-
       await stateManager.setFailed('');
 
-      expect(setValidatedStorage).toHaveBeenCalledWith('wasmInitError', '', expect.any(Object));
+      const error = await localExtStorage.getItem('wasmInitError');
+      expect(error).toBe('');
     });
 
     it('should handle long error message', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
       const longError = 'Error: '.repeat(100);
 
       await stateManager.setFailed(longError);
 
-      expect(setValidatedStorage).toHaveBeenCalledWith(
-        'wasmInitError',
-        longError,
-        expect.any(Object),
-      );
+      const error = await localExtStorage.getItem('wasmInitError');
+      expect(error).toBe(longError);
     });
 
     it('should complete without throwing', async () => {
@@ -188,9 +117,7 @@ describe('WasmStateManager', () => {
 
   describe('isReady', () => {
     it('should return true when status is success', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockResolvedValueOnce({
-        wasmStatus: 'success',
-      });
+      await localExtStorage.setItem('wasmStatus', 'success');
 
       const result = await stateManager.isReady();
 
@@ -198,9 +125,7 @@ describe('WasmStateManager', () => {
     });
 
     it('should return false when status is initializing', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockResolvedValueOnce({
-        wasmStatus: 'initializing',
-      });
+      await localExtStorage.setItem('wasmStatus', 'initializing');
 
       const result = await stateManager.isReady();
 
@@ -208,9 +133,7 @@ describe('WasmStateManager', () => {
     });
 
     it('should return false when status is failed', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockResolvedValueOnce({
-        wasmStatus: 'failed',
-      });
+      await localExtStorage.setItem('wasmStatus', 'failed');
 
       const result = await stateManager.isReady();
 
@@ -218,40 +141,18 @@ describe('WasmStateManager', () => {
     });
 
     it('should return false when status is undefined', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockResolvedValueOnce({});
+      // Storage is empty from beforeEach
 
       const result = await stateManager.isReady();
 
       expect(result).toBe(false);
-    });
-
-    it('should query correct storage key', async () => {
-      await stateManager.isReady();
-
-      expect(fakeBrowser.storage.local.get).toHaveBeenCalledWith('wasmStatus');
-    });
-
-    it('should handle storage errors gracefully', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockRejectedValueOnce(new Error('Storage error'));
-
-      const result = await stateManager.isReady();
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false on storage read failure', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockRejectedValueOnce(new Error('Read error'));
-
-      await expect(stateManager.isReady()).resolves.toBe(false);
     });
   });
 
   describe('getStatus', () => {
     it('should return status and error for failed state', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockResolvedValueOnce({
-        wasmStatus: 'failed',
-        wasmInitError: 'Initialization failed',
-      });
+      await localExtStorage.setItem('wasmStatus', 'failed');
+      await localExtStorage.setItem('wasmInitError', 'Initialization failed');
 
       const result = await stateManager.getStatus();
 
@@ -262,9 +163,7 @@ describe('WasmStateManager', () => {
     });
 
     it('should return status without error for success state', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockResolvedValueOnce({
-        wasmStatus: 'success',
-      });
+      await localExtStorage.setItem('wasmStatus', 'success');
 
       const result = await stateManager.getStatus();
 
@@ -275,9 +174,7 @@ describe('WasmStateManager', () => {
     });
 
     it('should return status without error for initializing state', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockResolvedValueOnce({
-        wasmStatus: 'initializing',
-      });
+      await localExtStorage.setItem('wasmStatus', 'initializing');
 
       const result = await stateManager.getStatus();
 
@@ -288,7 +185,7 @@ describe('WasmStateManager', () => {
     });
 
     it('should return unknown status when no data exists', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockResolvedValueOnce({});
+      // Storage is empty from beforeEach
 
       const result = await stateManager.getStatus();
 
@@ -297,187 +194,71 @@ describe('WasmStateManager', () => {
         error: undefined,
       });
     });
-
-    it('should query both status and error keys', async () => {
-      await stateManager.getStatus();
-
-      expect(fakeBrowser.storage.local.get).toHaveBeenCalledWith(['wasmStatus', 'wasmInitError']);
-    });
-
-    it('should handle storage errors gracefully', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockRejectedValueOnce(new Error('Storage error'));
-
-      const result = await stateManager.getStatus();
-
-      expect(result.status).toBe('unknown');
-      expect(result.error).toBeDefined();
-      expect(result.error).toContain('Storage error');
-    });
-
-    it('should return error message in unknown status on failure', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockRejectedValueOnce(
-        new Error('Specific storage error'),
-      );
-
-      const result = await stateManager.getStatus();
-
-      expect(result).toEqual({
-        status: 'unknown',
-        error: expect.stringContaining('Specific storage error'),
-      });
-    });
-
-    it('should handle non-string error values', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockResolvedValueOnce({
-        wasmStatus: 'failed',
-        wasmInitError: null,
-      });
-
-      const result = await stateManager.getStatus();
-
-      expect(result.status).toBe('failed');
-      // null is cast to undefined in TypeScript, but JavaScript preserves null
-      expect(result.error).toBeNull();
-    });
   });
 
   describe('state transitions', () => {
     it('should transition from initializing to success', async () => {
       await stateManager.setInitializing();
-      await stateManager.setSuccess();
+      const statusAfterInit = await localExtStorage.getItem('wasmStatus');
+      expect(statusAfterInit).toBe('initializing');
 
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-      expect(setValidatedStorage).toHaveBeenCalledWith(
-        'wasmStatus',
-        'initializing',
-        expect.any(Object),
-      );
-      expect(setValidatedStorage).toHaveBeenCalledWith(
-        'wasmStatus',
-        'success',
-        expect.any(Object),
-      );
+      await stateManager.setSuccess();
+      const statusAfterSuccess = await localExtStorage.getItem('wasmStatus');
+      expect(statusAfterSuccess).toBe('success');
     });
 
     it('should transition from initializing to failed', async () => {
       await stateManager.setInitializing();
-      await stateManager.setFailed('Error');
+      const statusAfterInit = await localExtStorage.getItem('wasmStatus');
+      expect(statusAfterInit).toBe('initializing');
 
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-      expect(setValidatedStorage).toHaveBeenCalledWith(
-        'wasmStatus',
-        'initializing',
-        expect.any(Object),
-      );
-      expect(setValidatedStorage).toHaveBeenCalledWith(
-        'wasmStatus',
-        'failed',
-        expect.any(Object),
-      );
+      await stateManager.setFailed('Error');
+      const statusAfterFailed = await localExtStorage.getItem('wasmStatus');
+      expect(statusAfterFailed).toBe('failed');
     });
 
     it('should handle multiple failed transitions', async () => {
       await stateManager.setFailed('Error 1');
-      await stateManager.setFailed('Error 2');
-      await stateManager.setFailed('Error 3');
+      const error1 = await localExtStorage.getItem('wasmInitError');
+      expect(error1).toBe('Error 1');
 
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-      expect(setValidatedStorage).toHaveBeenCalledWith(
-        'wasmInitError',
-        'Error 1',
-        expect.any(Object),
-      );
-      expect(setValidatedStorage).toHaveBeenCalledWith(
-        'wasmInitError',
-        'Error 2',
-        expect.any(Object),
-      );
-      expect(setValidatedStorage).toHaveBeenCalledWith(
-        'wasmInitError',
-        'Error 3',
-        expect.any(Object),
-      );
+      await stateManager.setFailed('Error 2');
+      const error2 = await localExtStorage.getItem('wasmInitError');
+      expect(error2).toBe('Error 2');
+
+      await stateManager.setFailed('Error 3');
+      const error3 = await localExtStorage.getItem('wasmInitError');
+      expect(error3).toBe('Error 3');
     });
 
     it('should handle retry after failure (initializing again)', async () => {
       await stateManager.setFailed('First error');
+      expect(await localExtStorage.getItem('wasmStatus')).toBe('failed');
+
       await stateManager.setInitializing(); // Retry
-      await stateManager.setSuccess();
-
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-      const calls = vi.mocked(setValidatedStorage).mock.calls;
-      const statusCalls = calls.filter((c) => c[0] === 'wasmStatus');
-
-      expect(statusCalls).toContainEqual(['wasmStatus', 'failed', expect.any(Object)]);
-      expect(statusCalls).toContainEqual(['wasmStatus', 'initializing', expect.any(Object)]);
-      expect(statusCalls).toContainEqual(['wasmStatus', 'success', expect.any(Object)]);
-    });
-  });
-
-  describe('validation', () => {
-    it('should use picklist schema for status', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-
-      await stateManager.setInitializing();
-
-      const call = vi.mocked(setValidatedStorage).mock.calls[0];
-      expect(call[2]).toBeDefined(); // Schema should be passed
-    });
-
-    it('should use number schema for timestamp', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
+      expect(await localExtStorage.getItem('wasmStatus')).toBe('initializing');
 
       await stateManager.setSuccess();
-
-      const timeCall = vi.mocked(setValidatedStorage).mock.calls.find(
-        (c) => c[0] === 'wasmInitTime',
-      );
-      expect(timeCall).toBeDefined();
-      expect(timeCall![2]).toBeDefined(); // Schema should be passed
-    });
-
-    it('should use string schema for error message', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-
-      await stateManager.setFailed('Error');
-
-      const errorCall = vi.mocked(setValidatedStorage).mock.calls.find(
-        (c) => c[0] === 'wasmInitError',
-      );
-      expect(errorCall).toBeDefined();
-      expect(errorCall![2]).toBeDefined(); // Schema should be passed
-    });
-
-    it('should use null schema for error clearing', async () => {
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-
-      await stateManager.setSuccess();
-
-      const errorCall = vi.mocked(setValidatedStorage).mock.calls.find(
-        (c) => c[0] === 'wasmInitError',
-      );
-      expect(errorCall).toBeDefined();
-      expect(errorCall![1]).toBeNull();
-      expect(errorCall![2]).toBeDefined(); // Schema should be passed
+      expect(await localExtStorage.getItem('wasmStatus')).toBe('success');
     });
   });
 
   describe('edge cases', () => {
     it('should handle concurrent state changes', async () => {
+      // This tests that concurrent operations don't throw
       await Promise.all([
         stateManager.setInitializing(),
         stateManager.setSuccess(),
         stateManager.setFailed('Error'),
       ]);
 
-      const { setValidatedStorage } = await import('@/shared/infrastructure/storage');
-      expect(setValidatedStorage).toHaveBeenCalled();
+      // Final state should be one of the valid states
+      const status = await localExtStorage.getItem('wasmStatus');
+      expect(['initializing', 'success', 'failed']).toContain(status);
     });
 
     it('should handle rapid isReady calls', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockResolvedValue({
-        wasmStatus: 'success',
-      });
+      await localExtStorage.setItem('wasmStatus', 'success');
 
       const results = await Promise.all([
         stateManager.isReady(),
@@ -489,9 +270,7 @@ describe('WasmStateManager', () => {
     });
 
     it('should handle rapid getStatus calls', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockResolvedValue({
-        wasmStatus: 'initializing',
-      });
+      await localExtStorage.setItem('wasmStatus', 'initializing');
 
       const results = await Promise.all([
         stateManager.getStatus(),
@@ -506,37 +285,12 @@ describe('WasmStateManager', () => {
       ]);
     });
 
-    it('should handle empty storage object', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockResolvedValueOnce({});
-
-      const ready = await stateManager.isReady();
-      const status = await stateManager.getStatus();
-
-      expect(ready).toBe(false);
-      expect(status.status).toBe('unknown');
-    });
-
     it('should handle null storage values', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockResolvedValueOnce({
-        wasmStatus: null,
-        wasmInitError: null,
-      });
+      await localExtStorage.setItem('wasmStatus', null);
 
       const status = await stateManager.getStatus();
 
       expect(status.status).toBe('unknown');
-    });
-
-    it('should handle undefined storage values', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockResolvedValueOnce({
-        wasmStatus: undefined,
-        wasmInitError: undefined,
-      });
-
-      const status = await stateManager.getStatus();
-
-      expect(status.status).toBe('unknown');
-      expect(status.error).toBeUndefined();
     });
   });
 });

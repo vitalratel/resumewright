@@ -7,7 +7,7 @@
 
 import type { UserSettings } from '@/shared/types/settings';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/migrations';
+import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import { MARGIN_PRESETS } from '../../constants/margins';
 

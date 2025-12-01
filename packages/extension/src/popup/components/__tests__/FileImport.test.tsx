@@ -1,60 +1,71 @@
 /**
- * FileImport Component Tests
- *
- * Tests for file import, drag-and-drop, and validation
+ * ABOUTME: Tests for FileImport component - file upload, validation, and drag-drop.
+ * ABOUTME: Uses real hooks (no mocks) to test actual file handling behavior.
  */
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useDragAndDrop, useFileReader, useLocalStorage } from '../../hooks';
 
 import { FileImport } from '../FileImport';
 
-// Mock custom hooks to prevent initialization hangs
-vi.mock('../../hooks', () => ({
-  useFileReader: vi.fn(),
-  useDragAndDrop: vi.fn(),
-  useLocalStorage: vi.fn(),
-}));
+// Helper to create a File object with content
+function createFile(
+  content: string,
+  name: string,
+  options: { type?: string } = {}
+): File {
+  const blob = new Blob([content], { type: options.type ?? 'text/plain' });
+  return new File([blob], name, { type: options.type ?? 'text/plain' });
+}
+
+// Valid TSX content that passes all validation
+const VALID_TSX_CONTENT = `
+import React from 'react';
+
+export default function CV() {
+  return (
+    <div>
+      <h1>John Doe</h1>
+      <p>Software Engineer</p>
+    </div>
+  );
+}
+`;
 
 describe('FileImport', () => {
   const mockOnFileValidated = vi.fn();
   const mockOnClearFile = vi.fn();
 
   beforeEach(() => {
-    // Mock useFileReader to return readAsText and readAsDataURL functions
-    vi.mocked(useFileReader).mockReturnValue({
-      readAsText: vi.fn().mockResolvedValue(''),
-      readAsDataURL: vi.fn().mockResolvedValue(''),
-    });
-
-    // Mock useDragAndDrop to return drag handlers and state
-    vi.mocked(useDragAndDrop).mockReturnValue({
-      isDragging: false,
-      dragHandlers: {
-        onDragEnter: vi.fn(),
-        onDragLeave: vi.fn(),
-        onDragOver: vi.fn(),
-        onDrop: vi.fn(),
-      },
-    });
-
-    // Mock useLocalStorage to behave like useState
-    vi.mocked(useLocalStorage).mockImplementation((_key, initialValue) => [initialValue, vi.fn()]);
-
     vi.clearAllMocks();
   });
 
-  describe('Rendering', () => {
-    it('should render file import dropzone', () => {
+  describe('Initial Rendering', () => {
+    it('renders dropzone with instructions', () => {
       render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
 
       expect(screen.getByText(/Drag & drop your CV file here/i)).toBeInTheDocument();
-      expect(screen.getByText(/Browse Files/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Browse Files/i })).toBeInTheDocument();
     });
 
-    it('should show imported file details when file is loaded', () => {
+    it('shows supported file types and size limit', () => {
+      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
+
+      expect(screen.getByText(/up to 1MB/i)).toBeInTheDocument();
+    });
+
+    it('has accessible file input', () => {
+      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
+
+      const input = screen.getByLabelText(/File input for CV import/i);
+      expect(input).toBeInTheDocument();
+      expect((input as HTMLInputElement).accept).toBe('.tsx');
+    });
+  });
+
+  describe('File Display When Imported', () => {
+    it('shows file name and size when file is imported', () => {
       const importedFile = { name: 'resume.tsx', size: 2048 };
 
       render(
@@ -66,90 +77,10 @@ describe('FileImport', () => {
       );
 
       expect(screen.getByText('resume.tsx')).toBeInTheDocument();
-      expect(screen.getByText(/2.0 KB/i)).toBeInTheDocument();
-    });
-  });
-
-  describe('Drag and Drop', () => {
-    it('should render dropzone with drag-and-drop functionality', () => {
-      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
-
-      expect(screen.getByText('Drag & drop your CV file here')).toBeInTheDocument();
-
-      // Browse button provides keyboard accessibility
-      expect(screen.getByRole('button', { name: /Browse Files/i })).toBeInTheDocument();
+      expect(screen.getByText('2.0 KB')).toBeInTheDocument();
     });
 
-    it('should have accessible browse button for keyboard users', () => {
-      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
-
-      // Browse button provides keyboard accessibility (instead of nested interactive controls)
-      const browseButton = screen.getByRole('button', { name: /Browse Files/i });
-      expect(browseButton).toBeInTheDocument();
-      expect(browseButton).toHaveAccessibleName();
-    });
-
-    it('should call useDragAndDrop hook on component render', () => {
-      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
-
-      // Verify the hook was called
-      expect(useDragAndDrop).toHaveBeenCalled();
-    });
-  });
-
-  describe('File Clearing', () => {
-    it('should call onClearFile when clear button is clicked', async () => {
-      const importedFile = { name: 'resume.tsx', size: 1024 };
-
-      render(
-        <FileImport
-          onFileValidated={mockOnFileValidated}
-          onClearFile={mockOnClearFile}
-          importedFile={importedFile}
-        />
-      );
-
-      const clearButton = screen.getByLabelText(/Clear imported file/i);
-      await userEvent.click(clearButton);
-
-      // ConfirmDialog should now be visible - wait for it to appear
-      const confirmButton = await screen.findByRole('button', { name: /^Clear$/i });
-      await userEvent.click(confirmButton);
-
-      expect(mockOnClearFile).toHaveBeenCalled();
-    });
-
-    it('should not show clear button when no file imported', () => {
-      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
-
-      const clearButton = screen.queryByLabelText(/Clear imported file/i);
-      expect(clearButton).not.toBeInTheDocument();
-    });
-
-    it('should reset file input value on clear', async () => {
-      const importedFile = { name: 'test.tsx', size: 512 };
-
-      render(
-        <FileImport
-          onFileValidated={mockOnFileValidated}
-          onClearFile={mockOnClearFile}
-          importedFile={importedFile}
-        />
-      );
-
-      const clearButton = screen.getByLabelText(/Clear imported file/i);
-      await userEvent.click(clearButton);
-
-      // ConfirmDialog should now be visible - wait for it to appear
-      const confirmButton = await screen.findByRole('button', { name: /^Clear$/i });
-      await userEvent.click(confirmButton);
-
-      expect(mockOnClearFile).toHaveBeenCalled();
-    });
-  });
-
-  describe('File Size Formatting', () => {
-    it('should format bytes correctly', () => {
+    it('formats bytes correctly', () => {
       render(
         <FileImport
           onFileValidated={mockOnFileValidated}
@@ -161,19 +92,7 @@ describe('FileImport', () => {
       expect(screen.getByText('512 B')).toBeInTheDocument();
     });
 
-    it('should format kilobytes correctly', () => {
-      render(
-        <FileImport
-          onFileValidated={mockOnFileValidated}
-          onClearFile={mockOnClearFile}
-          importedFile={{ name: 'medium.tsx', size: 5120 }}
-        />
-      );
-
-      expect(screen.getByText('5.0 KB')).toBeInTheDocument();
-    });
-
-    it('should format megabytes correctly', () => {
+    it('formats megabytes correctly', () => {
       render(
         <FileImport
           onFileValidated={mockOnFileValidated}
@@ -186,84 +105,258 @@ describe('FileImport', () => {
     });
   });
 
-  describe('Browse Button', () => {
-    it('should open file picker when dropzone is clicked', () => {
+  describe('File Selection via Browse Button', () => {
+    it('triggers file input when browse button is clicked', async () => {
       render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
 
       const browseButton = screen.getByRole('button', { name: /Browse Files/i });
       const input = screen.getByLabelText(/File input for CV import/i);
       const clickSpy = vi.spyOn(input, 'click');
 
-      fireEvent.click(browseButton);
+      await userEvent.click(browseButton);
 
       expect(clickSpy).toHaveBeenCalled();
     });
 
-    it('should have hidden file input', () => {
+    it('validates and accepts valid TSX file', async () => {
       render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
 
+      const file = createFile(VALID_TSX_CONTENT, 'cv.tsx');
       const input = screen.getByLabelText(/File input for CV import/i);
-      expect(input).toHaveClass('hidden');
-    });
 
-    it('should accept correct file types', () => {
-      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
-
-      const input = screen.getByLabelText(/File input for CV import/i);
-      expect((input as HTMLInputElement).accept).toBe('.tsx');
-    });
-  });
-
-  describe('Error State', () => {
-    it('should show try another file button when error', () => {
-      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
-
-      // When there's an error, the Browse Files button is still visible
-      const browseButton = screen.getByRole('button', { name: /Browse Files/i });
-      expect(browseButton).toBeInTheDocument();
-    });
-  });
-
-  describe('File Size Limits', () => {
-    it('should display max file size in instructions', () => {
-      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
-
-      expect(screen.getByText(/up to 1MB/i)).toBeInTheDocument();
-    });
-
-    it('should show supported file extensions', () => {
-      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
-
-      expect(screen.getByText(/Supports:.*files.*up to 1MB/i)).toBeInTheDocument();
-    });
-  });
-
-  describe('File Reading Error Handler', () => {
-    it('should handle file reading errors gracefully', async () => {
-      // Mock useFileReader to throw an error when reading file
-      vi.mocked(useFileReader).mockReturnValue({
-        readAsText: vi.fn().mockRejectedValue(new Error('File read failed')),
-        readAsDataURL: vi.fn().mockResolvedValue(''),
-      });
-
-      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
-
-      // Create a valid TSX file
-      const file = new File(
-        ['import React from "react"; export default function CV() { return <div>CV</div>; }'],
-        'cv.tsx',
-        {
-          type: 'text/plain',
-        }
-      );
-
-      const input = screen.getByLabelText(/File input for CV import/i);
       fireEvent.change(input, { target: { files: [file] } });
 
-      // Wait for error message to appear in UI
-      await vi.waitFor(() => {
-        const errorMessage = screen.getByText(/couldn't open this file/i);
-        expect(errorMessage).toBeInTheDocument();
+      await waitFor(() => {
+        expect(mockOnFileValidated).toHaveBeenCalledWith(
+          expect.stringContaining('import React'),
+          'cv.tsx',
+          expect.any(Number)
+        );
+      });
+    });
+  });
+
+  describe('File Validation - Extension', () => {
+    it('rejects non-TSX files with user-friendly error', async () => {
+      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
+
+      const file = createFile('some content', 'document.pdf', { type: 'application/pdf' });
+      const input = screen.getByLabelText(/File input for CV import/i);
+
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText(/file type isn't supported/i)).toBeInTheDocument();
+      });
+
+      expect(mockOnFileValidated).not.toHaveBeenCalled();
+    });
+
+    it('accepts .ts files', async () => {
+      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
+
+      const file = createFile(VALID_TSX_CONTENT, 'cv.ts');
+      const input = screen.getByLabelText(/File input for CV import/i);
+
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(mockOnFileValidated).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('File Validation - Size', () => {
+    it('rejects files larger than 1MB', async () => {
+      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
+
+      // Create file with actual content > 1MB (1MB = 1048576 bytes)
+      // Generate content that's over 1MB
+      const largeContent = `${VALID_TSX_CONTENT  }\n// padding\n${  'x'.repeat(1024 * 1024 + 1000)}`;
+      const file = createFile(largeContent, 'large.tsx');
+      const input = screen.getByLabelText(/File input for CV import/i);
+
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText(/file is too big/i)).toBeInTheDocument();
+      });
+
+      expect(mockOnFileValidated).not.toHaveBeenCalled();
+    });
+
+    it('rejects empty files', async () => {
+      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
+
+      const file = createFile('', 'empty.tsx');
+      const input = screen.getByLabelText(/File input for CV import/i);
+
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText(/file appears to be empty/i)).toBeInTheDocument();
+      });
+
+      expect(mockOnFileValidated).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('File Validation - Content', () => {
+    it('rejects files without React import', async () => {
+      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
+
+      const file = createFile('const x = 1; export default x;', 'notreact.tsx');
+      const input = screen.getByLabelText(/File input for CV import/i);
+
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText(/doesn't look like a valid CV/i)).toBeInTheDocument();
+      });
+
+      expect(mockOnFileValidated).not.toHaveBeenCalled();
+    });
+
+    it('rejects whitespace-only files', async () => {
+      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
+
+      const file = createFile('   \n\t  \n  ', 'whitespace.tsx');
+      const input = screen.getByLabelText(/File input for CV import/i);
+
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText(/doesn't contain any content/i)).toBeInTheDocument();
+      });
+
+      expect(mockOnFileValidated).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('File Clearing', () => {
+    it('shows clear button only when file is imported', () => {
+      const { rerender } = render(
+        <FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />
+      );
+
+      expect(screen.queryByLabelText(/Clear imported file/i)).not.toBeInTheDocument();
+
+      rerender(
+        <FileImport
+          onFileValidated={mockOnFileValidated}
+          onClearFile={mockOnClearFile}
+          importedFile={{ name: 'test.tsx', size: 1024 }}
+        />
+      );
+
+      expect(screen.getByLabelText(/Clear imported file/i)).toBeInTheDocument();
+    });
+
+    it('shows confirmation dialog before clearing', async () => {
+      render(
+        <FileImport
+          onFileValidated={mockOnFileValidated}
+          onClearFile={mockOnClearFile}
+          importedFile={{ name: 'resume.tsx', size: 1024 }}
+        />
+      );
+
+      const clearButton = screen.getByLabelText(/Clear imported file/i);
+      await userEvent.click(clearButton);
+
+      // Confirmation dialog should appear
+      expect(screen.getByText(/Clear File\?/i)).toBeInTheDocument();
+      expect(mockOnClearFile).not.toHaveBeenCalled();
+    });
+
+    it('calls onClearFile after confirmation', async () => {
+      render(
+        <FileImport
+          onFileValidated={mockOnFileValidated}
+          onClearFile={mockOnClearFile}
+          importedFile={{ name: 'resume.tsx', size: 1024 }}
+        />
+      );
+
+      const clearButton = screen.getByLabelText(/Clear imported file/i);
+      await userEvent.click(clearButton);
+
+      const confirmButton = await screen.findByRole('button', { name: /^Clear$/i });
+      await userEvent.click(confirmButton);
+
+      expect(mockOnClearFile).toHaveBeenCalled();
+    });
+
+    it('does not clear when confirmation is cancelled', async () => {
+      render(
+        <FileImport
+          onFileValidated={mockOnFileValidated}
+          onClearFile={mockOnClearFile}
+          importedFile={{ name: 'resume.tsx', size: 1024 }}
+        />
+      );
+
+      const clearButton = screen.getByLabelText(/Clear imported file/i);
+      await userEvent.click(clearButton);
+
+      const cancelButton = await screen.findByRole('button', { name: /Cancel/i });
+      await userEvent.click(cancelButton);
+
+      expect(mockOnClearFile).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Validating State', () => {
+    it('shows validating indicator during file processing', async () => {
+      // Make onFileValidated hang to keep validating state
+      mockOnFileValidated.mockImplementation(async () => new Promise(() => {}));
+
+      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
+
+      const file = createFile(VALID_TSX_CONTENT, 'cv.tsx');
+      const input = screen.getByLabelText(/File input for CV import/i);
+
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText(/Validating file/i)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('has proper ARIA labels on interactive elements in upload state', () => {
+      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
+
+      // In upload state, file input is available
+      expect(screen.getByLabelText(/File input for CV import/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Browse Files/i })).toBeInTheDocument();
+    });
+
+    it('has proper ARIA labels on interactive elements when file imported', () => {
+      render(
+        <FileImport
+          onFileValidated={mockOnFileValidated}
+          onClearFile={mockOnClearFile}
+          importedFile={{ name: 'resume.tsx', size: 1024 }}
+        />
+      );
+
+      // In imported state, only clear button is shown (no file input)
+      expect(screen.getByLabelText(/Clear imported file/i)).toBeInTheDocument();
+    });
+
+    it('announces validation errors with role="alert"', async () => {
+      render(<FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />);
+
+      const file = createFile('not valid', 'bad.pdf', { type: 'application/pdf' });
+      const input = screen.getByLabelText(/File input for CV import/i);
+
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        const alert = screen.getByRole('alert');
+        expect(alert).toBeInTheDocument();
       });
     });
   });

@@ -15,6 +15,7 @@
 import type { ConversionStatus } from '../../../shared/types/models';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
+import { localExtStorage } from '@/shared/infrastructure/storage';
 
 /**
  * Simple job state for persistence
@@ -30,7 +31,6 @@ interface JobState {
 
 export class LifecycleManager {
   private activeJobs: Map<string, JobState> = new Map();
-  private readonly STORAGE_KEY = 'resumewright_job_states';
 
   constructor() {
     this.setupLifecycleListeners();
@@ -92,7 +92,7 @@ export class LifecycleManager {
   async initialize(): Promise<void> {
     getLogger().info('LifecycleManager', 'Performing first-time initialization');
     // Clear any existing state
-    await browser.storage.local.set({ [this.STORAGE_KEY]: {} });
+    await localExtStorage.setItem('resumewright_job_states', {});
 
     // Initialize default settings
     try {
@@ -119,8 +119,7 @@ export class LifecycleManager {
    */
   private async checkForOrphanedJobs(): Promise<void> {
     try {
-      const stored = await browser.storage.local.get(this.STORAGE_KEY);
-      const jobStates = ((stored[this.STORAGE_KEY] !== null && stored[this.STORAGE_KEY] !== undefined) ? stored[this.STORAGE_KEY] : {}) as Record<string, JobState>;
+      const jobStates = await localExtStorage.getItem('resumewright_job_states') ?? {};
 
       const now = Date.now();
       const orphanedJobs: string[] = [];
@@ -169,12 +168,9 @@ export class LifecycleManager {
     this.activeJobs.set(jobId, state);
 
     try {
-      const stored = await browser.storage.local.get(this.STORAGE_KEY);
-      const jobStates = ((stored[this.STORAGE_KEY] !== null && stored[this.STORAGE_KEY] !== undefined) ? stored[this.STORAGE_KEY] : {}) as Record<string, JobState>;
-
+      const jobStates = await localExtStorage.getItem('resumewright_job_states') ?? {};
       jobStates[jobId] = state;
-
-      await browser.storage.local.set({ [this.STORAGE_KEY]: jobStates });
+      await localExtStorage.setItem('resumewright_job_states', jobStates);
 
       getLogger().info('LifecycleManager', ` Checkpoint saved: ${jobId} @ ${status}`);
     }
@@ -191,12 +187,9 @@ export class LifecycleManager {
     this.activeJobs.delete(jobId);
 
     try {
-      const stored = await browser.storage.local.get(this.STORAGE_KEY);
-      const jobStates = ((stored[this.STORAGE_KEY] !== null && stored[this.STORAGE_KEY] !== undefined) ? stored[this.STORAGE_KEY] : {}) as Record<string, JobState>;
-
+      const jobStates = await localExtStorage.getItem('resumewright_job_states') ?? {};
       delete jobStates[jobId];
-
-      await browser.storage.local.set({ [this.STORAGE_KEY]: jobStates });
+      await localExtStorage.setItem('resumewright_job_states', jobStates);
 
       getLogger().info('LifecycleManager', ` Checkpoint cleared: ${jobId}`);
     }

@@ -62,7 +62,7 @@ interface ErrorStateProps {
   onDismiss?: () => void;
 
   /** Report issue callback (dev mode only) */
-  onReportIssue?: () => void;
+  onReportIssue?: () => void | Promise<void>;
 
   /** Import different file callback */
   onImportDifferent?: () => void;

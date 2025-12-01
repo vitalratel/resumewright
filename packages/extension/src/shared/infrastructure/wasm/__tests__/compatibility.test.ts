@@ -44,8 +44,8 @@ describe('WASM Compatibility', () => {
 
         // memoryInfo should be present or undefined
         if (report.memoryInfo) {
-          expect(report.memoryInfo).toHaveProperty('totalMemory');
-          expect(report.memoryInfo).toHaveProperty('availableMemory');
+          expect(report.memoryInfo).toHaveProperty('totalMB');
+          expect(report.memoryInfo).toHaveProperty('usedMB');
           expect(report.memoryInfo).toHaveProperty('percentUsed');
         }
       });
@@ -117,7 +117,7 @@ describe('WASM Compatibility', () => {
         });
       });
 
-      it('should detect Edge browser (currently detected as Chrome due to UA containing Chrome)', async () => {
+      it('should detect Edge browser', async () => {
         const originalUA = navigator.userAgent;
         Object.defineProperty(navigator, 'userAgent', {
           value:
@@ -126,8 +126,7 @@ describe('WASM Compatibility', () => {
         });
 
         const report = await WasmCompatibilityChecker.check();
-        // Note: Edge UA contains "Chrome", so it matches Chrome check first
-        expect(report.browserInfo.browserName).toBe('Chrome');
+        expect(report.browserInfo.browserName).toBe('Edge');
         expect(report.browserInfo.browserVersion).toBe('120');
 
         Object.defineProperty(navigator, 'userAgent', {

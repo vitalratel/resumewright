@@ -1,17 +1,7 @@
 /**
  * Error Factory (Base)
- * Refactored to split category-specific factories
  *
  * Contains the base createConversionError function used by all category-specific factories.
- *
- * Category-specific error creators are now in:
- * - validationErrors.ts (TSX parsing, structure validation)
- * - wasmErrors.ts (WASM initialization, execution)
- * - pdfErrors.ts (PDF generation, layout, download)
- * - networkErrors.ts (Font loading, resource fetching)
- * - systemErrors.ts (Memory, timeouts, unknown errors)
- *
- * Import from './factory/' index for all error creation functions.
  */
 
 import type {
@@ -73,38 +63,18 @@ export function createConversionError(options: CreateErrorOptions): ConversionEr
 
   const errorMessage = ERROR_MESSAGES[code];
 
-  // FIX: Use lazy getters for expensive properties to reduce memory overhead
-  // Only compute suggestions, category, and metadata when accessed
-  const error = {
+  const error: ConversionError = {
     code,
     stage,
     message: message ?? (typeof errorMessage === 'string' ? errorMessage : errorMessage.title),
     technicalDetails,
     recoverable: ERROR_RECOVERABLE[code],
     timestamp: Date.now(),
-    errorId: generateErrorId(), // Generate unique error ID
-  } as ConversionError;
-
-  // FIX: Lazy getter for suggestions (only accessed when displaying error UI)
-  Object.defineProperty(error, 'suggestions', {
-    get: () => ERROR_SUGGESTIONS[code],
-    enumerable: true,
-    configurable: true,
-  });
-
-  // FIX: Lazy getter for category (only accessed for error presentation)
-  Object.defineProperty(error, 'category', {
-    get: () => ERROR_CATEGORIES[code],
-    enumerable: true,
-    configurable: true,
-  });
-
-  // FIX: Lazy getter for metadata (only accessed when error details expanded)
-  Object.defineProperty(error, 'metadata', {
-    get: () => metadata,
-    enumerable: true,
-    configurable: true,
-  });
+    errorId: generateErrorId(),
+    suggestions: ERROR_SUGGESTIONS[code],
+    category: ERROR_CATEGORIES[code],
+    metadata,
+  };
 
   // Track error in telemetry (async, non-blocking)
   void trackError({

@@ -23,7 +23,7 @@ export interface ConversionHandlers {
   handleRetry: () => void;
   handleDismissError: () => void;
   handleImportDifferent: () => void;
-  handleReportIssue: () => void;
+  handleReportIssue: () => Promise<void>;
 }
 
 interface UseConversionHandlersOptions {

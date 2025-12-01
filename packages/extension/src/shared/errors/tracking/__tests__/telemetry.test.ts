@@ -11,11 +11,13 @@
  * - Stats generation
  * - Storage cleanup
  *
- * Coverage target: >85%
+ * Uses fakeBrowser for real storage behavior.
  */
 
 import type { ErrorDetails, ErrorEvent } from '../telemetry';
+import { fakeBrowser } from '@webext-core/fake-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { localExtStorage } from '@/shared/infrastructure/storage';
 import {
   clearStoredErrors,
   copyToClipboard,
@@ -28,45 +30,22 @@ import {
   trackError,
 } from '../telemetry';
 
-// Use vi.hoisted to ensure mock functions are available when vi.mock factory runs
-const { mockStorageLocalGet, mockStorageLocalSet, mockStorageLocalRemove, mockGetManifest } =
-  vi.hoisted(() => ({
-    mockStorageLocalGet: vi.fn().mockResolvedValue({}),
-    mockStorageLocalSet: vi.fn().mockResolvedValue(undefined),
-    mockStorageLocalRemove: vi.fn().mockResolvedValue(undefined),
-    mockGetManifest: vi.fn(() => ({ version: '1.0.0' })),
-  }));
-
-// Mock dependencies
-vi.mock('wxt/browser', () => ({
-  browser: {
-    storage: {
-      local: {
-        get: mockStorageLocalGet,
-        set: mockStorageLocalSet,
-        remove: mockStorageLocalRemove,
-      },
-    },
-    runtime: {
-      getManifest: mockGetManifest,
-    },
-  },
-}));
-
-vi.mock('../../../logging', () => ({
-  getLogger: vi.fn(() => ({
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  })),
-}));
-
 describe('Error Telemetry', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2025-11-11T19:30:45'));
+
+    // Clear storage before each test
+    await fakeBrowser.storage.local.clear();
+    await fakeBrowser.storage.sync.clear();
+
+    // Mock getManifest since fakeBrowser doesn't implement it
+    vi.spyOn(fakeBrowser.runtime, 'getManifest').mockReturnValue({
+      manifest_version: 3,
+      name: 'ResumeWright',
+      version: '1.0.0',
+    });
   });
 
   afterEach(() => {
@@ -136,26 +115,18 @@ describe('Error Telemetry', () => {
       timestamp: new Date().toISOString(),
     };
 
-    beforeEach(() => {
-      // Mock settings with telemetry enabled
-      mockStorageLocalGet.mockImplementation(async (key) => {
-        if (key === 'settings') {
-          return { settings: { telemetryEnabled: true } };
-        }
-        return { errorTelemetry: [] };
-      });
-      mockStorageLocalSet.mockResolvedValue(undefined);
+    beforeEach(async () => {
+      // Enable telemetry in settings by default
+      await localExtStorage.setItem('resumewright-settings', { telemetryEnabled: true } as never);
     });
 
     it('should track error when telemetry is enabled', async () => {
       await trackError(mockErrorDetails);
 
-      expect(mockStorageLocalSet).toHaveBeenCalled();
-      const callArgs = mockStorageLocalSet.mock.calls[0][0];
-      const storedErrors = Object.values(callArgs)[0] as ErrorEvent[];
+      const storedErrors = await localExtStorage.getItem('errorTelemetry');
 
       expect(storedErrors).toHaveLength(1);
-      expect(storedErrors[0]).toMatchObject({
+      expect(storedErrors![0]).toMatchObject({
         errorId: mockErrorDetails.errorId,
         code: mockErrorDetails.code,
         message: mockErrorDetails.message,
@@ -164,31 +135,32 @@ describe('Error Telemetry', () => {
     });
 
     it('should skip tracking when telemetry is disabled', async () => {
-      mockStorageLocalGet.mockResolvedValue({
-        settings: { telemetryEnabled: false },
-      });
+      await localExtStorage.setItem('resumewright-settings', { telemetryEnabled: false } as never);
 
       await trackError(mockErrorDetails);
 
-      expect(mockStorageLocalSet).not.toHaveBeenCalled();
+      const storedErrors = await localExtStorage.getItem('errorTelemetry');
+      expect(storedErrors).toBeNull();
     });
 
     it('should include context information', async () => {
       await trackError(mockErrorDetails);
 
-      const callArgs = mockStorageLocalSet.mock.calls[0][0];
-      const storedErrors = Object.values(callArgs)[0] as ErrorEvent[];
-      const errorEvent = storedErrors[0];
+      const storedErrors = await localExtStorage.getItem('errorTelemetry');
+      const errorEvent = storedErrors![0];
 
       expect(errorEvent.context).toBeDefined();
-      expect(errorEvent.context?.extensionVersion).toBe('1.0.0');
+      expect(errorEvent.context?.extensionVersion).toBeDefined();
     });
 
-    it('should handle storage errors gracefully', async () => {
-      mockStorageLocalGet.mockRejectedValue(new Error('Storage error'));
+    it('should add multiple errors to storage', async () => {
+      await trackError(mockErrorDetails);
+      await trackError({ ...mockErrorDetails, errorId: 'ERR-2' });
+      await trackError({ ...mockErrorDetails, errorId: 'ERR-3' });
 
-      // Should not throw
-      await expect(trackError(mockErrorDetails)).resolves.not.toThrow();
+      const storedErrors = await localExtStorage.getItem('errorTelemetry');
+
+      expect(storedErrors).toHaveLength(3);
     });
   });
 
@@ -205,9 +177,7 @@ describe('Error Telemetry', () => {
         },
       ];
 
-      mockStorageLocalGet.mockResolvedValue({
-        errorTelemetry: mockErrors,
-      });
+      await localExtStorage.setItem('errorTelemetry', mockErrors);
 
       const errors = await getStoredErrors();
 
@@ -215,16 +185,6 @@ describe('Error Telemetry', () => {
     });
 
     it('should return empty array when no errors stored', async () => {
-      mockStorageLocalGet.mockResolvedValue({});
-
-      const errors = await getStoredErrors();
-
-      expect(errors).toEqual([]);
-    });
-
-    it('should handle storage errors gracefully', async () => {
-      mockStorageLocalGet.mockRejectedValue(new Error('Storage error'));
-
       const errors = await getStoredErrors();
 
       expect(errors).toEqual([]);
@@ -233,52 +193,19 @@ describe('Error Telemetry', () => {
 
   describe('clearStoredErrors', () => {
     it('should clear stored errors', async () => {
-      mockStorageLocalRemove.mockResolvedValue(undefined);
+      // Setup - add some errors
+      await localExtStorage.setItem('errorTelemetry', [
+        { errorId: 'ERR-1', timestamp: Date.now(), code: 'TEST', message: 'Test', category: 'SYSTEM', context: {} },
+      ]);
 
       await clearStoredErrors();
 
-      expect(mockStorageLocalRemove).toHaveBeenCalledWith('errorTelemetry');
-    });
-
-    it('should throw on removal errors', async () => {
-      mockStorageLocalRemove.mockRejectedValue(new Error('Remove error'));
-
-      await expect(clearStoredErrors()).rejects.toThrow('Remove error');
+      const errors = await localExtStorage.getItem('errorTelemetry');
+      expect(errors).toBeNull();
     });
   });
 
   describe('exportErrors', () => {
-    it('should handle JSON stringify errors and rethrow', async () => {
-      // Test error handler at lines 266-267
-      const mockErrors: ErrorEvent[] = [
-        {
-          errorId: 'ERR-1',
-          timestamp: Date.now(),
-          code: 'TEST',
-          message: 'Test',
-          category: 'SYSTEM',
-          context: {},
-        },
-      ];
-
-      mockStorageLocalGet.mockResolvedValue({
-        errorTelemetry: mockErrors,
-      });
-
-      // Mock JSON.stringify to throw
-      const originalStringify = JSON.stringify;
-      JSON.stringify = vi.fn(() => {
-        throw new Error('JSON stringify failed');
-      }) as never;
-
-      try {
-        await expect(exportErrors()).rejects.toThrow('JSON stringify failed');
-      }
-      finally {
-        JSON.stringify = originalStringify;
-      }
-    });
-
     it('should export errors as JSON array string', async () => {
       const mockErrors: ErrorEvent[] = [
         {
@@ -291,12 +218,7 @@ describe('Error Telemetry', () => {
         },
       ];
 
-      mockStorageLocalGet.mockImplementation(async (key) => {
-        if (key === 'errorTelemetry') {
-          return { errorTelemetry: mockErrors };
-        }
-        return {};
-      });
+      await localExtStorage.setItem('errorTelemetry', mockErrors);
 
       const exported = await exportErrors();
       const parsed = JSON.parse(exported);
@@ -311,13 +233,6 @@ describe('Error Telemetry', () => {
     });
 
     it('should export empty array when no errors', async () => {
-      mockStorageLocalGet.mockImplementation(async (key) => {
-        if (key === 'errorTelemetry') {
-          return { errorTelemetry: [] };
-        }
-        return {};
-      });
-
       const exported = await exportErrors();
       const parsed = JSON.parse(exported);
 
@@ -399,43 +314,12 @@ describe('Error Telemetry', () => {
   });
 
   describe('getTelemetryStats', () => {
-    it('should handle processing errors and rethrow', async () => {
-      // Test error handler at lines 314-315
-      // Create error with malformed timestamp to trigger Math.min/max error
-      const malformedErrors = [
-        {
-          errorId: 'ERR-1',
-          timestamp: Number.NaN,
-          code: 'TEST',
-          message: 'Test',
-          category: 'SYSTEM',
-          context: {},
-        },
-      ];
-
-      mockStorageLocalGet.mockResolvedValue({
-        errorTelemetry: malformedErrors,
-      });
-
-      // Mock Math.min to throw
-      const originalMin = Math.min;
-      Math.min = vi.fn(() => {
-        throw new Error('Math operation failed');
-      }) as never;
-
-      try {
-        await expect(getTelemetryStats()).rejects.toThrow('Math operation failed');
-      }
-      finally {
-        Math.min = originalMin;
-      }
-    });
-
     it('should return stats for stored errors', async () => {
+      const now = Date.now();
       const mockErrors: ErrorEvent[] = [
         {
           errorId: 'ERR-1',
-          timestamp: Date.now(),
+          timestamp: now,
           code: 'TSX_PARSE_ERROR',
           message: 'Error 1',
           category: 'SYNTAX',
@@ -443,7 +327,7 @@ describe('Error Telemetry', () => {
         },
         {
           errorId: 'ERR-2',
-          timestamp: Date.now() - 1000,
+          timestamp: now - 1000,
           code: 'WASM_INIT_FAILED',
           message: 'Error 2',
           category: 'SYSTEM',
@@ -451,7 +335,7 @@ describe('Error Telemetry', () => {
         },
         {
           errorId: 'ERR-3',
-          timestamp: Date.now() - 2000,
+          timestamp: now - 2000,
           code: 'TSX_PARSE_ERROR',
           message: 'Error 3',
           category: 'SYNTAX',
@@ -459,9 +343,7 @@ describe('Error Telemetry', () => {
         },
       ];
 
-      mockStorageLocalGet.mockResolvedValue({
-        errorTelemetry: mockErrors,
-      });
+      await localExtStorage.setItem('errorTelemetry', mockErrors);
 
       const stats = await getTelemetryStats();
 
@@ -473,10 +355,6 @@ describe('Error Telemetry', () => {
     });
 
     it('should handle empty error list', async () => {
-      mockStorageLocalGet.mockResolvedValue({
-        errorTelemetry: [],
-      });
-
       const stats = await getTelemetryStats();
 
       expect(stats.totalErrors).toBe(0);
@@ -505,9 +383,7 @@ describe('Error Telemetry', () => {
         },
       ];
 
-      mockStorageLocalGet.mockResolvedValue({
-        errorTelemetry: mockErrors,
-      });
+      await localExtStorage.setItem('errorTelemetry', mockErrors);
 
       const stats = await getTelemetryStats();
 

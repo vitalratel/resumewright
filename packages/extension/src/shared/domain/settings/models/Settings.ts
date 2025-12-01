@@ -42,8 +42,7 @@ export interface UserSettings {
 }
 
 /**
- * Default settings are defined in utils/migrations.ts as DEFAULT_USER_SETTINGS.
- * Import from '@/shared/types' to get DEFAULT_USER_SETTINGS.
+ * Default settings are defined in domain/settings/defaults.ts as DEFAULT_USER_SETTINGS.
  */
 
 /**

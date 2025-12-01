@@ -70,9 +70,9 @@ describe('BadgeManager', () => {
       expect(fakeBrowser.storage.local.set).toHaveBeenCalledWith(
         expect.objectContaining({
           wasmBadgeError: expect.objectContaining({
+            hasError: true,
+            errorMessage: 'Badge update failed (non-critical)',
             timestamp: expect.any(Number),
-            message: 'Badge update failed (non-critical)',
-            context: 'success_clear',
           }),
         }),
       );
@@ -144,9 +144,9 @@ describe('BadgeManager', () => {
       expect(fakeBrowser.storage.local.set).toHaveBeenCalledWith(
         expect.objectContaining({
           wasmBadgeError: expect.objectContaining({
+            hasError: true,
+            errorMessage: 'Badge update failed (non-critical)',
             timestamp: expect.any(Number),
-            message: 'Badge update failed (non-critical)',
-            context: 'error_display',
           }),
         }),
       );
@@ -168,16 +168,6 @@ describe('BadgeManager', () => {
       await expect(badgeManager.showError()).resolves.toBeUndefined();
     });
 
-    it('should log error with correct context', async () => {
-      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValueOnce(new Error('Badge error'));
-
-      await badgeManager.showError();
-
-      const call = vi.mocked(fakeBrowser.storage.local.set).mock.calls[0][0] as {
-        wasmBadgeError: { context: string };
-      };
-      expect(call.wasmBadgeError.context).toBe('error_display');
-    });
   });
 
   describe('error logging', () => {
@@ -187,9 +177,9 @@ describe('BadgeManager', () => {
       await badgeManager.showSuccess();
 
       const call = vi.mocked(fakeBrowser.storage.local.set).mock.calls[0][0] as {
-        wasmBadgeError: { message: string };
+        wasmBadgeError: { errorMessage: string };
       };
-      expect(call.wasmBadgeError.message).toBe('Badge update failed (non-critical)');
+      expect(call.wasmBadgeError.errorMessage).toBe('Badge update failed (non-critical)');
     });
 
     it('should include timestamp in error log', async () => {
@@ -203,15 +193,15 @@ describe('BadgeManager', () => {
       expect(call.wasmBadgeError.timestamp).toBeTypeOf('number');
     });
 
-    it('should include context in error log', async () => {
+    it('should include hasError flag in error log', async () => {
       vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValueOnce(new Error('Badge error'));
 
       await badgeManager.showError();
 
       const call = vi.mocked(fakeBrowser.storage.local.set).mock.calls[0][0] as {
-        wasmBadgeError: { context: string };
+        wasmBadgeError: { hasError: boolean };
       };
-      expect(call.wasmBadgeError.context).toBe('error_display');
+      expect(call.wasmBadgeError.hasError).toBe(true);
     });
 
     it('should not call storage.set if badge update succeeds', async () => {

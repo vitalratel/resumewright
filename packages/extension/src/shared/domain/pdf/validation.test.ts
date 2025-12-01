@@ -2,6 +2,7 @@
 // ABOUTME: Verifies file checks, WASM status polling, and syntax validation.
 
 import type { ILogger } from '../logging/ILogger';
+import type { TsxToPdfConverter } from './types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { validateTsxFile, validateTsxSyntax } from './validation';
 
@@ -33,6 +34,16 @@ vi.mock('../../infrastructure/wasm', () => ({
 vi.mock('./wasmSchemas', () => ({
   parseFontRequirements: vi.fn(() => []),
 }));
+
+/** Create a mock TsxToPdfConverter with optional overrides */
+function createMockConverter(overrides?: Partial<TsxToPdfConverter>): TsxToPdfConverter {
+  return {
+    detect_fonts: vi.fn(() => '[]'),
+    convert_tsx_to_pdf: vi.fn(() => []),
+    free: vi.fn(),
+    ...overrides,
+  };
+}
 
 describe('validation', () => {
   beforeEach(() => {
@@ -131,37 +142,27 @@ describe('validation', () => {
 
   describe('validateTsxSyntax', () => {
     it('should validate correct TSX', async () => {
-      const mockConverter = {
-        detect_fonts: vi.fn(() => '[]'),
-        convert_tsx_to_pdf: vi.fn(),
-        free: vi.fn(),
-      };
+      const mockConverter = createMockConverter();
 
-      const result = await validateTsxSyntax('valid tsx', mockLogger, mockConverter as any);
+      const result = await validateTsxSyntax('valid tsx', mockLogger, mockConverter);
       expect(result).toBe(true);
     });
 
     it('should reject empty string', async () => {
-      const mockConverter = {
-        detect_fonts: vi.fn(() => '[]'),
-        convert_tsx_to_pdf: vi.fn(),
-        free: vi.fn(),
-      };
+      const mockConverter = createMockConverter();
 
-      const result = await validateTsxSyntax('', mockLogger, mockConverter as any);
+      const result = await validateTsxSyntax('', mockLogger, mockConverter);
       expect(result).toBe(false);
     });
 
     it('should handle WASM errors', async () => {
-      const mockConverter = {
+      const mockConverter = createMockConverter({
         detect_fonts: vi.fn(() => {
           throw new Error('Parse error');
         }),
-        convert_tsx_to_pdf: vi.fn(),
-        free: vi.fn(),
-      };
+      });
 
-      const result = await validateTsxSyntax('invalid', mockLogger, mockConverter as any);
+      const result = await validateTsxSyntax('invalid', mockLogger, mockConverter);
       expect(result).toBe(false);
     });
 
@@ -171,13 +172,9 @@ describe('validation', () => {
         throw new Error('Parse error');
       });
 
-      const mockConverter = {
-        detect_fonts: vi.fn(() => '[]'),
-        convert_tsx_to_pdf: vi.fn(),
-        free: vi.fn(),
-      };
+      const mockConverter = createMockConverter();
 
-      const result = await validateTsxSyntax('tsx', mockLogger, mockConverter as any);
+      const result = await validateTsxSyntax('tsx', mockLogger, mockConverter);
       expect(result).toBe(false);
     });
   });

@@ -18,10 +18,7 @@ expect.extend(toHaveNoViolations as unknown as MatchersObject);
  * @param component - React component to test
  * @param options - axe-core configuration options
  */
-export async function testA11y(
-  component: ReactElement,
-  options?: RunOptions,
-) {
+export async function testA11y(component: ReactElement, options?: RunOptions) {
   const { container } = render(component);
   const results = await axe(container, options);
   // Type definitions now available in __tests__/types/jest-axe.d.ts
@@ -34,7 +31,7 @@ export async function testA11y(
  */
 export const wcagTests = {
   /**
-   * 1.4.3 Contrast (Minimum) - Level AA
+   * Contrast (Minimum) - Level AA
    * Text and images of text must have contrast ratio of at least 4.5:1
    */
   async colorContrast(component: ReactElement) {
@@ -47,7 +44,7 @@ export const wcagTests = {
   },
 
   /**
-   * 2.1.1 Keyboard - Level A
+   * Keyboard - Level A
    * All functionality available via keyboard
    */
   async keyboard(component: ReactElement) {
@@ -60,7 +57,7 @@ export const wcagTests = {
   },
 
   /**
-   * 2.4.3 Focus Order - Level A
+   * Focus Order - Level A
    * Focusable components receive focus in a logical order
    */
   async focusOrder(component: ReactElement) {
@@ -73,7 +70,7 @@ export const wcagTests = {
   },
 
   /**
-   * 3.2.2 On Input - Level A
+   * On Input - Level A
    * Changing input values doesn't cause unexpected context changes
    */
   async onInput(component: ReactElement) {
@@ -86,7 +83,7 @@ export const wcagTests = {
   },
 
   /**
-   * 4.1.2 Name, Role, Value - Level A
+   * Name, Role, Value - Level A
    * All UI components have accessible names and roles
    */
   async nameRoleValue(component: ReactElement) {

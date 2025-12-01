@@ -6,32 +6,15 @@
  */
 
 import process from 'node:process';
-// CRITICAL: Service worker global guard
-// Service workers don't have 'window', but some bundled code might check for it.
-// This guard must run BEFORE any imports to prevent ReferenceError.
 import init from '@pkg/wasm_bridge';
 import { getLogger } from '../../infrastructure/logging';
 
-if (typeof window === 'undefined' && typeof self !== 'undefined') {
-  // We're in a service worker context
-  // Provide a minimal window mock to prevent errors in bundled code
-  (globalThis as { window?: unknown }).window = {
-    // Stub common methods that might be called
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => true,
-    // Make it detectable as a mock
-    __isServiceWorkerMock: true,
-  };
-}
-
 let wasmInitialized = false;
 
-// Debug: Verify imports loaded correctly at module level
-const logger = getLogger();
-logger.debug('WasmLoader', '========== MODULE LOADED ==========');
-logger.debug('WasmLoader', 'Checking imports...');
-logger.debug('WasmLoader', '  - init type', { initType: typeof init });
+/** Lazy logger getter to avoid module-level initialization */
+function logger() {
+  return getLogger();
+}
 
 /**
  * Lazy import of browser polyfill (only in browser/extension context)
@@ -81,6 +64,36 @@ export function isServiceWorkerEnvironment(): boolean {
 }
 
 /**
+ * Fetch and initialize WASM in browser/extension context
+ * @internal
+ */
+async function initWASMFromExtension(environmentName: string): Promise<void> {
+  logger().debug('WasmLoader', `Environment: ${environmentName}`);
+
+  // WASM file is copied to public assets by WXT module at 'wasm_bridge_bg.wasm'
+  const wasmPath = 'wasm_bridge_bg.wasm';
+  const browserPolyfill = getBrowserPolyfill();
+  // Type assertion needed because WXT's PublicPath type doesn't include WASM files
+  const resolvedWasmUrl = (browserPolyfill.runtime.getURL as (path: string) => string)(wasmPath);
+  logger().debug('WasmLoader', 'Resolved WASM URL', { url: resolvedWasmUrl });
+
+  logger().debug('WasmLoader', 'Fetching WASM...');
+  const response = await fetch(resolvedWasmUrl);
+  logger().debug('WasmLoader', 'Fetch response', { status: response.status, statusText: response.statusText });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch WASM: ${response.status} ${response.statusText}. Path: ${resolvedWasmUrl}`);
+  }
+
+  const wasmBytes = await response.arrayBuffer();
+  logger().debug('WasmLoader', 'Fetched WASM bytes', { byteLength: wasmBytes.byteLength });
+
+  logger().debug('WasmLoader', 'Calling init() with ArrayBuffer...');
+  await init({ module_or_path: wasmBytes });
+  logger().debug('WasmLoader', 'init() completed successfully');
+}
+
+/**
  * Initialize WASM module (call once on extension startup)
  *
  * @param wasmPath - Optional path to WASM file (for Node.js environment)
@@ -88,105 +101,43 @@ export function isServiceWorkerEnvironment(): boolean {
  * @throws {Error} If WASM initialization fails
  */
 export async function initWASM(wasmPath?: string): Promise<void> {
-  // ADD: Early error catching to identify silent failures
   try {
-    logger.debug('WasmLoader', '========== WASM INITIALIZATION START ==========');
+    logger().debug('WasmLoader', 'WASM initialization starting');
 
     if (wasmInitialized) {
-      logger.debug('WasmLoader', 'WASM already initialized, skipping');
+      logger().debug('WasmLoader', 'WASM already initialized, skipping');
       return;
     }
 
-    // Debug: Verify imports loaded correctly
-    logger.debug('WasmLoader', 'Checking imports...');
-    logger.debug('WasmLoader', '  - init function type', { initType: typeof init });
-
-    // Auto-detect environment
     const isNode = isNodeEnvironment();
     const isServiceWorker = isServiceWorkerEnvironment();
 
-    logger.debug('WasmLoader', 'Environment detection', { isNode, isServiceWorker });
+    logger().debug('WasmLoader', 'Environment detection', { isNode, isServiceWorker });
 
     if (isNode) {
-      logger.debug('WasmLoader', 'Environment: Node.js');
-      // Dynamic import only executed in Node.js context
-      // @vite-ignore - This import is Node.js-only and won't execute in browser
+      logger().debug('WasmLoader', 'Environment: Node.js');
       const { initWASMNode, getDefaultNodeWasmPath } = await import('./loader.node.js');
       const effectiveWasmPath = (wasmPath !== null && wasmPath !== undefined && wasmPath !== '') ? wasmPath : getDefaultNodeWasmPath();
-      logger.debug('WasmLoader', 'Using WASM path', { wasmPath: effectiveWasmPath });
+      logger().debug('WasmLoader', 'Using WASM path', { wasmPath: effectiveWasmPath });
       await initWASMNode(effectiveWasmPath);
     }
     else if (isServiceWorker) {
-      logger.debug('WasmLoader', 'Environment: Service Worker');
-
-      // Service workers use the WASM file copied to public assets by WXT module
-      // The file is guaranteed to be at 'wasm_bridge_bg.wasm' in the extension root
-      const wasmPath = 'wasm_bridge_bg.wasm';
-      const browserPolyfill = getBrowserPolyfill();
-      // Type assertion needed because WXT's PublicPath type doesn't include WASM files
-      // (copied at build time by modules/wasm-bridge.ts)
-      const resolvedWasmUrl = (browserPolyfill.runtime.getURL as (path: string) => string)(wasmPath);
-      logger.debug('WasmLoader', 'Resolved WASM URL', { url: resolvedWasmUrl });
-
-      logger.debug('WasmLoader', 'Fetching WASM...');
-      const response = await fetch(resolvedWasmUrl);
-      logger.debug('WasmLoader', 'Fetch response', { status: response.status, statusText: response.statusText });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch WASM: ${response.status} ${response.statusText}. Path: ${resolvedWasmUrl}`);
-      }
-
-      const wasmBytes = await response.arrayBuffer();
-      logger.debug('WasmLoader', 'Fetched WASM bytes', { byteLength: wasmBytes.byteLength });
-
-      logger.debug('WasmLoader', 'Calling init() with ArrayBuffer...');
-      await init({ module_or_path: wasmBytes });
-      logger.debug('WasmLoader', 'init() completed successfully');
+      await initWASMFromExtension('Service Worker');
     }
     else {
-      // Browser environment (popup/TSX extractor) - resolve WASM URL for extension context
-      logger.debug('WasmLoader', 'Environment: Browser (popup/TSX extractor)');
-
-      // Use the same WASM file copied to public assets by WXT module
-      // Same as service worker - the file is at 'wasm_bridge_bg.wasm' in the extension root
-      const wasmPath = 'wasm_bridge_bg.wasm';
-      const browserPolyfill = getBrowserPolyfill();
-      // Type assertion needed because WXT's PublicPath type doesn't include WASM files
-      // (copied at build time by modules/wasm-bridge.ts)
-      const resolvedWasmUrl = (browserPolyfill.runtime.getURL as (path: string) => string)(wasmPath);
-      logger.debug('WasmLoader', 'Resolved WASM URL', { url: resolvedWasmUrl });
-
-      logger.debug('WasmLoader', 'Fetching WASM...');
-      const response = await fetch(resolvedWasmUrl);
-      logger.debug('WasmLoader', 'Fetch response', { status: response.status, statusText: response.statusText });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch WASM: ${response.status} ${response.statusText}. Path: ${resolvedWasmUrl}`);
-      }
-
-      const wasmBytes = await response.arrayBuffer();
-      logger.debug('WasmLoader', 'Fetched WASM bytes', { byteLength: wasmBytes.byteLength });
-
-      logger.debug('WasmLoader', 'Calling init() with ArrayBuffer...');
-      await init({ module_or_path: wasmBytes });
-      logger.debug('WasmLoader', 'init() completed successfully');
+      await initWASMFromExtension('Browser (popup/TSX extractor)');
     }
 
     wasmInitialized = true;
-    logger.info('WasmLoader', '========== WASM INITIALIZATION SUCCESS ==========');
+    logger().info('WasmLoader', 'WASM initialization successful');
   }
   catch (error: unknown) {
-    logger.error('WasmLoader', '========== WASM INITIALIZATION FAILED ==========');
-    logger.error('WasmLoader', 'CRITICAL ERROR', error);
-    logger.error('WasmLoader', 'Error type', { errorType: typeof error });
+    logger().error('WasmLoader', 'WASM initialization failed', error);
 
     if (error instanceof Error) {
-      logger.error('WasmLoader', 'Error message', { message: error.message });
-      logger.error('WasmLoader', 'Error stack', { stack: error.stack });
-      throw error; // Preserve original error with stack trace
+      throw error;
     }
 
-    logger.error('WasmLoader', 'Error details (JSON)', { error: JSON.stringify(error, null, 2) });
     throw new Error(`WASM initialization failed: ${String(error)}`);
   }
 }

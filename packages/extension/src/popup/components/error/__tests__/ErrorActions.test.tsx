@@ -12,10 +12,14 @@ import { beforeEach, describe, expect, vi } from 'vitest';
 import { ErrorCode } from '@/shared/types/errors/';
 import { ErrorActions } from '../ErrorActions';
 
-// Mock the issue reporter utility
-vi.mock('@/shared/errors/presentation/formatting', () => ({
-  reportIssue: vi.fn(),
-}));
+// Mock clipboard functions
+vi.mock('@/shared/errors', async () => {
+  const actual = await vi.importActual('@/shared/errors');
+  return {
+    ...actual,
+    copyToClipboard: vi.fn().mockResolvedValue(true),
+  };
+});
 
 describe('ErrorActions', () => {
   // Base error fixture
@@ -331,11 +335,11 @@ describe('ErrorActions', () => {
       import.meta.env.DEV = originalEnv;
     });
 
-    it('calls reportIssue when copy button clicked', async () => {
+    it('copies error details to clipboard when copy button clicked', async () => {
       const user = userEvent.setup();
       import.meta.env.DEV = true;
 
-      const { reportIssue } = await import('@/shared/errors/presentation/formatting');
+      const { copyToClipboard } = await import('@/shared/errors');
       const error = createError();
 
       render(<ErrorActions error={error} retryAttempt={0} />);
@@ -343,7 +347,7 @@ describe('ErrorActions', () => {
       const copyButton = screen.getByText('Copy Error Details');
       await user.click(copyButton);
 
-      expect(reportIssue).toHaveBeenCalledWith(error);
+      expect(copyToClipboard).toHaveBeenCalledWith(expect.stringContaining('test-123'));
 
       import.meta.env.DEV = originalEnv;
     });
