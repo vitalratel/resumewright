@@ -98,3 +98,4 @@ CLAUDE.md
 .telemetry/
 .claude/
 packages/extension/none/
+test-fixtures/pdf-output/
