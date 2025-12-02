@@ -5,7 +5,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ErrorCategory, ErrorCode } from '../../shared/types/errors/codes';
+import { ErrorCategory, ErrorCode } from '../../shared/errors/codes';
 import { usePopupStore } from '../store';
 
 // Mock webextension-polyfill

@@ -9,7 +9,7 @@ import type { ConversionError } from '@/shared/types/models';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, vi } from 'vitest';
-import { ErrorCode } from '@/shared/types/errors/';
+import { ErrorCode } from '@/shared/errors/';
 import { ErrorActions } from '../ErrorActions';
 
 // Mock clipboard functions

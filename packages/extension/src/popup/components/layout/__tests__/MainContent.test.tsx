@@ -10,7 +10,7 @@ import type { ConversionHandlers } from '../../../hooks/conversion/useConversion
 import { render, screen } from '@testing-library/react';
 
 import { beforeEach, describe, expect, vi } from 'vitest';
-import { ErrorCode } from '@/shared/types/errors/codes';
+import { ErrorCode } from '@/shared/errors/codes';
 import { generateFilename } from '../../../../shared/utils/filenameSanitization';
 import { Success } from '../../conversion';
 import { ErrorState } from '../../conversion/ErrorState';

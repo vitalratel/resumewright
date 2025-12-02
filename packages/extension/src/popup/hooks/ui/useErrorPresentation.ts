@@ -3,10 +3,10 @@
  * Extracted from ErrorState component for reusability
  */
 
-import type { ErrorCategory } from '@/shared/types/errors/';
+import type { ErrorCategory } from '@/shared/errors/';
 import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { useMemo } from 'react';
-import { ErrorCategory as ErrorCategoryEnum } from '@/shared/types/errors/';
+import { ErrorCategory as ErrorCategoryEnum } from '@/shared/errors/';
 import { tokens } from '../../styles/tokens';
 
 interface ErrorPresentation {

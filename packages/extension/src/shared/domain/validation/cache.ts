@@ -7,7 +7,7 @@
  * @see QA Risk PERF-001: Zod Validation Overhead on Every Operation
  */
 
-import type { ILogger } from '@/shared/domain/logging/ILogger';
+import type { ILogger } from '@/shared/infrastructure/logging';
 
 /**
  * WeakMap cache for validation results

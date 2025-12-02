@@ -7,7 +7,7 @@
 
 import type { CVMetadata, UIState  } from '../../store';
 import type { ConversionError, ConversionProgress } from '@/shared/types/models';
-import { ErrorCategory, ErrorCode } from '@/shared/types/errors';
+import { ErrorCategory, ErrorCode } from '@/shared/errors';
 import { DEFAULT_JOB_ID } from '../../constants/app';
 import { usePopupStore } from '../../store';
 import { useProgressStore } from '../../store/progressStore';

@@ -1,7 +1,7 @@
 // ABOUTME: Tests for TSX file and syntax validation.
 // ABOUTME: Verifies file checks, WASM status polling, and syntax validation.
 
-import type { ILogger } from '../logging/ILogger';
+import type { ILogger } from '../../infrastructure/logging';
 import type { TsxToPdfConverter } from './types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { validateTsxFile, validateTsxSyntax } from './validation';

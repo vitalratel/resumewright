@@ -1,7 +1,7 @@
 // ABOUTME: Unified TSX validation module for file and syntax validation.
 // ABOUTME: Provides comprehensive file validation and fast syntax-only validation.
 
-import type { ILogger } from '../logging/ILogger';
+import type { ILogger } from '../../infrastructure/logging';
 import type { TsxToPdfConverter } from './types';
 import { sendMessage } from '@/shared/messaging';
 import { FILE_SIZE_LIMITS as SIZE_LIMITS } from './constants';
@@ -40,7 +40,7 @@ export async function validateTsxFile(
   content: string,
   fileSize: number,
   fileName: string,
-  logger: ILogger,
+  logger: ILogger
 ): Promise<TsxValidationResult> {
   const warnings: string[] = [];
 
@@ -57,7 +57,8 @@ export async function validateTsxFile(
   if (fileSize < SIZE_LIMITS.MIN_VALID) {
     return {
       valid: false,
-      error: 'This file appears too small to be a valid CV. Please make sure you exported the complete TSX file from Claude.',
+      error:
+        'This file appears too small to be a valid CV. Please make sure you exported the complete TSX file from Claude.',
     };
   }
 
@@ -72,14 +73,16 @@ export async function validateTsxFile(
   if (!content.includes('<') || !content.includes('>')) {
     return {
       valid: false,
-      error: 'This file doesn\'t contain JSX markup. Please make sure you exported a TSX file from your Claude conversation.',
+      error:
+        "This file doesn't contain JSX markup. Please make sure you exported a TSX file from your Claude conversation.",
     };
   }
 
   if (!content.includes('return')) {
     return {
       valid: false,
-      error: 'This file doesn\'t appear to be a valid React component. Components must have a return statement with JSX.',
+      error:
+        "This file doesn't appear to be a valid React component. Components must have a return statement with JSX.",
     };
   }
 
@@ -112,16 +115,14 @@ export async function validateTsxFile(
           };
         }
 
-        await new Promise(resolve => setTimeout(resolve, checkIntervalMs));
+        await new Promise((resolve) => setTimeout(resolve, checkIntervalMs));
         return await pollWasmStatus();
-      }
-      catch (err) {
+      } catch (err) {
         const error = err as Error;
         if (error.message.includes('Receiving end does not exist')) {
-          await new Promise(resolve => setTimeout(resolve, checkIntervalMs));
+          await new Promise((resolve) => setTimeout(resolve, checkIntervalMs));
           return pollWasmStatus();
-        }
-        else {
+        } else {
           throw err;
         }
       }
@@ -139,8 +140,7 @@ export async function validateTsxFile(
         error: 'PDF converter is still initializing. Please wait a moment and try again.',
       };
     }
-  }
-  catch (err) {
+  } catch (err) {
     logger.error('TsxValidation', 'Error checking WASM status', err);
     return {
       valid: false,
@@ -163,8 +163,7 @@ export async function validateTsxFile(
       valid: true,
       warnings: warnings.length > 0 ? warnings : undefined,
     };
-  }
-  catch (error) {
+  } catch (error) {
     logger.error('TsxValidation', 'Syntax validation failed', error);
     return {
       valid: false,
@@ -181,7 +180,7 @@ export async function validateTsxFile(
 export async function validateTsxSyntax(
   tsx: string,
   logger: ILogger,
-  converter: TsxToPdfConverter,
+  converter: TsxToPdfConverter
 ): Promise<boolean> {
   if (!tsx || tsx.trim().length === 0) {
     return false;
@@ -193,13 +192,11 @@ export async function validateTsxSyntax(
     try {
       const fonts = parseFontRequirements(fontsJson);
       return Array.isArray(fonts);
-    }
-    catch (parseError) {
+    } catch (parseError) {
       logger.error('TsxValidation', 'Failed to parse/validate fonts from WASM', parseError);
       return false;
     }
-  }
-  catch (error) {
+  } catch (error) {
     logger.error('TsxValidation', 'validateTsxSyntax failed', error);
     return false;
   }
@@ -209,21 +206,17 @@ export async function validateTsxSyntax(
  * Generate detailed error message based on content analysis
  */
 function generateDetailedErrorMessage(content: string): string {
-  let error = 'This file doesn\'t appear to be a valid CV file from Claude.';
+  let error = "This file doesn't appear to be a valid CV file from Claude.";
 
   if (!content.includes('export')) {
     error += ' Missing export statement - make sure the file exports a CV component.';
-  }
-  else if (!content.includes('function') && !content.includes('=>')) {
+  } else if (!content.includes('function') && !content.includes('=>')) {
     error += ' No component function found - the file should contain a React component.';
-  }
-  else if (!content.includes('return')) {
+  } else if (!content.includes('return')) {
     error += ' Missing return statement - components must return JSX.';
-  }
-  else if (content.includes('import ') && !content.includes('React')) {
+  } else if (content.includes('import ') && !content.includes('React')) {
     error += ' React imports may be missing or incorrect.';
-  }
-  else {
+  } else {
     error += ' Please make sure you exported the TSX file correctly from your Claude conversation.';
   }
 
@@ -233,10 +226,7 @@ function generateDetailedErrorMessage(content: string): string {
 /**
  * Validate file extension
  */
-export function validateFileExtension(
-  fileName: string,
-  acceptedExtensions: string[],
-): boolean {
+export function validateFileExtension(fileName: string, acceptedExtensions: string[]): boolean {
   const extension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
   return acceptedExtensions.includes(extension);
 }

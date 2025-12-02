@@ -10,8 +10,8 @@
 
 import { useEffect } from 'react';
 import { getLogger } from '@/shared/infrastructure/logging';
+import { ErrorCode } from '../../../shared/errors/codes';
 import { downloadPDF } from '../../../shared/infrastructure/pdf/downloader';
-import { ErrorCode } from '../../../shared/types/errors/codes';
 import { extensionAPI } from '../../services/extensionAPI';
 import { usePopupStore } from '../../store';
 import { useProgressStore } from '../../store/progressStore';

@@ -47,7 +47,7 @@ export function ConvertingStateWrapper({ jobId, filename, onCancel }: Converting
     handleCancelConversion: onCancel ?? undefined,
     handleRetry: () => {},
     handleDismissError: () => {},
-    handleReportIssue: async () => {},
+    handleReportIssue: async (): Promise<void> => {},
     handleImportDifferent: () => {},
   };
 
@@ -65,7 +65,15 @@ export function ConvertingStateWrapper({ jobId, filename, onCancel }: Converting
   const errorRef = React.useRef<HTMLDivElement>(null);
 
   return (
-    <AppProvider value={{ appState: mockAppState, currentJobId: jobId, successRef, errorRef, onOpenSettings: () => {} }}>
+    <AppProvider
+      value={{
+        appState: mockAppState,
+        currentJobId: jobId,
+        successRef,
+        errorRef,
+        onOpenSettings: () => {},
+      }}
+    >
       <ConversionProvider value={mockConversionHandlers}>
         <QuickSettingsProvider value={mockQuickSettings}>
           <ConvertingState />

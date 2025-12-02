@@ -9,10 +9,10 @@
  * Provides user-friendly errors with full debugging context.
  * Sanitizes messages to prevent information disclosure.
  */
-import type { ErrorCode } from '../../shared/types/errors/';
+import type { ErrorCode } from '../../shared/errors/codes';
 import type { ConversionError } from '../../shared/types/models';
 import { generateErrorId } from '@/shared/errors/tracking/telemetry';
-import { ERROR_CATEGORIES, ErrorCategory } from '../../shared/types/errors/';
+import { ERROR_CATEGORIES, ErrorCategory } from '../../shared/errors';
 
 import { sanitizeErrorMessage, sanitizeTechnicalDetails } from './errorSanitization';
 

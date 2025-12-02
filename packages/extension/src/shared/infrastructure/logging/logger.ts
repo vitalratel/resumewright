@@ -1,10 +1,7 @@
 /**
  * Logger Implementation
  * Structured logging with configurable levels
- * Implements ILogger interface from domain layer for Clean Architecture.
  */
-
-import type { ILogger as DomainILogger } from '../../domain/logging/ILogger';
 
 /* eslint-disable no-console */
 
@@ -27,6 +24,18 @@ export interface LoggerConfig {
   prefix: string;
   includeTimestamp: boolean;
   includeContext: boolean;
+}
+
+/**
+ * Logger interface
+ */
+export interface ILogger {
+  setLevel: (level: LogLevel) => void;
+  getLevel: () => LogLevel;
+  debug: (context: string, message: string, data?: unknown) => void;
+  info: (context: string, message: string, data?: unknown) => void;
+  warn: (context: string, message: string, data?: unknown) => void;
+  error: (context: string, message: string, error?: unknown) => void;
 }
 
 /**
@@ -67,9 +76,8 @@ function getDefaultLogLevel(): LogLevel {
 
 /**
  * Logger class with configurable levels and context
- * Implements domain ILogger interface following Dependency Inversion Principle
  */
-export class Logger implements DomainILogger {
+export class Logger implements ILogger {
   private config: LoggerConfig;
 
   constructor(config?: Partial<LoggerConfig>) {

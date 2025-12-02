@@ -9,9 +9,9 @@ import type { ConversionError } from '@/shared/types/models';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
+import { ErrorCategory, ErrorCode } from '@/shared/errors/';
 // Import mocked functions for assertions
 import { copyToClipboard, formatErrorDetailsForClipboard, formatErrorTimestamp } from '@/shared/errors/tracking/telemetry';
-import { ErrorCategory, ErrorCode } from '@/shared/types/errors/';
 
 import { ErrorDetails } from '../ErrorDetails';
 

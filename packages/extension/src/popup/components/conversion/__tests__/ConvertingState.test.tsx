@@ -10,7 +10,6 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConvertingStateWrapper } from './ConvertingStateWrapper';
 import { createProgress, progressFixtures, progressStore } from './testHelpers';
-import './testMocks.tsx'; // Import to apply mocks (vi.mock calls are hoisted)
 
 describe('ConvertingStateWrapper', () => {
   const mockOnCancel = vi.fn();

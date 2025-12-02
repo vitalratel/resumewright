@@ -8,8 +8,8 @@ import type { ConversionCompletePayload, ConversionErrorPayload, ConversionProgr
 import type { ConversionProgress } from '../../../../shared/types/models';
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ErrorCode } from '../../../../shared/errors/codes';
 import { downloadPDF } from '../../../../shared/infrastructure/pdf/downloader';
-import { ErrorCode } from '../../../../shared/types/errors/codes';
 import { extensionAPI } from '../../../services/extensionAPI';
 import { usePopupStore } from '../../../store';
 import { useProgressStore } from '../../../store/progressStore';

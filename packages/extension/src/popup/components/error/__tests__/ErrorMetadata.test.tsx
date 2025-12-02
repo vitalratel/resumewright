@@ -10,11 +10,11 @@
  * - Different metadata types
  */
 
-import type { ErrorCategory } from '@/shared/types/errors/';
+import type { ErrorCategory } from '@/shared/errors/';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, vi } from 'vitest';
-import { ErrorCode } from '@/shared/types/errors/';
+import { ErrorCode } from '@/shared/errors/';
 import { ErrorMetadata } from '../ErrorMetadata';
 
 // Mock error tracking utilities

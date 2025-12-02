@@ -3,7 +3,7 @@
  * Extracted from ErrorState component for reusability
  */
 
-import type { ERROR_MESSAGES, ErrorCategory } from '@/shared/types/errors/';
+import type { ERROR_MESSAGES, ErrorCategory } from '@/shared/errors/';
 import type { ConversionError } from '@/shared/types/models';
 import { useEffect, useRef } from 'react';
 import { getLogger } from '@/shared/infrastructure/logging';

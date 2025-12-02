@@ -40,7 +40,6 @@ export const ProgressStatus = React.memo(({
   const stageDisplay = useMemo(() => getStageDisplayName(stage), [stage]);
 
   // Debounce ETA to prevent jumping when updates are rapid
-  // Use standard useDebounce hook instead of custom implementation
   const debouncedEta = useDebounce(eta, 500);
 
   return (

@@ -5,7 +5,7 @@
  * Automatically prepends context to all log calls.
  */
 
-import type { ILogger } from './types';
+import type { ILogger } from './logger';
 
 /**
  * Context-bound logger for specific components
