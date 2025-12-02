@@ -11,11 +11,11 @@
 import type { ConversionError } from '@/shared/types/models';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, vi } from 'vitest';
-import { ErrorCode } from '../../../../shared/types/errors/codes';
+import { ErrorCode } from '../../../../shared/errors/codes';
 import { ErrorSuggestions } from '../ErrorSuggestions';
 
 // Mock help resources utilities
-vi.mock('@/shared/types/errors/helpResources', () => ({
+vi.mock('@/shared/errors/helpResources', () => ({
   getHelpLinkForSuggestion: vi.fn((text: string) => {
     if (text.includes('file size')) {
       return {

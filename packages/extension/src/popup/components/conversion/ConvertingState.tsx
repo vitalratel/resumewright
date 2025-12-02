@@ -1,29 +1,5 @@
-/**
- * ConvertingState Component
- * Refactored to use Context API
- *
- * Displays PDF generation progress with visual feedback and accessibility features.
- * Shows current stage, progress percentage, and estimated completion time.
- *
- * Progress stages:
- * 1. Queued - Waiting to start conversion
- * 2. Parsing - Analyzing CV structure
- * 3. Rendering - Generating PDF layout
- * 4. Finalizing - Embedding fonts and metadata
- * 5. Complete - PDF ready for download
- *
- * Features:
- * - Animated progress bar with percentage
- * - Stage-specific status messages
- * - Estimated time remaining
- * - Page count tracking (multi-page CVs)
- * - Throttled screen reader announcements (10% intervals or 5 seconds)
- * - Cancel option for long operations
- *
- * @see {@link ProgressBar} for progress visualization
- * @see {@link ProgressStatus} for stage-specific messaging
- * @see {@link Success} for completion state
- */
+// ABOUTME: Displays PDF conversion progress with visual feedback and accessibility.
+// ABOUTME: Shows stage, percentage, ETA, and provides cancel functionality.
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
@@ -36,15 +12,12 @@ import { ErrorBoundary } from '../ErrorBoundary';
 import { ProgressBar } from './ProgressBar';
 import { ProgressStatus } from './ProgressStatus';
 
-// Props removed - now using Context API
 export const ConvertingState = React.memo(() => {
   const { currentJobId, appState } = useAppContext();
   const { handleCancelConversion } = useConversion();
   const jobId = currentJobId;
 
-  // Performance optimization - store now checks value equality before updates
-  // progressStore.updateProgress() compares all fields and returns same state reference if unchanged
-  // This prevents unnecessary re-renders when duplicate progress updates are received (see progressStore.ts:68-82)
+  // Progress store uses value equality checks to prevent re-renders on duplicate updates
   const progress = useProgressStore((state) => state.getProgress(jobId));
 
   // Cancel confirmation state

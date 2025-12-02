@@ -17,7 +17,9 @@ interface AppHeaderProps {
 
 export function AppHeader({ onOpenSettings, onShowKeyboardShortcuts, onShowHelp }: AppHeaderProps) {
   return (
-    <header className={`${tokens.colors.primary.bg} text-white ${tokens.spacing.card} flex items-center justify-between ${tokens.effects.shadowMd} border-b-2 ${tokens.colors.borders.primary} relative z-${tokens.zIndex.dropdown}`}>
+    <header
+      className={`${tokens.colors.primary.bg} text-white ${tokens.spacing.card} flex items-center justify-between ${tokens.effects.shadowMd} border-b-2 ${tokens.colors.borders.primary} relative z-${tokens.zIndex.dropdown}`}
+    >
       {/* Skip to main content link for keyboard users (WCAG 2.1 SC 2.4.1) */}
       <a
         href="#main-content"
@@ -27,11 +29,7 @@ export function AppHeader({ onOpenSettings, onShowKeyboardShortcuts, onShowHelp 
       </a>
 
       <div className={`flex items-center ${tokens.spacing.gapSmall}`}>
-        <img
-          src="/icons/icon-48.svg"
-          alt="ResumeWright Logo"
-          className="w-6 h-6"
-        />
+        <img src="/icons/icon-48.svg" alt="ResumeWright Logo" className="w-6 h-6" />
         <h1 className={`${tokens.typography.large} ${tokens.typography.semibold}`}>ResumeWright</h1>
       </div>
 
@@ -46,8 +44,10 @@ export function AppHeader({ onOpenSettings, onShowKeyboardShortcuts, onShowHelp 
             aria-label="Open help documentation"
             title="Help (F1)"
           >
-            <LifebuoyIcon className={`${tokens.icons.md} flex-shrink-0`} aria-hidden="true" />
-            <span className={`${tokens.typography.small} ${tokens.typography.medium} whitespace-nowrap`}>
+            <LifebuoyIcon className={`${tokens.icons.md} shrink-0`} aria-hidden="true" />
+            <span
+              className={`${tokens.typography.small} ${tokens.typography.medium} whitespace-nowrap`}
+            >
               Help
             </span>
           </button>
@@ -60,8 +60,10 @@ export function AppHeader({ onOpenSettings, onShowKeyboardShortcuts, onShowHelp 
             aria-label="View keyboard shortcuts"
             title="Keyboard Shortcuts (Ctrl+K or ?)"
           >
-            <QuestionMarkCircleIcon className={`${tokens.icons.md} flex-shrink-0`} aria-hidden="true" />
-            <span className={`${tokens.typography.small} ${tokens.typography.medium} whitespace-nowrap`}>
+            <QuestionMarkCircleIcon className={`${tokens.icons.md} shrink-0`} aria-hidden="true" />
+            <span
+              className={`${tokens.typography.small} ${tokens.typography.medium} whitespace-nowrap`}
+            >
               Shortcuts
             </span>
           </button>
@@ -72,8 +74,10 @@ export function AppHeader({ onOpenSettings, onShowKeyboardShortcuts, onShowHelp 
           className={`flex items-center ${tokens.spacing.gapSmall} px-3 py-2 ${tokens.borders.rounded} ${tokens.colors.primary.hover} ${tokens.effects.focusRing} ${tokens.transitions.default}`}
           aria-label="Open settings"
         >
-          <Cog6ToothIcon className={`${tokens.icons.md} flex-shrink-0`} aria-hidden="true" />
-          <span className={`${tokens.typography.small} ${tokens.typography.medium} whitespace-nowrap`}>
+          <Cog6ToothIcon className={`${tokens.icons.md} shrink-0`} aria-hidden="true" />
+          <span
+            className={`${tokens.typography.small} ${tokens.typography.medium} whitespace-nowrap`}
+          >
             Settings
           </span>
         </button>

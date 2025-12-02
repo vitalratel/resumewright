@@ -5,8 +5,8 @@
  * Extracted from ErrorState for better component organization .
  */
 
+import type { ErrorCategory } from '@/shared/errors/';
 import type { ErrorDetails } from '@/shared/errors/tracking/telemetry';
-import type { ErrorCategory } from '@/shared/types/errors/';
 import type { ErrorMetadata as ErrorMetadataType } from '@/shared/types/models/conversion';
 import { CheckIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { copyToClipboard, formatErrorDetailsForClipboard, formatErrorTimestamp } from '@/shared/errors/tracking/telemetry';

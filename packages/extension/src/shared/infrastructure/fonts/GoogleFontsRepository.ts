@@ -9,7 +9,7 @@
 
 import type { FontStyle, FontWeight } from '../../domain/fonts/models/Font';
 import type { FontCacheStats, IFontRepository } from '../../domain/fonts/repositories/IFontRepository';
-import type { IRetryPolicy } from '../../domain/retry/IRetryPolicy';
+import type { IRetryPolicy } from '../retry/ExponentialBackoffRetryPolicy';
 import { getLogger } from '../logging';
 import { ExponentialBackoffRetryPolicy } from '../retry/ExponentialBackoffRetryPolicy';
 

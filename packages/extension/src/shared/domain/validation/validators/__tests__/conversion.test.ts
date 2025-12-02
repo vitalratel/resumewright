@@ -22,7 +22,7 @@ import type {
   PDFMetadata,
 } from '@/shared/types/models';
 import { describe, expect, it } from 'vitest';
-import { ErrorCode } from '@/shared/types/errors';
+import { ErrorCode } from '@/shared/errors';
 import {
   parseConversionConfig,
   validateConversionConfig,

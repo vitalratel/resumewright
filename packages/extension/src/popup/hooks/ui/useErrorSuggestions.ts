@@ -6,8 +6,8 @@
 import type { PrioritizedSuggestion } from '@/shared/errors/presentation/suggestions';
 import type { ConversionError } from '@/shared/types/models';
 import { useMemo } from 'react';
+import { ErrorCode } from '@/shared/errors/';
 import { getSizeReductionTips, prioritizeSuggestions } from '@/shared/errors/presentation/suggestions';
-import { ErrorCode } from '@/shared/types/errors/';
 import { isLocationErrorMetadata, isRetryErrorMetadata, isSizeErrorMetadata } from '@/shared/types/models/conversion';
 
 interface ErrorSuggestionsData {

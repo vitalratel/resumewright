@@ -7,9 +7,9 @@
 
 import type { AppState } from '../integration/useAppState';
 import { useCallback } from 'react';
+import { ErrorCode } from '@/shared/errors/';
 import { generateErrorId } from '@/shared/errors/tracking/telemetry';
 import { getLogger } from '@/shared/infrastructure/logging';
-import { ErrorCode } from '@/shared/types/errors/';
 import { ERROR_MESSAGES, FILE_SIZE_THRESHOLDS } from '../../constants/app';
 import { extensionAPI } from '../../services/extensionAPI';
 import { useProgressStore } from '../../store/progressStore';

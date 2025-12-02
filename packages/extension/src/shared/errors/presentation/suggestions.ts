@@ -12,7 +12,7 @@
  * - Retry attempt awareness
  */
 
-import { ErrorCode } from '../../types/errors/';
+import { ErrorCode } from '../codes';
 
 /**
  * Suggestion with priority metadata

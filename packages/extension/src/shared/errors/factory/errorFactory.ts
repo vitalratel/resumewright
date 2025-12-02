@@ -4,16 +4,10 @@
  * Contains the base createConversionError function used by all category-specific factories.
  */
 
-import type {
-  ErrorCode,
-} from '../../types/errors/';
 import type { ConversionError, ConversionStatus, ErrorMetadata } from '../../types/models';
-import {
-  ERROR_CATEGORIES,
-  ERROR_MESSAGES,
-  ERROR_RECOVERABLE,
-  ERROR_SUGGESTIONS,
-} from '../../types/errors/';
+import type { ErrorCode } from '../codes';
+import { ERROR_MESSAGES, ERROR_RECOVERABLE, ERROR_SUGGESTIONS } from '../messages';
+import { ERROR_CATEGORIES } from '../metadata';
 import { generateErrorId, trackError } from '../tracking/telemetry';
 
 /**

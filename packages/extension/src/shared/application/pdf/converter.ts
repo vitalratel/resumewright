@@ -7,7 +7,7 @@
 
 import type { FontData, FontRequirement } from '../../domain/fonts/models/Font';
 import type { IFontRepository } from '../../domain/fonts/repositories/IFontRepository';
-import type { ILogger } from '../../domain/logging/ILogger';
+import type { ILogger } from '../../infrastructure/logging';
 import type { ConversionConfig } from '../../types/models';
 import { FontCollection, FontData as WasmFontData } from '@pkg/wasm_bridge';
 import { FontFetchOrchestrator } from '../../application/fonts/FontFetchOrchestrator';

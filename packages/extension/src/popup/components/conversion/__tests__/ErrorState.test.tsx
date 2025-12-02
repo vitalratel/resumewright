@@ -8,7 +8,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as errorsModule from '@/shared/errors';
-import { ErrorCategory, ErrorCode } from '@/shared/types/errors/codes';
+import { ErrorCategory, ErrorCode } from '@/shared/errors/codes';
 import { ErrorState } from '../ErrorState';
 
 // Mock browser API for issueReporter

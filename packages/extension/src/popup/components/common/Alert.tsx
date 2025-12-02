@@ -54,26 +54,30 @@ interface AlertProps {
  *   <p>File uploaded successfully</p>
  * </Alert>
  */
-export const Alert = React.memo(({
-  variant,
-  children,
-  className = '',
-  assertive = variant === 'error',
-  dismissible = false,
-  onDismiss,
-}: AlertProps) => {
-  // Warn if dismissible is true but onDismiss is not provided
-  if (import.meta.env.MODE !== 'production' && dismissible && !onDismiss) {
-    getLogger().warn('Alert', 'dismissible=true but onDismiss is not provided. Button will not render.');
-  }
+export const Alert = React.memo(
+  ({
+    variant,
+    children,
+    className = '',
+    assertive = variant === 'error',
+    dismissible = false,
+    onDismiss,
+  }: AlertProps) => {
+    // Warn if dismissible is true but onDismiss is not provided
+    if (import.meta.env.MODE !== 'production' && dismissible && !onDismiss) {
+      getLogger().warn(
+        'Alert',
+        'dismissible=true but onDismiss is not provided. Button will not render.'
+      );
+    }
 
-  const variantStyles = tokens.colors[variant];
+    const variantStyles = tokens.colors[variant];
 
-  return (
-    <div
-      role={assertive ? 'alert' : 'status'}
-      aria-live={assertive ? 'assertive' : 'polite'}
-      className={`
+    return (
+      <div
+        role={assertive ? 'alert' : 'status'}
+        aria-live={assertive ? 'assertive' : 'polite'}
+        className={`
         ${tokens.spacing.alert}
         ${variantStyles.bg}
         ${variantStyles.border}
@@ -83,23 +87,24 @@ export const Alert = React.memo(({
         ${variantStyles.text}
         ${dismissible ? 'flex items-start justify-between gap-3' : ''}
         ${className}
-      `.trim().replace(/\s+/g, ' ')}
-    >
-      <div className={dismissible ? 'flex-1' : ''}>
-        {children}
-      </div>
+      `
+          .trim()
+          .replace(/\s+/g, ' ')}
+      >
+        <div className={dismissible ? 'flex-1' : ''}>{children}</div>
 
-      {/* Dismissible button */}
-      {dismissible && onDismiss && (
-        <button
-          onClick={onDismiss}
-          className={`flex-shrink-0 ${tokens.colors.neutral.hover} ${tokens.borders.rounded} p-0.5 ${tokens.transitions.default} ${tokens.effects.focusRing}`}
-          aria-label="Dismiss alert"
-          type="button"
-        >
-          <XMarkIcon className={`${tokens.icons.sm} ${variantStyles.text}`} aria-hidden="true" />
-        </button>
-      )}
-    </div>
-  );
-});
+        {/* Dismissible button */}
+        {dismissible && onDismiss && (
+          <button
+            onClick={onDismiss}
+            className={`shrink-0 ${tokens.colors.neutral.hover} ${tokens.borders.rounded} p-0.5 ${tokens.transitions.default} ${tokens.effects.focusRing}`}
+            aria-label="Dismiss alert"
+            type="button"
+          >
+            <XMarkIcon className={`${tokens.icons.sm} ${variantStyles.text}`} aria-hidden="true" />
+          </button>
+        )}
+      </div>
+    );
+  }
+);

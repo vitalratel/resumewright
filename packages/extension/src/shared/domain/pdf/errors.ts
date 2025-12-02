@@ -7,8 +7,8 @@
 import type { InferOutput } from '../../domain/validation/valibot';
 import type { ConversionError } from '../../types/models';
 import { array, boolean, object, optional, safeParse, string } from '../../domain/validation/valibot';
+import { ErrorCode } from '../../errors/codes';
 import { generateErrorId } from '../../errors/tracking/telemetry';
-import { ErrorCode } from '../../types/errors/';
 
 /**
  * Valibot schema for WASM error JSON format

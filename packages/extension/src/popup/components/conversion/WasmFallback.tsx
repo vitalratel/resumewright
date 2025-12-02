@@ -21,8 +21,8 @@ import {
   formatErrorTimestamp,
   generateErrorId,
 } from '@/shared/errors';
+import { ErrorCategory, ErrorCode } from '@/shared/errors/';
 import { getLogger } from '@/shared/infrastructure/logging';
-import { ErrorCategory, ErrorCode } from '@/shared/types/errors/';
 import { useLoadingState } from '../../hooks/ui/useLoadingState';
 import { tokens } from '../../styles/tokens';
 import { WASM } from '../common';

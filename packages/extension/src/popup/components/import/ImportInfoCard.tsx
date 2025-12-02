@@ -29,7 +29,7 @@ export const ImportInfoCard = React.memo(() => {
   // Namespaced localStorage keys to prevent conflicts
   const [infoCardMinimized, setInfoCardMinimized] = useLocalStorage(
     LocalStorageKeys.INFO_CARD_MINIMIZED,
-    false,
+    false
   );
   const [launchCount, setLaunchCount] = useLocalStorage(LocalStorageKeys.LAUNCH_COUNT, 0);
 
@@ -47,7 +47,6 @@ export const ImportInfoCard = React.memo(() => {
     if (newCount >= AUTO_MINIMIZE_AFTER_LAUNCHES && !infoCardMinimized) {
       setInfoCardMinimized(true);
     }
-     
   }, []);
 
   if (infoCardMinimized) {
@@ -62,9 +61,7 @@ export const ImportInfoCard = React.memo(() => {
           <InformationCircleIcon className={tokens.icons.sm} aria-hidden="true" />
           <span>
             Get
-            <TSX />
-            {' '}
-            from Claude.ai
+            <TSX /> from Claude.ai
           </span>
           <ChevronDownIcon className={tokens.icons.sm} aria-hidden="true" />
         </button>
@@ -73,30 +70,31 @@ export const ImportInfoCard = React.memo(() => {
   }
 
   return (
-    <div className={`${tokens.colors.neutral.bg} ${tokens.colors.neutral.borderLight} ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.spacing.alert}`}>
+    <div
+      className={`${tokens.colors.neutral.bg} ${tokens.colors.neutral.borderLight} ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.spacing.alert}`}
+    >
       <div className="flex items-start justify-between">
         <div className={`flex items-start ${tokens.spacing.gapSmall} flex-1`}>
-          <InformationCircleIcon className={`${tokens.icons.sm} ${tokens.colors.neutral.textMuted} flex-shrink-0`} aria-hidden="true" />
+          <InformationCircleIcon
+            className={`${tokens.icons.sm} ${tokens.colors.neutral.textMuted} shrink-0`}
+            aria-hidden="true"
+          />
           <div className="flex-1">
-            <h2 className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}>
-              Get
-              {' '}
-              <TSX />
-              {' '}
-              from Claude.ai
+            <h2
+              className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
+            >
+              Get <TSX /> from Claude.ai
             </h2>
-            <ol className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} ${tokens.spacing.gapSmall} list-decimal list-inside`}>
+            <ol
+              className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} ${tokens.spacing.gapSmall} list-decimal list-inside`}
+            >
               <li>
                 Ask Claude to create your CV in
-                <TSX />
-                {' '}
-                format
+                <TSX /> format
               </li>
               <li>
                 Copy the
-                <TSX />
-                {' '}
-                code from Claude&apos;s response
+                <TSX /> code from Claude&apos;s response
               </li>
               <li>Save it as a .tsx file on your computer</li>
               <li>Import that file here to convert to PDF</li>
@@ -106,7 +104,7 @@ export const ImportInfoCard = React.memo(() => {
         <button
           type="button"
           onClick={() => setInfoCardMinimized(true)}
-          className={`${tokens.colors.primary.text} ${tokens.colors.primary.hover.replace('hover:bg-', 'hover:text-')} ${tokens.effects.focusRing} ${tokens.borders.rounded} ${tokens.spacing.marginSmall} flex-shrink-0`}
+          className={`${tokens.colors.primary.text} ${tokens.colors.primary.hover.replace('hover:bg-', 'hover:text-')} ${tokens.effects.focusRing} ${tokens.borders.rounded} ${tokens.spacing.marginSmall} shrink-0`}
           aria-label="Hide instructions for getting TSX file from Claude.ai"
         >
           <ChevronUpIcon className={tokens.icons.sm} aria-hidden="true" />

@@ -6,7 +6,7 @@
  */
 
 import type { ConversionError, ConversionStatus } from '../../types/models';
-import { ErrorCode } from '../../types/errors/';
+import { ErrorCode } from '../codes';
 import { createConversionError } from './errorFactory';
 
 /**

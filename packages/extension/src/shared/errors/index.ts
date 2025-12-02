@@ -25,6 +25,9 @@
  * ```
  */
 
+// Error types, codes, messages (moved from shared/types/errors)
+export { ErrorCategory, ErrorCode } from './codes';
+
 // Factory exports (Now from index)
 export {
   createConversionError,
@@ -42,7 +45,6 @@ export {
   createWasmInitError,
   errorToConversionError,
 } from './factory/';
-
 // Enrichment exports
 export {
   addCodeContextToError,
@@ -50,7 +52,19 @@ export {
   extractCodeContextWithColumn,
   extractTruncatedCodeContext,
 } from './factory/enrichment';
+
 export type { CodeContext } from './factory/enrichment';
+export {
+  ERROR_HELP_RESOURCES,
+  getHelpLinkForSuggestion,
+  getHelpResourcesForError,
+  SUGGESTION_HELP_LINKS,
+} from './helpResources';
+
+export type { HelpLink } from './helpResources';
+
+export { ERROR_MESSAGES, ERROR_RECOVERABLE, ERROR_SUGGESTIONS } from './messages';
+export { ERROR_CATEGORIES } from './metadata';
 
 export {
   formatCodeContext,
@@ -64,9 +78,7 @@ export {
   prioritizeSuggestions,
   SUGGESTION_PRIORITIES,
 } from './presentation/suggestions';
-
 export type { PrioritizedSuggestion } from './presentation/suggestions';
-
 // Tracking exports (Added telemetry functions)
 export {
   clearStoredErrors,

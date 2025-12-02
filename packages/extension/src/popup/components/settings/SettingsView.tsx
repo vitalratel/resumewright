@@ -83,11 +83,7 @@ export const SettingsView = React.memo(
     // Loading state with skeleton
     if (!settings) {
       return (
-        <div
-          className="w-[360px] min-h-[200px] p-4"
-          aria-busy="true"
-          aria-live="polite"
-        >
+        <div className="w-[360px] min-h-[200px] p-4" aria-busy="true" aria-live="polite">
           {/* Header skeleton */}
           <div className={`flex items-center ${tokens.spacing.marginMedium}`}>
             <div className={`flex items-center ${tokens.spacing.gapSmall}`}>
@@ -147,7 +143,7 @@ export const SettingsView = React.memo(
           >
             Settings
           </h1>
-          <div className="w-[72px]"></div>
+          <div className="w-18"></div>
         </div>
 
         {/* Visual dirty indicator banner */}
@@ -158,7 +154,7 @@ export const SettingsView = React.memo(
             aria-live="polite"
           >
             <svg
-              className={`animate-spin ${tokens.icons.xs} ${tokens.colors.primary.text} flex-shrink-0`}
+              className={`animate-spin ${tokens.icons.xs} ${tokens.colors.primary.text} shrink-0`}
               viewBox="0 0 24 24"
               aria-hidden="true"
             >
@@ -210,12 +206,12 @@ export const SettingsView = React.memo(
             <div className={`flex items-center ${tokens.spacing.gapSmall}`}>
               {showSuccess && !saving ? (
                 <CheckIcon
-                  className={`${tokens.icons.sm} ${tokens.colors.success.icon} flex-shrink-0`}
+                  className={`${tokens.icons.sm} ${tokens.colors.success.icon} shrink-0`}
                   aria-hidden="true"
                 />
               ) : (
                 <svg
-                  className={`animate-spin h-5 w-5 ${tokens.colors.primary.text} flex-shrink-0`}
+                  className={`animate-spin h-5 w-5 ${tokens.colors.primary.text} shrink-0`}
                   viewBox="0 0 24 24"
                   aria-hidden="true"
                 >
@@ -250,14 +246,13 @@ export const SettingsView = React.memo(
 
         {/* Page Tab Content */}
         {activeTab === 'page' && (
-          <div
-            role="tabpanel"
-            id="tabpanel-page"
-            aria-labelledby="tab-page"
-            tabIndex={0}
-          >
+          <div role="tabpanel" id="tabpanel-page" aria-labelledby="tab-page" tabIndex={0}>
             {/* Page Size Selection */}
-            <div className={tokens.spacing.marginMedium} role="group" aria-labelledby="page-size-label">
+            <div
+              className={tokens.spacing.marginMedium}
+              role="group"
+              aria-labelledby="page-size-label"
+            >
               <label
                 id="page-size-label"
                 className={`block ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
@@ -351,12 +346,7 @@ export const SettingsView = React.memo(
 
         {/* General Tab Content */}
         {activeTab === 'general' && (
-          <div
-            role="tabpanel"
-            id="tabpanel-general"
-            aria-labelledby="tab-general"
-            tabIndex={0}
-          >
+          <div role="tabpanel" id="tabpanel-general" aria-labelledby="tab-general" tabIndex={0}>
             {/* Appearance Section */}
             <div className={tokens.spacing.marginMedium}>
               <ThemeSelector />

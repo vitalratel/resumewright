@@ -7,8 +7,8 @@
  * @see {@link ErrorState} for main error display component
  */
 
+import type { ErrorCategory } from '@/shared/errors/';
 import type { ErrorDetails as ErrorDetailsType } from '@/shared/errors/tracking/telemetry';
-import type { ErrorCategory } from '@/shared/types/errors/';
 import type { ConversionError } from '@/shared/types/models';
 import { CheckIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { memo, useMemo, useState } from 'react';

@@ -19,11 +19,11 @@ export type {
   PrioritizedSuggestion,
 } from '../errors';
 
+export { ERROR_MESSAGES, ERROR_RECOVERABLE, ERROR_SUGGESTIONS, ErrorCode } from '../errors';
+
 // Logging
 export { LogLevel } from '../infrastructure/logging';
-
 export type { LoggerConfig } from '../infrastructure/logging';
-export { ERROR_MESSAGES, ERROR_RECOVERABLE, ERROR_SUGGESTIONS, ErrorCode } from './errors/';
 
 // Message payloads
 export type {

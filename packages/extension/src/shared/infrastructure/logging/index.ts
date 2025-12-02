@@ -53,4 +53,4 @@ export { Logger } from './logger';
 
 export { LogLevel } from './logger';
 
-export type { LoggerConfig } from './logger';
+export type { ILogger, LoggerConfig } from './logger';

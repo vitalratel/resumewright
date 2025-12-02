@@ -43,7 +43,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Logging for dev
-    getLogger().error('ErrorBoundary', 'React Error Boundary caught an error', { error, errorInfo });
+    getLogger().error('ErrorBoundary', 'React Error Boundary caught an error', {
+      error,
+      errorInfo,
+    });
 
     // External logging for production with PII sanitization (fix)
     if (import.meta.env.PROD) {
@@ -75,8 +78,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
    * @returns Sanitized stack trace or undefined if empty
    */
   private sanitizeComponentStack(stack: string | null | undefined): string | undefined {
-    if (stack === null || stack === undefined)
-      return undefined;
+    if (stack === null || stack === undefined) return undefined;
 
     // Remove file paths, variable names, and potential PII
     return stack
@@ -106,27 +108,46 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   render(): ReactNode {
     if (this.state.hasError) {
       return (
-        <div className={`min-h-screen flex items-center justify-center ${tokens.colors.neutral.bg} ${tokens.spacing.card}`}>
-          <div className={`max-w-md w-full ${tokens.colors.neutral.bgWhite} ${tokens.borders.roundedLg} ${tokens.effects.shadow} ${tokens.spacing.cardGenerous}`}>
-            <div className={`flex items-center justify-center w-12 h-12 mx-auto ${tokens.colors.error.bg} ${tokens.borders.full}`}>
-              <ExclamationTriangleIcon className={`${tokens.icons.md} ${tokens.colors.error.icon}`} aria-hidden="true" />
+        <div
+          className={`min-h-screen flex items-center justify-center ${tokens.colors.neutral.bg} ${tokens.spacing.card}`}
+        >
+          <div
+            className={`max-w-md w-full ${tokens.colors.neutral.bgWhite} ${tokens.borders.roundedLg} ${tokens.effects.shadow} ${tokens.spacing.cardGenerous}`}
+          >
+            <div
+              className={`flex items-center justify-center w-12 h-12 mx-auto ${tokens.colors.error.bg} ${tokens.borders.full}`}
+            >
+              <ExclamationTriangleIcon
+                className={`${tokens.icons.md} ${tokens.colors.error.icon}`}
+                aria-hidden="true"
+              />
             </div>
 
-            <h1 className={`${tokens.spacing.marginMedium} ${tokens.typography.large} ${tokens.typography.semibold} ${tokens.colors.neutral.text} text-center`}>
+            <h1
+              className={`${tokens.spacing.marginMedium} ${tokens.typography.large} ${tokens.typography.semibold} ${tokens.colors.neutral.text} text-center`}
+            >
               Something went wrong
             </h1>
 
-            <p className={`${tokens.spacing.marginSmall} ${tokens.typography.base} ${tokens.colors.neutral.textMuted} text-center`}>
+            <p
+              className={`${tokens.spacing.marginSmall} ${tokens.typography.base} ${tokens.colors.neutral.textMuted} text-center`}
+            >
               The extension encountered an error. You can try to recover or reload the popup.
             </p>
 
             {/* Show error details in development mode */}
             {import.meta.env.DEV && this.state.error && (
-              <details className={`${tokens.spacing.marginMedium} ${tokens.spacing.cardSmall} ${tokens.colors.neutral.bg} ${tokens.borders.rounded}`}>
-                <summary className={`${tokens.typography.small} ${tokens.typography.medium} cursor-pointer`}>
+              <details
+                className={`${tokens.spacing.marginMedium} ${tokens.spacing.cardSmall} ${tokens.colors.neutral.bg} ${tokens.borders.rounded}`}
+              >
+                <summary
+                  className={`${tokens.typography.small} ${tokens.typography.medium} cursor-pointer`}
+                >
                   Error Details (Dev Only)
                 </summary>
-                <pre className={`${tokens.spacing.marginSmall} ${tokens.typography.xs} font-mono ${tokens.colors.neutral.textMuted} whitespace-pre-wrap break-words`}>
+                <pre
+                  className={`${tokens.spacing.marginSmall} ${tokens.typography.xs} font-mono ${tokens.colors.neutral.textMuted} whitespace-pre-wrap wrap-break-words`}
+                >
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}
                 </pre>
@@ -174,11 +195,11 @@ const SECTION_MESSAGES = {
     title: 'File Import Error',
     description: 'Failed to import or validate the file. You can try importing a different file.',
   },
-  'settings': {
+  settings: {
     title: 'Settings Error',
     description: 'An error occurred in the settings panel. You can close settings and try again.',
   },
-  'conversion': {
+  conversion: {
     title: 'Conversion Error',
     description: 'An error occurred during PDF conversion. You can retry the conversion.',
   },
@@ -209,11 +230,11 @@ export class SectionErrorBoundary extends Component<SectionErrorBoundaryProps, E
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     const { section } = this.props;
 
-    getLogger().error(
-      'SectionErrorBoundary',
-      `Error in ${section} section`,
-      { error, errorInfo, section },
-    );
+    getLogger().error('SectionErrorBoundary', `Error in ${section} section`, {
+      error,
+      errorInfo,
+      section,
+    });
 
     // Log to external service in production
     if (import.meta.env.PROD) {
@@ -236,11 +257,10 @@ export class SectionErrorBoundary extends Component<SectionErrorBoundaryProps, E
   }
 
   private sanitizeComponentStack(stack: string | null | undefined): string | undefined {
-    if (stack === null || stack === undefined)
-      return undefined;
+    if (stack === null || stack === undefined) return undefined;
     return stack
       .split('\n')
-      .map(line => line.replace(/at [^(]*\([^)]*\)/, 'at Component'))
+      .map((line) => line.replace(/at [^(]*\([^)]*\)/, 'at Component'))
       .join('\n')
       .substring(0, 500);
   }
@@ -262,27 +282,39 @@ export class SectionErrorBoundary extends Component<SectionErrorBoundaryProps, E
       const sectionInfo = SECTION_MESSAGES[section];
 
       return (
-        <div className={`${tokens.spacing.card} ${tokens.colors.neutral.bg} ${tokens.borders.rounded} ${tokens.borders.default}`}>
+        <div
+          className={`${tokens.spacing.card} ${tokens.colors.neutral.bg} ${tokens.borders.rounded} ${tokens.borders.default}`}
+        >
           <div className={`flex items-start ${tokens.spacing.gapSmall}`}>
             <ExclamationTriangleIcon
-              className={`${tokens.icons.md} ${tokens.colors.error.icon} flex-shrink-0`}
+              className={`${tokens.icons.md} ${tokens.colors.error.icon} shrink-0`}
               aria-hidden="true"
             />
             <div className="flex-1">
-              <h3 className={`${tokens.typography.base} ${tokens.typography.semibold} ${tokens.colors.neutral.text}`}>
+              <h3
+                className={`${tokens.typography.base} ${tokens.typography.semibold} ${tokens.colors.neutral.text}`}
+              >
                 {sectionInfo.title}
               </h3>
-              <p className={`${tokens.spacing.marginSmall} ${tokens.typography.small} ${tokens.colors.neutral.textMuted}`}>
+              <p
+                className={`${tokens.spacing.marginSmall} ${tokens.typography.small} ${tokens.colors.neutral.textMuted}`}
+              >
                 {fallbackMessage ?? sectionInfo.description}
               </p>
 
               {/* Show error details in development */}
               {import.meta.env.DEV && this.state.error && (
-                <details className={`${tokens.spacing.marginSmall} ${tokens.spacing.cardSmall} ${tokens.colors.neutral.bgWhite} ${tokens.borders.rounded}`}>
-                  <summary className={`${tokens.typography.xs} ${tokens.typography.medium} cursor-pointer`}>
+                <details
+                  className={`${tokens.spacing.marginSmall} ${tokens.spacing.cardSmall} ${tokens.colors.neutral.bgWhite} ${tokens.borders.rounded}`}
+                >
+                  <summary
+                    className={`${tokens.typography.xs} ${tokens.typography.medium} cursor-pointer`}
+                  >
                     Error Details
                   </summary>
-                  <pre className={`${tokens.spacing.marginSmall} ${tokens.typography.xs} font-mono ${tokens.colors.neutral.textMuted} whitespace-pre-wrap break-words`}>
+                  <pre
+                    className={`${tokens.spacing.marginSmall} ${tokens.typography.xs} font-mono ${tokens.colors.neutral.textMuted} whitespace-pre-wrap wrap-break-words`}
+                  >
                     {this.state.error.toString()}
                   </pre>
                 </details>

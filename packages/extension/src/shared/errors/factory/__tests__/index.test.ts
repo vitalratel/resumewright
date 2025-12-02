@@ -21,7 +21,7 @@ import {
   createWasmInitError,
   errorToConversionError,
 } from '../';
-import { ErrorCode } from '../../../types/errors/codes';
+import { ErrorCode } from '../../codes';
 
 // Mock error ID generation and telemetry
 vi.mock('../../tracking/telemetry', () => ({

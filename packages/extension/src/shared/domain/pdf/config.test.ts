@@ -3,8 +3,8 @@
  * Tests for configuration conversion and validation
  */
 
+import type { ILogger } from '../../infrastructure/logging';
 import type { ConversionConfig } from '../../types/models';
-import type { ILogger } from '../logging/ILogger';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { convertConfigToRust, convertPointsToInches } from './config';
 

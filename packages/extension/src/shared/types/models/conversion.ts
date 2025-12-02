@@ -5,7 +5,7 @@
  * Extracted from models.ts for better modularity.
  */
 
-import type { ErrorCategory, ErrorCode } from '../errors/';
+import type { ErrorCategory, ErrorCode } from '../../errors';
 import type { CVDocument } from './cv';
 import type { PDFMetadata } from './pdf';
 

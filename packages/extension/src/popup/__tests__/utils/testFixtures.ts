@@ -6,7 +6,7 @@
  */
 
 import type { ConversionError, CVMetadata } from '@/shared/types/models';
-import { ErrorCategory, ErrorCode } from '@/shared/types/errors';
+import { ErrorCategory, ErrorCode } from '@/shared/errors';
 
 /**
  * Sample TSX content (valid)
