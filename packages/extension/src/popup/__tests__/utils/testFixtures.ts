@@ -1,11 +1,8 @@
-/**
- * Test Fixtures
- *
- * Reusable test data for common scenarios.
- * Ensures consistency across tests.
- */
+// ABOUTME: Reusable test data for popup tests.
+// ABOUTME: Provides consistent fixtures for common scenarios.
 
-import type { ConversionError, CVMetadata } from '@/shared/types/models';
+import type { CVMetadata } from '../../store';
+import type { ConversionError } from '@/shared/types/models';
 import { ErrorCategory, ErrorCode } from '@/shared/errors';
 
 /**
@@ -44,13 +41,11 @@ export const SAMPLE_TSX_EMPTY = '';
  */
 export const MOCK_CV_METADATA_DETAILED: CVMetadata = {
   name: 'John Doe',
-  title: 'Software Engineer',
+  role: 'Software Engineer',
+  confidence: 0.95,
   estimatedPages: 2,
   layoutType: 'two-column',
-  componentCount: 15,
-  hasContactInfo: true,
-  hasClearSections: true,
-  fontComplexity: 'moderate',
+  hasImages: false,
 };
 
 /**
@@ -58,12 +53,10 @@ export const MOCK_CV_METADATA_DETAILED: CVMetadata = {
  */
 export const MOCK_CV_METADATA_SIMPLE: CVMetadata = {
   name: 'Jane Smith',
+  confidence: 0.9,
   estimatedPages: 1,
   layoutType: 'single-column',
-  componentCount: 8,
-  hasContactInfo: true,
-  hasClearSections: true,
-  fontComplexity: 'simple',
+  hasImages: false,
 };
 
 /**
@@ -71,12 +64,10 @@ export const MOCK_CV_METADATA_SIMPLE: CVMetadata = {
  */
 export const MOCK_CV_METADATA_LOW_CONFIDENCE: CVMetadata = {
   name: 'Unknown',
+  confidence: 0.3,
   estimatedPages: 1,
   layoutType: 'single-column',
-  componentCount: 5,
-  hasContactInfo: false,
-  hasClearSections: false,
-  fontComplexity: 'simple',
+  hasImages: false,
 };
 
 /**
@@ -211,12 +202,10 @@ export function createMockFile(filename: string, content: string, type: string =
 export function createMockCVMetadata(name: string, overrides?: Partial<CVMetadata>): CVMetadata {
   return {
     name,
+    confidence: 0.9,
     estimatedPages: 1,
     layoutType: 'single-column',
-    componentCount: 5,
-    hasContactInfo: true,
-    hasClearSections: true,
-    fontComplexity: 'simple',
+    hasImages: false,
     ...overrides,
   };
 }

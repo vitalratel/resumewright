@@ -12,9 +12,9 @@
  * P1 Critical: WASM boundary validation prevents runtime crashes
  */
 
-import type { FontWeight } from "@/shared/domain/fonts/models/Font";
+import type { FontWeight } from "@/shared/domain/fonts/types";
+import { safeParse } from 'valibot';
 import { describe, expect, it } from 'vitest';
-import { safeParse } from '../../domain/validation/valibot';
 import {
   FontRequirementSchema,
   FontSourceSchema,

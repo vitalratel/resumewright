@@ -1,70 +1,14 @@
-/**
- * Type guard functions for runtime type checking.
- *
- * These guards provide type-safe narrowing for discriminated unions
- * and help avoid unsafe type assertions throughout the codebase.
- */
+// ABOUTME: Type guard functions for runtime type checking.
+// ABOUTME: Provides type-safe narrowing for discriminated unions.
 
-import type { FontData } from '../domain/fonts/models/Font';
+import type { FontData } from '../domain/fonts/types';
 import type {
   ConversionConfig,
   ConversionError,
-  ConversionResult,
-  PDFMetadata,
 } from '../types/models';
 
 /**
- * Type guard for successful conversion result.
- *
- * JSDoc example for type guard usage
- * @example
- * ```ts
- * const result = await convertTsxToPdfWithFonts(tsx, config);
- * if (isConversionSuccess(result)) {
- *   // result.pdfBytes is now safely accessible
- *   await downloadPdf(result.pdfBytes, result.metadata);
- * }
- * ```
- */
-export function isConversionSuccess(
-  result: ConversionResult,
-): result is { success: true; pdfBytes: Uint8Array; metadata: PDFMetadata } {
-  return result.success === true;
-}
-
-/**
- * Type guard for failed conversion result.
- *
- * JSDoc example for type guard usage
- * @example
- * ```ts
- * const result = await convertTsxToPdf(tsx, config);
- * if (isConversionError(result)) {
- *   // result.error is now safely accessible
- *   showError(result.error.message, result.error.code);
- * }
- * ```
- */
-export function isConversionError(
-  result: ConversionResult,
-): result is { success: false; error: ConversionError } {
-  return result.success === false;
-}
-
-/**
  * Type guard for Uint8Array.
- *
- * JSDoc example for type guard usage
- * @example
- * ```ts
- * function processPdfData(data: unknown) {
- *   if (isUint8Array(data)) {
- *     // data is now typed as Uint8Array
- *     return data.length;
- *   }
- *   throw new Error('Invalid PDF data');
- * }
- * ```
  */
 export function isUint8Array(value: unknown): value is Uint8Array {
   return value instanceof Uint8Array;
@@ -79,17 +23,6 @@ export function isError(value: unknown): value is Error {
 
 /**
  * Type guard for ConversionError.
- *
- * JSDoc example for type guard usage
- * @example
- * ```ts
- * function handleUnknownError(error: unknown) {
- *   if (isConversionErrorObject(error)) {
- *     // error.code and error.message are now safely accessible
- *     logError(error.code, error.message);
- *   }
- * }
- * ```
  */
 export function isConversionErrorObject(value: unknown): value is ConversionError {
   return (
@@ -104,13 +37,6 @@ export function isConversionErrorObject(value: unknown): value is ConversionErro
 
 /**
  * Type guard for non-null values.
- *
- * JSDoc example for type guard usage
- * @example
- * ```ts
- * const values = [1, null, 2, null, 3];
- * const numbers = values.filter(isNotNull); // numbers: number[]
- * ```
  */
 export function isNotNull<T>(value: T | null): value is T {
   return value !== null;
@@ -125,13 +51,6 @@ export function isNotUndefined<T>(value: T | undefined): value is T {
 
 /**
  * Type guard for defined values (not null or undefined).
- *
- * JSDoc example for type guard usage
- * @example
- * ```ts
- * const values = [1, null, undefined, 2, 3];
- * const defined = values.filter(isDefined); // defined: number[]
- * ```
  */
 export function isDefined<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined;
@@ -139,18 +58,6 @@ export function isDefined<T>(value: T | null | undefined): value is T {
 
 /**
  * Type guard for FontData.
- * Validates that an unknown value conforms to the FontData interface.
- *
- * JSDoc example for type guard usage
- * @example
- * ```ts
- * function loadFont(data: unknown): FontData {
- *   if (isFontData(data)) {
- *     return data; // data is now typed as FontData
- *   }
- *   throw new Error('Invalid font data');
- * }
- * ```
  */
 export function isFontData(value: unknown): value is FontData {
   if (typeof value !== 'object' || value === null) {
@@ -170,18 +77,6 @@ export function isFontData(value: unknown): value is FontData {
 
 /**
  * Type guard for ConversionConfig.
- * Validates that an unknown value conforms to the ConversionConfig interface.
- *
- * JSDoc example for type guard usage
- * @example
- * ```ts
- * async function loadConfig(stored: unknown): Promise<ConversionConfig> {
- *   if (isConversionConfig(stored)) {
- *     return stored; // stored is now typed as ConversionConfig
- *   }
- *   return getDefaultConfig();
- * }
- * ```
  */
 export function isConversionConfig(value: unknown): value is ConversionConfig {
   if (typeof value !== 'object' || value === null) {

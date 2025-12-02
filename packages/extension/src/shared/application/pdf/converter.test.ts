@@ -15,7 +15,7 @@
  * Coverage target: >85%
  */
 
-import type { FontWeight } from '../../domain/fonts/models/Font';
+import type { FontWeight } from '../../domain/fonts/types';
 import type { WasmPdfConfig } from '../../domain/pdf/types';
 import type { ConversionConfig } from '../../types/models';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

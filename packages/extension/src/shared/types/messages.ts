@@ -50,59 +50,6 @@ export interface UpdateSettingsPayload {
   settings: Partial<UserSettings>;
 }
 
-/**
- * Google Fonts payloads
- */
-
-/** Request to fetch a Google Font */
-export interface FetchGoogleFontPayload {
-  /** Font family name (e.g., "Roboto") */
-  family: string;
-
-  /** Font weight (default: 400) */
-  weight?: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
-
-  /** Font style (default: "normal") */
-  style?: 'normal' | 'italic';
-}
-
-/** Successful font fetch response */
-export interface GoogleFontFetchedPayload {
-  /** Font family name */
-  family: string;
-
-  /** Font weight */
-  weight: number;
-
-  /** Font style */
-  style: 'normal' | 'italic';
-
-  /** Font bytes as Uint8Array */
-  fontBytes: Uint8Array;
-
-  /** Size in bytes */
-  size: number;
-
-  /** Whether font was served from cache */
-  cached: boolean;
-}
-
-/** Font fetch error response */
-export interface GoogleFontErrorPayload {
-  /** Font family name */
-  family: string;
-
-  /** Error type */
-  errorType: 'NETWORK_TIMEOUT' | 'NETWORK_ERROR' | 'PARSE_ERROR' | 'NOT_FOUND';
-
-  /** Error message */
-  message: string;
-}
-
-/**
- * WASM status payloads
- */
-
 /** WASM status response */
 export interface WasmStatusPayload {
   /** Whether WASM is initialized and ready */

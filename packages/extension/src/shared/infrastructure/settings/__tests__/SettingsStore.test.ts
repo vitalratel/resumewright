@@ -4,7 +4,7 @@
  * Tests settings persistence, validation, and reset functionality
  */
 
-import type { UserSettings } from '@/shared/types';
+import type { UserSettings } from '@/shared/types/settings';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';

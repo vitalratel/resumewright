@@ -177,31 +177,3 @@ export interface WasmFontData {
  */
 export type WasmInitFunction = (input?: string | URL | Request | BufferSource) => Promise<void>;
 
-/**
- * Type guard for checking if value is WasmPdfConfig
- */
-export function isWasmPdfConfig(value: unknown): value is WasmPdfConfig {
-  if (value == null || typeof value !== 'object') {
-    return false;
-  }
-
-  const config = value as Record<string, unknown>;
-
-  return (
-    typeof config.page_size === 'string'
-    && ['Letter', 'A4', 'Legal'].includes(config.page_size)
-    && typeof config.margin === 'object'
-    && config.margin !== null
-    && typeof (config.margin as Record<string, unknown>).top === 'number'
-    && typeof (config.margin as Record<string, unknown>).right === 'number'
-    && typeof (config.margin as Record<string, unknown>).bottom === 'number'
-    && typeof (config.margin as Record<string, unknown>).left === 'number'
-    && typeof config.standard === 'string'
-    && ['PDF17', 'PDFA1b'].includes(config.standard)
-    && typeof config.title === 'string'
-    && (config.author === null || typeof config.author === 'string')
-    && typeof config.subject === 'string'
-    && (config.keywords === null || typeof config.keywords === 'string')
-    && typeof config.creator === 'string'
-  );
-}

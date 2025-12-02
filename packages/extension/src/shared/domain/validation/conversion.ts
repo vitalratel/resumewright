@@ -1,25 +1,17 @@
-/**
- * Conversion Validation Schemas
- *
- * Valibot schemas and validation functions for conversion-related types.
- */
+// ABOUTME: Valibot schemas for conversion-related types.
+// ABOUTME: Provides validation for status, progress, config, and error types.
 
 import type {
   ConversionConfig,
   ConversionError,
-  ConversionJob,
   ConversionProgress,
   ConversionStatus,
-  PDFMetadata,
 } from '@/shared/types/models';
 import {
   array,
   boolean,
   check,
-  date,
-  instance,
   integer,
-  literal,
   maxLength,
   maxValue,
   minLength,
@@ -32,9 +24,7 @@ import {
   pipe,
   safeParse,
   string,
-  union,
-} from '../valibot';
-import { CVDocumentSchema } from './cv';
+} from 'valibot';
 
 /**
  * ConversionStatus Schema
@@ -54,7 +44,6 @@ export const ConversionStatusSchema = picklist([
 
 /**
  * ConversionProgress Schema
- * Added descriptive validation error messages
  */
 export const ConversionProgressSchema = pipe(
   object({
@@ -103,7 +92,6 @@ export const ConversionProgressSchema = pipe(
 
 /**
  * ConversionConfig Schema
- * Added descriptive validation error messages
  */
 export const ConversionConfigSchema = object({
   pageSize: picklist(['Letter', 'A4', 'Legal']),
@@ -150,7 +138,6 @@ export const ConversionConfigSchema = object({
 
 /**
  * ConversionError Schema
- * Added descriptive validation error messages
  */
 export const ConversionErrorSchema = object({
   stage: ConversionStatusSchema,
@@ -177,108 +164,6 @@ export const ConversionErrorSchema = object({
 });
 
 /**
- * PDFMetadata Schema
- * Added descriptive validation error messages
- */
-export const PDFMetadataSchema = pipe(
-  object({
-    title: pipe(
-      string('PDF title must be a string'),
-      minLength(1, 'PDF title cannot be empty'),
-      maxLength(500, 'PDF title too long (max 500 characters)'),
-    ),
-    author: optional(pipe(
-      string('PDF author must be a string'),
-      maxLength(200, 'PDF author name too long (max 200 characters)'),
-    )),
-    subject: optional(pipe(
-      string('PDF subject must be a string'),
-      maxLength(500, 'PDF subject too long (max 500 characters)'),
-    )),
-    keywords: optional(array(pipe(
-      string('Keyword must be a string'),
-      minLength(1, 'Keyword cannot be empty'),
-      maxLength(100, 'Keyword too long (max 100 characters)'),
-    ))),
-    creator: pipe(
-      string('PDF creator must be a string'),
-      minLength(1, 'PDF creator cannot be empty'),
-      maxLength(100, 'PDF creator name too long (max 100 characters)'),
-    ),
-    producer: pipe(
-      string('PDF producer must be a string'),
-      minLength(1, 'PDF producer cannot be empty'),
-      maxLength(100, 'PDF producer name too long (max 100 characters)'),
-    ),
-    creationDate: date('Creation date must be a date'),
-    modificationDate: optional(date('Modification date must be a date')),
-    pageCount: pipe(
-      number('PDF page count must be a number'),
-      integer('PDF page count must be an integer'),
-      minValue(1, 'PDF page count must be positive'),
-      maxValue(1000, 'PDF page count too high (max 1000 pages)'),
-    ),
-    fileSize: pipe(
-      number('PDF file size must be a number'),
-      integer('PDF file size must be an integer (bytes)'),
-      minValue(0, 'PDF file size cannot be negative'),
-    ),
-  }),
-  check((data) => {
-    // modificationDate must be after creationDate if provided
-    if (data.modificationDate && data.modificationDate < data.creationDate) {
-      return false;
-    }
-    return true;
-  }, 'Invalid dates: PDF modification date must be after creation date'),
-);
-
-/**
- * ConversionJob Schema
- */
-export const ConversionJobSchema = pipe(
-  object({
-    id: pipe(
-      string('Job ID must be a string'),
-      minLength(1, 'Job ID cannot be empty'),
-      maxLength(100, 'Job ID too long (max 100 characters)'),
-    ),
-    cvDocument: CVDocumentSchema,
-    status: ConversionStatusSchema,
-    progress: ConversionProgressSchema,
-    config: ConversionConfigSchema,
-    result: optional(union([
-      object({
-        success: literal(true),
-        pdfBytes: instance(Uint8Array, 'PDF bytes must be a Uint8Array'),
-        metadata: PDFMetadataSchema,
-      }),
-      object({
-        success: literal(false),
-        error: ConversionErrorSchema,
-      }),
-    ])),
-    startTime: pipe(
-      number('Start time must be a number'),
-      integer('Start time must be an integer'),
-      minValue(1, 'Start time must be positive'),
-    ),
-    endTime: optional(pipe(
-      number('End time must be a number'),
-      integer('End time must be an integer'),
-      minValue(1, 'End time must be positive'),
-    )),
-  }),
-  check((data) => {
-    // endTime must be after startTime if provided
-    if (data.endTime !== undefined && data.endTime < data.startTime) {
-      return false;
-    }
-    return true;
-  }, 'endTime must be after startTime'),
-);
-
-/**
  * Validation Functions
  */
 
@@ -296,14 +181,6 @@ export function validateConversionConfig(data: unknown): data is ConversionConfi
 
 export function validateConversionError(data: unknown): data is ConversionError {
   return safeParse(ConversionErrorSchema, data).success;
-}
-
-export function validatePDFMetadata(data: unknown): data is PDFMetadata {
-  return safeParse(PDFMetadataSchema, data).success;
-}
-
-export function validateConversionJob(data: unknown): data is ConversionJob {
-  return safeParse(ConversionJobSchema, data).success;
 }
 
 /**

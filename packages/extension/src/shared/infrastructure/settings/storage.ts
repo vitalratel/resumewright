@@ -5,10 +5,10 @@
  * Uses localStorage for popup-specific settings (e.g., dark mode).
  */
 
-import type { UserSettings } from '@/shared/types';
+import type { UserSettings } from '@/shared/types/settings';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { CURRENT_SETTINGS_VERSION, DEFAULT_USER_SETTINGS } from '../../domain/settings/defaults';
-import { UserSettingsSchema } from '../../domain/validation';
+import { UserSettingsSchema } from '../../domain/validation/settings';
 import { safeJsonParse, validateWithSchema } from '../storage/helpers';
 
 /**

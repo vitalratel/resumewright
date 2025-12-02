@@ -3,7 +3,7 @@
 
 import type { TsxToPdfConverter } from '../shared/domain/pdf/types';
 import type { ConversionStatus } from '../shared/types/models';
-import type { LifecycleManager } from './core/lifecycle/lifecycleManager';
+import type { LifecycleManager } from './lifecycleManager';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import { localExtStorage } from '@/shared/infrastructure/storage';

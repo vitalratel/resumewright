@@ -5,7 +5,7 @@
  * Includes simple cache for repeated font detection calls.
  */
 
-import type { FontRequirement } from '../../domain/fonts/models/Font';
+import type { FontRequirement } from '../../domain/fonts/types';
 import { parseFontRequirements } from '../../domain/pdf/wasmSchemas';
 import { getLogger } from '../../infrastructure/logging';
 import { createConverterInstance } from '../wasm';

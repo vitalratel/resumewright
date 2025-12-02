@@ -1,7 +1,7 @@
 // ABOUTME: Tests for Settings component with tabbed navigation.
 // ABOUTME: Tests rendering, page size, margins, reset, and keyboard navigation.
 
-import type { UserSettings } from '@/shared/types';
+import type { UserSettings } from '@/shared/types/settings';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';

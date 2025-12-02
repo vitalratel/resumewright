@@ -4,9 +4,9 @@
  * Shared validation utilities for both chrome.storage and localStorage
  */
 
-import type { BaseIssue, BaseSchema } from '@/shared/domain/validation/valibot';
+import type { BaseIssue, BaseSchema } from 'valibot';
 import type { ILogger } from '@/shared/infrastructure/logging';
-import { safeParse } from '@/shared/domain/validation/valibot';
+import { safeParse } from 'valibot';
 
 /**
  * Validation result with success flag

@@ -1,7 +1,7 @@
 // ABOUTME: Tests for background message handler setup.
 // ABOUTME: Verifies handler registration and error handling paths.
 
-import type { LifecycleManager } from '../core/lifecycle/lifecycleManager';
+import type { LifecycleManager } from '../lifecycleManager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Track registered handlers for testing

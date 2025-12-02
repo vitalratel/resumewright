@@ -9,7 +9,7 @@
  * - Prevents Zustand's shallow equality checker from running in tight loop
  */
 
-import type { ConversionError, ConversionProgress } from '@/shared/types/models/conversion';
+import type { ConversionError, ConversionProgress } from '@/shared/types/models';
 import { useCallback, useMemo } from 'react';
 import { usePopupStore } from '../../store';
 import { useProgressStore } from '../../store/progressStore';

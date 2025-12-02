@@ -1,12 +1,8 @@
-/**
- * Test Assertion Helpers
- *
- * Custom assertion functions for common test scenarios.
- * Provides clear error messages and reduces test boilerplate.
- */
+// ABOUTME: Custom assertion functions for popup tests.
+// ABOUTME: Provides clear error messages and reduces test boilerplate.
 
-import type { UIState } from '../../store';
-import type { ConversionError, ConversionProgress, CVMetadata } from '@/shared/types/models';
+import type { CVMetadata, UIState } from '../../store';
+import type { ConversionError, ConversionProgress } from '@/shared/types/models';
 import { expect } from 'vitest';
 import { usePopupStore } from '../../store';
 import { useProgressStore } from '../../store/progressStore';

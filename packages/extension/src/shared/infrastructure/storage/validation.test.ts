@@ -7,8 +7,8 @@
  * Refactored to use InMemoryStorage for real implementation testing
  */
 
+import { array, boolean, null_, number, object, optional, picklist, string } from 'valibot';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { array, boolean, null_, number, object, optional, picklist, string } from '@/shared/domain/validation/valibot';
 import {
   getMultipleValidatedStorage,
   getValidatedStorage,

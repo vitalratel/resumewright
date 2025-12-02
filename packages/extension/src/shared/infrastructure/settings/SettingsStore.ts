@@ -8,18 +8,18 @@
  * Storage Key: "resumewright-settings"
  */
 
-import type { BaseIssue } from '@/shared/domain/validation/valibot';
+import type { BaseIssue } from 'valibot';
 import type {
   UserSettings,
   ValidationError,
   ValidationResult,
 } from '@/shared/types/settings';
+import { safeParse } from 'valibot';
 import {
   CURRENT_SETTINGS_VERSION,
   DEFAULT_USER_SETTINGS,
 } from '@/shared/domain/settings/defaults';
-import { UserSettingsSchema } from '@/shared/domain/validation';
-import { safeParse } from '@/shared/domain/validation/valibot';
+import { UserSettingsSchema } from '@/shared/domain/validation/settings';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { localExtStorage, syncExtStorage } from '@/shared/infrastructure/storage';
 

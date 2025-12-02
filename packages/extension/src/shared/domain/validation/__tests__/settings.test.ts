@@ -13,9 +13,9 @@
  */
 
 import type { UserSettings } from '@/shared/types/settings';
+import { safeParse } from 'valibot';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONVERSION_CONFIG } from '@/shared/types/models';
-import { safeParse } from '../../valibot';
 import {
   parseUserSettings,
   UserSettingsSchema,

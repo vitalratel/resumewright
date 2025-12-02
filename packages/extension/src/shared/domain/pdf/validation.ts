@@ -7,7 +7,6 @@ import { sendMessage } from '@/shared/messaging';
 import { FILE_SIZE_LIMITS as SIZE_LIMITS } from './constants';
 import { parseFontRequirements } from './wasmSchemas';
 
-// Re-export for backward compatibility
 export { SIZE_LIMITS as FILE_SIZE_LIMITS };
 
 /**
@@ -231,9 +230,3 @@ export function validateFileExtension(fileName: string, acceptedExtensions: stri
   return acceptedExtensions.includes(extension);
 }
 
-/**
- * Get file extension from filename
- */
-export function getFileExtension(fileName: string): string {
-  return fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
-}

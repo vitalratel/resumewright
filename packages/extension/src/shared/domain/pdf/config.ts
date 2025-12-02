@@ -71,12 +71,3 @@ function convertInchesToPoints(inches: number): number {
   return inches * 72;
 }
 
-/**
- * Convert points to inches
- *
- * @param points - Measurement in points
- * @returns Measurement in inches
- */
-export function convertPointsToInches(points: number): number {
-  return points / 72;
-}

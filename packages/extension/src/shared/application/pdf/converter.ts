@@ -5,8 +5,8 @@
  * Refactored to use dependency injection following Clean Architecture.
  */
 
-import type { FontData, FontRequirement } from '../../domain/fonts/models/Font';
-import type { IFontRepository } from '../../domain/fonts/repositories/IFontRepository';
+import type { IFontRepository } from '../../domain/fonts/IFontRepository';
+import type { FontData, FontRequirement } from '../../domain/fonts/types';
 import type { ILogger } from '../../infrastructure/logging';
 import type { ConversionConfig } from '../../types/models';
 import { FontCollection, FontData as WasmFontData } from '@pkg/wasm_bridge';

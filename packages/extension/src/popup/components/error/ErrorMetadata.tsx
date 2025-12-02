@@ -7,7 +7,7 @@
 
 import type { ErrorCategory } from '@/shared/errors/';
 import type { ErrorDetails } from '@/shared/errors/tracking/telemetry';
-import type { ErrorMetadata as ErrorMetadataType } from '@/shared/types/models/conversion';
+import type { ErrorMetadata as ErrorMetadataType } from '@/shared/types/models';
 import { CheckIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { copyToClipboard, formatErrorDetailsForClipboard, formatErrorTimestamp } from '@/shared/errors/tracking/telemetry';
 import { useLoadingState } from '../../hooks/ui/useLoadingState';
