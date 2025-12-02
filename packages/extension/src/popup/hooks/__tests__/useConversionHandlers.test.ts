@@ -7,7 +7,7 @@
 import type { AppState } from '../integration/useAppState';
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { validateTsxFile } from '@/shared/domain/pdf';
+import { validateTsxFile } from '@/shared/domain/pdf/validation';
 import { copyToClipboard, ErrorCode  } from '@/shared/errors';
 import { extensionAPI } from '../../services/extensionAPI';
 import { useProgressStore } from '../../store/progressStore';
@@ -18,8 +18,8 @@ vi.mock('../../services/extensionAPI', () => ({
   extensionAPI: { startConversion: vi.fn() },
 }));
 
-vi.mock('@/shared/domain/pdf', async () => {
-  const actual = await vi.importActual('@/shared/domain/pdf');
+vi.mock('@/shared/domain/pdf/validation', async () => {
+  const actual = await vi.importActual('@/shared/domain/pdf/validation');
   return {
     ...actual,
     validateTsxFile: vi.fn(),

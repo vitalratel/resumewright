@@ -5,7 +5,8 @@
  * Used as fallback when settings are invalid or missing.
  */
 
-import type { ConversionConfig, UserSettings } from '@/shared/types';
+import type { ConversionConfig } from '@/shared/types/models';
+import type { UserSettings } from '@/shared/types/settings';
 
 /**
  * Current schema version for UserSettings

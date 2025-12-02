@@ -7,8 +7,8 @@
  * @module Infrastructure/Fonts
  */
 
-import type { FontStyle, FontWeight } from '../../domain/fonts/models/Font';
-import type { FontCacheStats, IFontRepository } from '../../domain/fonts/repositories/IFontRepository';
+import type { FontCacheStats, IFontRepository } from '../../domain/fonts/IFontRepository';
+import type { FontStyle, FontWeight } from '../../domain/fonts/types';
 import type { IRetryPolicy } from '../retry/ExponentialBackoffRetryPolicy';
 import { getLogger } from '../logging';
 import { ExponentialBackoffRetryPolicy } from '../retry/ExponentialBackoffRetryPolicy';

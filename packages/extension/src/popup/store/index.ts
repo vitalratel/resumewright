@@ -14,10 +14,10 @@
 
 import type { CVMetadata, PersistedSlice } from './slices/persistedSlice';
 import type { ErrorInfo, UISlice, UIState } from './slices/uiSlice';
+import { boolean, literal, nullable, number, object, optional, safeParse, string, union } from 'valibot';
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { boolean, literal, nullable, number, object, optional, safeParse, string, union } from '@/shared/domain/validation/valibot';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { debounceAsync } from '../../shared/utils/debounce';
 import { createPersistedSlice } from './slices/persistedSlice';
 import { createUISlice } from './slices/uiSlice';

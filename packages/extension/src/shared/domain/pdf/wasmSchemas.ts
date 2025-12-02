@@ -5,7 +5,7 @@
  * Prevents runtime crashes from malformed WASM data.
  */
 
-import { array, check, custom, literal, maxValue, minLength, minValue, nullable, number, object, picklist, pipe, safeParse, string, union } from '../../domain/validation/valibot';
+import { array, check, custom, literal, maxValue, minLength, minValue, nullable, number, object, picklist, pipe, safeParse, string, union } from 'valibot';
 
 /**
  * Font weight schema (100-900 in increments of 100)

@@ -7,8 +7,8 @@
  * @module Application/Fonts
  */
 
-import type { FontData, FontRequirement } from '../../domain/fonts/models/Font';
-import type { IFontRepository } from '../../domain/fonts/repositories/IFontRepository';
+import type { IFontRepository } from '../../domain/fonts/IFontRepository';
+import type { FontData, FontRequirement } from '../../domain/fonts/types';
 import type { ILogger } from '../../infrastructure/logging';
 
 /**

@@ -1,13 +1,5 @@
-/**
- * Settings Type Definitions
- *
- * User preferences and extension configuration for ResumeWright.
- * Storage: chrome.storage.sync for cross-device synchronization.
- *
- * Schema Version: 1
- * Storage Key: "resumewright-settings"
- * Storage Quota: chrome.storage.sync has 100KB limit, UserSettings ~1KB (1% of quota)
- */
+// ABOUTME: User settings type definitions for extension configuration.
+// ABOUTME: Contains UserSettings, ValidationResult, and ValidationError types.
 
 import type { ConversionConfig } from './models';
 

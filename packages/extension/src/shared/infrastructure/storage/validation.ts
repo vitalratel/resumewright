@@ -4,7 +4,7 @@
  * Type-safe storage operations using Valibot validation
  */
 
-import type { BaseIssue, BaseSchema, InferOutput } from '@/shared/domain/validation/valibot';
+import type { BaseIssue, BaseSchema, InferOutput } from 'valibot';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { validateWithSchema } from './helpers';
 

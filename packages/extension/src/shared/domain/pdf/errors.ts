@@ -4,9 +4,9 @@
  * Parses WASM errors into ConversionError format.
  */
 
-import type { InferOutput } from '../../domain/validation/valibot';
+import type { InferOutput } from 'valibot';
 import type { ConversionError } from '../../types/models';
-import { array, boolean, object, optional, safeParse, string } from '../../domain/validation/valibot';
+import { array, boolean, object, optional, safeParse, string } from 'valibot';
 import { ErrorCode } from '../../errors/codes';
 import { generateErrorId } from '../../errors/tracking/telemetry';
 

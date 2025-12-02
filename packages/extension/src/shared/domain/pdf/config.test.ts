@@ -6,7 +6,7 @@
 import type { ILogger } from '../../infrastructure/logging';
 import type { ConversionConfig } from '../../types/models';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { convertConfigToRust, convertPointsToInches } from './config';
+import { convertConfigToRust } from './config';
 
 import { validateWasmPdfConfig } from './wasmSchemas';
 
@@ -42,23 +42,6 @@ describe('PDF Config', () => {
       debug: vi.fn(),
       error: vi.fn(),
     } as never);
-  });
-
-  describe('convertPointsToInches', () => {
-    it('should convert points to inches correctly', () => {
-      expect(convertPointsToInches(72)).toBe(1);
-      expect(convertPointsToInches(36)).toBe(0.5);
-      expect(convertPointsToInches(144)).toBe(2);
-    });
-
-    it('should handle zero points', () => {
-      expect(convertPointsToInches(0)).toBe(0);
-    });
-
-    it('should handle decimal points', () => {
-      expect(convertPointsToInches(18)).toBe(0.25);
-      expect(convertPointsToInches(108)).toBe(1.5);
-    });
   });
 
   describe('convertConfigToRust', () => {

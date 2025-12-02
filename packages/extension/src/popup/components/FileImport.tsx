@@ -29,7 +29,7 @@
 
 import { DocumentTextIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { FILE_SIZE_LIMITS, validateFileExtension } from '@/shared/domain/pdf';
+import { FILE_SIZE_LIMITS, validateFileExtension } from '@/shared/domain/pdf/validation';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { useFileReader } from '../hooks';
 import { tokens } from '../styles/tokens';

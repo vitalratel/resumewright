@@ -4,10 +4,13 @@
  * Handles WASM initialization, message routing, and extension lifecycle.
  */
 
-import { LifecycleManager } from '../src/background/core/lifecycle/lifecycleManager';
-// Track service worker start time
-import { getServiceWorkerStartTime, resetServiceWorkerStartTime } from '../src/background/infrastructure/serviceWorkerState';
+import { LifecycleManager } from '../src/background/lifecycleManager';
 import { setupMessageHandler } from '../src/background/messageHandler';
+// Track service worker start time
+import {
+  getServiceWorkerStartTime,
+  resetServiceWorkerStartTime,
+} from '../src/background/serviceWorkerState';
 import { initializeWASM } from '../src/background/wasmInit';
 
 import { getLogger } from '../src/shared/infrastructure/logging';

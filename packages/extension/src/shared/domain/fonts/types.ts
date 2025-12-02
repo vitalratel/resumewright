@@ -1,11 +1,5 @@
-/**
- * Font Type Definitions
- *
- * Core font types for the two-step WASM API:
- * 1. detect_fonts() - Returns FontRequirement[]
- * 2. fetch fonts (TypeScript) - Returns FontData[]
- * 3. convert_tsx_to_pdf() - Accepts FontData[]
- */
+// ABOUTME: Font type definitions for the two-step WASM API.
+// ABOUTME: Contains FontRequirement, FontData, and related types.
 
 /**
  * Font source type
@@ -64,13 +58,4 @@ export interface FontData {
 
   /** Font format */
   format: FontFormat;
-}
-
-/**
- * Detected font information (from TSX parsing)
- */
-export interface DetectedFont {
-  family: string;
-  weight: FontWeight;
-  style: FontStyle;
 }

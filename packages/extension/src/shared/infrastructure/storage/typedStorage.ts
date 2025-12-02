@@ -6,7 +6,8 @@
  */
 
 import type { ErrorEvent } from '@/shared/errors/tracking/telemetry';
-import type { ConversionStatus, UserSettings } from '@/shared/types';
+import type { ConversionStatus } from '@/shared/types/models';
+import type { UserSettings } from '@/shared/types/settings';
 import { defineExtensionStorage } from '@webext-core/storage';
 import { browser } from 'wxt/browser';
 

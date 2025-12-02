@@ -1,23 +1,18 @@
-/**
- * Conversion Validation Tests
- * Tests for conversion schema validation functions
- */
+// ABOUTME: Tests for conversion validation schemas.
+// ABOUTME: Verifies status, progress, config, and error validation.
 
 import { describe, expect, it } from 'vitest';
 import {
   parseConversionConfig,
   validateConversionConfig,
   validateConversionError,
-  validateConversionJob,
   validateConversionProgress,
   validateConversionStatus,
-  validatePDFMetadata,
 } from '../conversion';
 
 describe('Conversion Validation', () => {
   describe('validateConversionStatus', () => {
     it('should validate valid conversion status', () => {
-      // Test validation at line 269
       expect(validateConversionStatus('queued')).toBe(true);
       expect(validateConversionStatus('parsing')).toBe(true);
       expect(validateConversionStatus('completed')).toBe(true);
@@ -25,7 +20,6 @@ describe('Conversion Validation', () => {
     });
 
     it('should reject invalid conversion status', () => {
-      // Test validation at line 269
       expect(validateConversionStatus('invalid')).toBe(false);
       expect(validateConversionStatus('')).toBe(false);
       expect(validateConversionStatus(null)).toBe(false);
@@ -36,7 +30,6 @@ describe('Conversion Validation', () => {
 
   describe('validateConversionProgress', () => {
     it('should validate valid conversion progress', () => {
-      // Test validation at line 273
       const validProgress = {
         stage: 'rendering',
         percentage: 50,
@@ -60,7 +53,6 @@ describe('Conversion Validation', () => {
     });
 
     it('should reject invalid percentage', () => {
-      // Test validation at line 273
       const invalidProgress = {
         stage: 'rendering',
         percentage: 150, // > 100
@@ -105,7 +97,6 @@ describe('Conversion Validation', () => {
 
   describe('validateConversionConfig', () => {
     it('should validate valid conversion config', () => {
-      // Test validation at line 277
       const validConfig = {
         pageSize: 'Letter',
         margin: { top: 0.5, right: 0.5, bottom: 0.5, left: 0.5 },
@@ -121,7 +112,6 @@ describe('Conversion Validation', () => {
     });
 
     it('should reject invalid page size', () => {
-      // Test validation at line 277
       const invalidConfig = {
         pageSize: 'InvalidSize',
         margin: { top: 0.5, right: 0.5, bottom: 0.5, left: 0.5 },
@@ -148,7 +138,6 @@ describe('Conversion Validation', () => {
 
   describe('validateConversionError', () => {
     it('should validate valid conversion error', () => {
-      // Test validation at line 281
       const validError = {
         stage: 'parsing',
         code: 'TSX_PARSE_ERROR',
@@ -174,7 +163,6 @@ describe('Conversion Validation', () => {
     });
 
     it('should reject invalid error code', () => {
-      // Test validation at line 281
       const invalidError = {
         stage: 'parsing',
         code: '', // empty code not allowed
@@ -197,93 +185,8 @@ describe('Conversion Validation', () => {
     });
   });
 
-  describe('validatePDFMetadata', () => {
-    it('should validate valid PDF metadata', () => {
-      // Test validation at line 285
-      const validMetadata = {
-        title: 'Resume',
-        author: 'John Doe',
-        subject: 'Software Engineer Resume',
-        keywords: ['software', 'engineer', 'typescript'],
-        creator: 'ResumeWright',
-        producer: 'ResumeWright PDF Generator',
-        creationDate: new Date(),
-        pageCount: 2,
-        fileSize: 1024 * 100, // 100KB
-      };
-
-      expect(validatePDFMetadata(validMetadata)).toBe(true);
-    });
-
-    it('should reject invalid metadata', () => {
-      // Test validation at line 285
-      const invalidMetadata = {
-        title: 123, // should be string
-        author: 'John Doe',
-      };
-
-      expect(validatePDFMetadata(invalidMetadata)).toBe(false);
-    });
-
-    it('should reject metadata with invalid types', () => {
-      const invalidMetadata = {
-        title: 'Valid Title',
-        creator: 'Creator',
-        producer: 'Producer',
-        creationDate: 'not-a-date', // should be Date
-        pageCount: 1,
-        fileSize: 1024,
-      };
-
-      expect(validatePDFMetadata(invalidMetadata)).toBe(false);
-    });
-  });
-
-  describe('validateConversionJob', () => {
-    it('should reject invalid job - wrong status type', () => {
-      // Test validation at line 289
-      const invalidJob = {
-        id: 'job-123',
-        status: 'invalid-status',
-        tsx: 'code',
-      };
-
-      expect(validateConversionJob(invalidJob)).toBe(false);
-    });
-
-    it('should reject missing required id field', () => {
-      // Test validation at line 289
-      const invalidJob = {
-        // missing id
-        status: 'queued',
-      };
-
-      expect(validateConversionJob(invalidJob)).toBe(false);
-    });
-
-    it('should reject missing cvDocument field', () => {
-      const invalidJob = {
-        id: 'job-123',
-        status: 'queued',
-        // missing cvDocument, progress, config, startTime
-      };
-
-      expect(validateConversionJob(invalidJob)).toBe(false);
-    });
-
-    it('should reject invalid types', () => {
-      const invalidJob = {
-        id: 123, // should be string
-        status: 'queued',
-      };
-
-      expect(validateConversionJob(invalidJob)).toBe(false);
-    });
-  });
-
   describe('parseConversionConfig', () => {
     it('should parse valid config', () => {
-      // Test parse at line 297
       const validConfig = {
         pageSize: 'Letter',
         margin: { top: 1, right: 1, bottom: 1, left: 1 },
@@ -301,7 +204,6 @@ describe('Conversion Validation', () => {
     });
 
     it('should throw on invalid config', () => {
-      // Test parse at line 297
       const invalidConfig = {
         pageSize: 'InvalidSize',
         margin: { top: 1, right: 1, bottom: 1, left: 1 },

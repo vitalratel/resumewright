@@ -47,7 +47,7 @@ import {
   isLocationErrorMetadata,
   isParseErrorMetadata,
   isSizeErrorMetadata,
-} from '@/shared/types/models/conversion';
+} from '@/shared/types/models';
 import { tokens } from '../../styles/tokens';
 import { ErrorActions } from '../error/ErrorActions';
 import { ErrorCodeContext } from '../error/ErrorCodeContext';
