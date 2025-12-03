@@ -1,7 +1,6 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { expect, test } from '../fixtures';
-import { openExtensionPopup } from '../helpers/browserConfig';
+import { browserConfigs, expect, test } from '../fixtures';
 import { captureDiagnostics, measureDuration, setupConsoleCapture } from '../helpers/diagnostics';
 import { uploadTsxContent, uploadTsxFile } from '../helpers/fileUpload';
 import { waitForPdfDownload, waitForProgressIndicator } from '../helpers/pdfDownload';
@@ -36,7 +35,9 @@ test.describe('Conversion Flow', () => {
 
   test('should convert TSX to PDF successfully', async ({ context, extensionId, browserType }) => {
     // Open extension popup
-    const page = await openExtensionPopup(context, extensionId, browserType);
+    const config = browserConfigs[browserType];
+    const page = await context.newPage();
+    await page.goto(`${config.protocol}://${extensionId}/converter.html`);
 
     // Enhanced console capture with structured logging
     const logs = setupConsoleCapture(page);
@@ -122,7 +123,9 @@ test.describe('Conversion Flow', () => {
   // which verifies: upload, conversion, progress indicator, success state, and performance
 
   test('should handle invalid TSX input', async ({ context, extensionId, browserType }) => {
-    const page = await openExtensionPopup(context, extensionId, browserType);
+    const config = browserConfigs[browserType];
+    const page = await context.newPage();
+    await page.goto(`${config.protocol}://${extensionId}/converter.html`);
     const logs = setupConsoleCapture(page);
 
     // Wait for React app to mount
@@ -201,7 +204,9 @@ export default function InvalidResume() {
   });
 
   test('should handle empty TSX input', async ({ context, extensionId, browserType }) => {
-    const page = await openExtensionPopup(context, extensionId, browserType);
+    const config = browserConfigs[browserType];
+    const page = await context.newPage();
+    await page.goto(`${config.protocol}://${extensionId}/converter.html`);
     const logs = setupConsoleCapture(page);
 
     // Wait for React app to mount

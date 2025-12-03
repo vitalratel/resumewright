@@ -14,7 +14,7 @@ import type { UserSettings } from '@/shared/types/settings';
 /**
  * Job state for lifecycle management persistence
  */
-export interface JobState {
+interface JobState {
   jobId: string;
   status: ConversionStatus;
   startTime: number;
@@ -25,7 +25,7 @@ export interface JobState {
 /**
  * WASM badge error info for UI display
  */
-export interface WasmBadgeError {
+interface WasmBadgeError {
   hasError: boolean;
   errorMessage?: string;
   timestamp?: number;
@@ -37,7 +37,7 @@ export interface WasmBadgeError {
  * All keys that can be stored in local storage with their types.
  * Using `| null` for optional fields per @webext-core/storage convention.
  */
-export interface LocalStorageSchema {
+interface LocalStorageSchema {
   // WASM initialization state
   wasmStatus: 'initializing' | 'success' | 'failed' | null;
   wasmInitTime: number | null;
@@ -62,7 +62,7 @@ export interface LocalStorageSchema {
  *
  * Cross-device synchronized storage for user settings.
  */
-export interface SyncStorageSchema {
+interface SyncStorageSchema {
   'resumewright-settings': UserSettings | null;
 }
 

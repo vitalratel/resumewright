@@ -14,11 +14,7 @@ import type { ILogger } from '../../infrastructure/logging/logger';
 /**
  * Font fetch progress callback
  */
-export type FontFetchProgressCallback = (
-  current: number,
-  total: number,
-  fontFamily: string,
-) => void;
+type FontFetchProgressCallback = (current: number, total: number, fontFamily: string) => void;
 
 /**
  * Font Fetch Orchestrator

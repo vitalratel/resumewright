@@ -9,7 +9,7 @@ import { sendMessage } from '@/shared/messaging';
 
 const logger = getLogger();
 
-export interface UseWasmCompatibilityReturn {
+interface UseWasmCompatibilityReturn {
   /**
    * WASM initialization state
    * - null: checking

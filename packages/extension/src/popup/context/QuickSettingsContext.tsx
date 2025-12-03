@@ -9,7 +9,7 @@ import type React from 'react';
 import { createContext, use } from 'react';
 import type { UserSettings } from '@/shared/types/settings';
 
-export interface QuickSettingsHandlers {
+interface QuickSettingsHandlers {
   handlePageSizeChange: (pageSize: 'A4' | 'Letter' | 'Legal') => Promise<void>;
   handleMarginsChange: (
     preset: 'compact' | 'narrow' | 'normal' | 'wide' | 'spacious',

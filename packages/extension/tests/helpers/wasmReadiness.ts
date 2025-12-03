@@ -9,7 +9,7 @@ import { type ConsoleLogEntry, setupConsoleCapture } from './diagnostics';
 /**
  * WASM readiness check result
  */
-export interface WasmReadinessResult {
+interface WasmReadinessResult {
   /** Whether WASM is ready */
   ready: boolean;
   /** Time taken to become ready (ms) */
@@ -39,7 +39,7 @@ export interface WasmReadinessResult {
  * }
  * ```
  */
-export async function waitForWasmReady(page: Page, timeout = 20000): Promise<WasmReadinessResult> {
+async function waitForWasmReady(page: Page, timeout = 20000): Promise<WasmReadinessResult> {
   const startTime = Date.now();
   const logs = setupConsoleCapture(page);
 
@@ -137,7 +137,7 @@ export async function waitForWasmReady(page: Page, timeout = 20000): Promise<Was
 /**
  * Service worker WASM readiness check result
  */
-export interface ServiceWorkerWasmReadinessResult {
+interface ServiceWorkerWasmReadinessResult {
   /** Whether service worker WASM is ready */
   ready: boolean;
   /** Time taken to become ready (ms) */
@@ -167,7 +167,7 @@ export interface ServiceWorkerWasmReadinessResult {
  * }
  * ```
  */
-export async function waitForServiceWorkerWasmReady(
+async function waitForServiceWorkerWasmReady(
   context: BrowserContext,
   timeout = 15000,
 ): Promise<ServiceWorkerWasmReadinessResult> {
@@ -285,7 +285,7 @@ export async function waitForServiceWorkerWasmReady(
 /**
  * Combined WASM readiness check result
  */
-export interface BothWasmReadinessResult {
+interface BothWasmReadinessResult {
   /** Whether popup WASM is ready */
   popupReady: boolean;
   /** Whether service worker WASM is ready */

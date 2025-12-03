@@ -13,7 +13,7 @@ import {
 } from '@/shared/errors/tracking/telemetry';
 import type { AppState } from '../integration/useAppState';
 
-export interface ConversionCleanupHandlers {
+interface ConversionCleanupHandlers {
   handleRetry: () => void;
   handleDismissError: () => void;
   handleReportIssue: () => Promise<void>;

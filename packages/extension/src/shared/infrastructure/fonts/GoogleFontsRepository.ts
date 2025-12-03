@@ -39,7 +39,7 @@ interface FontUrlInfo {
 /**
  * Font fetch error types
  */
-export enum FontFetchErrorType {
+enum FontFetchErrorType {
   NETWORK_TIMEOUT = 'NETWORK_TIMEOUT',
   NETWORK_ERROR = 'NETWORK_ERROR',
   PARSE_ERROR = 'PARSE_ERROR',
@@ -49,7 +49,7 @@ export enum FontFetchErrorType {
 /**
  * Font fetch error
  */
-export class FontFetchError extends Error {
+class FontFetchError extends Error {
   constructor(
     public type: FontFetchErrorType,
     public fontFamily: string,

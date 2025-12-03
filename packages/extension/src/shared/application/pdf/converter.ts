@@ -25,7 +25,7 @@ import type { ConversionConfig } from '../../types/models';
  * All dependencies are optional with sensible defaults.
  * Providing dependencies improves testability and flexibility.
  */
-export interface ConversionDependencies {
+interface ConversionDependencies {
   /** Logger instance (defaults to getLogger()) */
   logger?: ILogger;
   /** Font repository for Google Fonts (defaults to GoogleFontsRepository) */

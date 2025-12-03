@@ -6,6 +6,9 @@ rust-version.workspace = true
 license.workspace = true
 publish = false
 
+[package.metadata.cargo-machete]
+ignored = ["getrandom"]  # Required WASM polyfill for rand (not directly imported)
+
 [lib]
 crate-type = ["cdylib", "rlib"]
 
@@ -34,13 +37,11 @@ serde-wasm-bindgen = { workspace = true }
 console_error_panic_hook = { workspace = true, optional = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-thiserror = { workspace = true }
 getrandom = { version = "0.3", features = ["wasm_js"] }  # Enable WASM support for lopdf's rand dependency
 font-toolkit = { path = "../font-toolkit" }
 pdf-generator = { path = "../pdf-generator" }
 tsx-parser = { path = "../tsx-parser" }
 cv-domain = { path = "../cv-domain" }
-style-resolver = { path = "../style-resolver" }
 layout-engine = { path = "../layout-engine" }
 js-sys = { workspace = true }
 web-sys = { version = "0.3", features = ["console", "Window", "Performance"] }

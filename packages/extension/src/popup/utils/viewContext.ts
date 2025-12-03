@@ -3,7 +3,7 @@
  * Determines whether the app is running in popup or full-page converter context
  */
 
-export type ViewContext = 'popup' | 'converter';
+type ViewContext = 'popup' | 'converter';
 
 /**
  * Detects the current view context based on the URL pathname

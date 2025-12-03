@@ -35,7 +35,7 @@ export interface PrioritizedSuggestion {
  * Suggestion priority mappings for each error code
  * Priority: 1 = most likely to work, 2 = moderate, 3 = less likely
  */
-export const SUGGESTION_PRIORITIES: Record<ErrorCode, number[]> = {
+const SUGGESTION_PRIORITIES: Record<ErrorCode, number[]> = {
   [ErrorCode.TSX_PARSE_ERROR]: [1, 1, 2, 3],
   [ErrorCode.INVALID_TSX_STRUCTURE]: [1, 2, 3],
   [ErrorCode.WASM_INIT_FAILED]: [1, 2, 2, 3],
@@ -176,48 +176,4 @@ export function prioritizeSuggestions(
   }
 
   return prioritized;
-}
-
-/**
- * Get priority label for display
- */
-export function getPriorityLabel(priority: 1 | 2 | 3): string {
-  switch (priority) {
-    case 1:
-      return 'Most likely to help';
-    case 2:
-      return 'Might help';
-    case 3:
-      return 'Worth trying';
-  }
-}
-
-/**
- * Get priority color classes
- */
-export function getPriorityColors(priority: 1 | 2 | 3): {
-  bg: string;
-  text: string;
-  border: string;
-} {
-  switch (priority) {
-    case 1:
-      return {
-        bg: 'bg-green-50',
-        text: 'text-green-800',
-        border: 'border-green-300',
-      };
-    case 2:
-      return {
-        bg: 'bg-blue-50',
-        text: 'text-blue-800',
-        border: 'border-blue-300',
-      };
-    case 3:
-      return {
-        bg: 'bg-gray-50',
-        text: 'text-gray-700',
-        border: 'border-gray-300',
-      };
-  }
 }

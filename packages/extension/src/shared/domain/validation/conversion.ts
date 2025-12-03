@@ -29,7 +29,7 @@ import type {
 /**
  * ConversionStatus Schema
  */
-export const ConversionStatusSchema = picklist([
+const ConversionStatusSchema = picklist([
   'queued',
   'parsing',
   'extracting-metadata',
@@ -45,7 +45,7 @@ export const ConversionStatusSchema = picklist([
 /**
  * ConversionProgress Schema
  */
-export const ConversionProgressSchema = pipe(
+const ConversionProgressSchema = pipe(
   object({
     stage: ConversionStatusSchema,
     percentage: pipe(
@@ -147,7 +147,7 @@ export const ConversionConfigSchema = object({
 /**
  * ConversionError Schema
  */
-export const ConversionErrorSchema = object({
+const ConversionErrorSchema = object({
   stage: ConversionStatusSchema,
   code: pipe(
     string('Error code must be a string'),

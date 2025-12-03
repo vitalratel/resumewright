@@ -22,12 +22,13 @@ const __dirname = path.dirname(__filename);
  *
  * Usage:
  * ```typescript
- * import { test, expect } from './fixtures';
+ * import { test, expect, browserConfigs } from './fixtures';
  *
- * test('extension popup', async ({ page, extensionId, browserType }) => {
+ * test('extension popup', async ({ context, extensionId, browserType }) => {
  *   const config = browserConfigs[browserType];
- *   await page.goto(`${config.protocol}://${extensionId}/src/popup/index.html`);
- *   await expect(page.locator('h1')).toContainText('ResumeWright');
+ *   const page = await context.newPage();
+ *   await page.goto(`${config.protocol}://${extensionId}/converter.html`);
+ *   await expect(page.locator('text=ResumeWright')).toBeVisible();
  * });
  * ```
  */
@@ -222,6 +223,5 @@ async function verifyExtensionReady(
   }
 }
 
-export type { BrowserType } from './fixtures/types';
 export { browserConfigs };
 export { expect } from '@playwright/test';

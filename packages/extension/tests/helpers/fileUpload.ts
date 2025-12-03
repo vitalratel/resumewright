@@ -11,7 +11,7 @@ import { type ConsoleLogEntry, captureDiagnostics, setupConsoleCapture } from '.
 /**
  * Upload options for TSX file
  */
-export interface UploadOptions {
+interface UploadOptions {
   /** Timeout for WASM initialization (default: 15000ms) */
   timeout?: number;
   /** Whether to expect validation error (default: false) */

@@ -9,15 +9,6 @@ import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { validateWithSchema } from './helpers';
 
 /**
- * Validation result type
- */
-export interface ValidationResult<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-/**
  * Get data from storage with Valibot validation
  *
  * @param key - Storage key

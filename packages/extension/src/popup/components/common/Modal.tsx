@@ -28,7 +28,7 @@ import type { ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
 import { tokens } from '../../styles/tokens';
 
-export interface ModalProps {
+interface ModalProps {
   /** Whether the modal is open */
   isOpen: boolean;
 

@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import { loadSettings, saveSettings } from '@/shared/infrastructure/settings/storage';
 
-export type Theme = 'light' | 'dark' | 'auto';
+type Theme = 'light' | 'dark' | 'auto';
 
 export function useDarkMode() {
   // Load saved theme preference

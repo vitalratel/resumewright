@@ -20,8 +20,8 @@ export type UIState =
   | 'success'
   | 'error';
 
-// Re-export for convenience
-export type ErrorInfo = ConversionError;
+// Alias for convenience
+type ErrorInfo = ConversionError;
 
 export interface UISlice {
   // State

@@ -108,18 +108,3 @@ export async function detectFonts(tsx: string, useCache = true): Promise<FontReq
     throw new Error(`Font detection failed: ${String(error)}`);
   }
 }
-
-/**
- * Clear font detection cache
- *
- * Useful for testing or when memory needs to be freed.
- *
- * @example
- * ```typescript
- * clearFontCache();
- * ```
- */
-export function clearFontCache(): void {
-  fontDetectionCache.clear();
-  getLogger().debug('FontService', 'Cache cleared');
-}

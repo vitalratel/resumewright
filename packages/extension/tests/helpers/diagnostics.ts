@@ -79,7 +79,7 @@ export function setupConsoleCapture(page: Page): ConsoleLogEntry[] {
 /**
  * Diagnostic info for debugging
  */
-export interface DiagnosticInfo {
+interface DiagnosticInfo {
   /** Browser console logs */
   consoleLogs: ConsoleLogEntry[];
   /** Page HTML snapshot */

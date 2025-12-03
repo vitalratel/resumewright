@@ -8,7 +8,7 @@
 
 import { ErrorCode } from './codes';
 
-export interface HelpLink {
+interface HelpLink {
   text: string;
   url: string;
   type: 'external' | 'internal';
@@ -18,7 +18,7 @@ export interface HelpLink {
  * Error-specific help resources
  * Maps error codes to relevant help documentation
  */
-export const ERROR_HELP_RESOURCES: Partial<Record<ErrorCode, HelpLink[]>> = {
+const ERROR_HELP_RESOURCES: Partial<Record<ErrorCode, HelpLink[]>> = {
   [ErrorCode.TSX_PARSE_ERROR]: [
     {
       text: 'TSX Syntax Guide',
@@ -96,7 +96,7 @@ export const ERROR_HELP_RESOURCES: Partial<Record<ErrorCode, HelpLink[]>> = {
  * Suggestion-specific help links
  * Maps specific suggestion text patterns to help resources
  */
-export const SUGGESTION_HELP_LINKS: Record<string, HelpLink> = {
+const SUGGESTION_HELP_LINKS: Record<string, HelpLink> = {
   'Ask Claude to regenerate your CV': {
     text: 'Learn how',
     url: '#help-regenerate-cv',
