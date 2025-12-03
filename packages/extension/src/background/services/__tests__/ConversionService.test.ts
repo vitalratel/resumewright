@@ -2,9 +2,9 @@
 // ABOUTME: Mocks only true external boundaries (WASM, browser storage).
 
 import type { CVMetadata as WasmCVMetadata } from '@pkg/wasm_bridge';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ConversionRequestPayload } from '../../../shared/types/messages';
 import type { ConversionConfig } from '../../../shared/types/models';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConversionService } from '../ConversionService';
 
 /**
@@ -26,7 +26,7 @@ function createMockCVMetadata(
     font_complexity: number;
     has_contact_info: boolean;
     has_clear_sections: boolean;
-  }> = {}
+  }> = {},
 ): WasmCVMetadata {
   return {
     name: undefined,
@@ -135,11 +135,9 @@ describe('ConversionService', () => {
     mockBrowserInstance.storage.sync.set.mockResolvedValue(undefined);
 
     // Setup default PDF converter mock
-    const { convertTsxToPdfWithFonts } = await import(
-      '../../../shared/application/pdf/converter'
-    );
+    const { convertTsxToPdfWithFonts } = await import('../../../shared/application/pdf/converter');
     vi.mocked(convertTsxToPdfWithFonts).mockResolvedValue(
-      new Uint8Array([0x25, 0x50, 0x44, 0x46]) // PDF magic bytes
+      new Uint8Array([0x25, 0x50, 0x44, 0x46]), // PDF magic bytes
     );
   });
 
@@ -149,25 +147,19 @@ describe('ConversionService', () => {
         tsx: undefined as unknown as string,
       };
 
-      await expect(service.extractCVMetadata(payload)).rejects.toThrow(
-        'No TSX content found'
-      );
+      await expect(service.extractCVMetadata(payload)).rejects.toThrow('No TSX content found');
     });
 
     it('should reject empty TSX content', async () => {
       const payload: ConversionRequestPayload = { tsx: '' };
 
-      await expect(service.extractCVMetadata(payload)).rejects.toThrow(
-        'No TSX content found'
-      );
+      await expect(service.extractCVMetadata(payload)).rejects.toThrow('No TSX content found');
     });
 
     it('should reject whitespace-only TSX content', async () => {
       const payload: ConversionRequestPayload = { tsx: '   \n\t  ' };
 
-      await expect(service.extractCVMetadata(payload)).rejects.toThrow(
-        'No TSX content found'
-      );
+      await expect(service.extractCVMetadata(payload)).rejects.toThrow('No TSX content found');
     });
 
     it('should extract metadata from WASM parser', async () => {
@@ -182,7 +174,7 @@ describe('ConversionService', () => {
           has_contact_info: true,
           has_clear_sections: true,
           font_complexity: 0, // Simple
-        })
+        }),
       );
 
       const payload: ConversionRequestPayload = {
@@ -286,9 +278,7 @@ describe('ConversionService', () => {
       // Test the fallback path when settings.defaultConfig is missing/invalid
       // This simulates corrupt storage or failed migration - defaultConfig should never be null
       // but we need to handle it gracefully
-      const { settingsStore } = await import(
-        '@/shared/infrastructure/settings/SettingsStore'
-      );
+      const { settingsStore } = await import('@/shared/infrastructure/settings/SettingsStore');
       vi.spyOn(settingsStore, 'loadSettings').mockResolvedValueOnce({
         theme: 'auto',
         autoDetectCV: true,
@@ -370,7 +360,7 @@ describe('ConversionService', () => {
         'tsx content',
         config,
         undefined, // No progress callback passed
-        expect.any(Function) // Font fetch callback is always created
+        expect.any(Function), // Font fetch callback is always created
       );
       expect(pdfBytes).toEqual(mockPdfBytes);
     });
@@ -392,8 +382,7 @@ describe('ConversionService', () => {
       await service.convertToPdf('tsx content', config, onProgress);
 
       // Verify converter was called with a progress callback
-      const [, , progressArg] = vi.mocked(convertTsxToPdfWithFonts).mock
-        .calls[0];
+      const [, , progressArg] = vi.mocked(convertTsxToPdfWithFonts).mock.calls[0];
       expect(progressArg).toBeDefined();
       expect(typeof progressArg).toBe('function');
     });
@@ -413,7 +402,7 @@ describe('ConversionService', () => {
           has_contact_info: true,
           has_clear_sections: true,
           font_complexity: 1, // Moderate
-        })
+        }),
       );
 
       // Setup converter mock
@@ -431,9 +420,7 @@ describe('ConversionService', () => {
 
       expect(result.pdfBytes).toEqual(mockPdfBytes);
       // Real generateFilename produces actual filename
-      expect(result.filename).toMatch(
-        /^Alice_Johnson_Resume_\d{4}-\d{2}-\d{2}\.pdf$/
-      );
+      expect(result.filename).toMatch(/^Alice_Johnson_Resume_\d{4}-\d{2}-\d{2}\.pdf$/);
       expect(result.duration).toBeGreaterThanOrEqual(0);
     });
 

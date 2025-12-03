@@ -5,7 +5,23 @@
  * Prevents runtime crashes from malformed WASM data.
  */
 
-import { array, check, custom, literal, maxValue, minLength, minValue, nullable, number, object, picklist, pipe, safeParse, string, union } from 'valibot';
+import {
+  array,
+  check,
+  custom,
+  literal,
+  maxValue,
+  minLength,
+  minValue,
+  nullable,
+  number,
+  object,
+  picklist,
+  pipe,
+  safeParse,
+  string,
+  union,
+} from 'valibot';
 
 /**
  * Font weight schema (100-900 in increments of 100)
@@ -73,14 +89,16 @@ export function parseFontRequirements(jsonString: string) {
 
     if (!result.success) {
       const issues = result.issues
-        .map(issue => `${(issue.path !== null && issue.path !== undefined) ? (issue.path.map(p => p.key).join('.') || 'root') : 'root'}: ${issue.message}`)
+        .map(
+          (issue) =>
+            `${issue.path !== null && issue.path !== undefined ? issue.path.map((p) => p.key).join('.') || 'root' : 'root'}: ${issue.message}`,
+        )
         .join(', ');
       throw new Error(`Invalid font requirements from WASM: ${issues}`);
     }
 
     return result.output;
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof SyntaxError) {
       throw new Error(`Failed to parse font requirements JSON: ${error.message}`);
     }
@@ -120,7 +138,10 @@ export function validateWasmPdfConfig(config: unknown) {
 
   if (!result.success) {
     const issues = result.issues
-      .map(issue => `${(issue.path !== null && issue.path !== undefined) ? (issue.path.map(p => p.key).join('.') || 'root') : 'root'}: ${issue.message}`)
+      .map(
+        (issue) =>
+          `${issue.path !== null && issue.path !== undefined ? issue.path.map((p) => p.key).join('.') || 'root' : 'root'}: ${issue.message}`,
+      )
       .join(', ');
     throw new Error(`Invalid PDF config: ${issues}`);
   }
@@ -139,14 +160,14 @@ export function validateWasmPdfConfig(config: unknown) {
 export const PdfBytesSchema = pipe(
   custom<ArrayLike<number>>(
     (value): value is ArrayLike<number> =>
-      value !== null
-      && value !== undefined
-      && typeof value === 'object'
-      && 'length' in value
-      && typeof value.length === 'number',
+      value !== null &&
+      value !== undefined &&
+      typeof value === 'object' &&
+      'length' in value &&
+      typeof value.length === 'number',
   ),
-  check(bytes => bytes.length >= 50, 'PDF must be at least 50 bytes'),
-  check(bytes => bytes.length <= 10 * 1024 * 1024, 'PDF cannot exceed 10MB'),
+  check((bytes) => bytes.length >= 50, 'PDF must be at least 50 bytes'),
+  check((bytes) => bytes.length <= 10 * 1024 * 1024, 'PDF cannot exceed 10MB'),
 );
 
 /**
@@ -181,7 +202,10 @@ export function validatePdfBytes(bytes: unknown): Uint8Array {
 
   if (!result.success) {
     const issues = result.issues
-      .map(issue => `${(issue.path !== null && issue.path !== undefined) ? (issue.path.map(p => p.key).join('.') || 'root') : 'root'}: ${issue.message}`)
+      .map(
+        (issue) =>
+          `${issue.path !== null && issue.path !== undefined ? issue.path.map((p) => p.key).join('.') || 'root' : 'root'}: ${issue.message}`,
+      )
       .join(', ');
     throw new Error(`Invalid PDF bytes from WASM: ${issues}`);
   }
@@ -218,7 +242,10 @@ export function validateProgressParams(stage: unknown, percentage: unknown): voi
 
   if (!result.success) {
     const issues = result.issues
-      .map(issue => `${(issue.path !== null && issue.path !== undefined) ? (issue.path.map(p => p.key).join('.') || 'root') : 'root'}: ${issue.message}`)
+      .map(
+        (issue) =>
+          `${issue.path !== null && issue.path !== undefined ? issue.path.map((p) => p.key).join('.') || 'root' : 'root'}: ${issue.message}`,
+      )
       .join(', ');
     throw new Error(`Invalid progress callback params from WASM: ${issues}`);
   }

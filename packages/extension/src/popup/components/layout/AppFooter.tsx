@@ -21,7 +21,9 @@ export function AppFooter() {
   const version = browser.runtime.getManifest().version;
 
   return (
-    <footer className={`${tokens.colors.neutral.bgWhite} border-t ${tokens.borders.default} px-4 py-3`}>
+    <footer
+      className={`${tokens.colors.neutral.bgWhite} border-t ${tokens.borders.default} px-4 py-3`}
+    >
       <div className={`flex items-center justify-between ${tokens.typography.xs}`}>
         {/* Help & FAQ Link */}
         <button
@@ -37,16 +39,18 @@ export function AppFooter() {
         </button>
 
         {/* Privacy Message */}
-        <div className={`flex items-center ${tokens.spacing.gapSmall} ${tokens.colors.neutral.textMuted}`}>
-          <CheckCircleIcon className={`${tokens.icons.sm} ${tokens.colors.success.icon}`} aria-hidden="true" />
+        <div
+          className={`flex items-center ${tokens.spacing.gapSmall} ${tokens.colors.neutral.textMuted}`}
+        >
+          <CheckCircleIcon
+            className={`${tokens.icons.sm} ${tokens.colors.success.icon}`}
+            aria-hidden="true"
+          />
           <span>Privacy-first</span>
         </div>
 
         {/* Version Info */}
-        <span className={tokens.colors.neutral.textLight}>
-          v
-          {version}
-        </span>
+        <span className={tokens.colors.neutral.textLight}>v{version}</span>
       </div>
     </footer>
   );

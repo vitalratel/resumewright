@@ -13,7 +13,6 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import { Settings } from '../settings';
-import { UnsavedChangesModal } from '../UnsavedChangesModal';
 
 // Mock settingsStore
 vi.mock('@/shared/infrastructure/settings/SettingsStore', () => ({
@@ -66,9 +65,9 @@ describe('Unsaved Changes Protection', () => {
       const a4Button = screen.getByRole('radio', { name: /A4/i });
       fireEvent.click(a4Button);
 
-      // Should show unsaved indicator (changed from "(unsaved)" to "Unsaved changes" in P2)
+      // Should trigger auto-save (verifies change was detected)
       await waitFor(() => {
-        expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+        expect(settingsStore.saveSettings).toHaveBeenCalled();
       });
     });
 
@@ -81,12 +80,15 @@ describe('Unsaved Changes Protection', () => {
 
       // Change top margin
       const sliders = screen.getAllByRole('slider');
-      const topMarginSlider = sliders.find(s => s.getAttribute('aria-label')?.toLowerCase().includes('top'));
-      fireEvent.change(topMarginSlider!, { target: { value: '0.75' } });
+      const topMarginSlider = sliders.find((s) =>
+        s.getAttribute('aria-label')?.toLowerCase().includes('top'),
+      );
+      if (!topMarginSlider) throw new Error('Top margin slider not found');
+      fireEvent.change(topMarginSlider, { target: { value: '0.75' } });
 
-      // Should show unsaved indicator (changed from "(unsaved)" to "Unsaved changes" in P2)
+      // Should trigger auto-save (verifies change was detected)
       await waitFor(() => {
-        expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+        expect(settingsStore.saveSettings).toHaveBeenCalled();
       });
     });
 
@@ -101,24 +103,20 @@ describe('Unsaved Changes Protection', () => {
       const a4Button = screen.getByRole('radio', { name: /A4/i });
       fireEvent.click(a4Button);
 
-      await waitFor(() => {
-        expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
-      });
-
-      // Wait for auto-save to complete (500ms debounce + save time)
+      // Wait for auto-save to complete
       await waitFor(() => {
         expect(settingsStore.saveSettings).toHaveBeenCalled();
-      }, { timeout: 2000 });
+      });
 
-      // Should clear dirty state after save completes
+      // Should show success message after save completes
       await waitFor(() => {
-        expect(screen.queryByText('Unsaved changes')).not.toBeInTheDocument();
+        expect(screen.getByText('Settings saved!')).toBeInTheDocument();
       });
     });
   });
 
   describe('Visual Indicators', () => {
-    it('should show orange dot on back button when dirty', async () => {
+    it('should show success feedback after auto-save completes', async () => {
       render(<Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
@@ -129,14 +127,13 @@ describe('Unsaved Changes Protection', () => {
       const a4Button = screen.getByRole('radio', { name: /A4/i });
       fireEvent.click(a4Button);
 
-      // Check for unsaved indicator
+      // Check for success message after auto-save
       await waitFor(() => {
-        const indicator = screen.getByLabelText(/unsaved changes/i);
-        expect(indicator).toBeInTheDocument();
+        expect(screen.getByText('Settings saved!')).toBeInTheDocument();
       });
     });
 
-    it('should show "Unsaved changes" in title when dirty', async () => {
+    it('should show "Unsaved changes" banner when dirty', async () => {
       render(<Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
@@ -147,9 +144,9 @@ describe('Unsaved Changes Protection', () => {
       const a4Button = screen.getByRole('radio', { name: /A4/i });
       fireEvent.click(a4Button);
 
-      // Check for unsaved text in title (changed from "(unsaved)" to "Unsaved changes" in P2)
+      // Check for unsaved changes banner
       await waitFor(() => {
-        expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+        expect(screen.getByText(/Unsaved changes \(saving automatically/i)).toBeInTheDocument();
       });
     });
 
@@ -165,9 +162,12 @@ describe('Unsaved Changes Protection', () => {
       fireEvent.click(a4Button);
 
       // Auto-save should be triggered after debounce (500ms)
-      await waitFor(() => {
-        expect(settingsStore.saveSettings).toHaveBeenCalled();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(settingsStore.saveSettings).toHaveBeenCalled();
+        },
+        { timeout: 2000 },
+      );
     });
 
     it('should show success message after auto-save completes ', async () => {
@@ -182,9 +182,12 @@ describe('Unsaved Changes Protection', () => {
       fireEvent.click(a4Button);
 
       // Wait for auto-save to complete
-      await waitFor(() => {
-        expect(settingsStore.saveSettings).toHaveBeenCalled();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(settingsStore.saveSettings).toHaveBeenCalled();
+        },
+        { timeout: 2000 },
+      );
 
       // Check for success feedback
       // Note: Success message auto-hides after 3 seconds per implementation
@@ -219,11 +222,19 @@ describe('Unsaved Changes Protection', () => {
       const a4Button = screen.getByRole('radio', { name: /A4/i });
       fireEvent.click(a4Button);
 
+      // Wait for auto-save to complete first
       await waitFor(() => {
-        expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+        expect(settingsStore.saveSettings).toHaveBeenCalled();
       });
 
-      // Try to navigate back
+      // Clear mock to track navigation save separately
+      vi.mocked(settingsStore.saveSettings).mockClear();
+
+      // Make another change to create dirty state
+      const letterButton = screen.getByRole('radio', { name: /Letter/i });
+      fireEvent.click(letterButton);
+
+      // Try to navigate back immediately (before auto-save debounce)
       const backButton = screen.getByRole('button', { name: /back to main screen/i });
       fireEvent.click(backButton);
 
@@ -232,139 +243,6 @@ describe('Unsaved Changes Protection', () => {
         expect(settingsStore.saveSettings).toHaveBeenCalled();
         expect(mockOnBack).toHaveBeenCalled();
       });
-    });
-  });
-
-  describe('UnsavedChangesModal Component', () => {
-    const mockOnSave = vi.fn();
-    const mockOnDiscard = vi.fn();
-    const mockOnCancel = vi.fn();
-
-    beforeEach(() => {
-      mockOnSave.mockClear();
-      mockOnDiscard.mockClear();
-      mockOnCancel.mockClear();
-    });
-
-    it('should render modal with correct content', () => {
-      render(
-        <UnsavedChangesModal
-          onSave={mockOnSave}
-          onDiscard={mockOnDiscard}
-          onCancel={mockOnCancel}
-        />,
-      );
-
-      expect(screen.getByText(/you have unsaved changes/i)).toBeInTheDocument();
-      expect(screen.getByText(/do you want to save/i)).toBeInTheDocument();
-    });
-
-    it('should have all three action buttons', () => {
-      render(
-        <UnsavedChangesModal
-          onSave={mockOnSave}
-          onDiscard={mockOnDiscard}
-          onCancel={mockOnCancel}
-        />,
-      );
-
-      expect(screen.getByRole('button', { name: /save changes and go back/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /discard changes and go back/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /cancel and stay on settings/i })).toBeInTheDocument();
-    });
-
-    it('should call onSave when Save & Continue clicked', () => {
-      render(
-        <UnsavedChangesModal
-          onSave={mockOnSave}
-          onDiscard={mockOnDiscard}
-          onCancel={mockOnCancel}
-        />,
-      );
-
-      const saveButton = screen.getByRole('button', { name: /save changes and go back/i });
-      fireEvent.click(saveButton);
-
-      expect(mockOnSave).toHaveBeenCalled();
-    });
-
-    it('should call onDiscard when Discard Changes clicked', () => {
-      render(
-        <UnsavedChangesModal
-          onSave={mockOnSave}
-          onDiscard={mockOnDiscard}
-          onCancel={mockOnCancel}
-        />,
-      );
-
-      const discardButton = screen.getByRole('button', { name: /discard changes and go back/i });
-      fireEvent.click(discardButton);
-
-      expect(mockOnDiscard).toHaveBeenCalled();
-    });
-
-    it('should call onCancel when Cancel clicked', () => {
-      render(
-        <UnsavedChangesModal
-          onSave={mockOnSave}
-          onDiscard={mockOnDiscard}
-          onCancel={mockOnCancel}
-        />,
-      );
-
-      const cancelButton = screen.getByRole('button', { name: /cancel and stay on settings/i });
-      fireEvent.click(cancelButton);
-
-      expect(mockOnCancel).toHaveBeenCalled();
-    });
-
-    it('should call onCancel when Escape is pressed', () => {
-      render(
-        <UnsavedChangesModal
-          onSave={mockOnSave}
-          onDiscard={mockOnDiscard}
-          onCancel={mockOnCancel}
-        />,
-      );
-
-      fireEvent.keyDown(document, { key: 'Escape' });
-
-      expect(mockOnCancel).toHaveBeenCalled();
-    });
-
-    it('should call onCancel when backdrop is clicked', () => {
-      render(
-        <UnsavedChangesModal
-          onSave={mockOnSave}
-          onDiscard={mockOnDiscard}
-          onCancel={mockOnCancel}
-        />,
-      );
-
-      // The backdrop is the parent div with inset-0, dialog is the inner div
-      const dialog = screen.getByRole('dialog');
-      const backdrop = dialog.parentElement;
-
-      if (backdrop) {
-        fireEvent.click(backdrop);
-      }
-
-      expect(mockOnCancel).toHaveBeenCalled();
-    });
-
-    it('should have proper ARIA attributes', () => {
-      render(
-        <UnsavedChangesModal
-          onSave={mockOnSave}
-          onDiscard={mockOnDiscard}
-          onCancel={mockOnCancel}
-        />,
-      );
-
-      const dialog = screen.getByRole('dialog');
-      expect(dialog).toHaveAttribute('aria-modal', 'true');
-      expect(dialog).toHaveAttribute('aria-labelledby', 'unsaved-modal-title');
-      expect(dialog).toHaveAttribute('aria-describedby', 'unsaved-modal-description');
     });
   });
 

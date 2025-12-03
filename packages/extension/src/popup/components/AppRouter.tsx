@@ -25,23 +25,26 @@
  * @see {@link KeyboardShortcutsModal} for shortcuts modal
  */
 
-import type { ConversionHandlers } from '../hooks/conversion/useConversionHandlers';
-import type { AppState } from '../hooks/integration/useAppState';
-import type { ShortcutConfig } from '../hooks/ui/useKeyboardShortcuts';
+import type React from 'react';
+import { lazy, Suspense } from 'react';
 import type { UserSettings } from '@/shared/types/settings';
-import React, { lazy, Suspense } from 'react';
 import { DEFAULT_JOB_ID, getContainerClass, getContentWrapperClass } from '../constants/app';
 import { AppProvider, ConversionProvider, QuickSettingsProvider } from '../context';
+import type { ConversionHandlers } from '../hooks/conversion/useConversionHandlers';
+import type { AppState } from '../hooks/integration/useAppState';
 import { useFocusTrap } from '../hooks/ui/useFocusManagement';
+import type { ShortcutConfig } from '../hooks/ui/useKeyboardShortcuts';
 import { tokens } from '../styles/tokens';
 import { ErrorBoundary } from './ErrorBoundary';
 import { AppFooter, AppHeader, MainContent } from './layout';
 
 // Lazy load heavy components to reduce initial bundle size
 // P2-PERF: Code splitting for Settings, Help, and modals (~150KB reduction)
-const Settings = lazy(async () => import('./settings').then(m => ({ default: m.Settings })));
-const Help = lazy(async () => import('./Help').then(m => ({ default: m.Help })));
-const KeyboardShortcutsModal = lazy(async () => import('./KeyboardShortcutsModal').then(m => ({ default: m.KeyboardShortcutsModal })));
+const Settings = lazy(async () => import('./settings').then((m) => ({ default: m.Settings })));
+const Help = lazy(async () => import('./Help').then((m) => ({ default: m.Help })));
+const KeyboardShortcutsModal = lazy(async () =>
+  import('./KeyboardShortcutsModal').then((m) => ({ default: m.KeyboardShortcutsModal })),
+);
 
 interface AppRouterProps {
   /** Current view to display */
@@ -76,8 +79,13 @@ interface AppRouterProps {
     settings: UserSettings | null;
     handlers: {
       handlePageSizeChange: (pageSize: 'A4' | 'Letter' | 'Legal') => Promise<void>;
-      handleMarginsChange: (preset: 'compact' | 'narrow' | 'normal' | 'wide' | 'spacious') => Promise<void>;
-      handleCustomMarginChange: (side: 'top' | 'right' | 'bottom' | 'left', value: number) => Promise<void>;
+      handleMarginsChange: (
+        preset: 'compact' | 'narrow' | 'normal' | 'wide' | 'spacious',
+      ) => Promise<void>;
+      handleCustomMarginChange: (
+        side: 'top' | 'right' | 'bottom' | 'left',
+        value: number,
+      ) => Promise<void>;
     };
   };
 
@@ -140,8 +148,18 @@ export function AppRouter({
     return (
       <div className={getContainerClass()} ref={settingsTrapRef}>
         <ErrorBoundary>
-          <Suspense fallback={<div className="flex items-center justify-center h-full"><div className={tokens.colors.neutral.textMuted}>Loading settings...</div></div>}>
-            <Settings onBack={() => { void onCloseSettings(); }} />
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center h-full">
+                <div className={tokens.colors.neutral.textMuted}>Loading settings...</div>
+              </div>
+            }
+          >
+            <Settings
+              onBack={() => {
+                void onCloseSettings();
+              }}
+            />
           </Suspense>
         </ErrorBoundary>
       </div>
@@ -152,7 +170,13 @@ export function AppRouter({
   if (currentView === 'help') {
     return (
       <div className={getContainerClass()}>
-        <Suspense fallback={<div className="flex items-center justify-center h-full"><div className={tokens.colors.neutral.textMuted}>Loading help...</div></div>}>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center h-full">
+              <div className={tokens.colors.neutral.textMuted}>Loading help...</div>
+            </div>
+          }
+        >
           <Help onBack={onCloseHelp} />
         </Suspense>
       </div>
@@ -164,11 +188,10 @@ export function AppRouter({
   return (
     <div className={getContainerClass()}>
       <div className={getContentWrapperClass()}>
-        <AppHeader
-          onOpenSettings={onOpenSettings}
-          onShowHelp={onShowHelp}
-        />
-        <AppProvider value={{ appState, currentJobId: DEFAULT_JOB_ID, successRef, errorRef, onOpenSettings }}>
+        <AppHeader onOpenSettings={onOpenSettings} onShowHelp={onShowHelp} />
+        <AppProvider
+          value={{ appState, currentJobId: DEFAULT_JOB_ID, successRef, errorRef, onOpenSettings }}
+        >
           <ConversionProvider value={conversionHandlers}>
             <QuickSettingsProvider value={quickSettings}>
               <MainContent />

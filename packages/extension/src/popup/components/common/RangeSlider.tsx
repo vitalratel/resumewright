@@ -56,7 +56,7 @@ export const RangeSlider = React.memo(
       () => ({
         width: `${percentage}%`,
       }),
-      [percentage]
+      [percentage],
     );
 
     const tooltipStyle = useMemo(
@@ -64,7 +64,7 @@ export const RangeSlider = React.memo(
         left: `calc(${percentage}% - 20px)`,
         transform: 'translateX(-50%)',
       }),
-      [percentage]
+      [percentage],
     );
 
     // Format value with locale-specific number formatting
@@ -72,7 +72,7 @@ export const RangeSlider = React.memo(
       (val: number): string => {
         return `${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${unit}`;
       },
-      [unit]
+      [unit],
     );
 
     // Increment/decrement handlers
@@ -96,11 +96,12 @@ export const RangeSlider = React.memo(
       setShowTooltip(false);
     }, []);
 
-    const handleMouseEnter = useCallback(() => {
+    // Show tooltip on focus/hover, hide on blur/leave
+    const handleFocus = useCallback(() => {
       setShowTooltip(true);
     }, []);
 
-    const handleMouseLeave = useCallback(() => {
+    const handleBlur = useCallback(() => {
       if (!isDragging) {
         setShowTooltip(false);
       }
@@ -110,7 +111,7 @@ export const RangeSlider = React.memo(
       (e: React.ChangeEvent<HTMLInputElement>) => {
         onChange(Number.parseFloat(e.target.value));
       },
-      [onChange]
+      [onChange],
     );
 
     return (
@@ -138,12 +139,7 @@ export const RangeSlider = React.memo(
           />
         </button>
 
-        <div
-          ref={sliderRef}
-          className="flex-1 relative"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
+        <div ref={sliderRef} className="flex-1 relative">
           {/* Track background and fill */}
           {/* Added focus-within ring for WCAG 2.4.7 compliance */}
           <div
@@ -169,8 +165,12 @@ export const RangeSlider = React.memo(
             onChange={handleChange}
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
+            onMouseEnter={handleFocus}
+            onMouseLeave={handleBlur}
             onTouchStart={handleMouseDown}
             onTouchEnd={handleMouseUp}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             aria-label={`${label} in ${unit === '"' ? 'inches' : unit}`}
             aria-valuemin={min}
             aria-valuemax={max}
@@ -287,5 +287,5 @@ export const RangeSlider = React.memo(
         </span>
       </div>
     );
-  }
+  },
 );

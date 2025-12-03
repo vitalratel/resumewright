@@ -8,10 +8,10 @@
  * - PDF rendering for visual comparison
  */
 
-import type {BrowserContext, Page} from '@playwright/test';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { test as base,  chromium  } from '@playwright/test';
+import type { BrowserContext, Page } from '@playwright/test';
+import { test as base, chromium } from '@playwright/test';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,15 +29,15 @@ export const test = base.extend<ExtensionTestFixtures>({
   // Browser context with extension loaded
   context: async (_baseFixtures, use) => {
     const pathToExtension = path.join(__dirname, '../../dist');
-    
+
     // Verify extension is built
     const fs = await import('node:fs');
     if (!fs.existsSync(pathToExtension)) {
       throw new Error(
-        `Extension not built. Run 'pnpm build' before running visual tests.\nExpected path: ${pathToExtension}`
+        `Extension not built. Run 'pnpm build' before running visual tests.\nExpected path: ${pathToExtension}`,
       );
     }
-    
+
     // Launch persistent context with extension
     // Note: Extensions require headed mode
     const context = await chromium.launchPersistentContext('', {
@@ -51,41 +51,41 @@ export const test = base.extend<ExtensionTestFixtures>({
       // Reduce flakiness
       slowMo: 50, // 50ms delay between actions
     });
-    
+
     await use(context);
     await context.close();
   },
-  
+
   // Extension ID extracted from service worker
   extensionId: async ({ context }, use) => {
     const serviceWorkers = context.serviceWorkers();
     let serviceWorker = serviceWorkers.length > 0 ? serviceWorkers[0] : undefined;
-    
+
     if (serviceWorker === undefined) {
       serviceWorker = await context.waitForEvent('serviceworker', {
         timeout: 10000,
       });
     }
-    
+
     // Extract ID from chrome-extension://<id>/service-worker.js
     const extensionId = serviceWorker.url().split('/')[2];
-    
+
     await use(extensionId);
   },
-  
+
   // Extension popup page
   extensionPage: async ({ context, extensionId }, use) => {
     const page = await context.newPage();
-    
+
     // Navigate to extension popup
     await page.goto(`chrome-extension://${extensionId}/src/popup/index.html`);
-    
+
     // Wait for extension to initialize
     await page.waitForLoadState('networkidle');
-    
+
     // Wait for fonts to load (prevents screenshot flakiness)
     await page.evaluate(async () => document.fonts.ready);
-    
+
     await use(page);
     await page.close();
   },

@@ -4,14 +4,14 @@
  * Complex hook validation
  */
 
-import type { AppState } from '../integration/useAppState';
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { validateTsxFile } from '@/shared/domain/pdf/validation';
-import { copyToClipboard, ErrorCode  } from '@/shared/errors';
+import { copyToClipboard, ErrorCode } from '@/shared/errors';
 import { extensionAPI } from '../../services/extensionAPI';
 import { useProgressStore } from '../../store/progressStore';
 import { useConversionHandlers } from '../conversion/useConversionHandlers';
+import type { AppState } from '../integration/useAppState';
 import { createMockAppState } from './helpers';
 
 vi.mock('../../services/extensionAPI', () => ({
@@ -44,7 +44,6 @@ describe('useConversionHandlers', () => {
     appState: mockAppState,
     currentJobId: testJobId,
     wasmInitialized: true,
-
   });
 
   beforeEach(() => {
@@ -64,7 +63,12 @@ describe('useConversionHandlers', () => {
       });
 
       expect(mockAppState.setValidating).toHaveBeenCalledWith(true);
-      expect(validateTsxFile).toHaveBeenCalledWith('<CV>Test</CV>', 1024, 'test.tsx', expect.anything());
+      expect(validateTsxFile).toHaveBeenCalledWith(
+        '<CV>Test</CV>',
+        1024,
+        'test.tsx',
+        expect.anything(),
+      );
       expect(mockAppState.setImportedFile).toHaveBeenCalledWith('test.tsx', 1024, '<CV>Test</CV>');
       expect(mockAppState.setUIState).toHaveBeenCalledWith('file_validated');
       expect(mockAppState.clearValidationError).toHaveBeenCalled();
@@ -116,9 +120,7 @@ describe('useConversionHandlers', () => {
       mockAppState.importedFile = { name: 'test.tsx', size: 1024, content: '<CV>Test</CV>' };
       vi.mocked(extensionAPI.startConversion).mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() =>
-        useConversionHandlers(defaultProps()),
-      );
+      const { result } = renderHook(() => useConversionHandlers(defaultProps()));
 
       await act(async () => {
         await result.current.handleExportClick();
@@ -128,9 +130,7 @@ describe('useConversionHandlers', () => {
     });
 
     it('shows error when no file imported', async () => {
-      const { result } = renderHook(() =>
-        useConversionHandlers(defaultProps()),
-      );
+      const { result } = renderHook(() => useConversionHandlers(defaultProps()));
 
       await act(async () => {
         await result.current.handleExportClick();
@@ -157,12 +157,14 @@ describe('useConversionHandlers', () => {
     });
 
     it('handles large files correctly', async () => {
-      mockAppState.importedFile = { name: 'large.tsx', size: 2 * 1024 * 1024, content: '<CV>Large</CV>' };
+      mockAppState.importedFile = {
+        name: 'large.tsx',
+        size: 2 * 1024 * 1024,
+        content: '<CV>Large</CV>',
+      };
       vi.mocked(extensionAPI.startConversion).mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() =>
-        useConversionHandlers(defaultProps()),
-      );
+      const { result } = renderHook(() => useConversionHandlers(defaultProps()));
 
       await act(async () => {
         await result.current.handleExportClick();
@@ -176,9 +178,7 @@ describe('useConversionHandlers', () => {
       mockAppState.importedFile = { name: 'test.tsx', size: 1024, content: '<CV>Test</CV>' };
       vi.mocked(extensionAPI.startConversion).mockRejectedValue(new Error('Failed to start'));
 
-      const { result } = renderHook(() =>
-        useConversionHandlers(defaultProps()),
-      );
+      const { result } = renderHook(() => useConversionHandlers(defaultProps()));
 
       await act(async () => {
         await result.current.handleExportClick();
@@ -201,9 +201,7 @@ describe('useConversionHandlers', () => {
       mockAppState.importedFile = { name: 'test.tsx', size: 1024, content: '<CV>Test</CV>' };
       vi.mocked(extensionAPI.startConversion).mockResolvedValue({ success: true });
 
-      const { result } = renderHook(() =>
-        useConversionHandlers(defaultProps()),
-      );
+      const { result } = renderHook(() => useConversionHandlers(defaultProps()));
 
       await act(async () => {
         await result.current.handleExportClick();
@@ -212,8 +210,6 @@ describe('useConversionHandlers', () => {
       expect(useProgressStore.getState().getProgress(testJobId)).toBeDefined();
     });
   });
-
-
 
   describe('handleCancelConversion', () => {
     it('resets app state and clears progress', () => {
@@ -273,7 +269,9 @@ describe('useConversionHandlers', () => {
 
       const { result } = renderHook(() => useConversionHandlers(defaultProps()));
 
-      await act(async () => { await result.current.handleReportIssue(); });
+      await act(async () => {
+        await result.current.handleReportIssue();
+      });
 
       expect(copyToClipboard).toHaveBeenCalledWith(expect.stringContaining('error-123'));
     });
@@ -281,7 +279,9 @@ describe('useConversionHandlers', () => {
     it('does not copy when no error exists', async () => {
       const { result } = renderHook(() => useConversionHandlers(defaultProps()));
 
-      await act(async () => { await result.current.handleReportIssue(); });
+      await act(async () => {
+        await result.current.handleReportIssue();
+      });
 
       expect(copyToClipboard).not.toHaveBeenCalled();
     });
@@ -301,9 +301,7 @@ describe('useConversionHandlers', () => {
     });
 
     it('handlers remain stable when props do not change', () => {
-      const { result, rerender } = renderHook(
-        () => useConversionHandlers(defaultProps()),
-      );
+      const { result, rerender } = renderHook(() => useConversionHandlers(defaultProps()));
 
       const firstHandlers = result.current;
       rerender();
@@ -354,7 +352,11 @@ describe('useConversionHandlers', () => {
         await result.current.handleFileValidated(largeContent, 'large.tsx', largeContent.length);
       });
 
-      expect(mockAppState.setImportedFile).toHaveBeenCalledWith('large.tsx', largeContent.length, largeContent);
+      expect(mockAppState.setImportedFile).toHaveBeenCalledWith(
+        'large.tsx',
+        largeContent.length,
+        largeContent,
+      );
       spy.mockRestore();
     });
   });

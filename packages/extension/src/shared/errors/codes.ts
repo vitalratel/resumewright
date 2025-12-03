@@ -11,7 +11,7 @@
  * Machine-readable error codes for classification and handling.
  * Use const enum for compile-time inlining and tree-shaking.
  */
-export const enum ErrorCode {
+export enum ErrorCode {
   // Parsing errors
   TSX_PARSE_ERROR = 'TSX_PARSE_ERROR',
   INVALID_TSX_STRUCTURE = 'INVALID_TSX_STRUCTURE',

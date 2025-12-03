@@ -139,7 +139,7 @@ describe('WasmFallback', () => {
       render(<WasmFallback report={compatibleReport} />);
 
       expect(
-        screen.getByText(/chrome:\/\/settings\/help or edge:\/\/settings\/help/i)
+        screen.getByText(/chrome:\/\/settings\/help or edge:\/\/settings\/help/i),
       ).toBeInTheDocument();
       expect(screen.getByText(/about:support → Check for updates/i)).toBeInTheDocument();
     });
@@ -177,7 +177,7 @@ describe('WasmFallback', () => {
       render(<WasmFallback report={compatibleReport} />);
 
       expect(
-        screen.getByText(/Press F12 → Console tab for detailed error messages/i)
+        screen.getByText(/Press F12 → Console tab for detailed error messages/i),
       ).toBeInTheDocument();
     });
   });
@@ -201,7 +201,7 @@ describe('WasmFallback', () => {
         () => {
           expect(browser.runtime.reload).toHaveBeenCalled();
         },
-        { timeout: 2000 }
+        { timeout: 2000 },
       );
     });
 
@@ -218,7 +218,7 @@ describe('WasmFallback', () => {
       render(<WasmFallback report={compatibleReport} />);
 
       expect(
-        screen.getByRole('button', { name: /Copy error details and open GitHub issue template/i })
+        screen.getByRole('button', { name: /Copy error details and open GitHub issue template/i }),
       ).toBeInTheDocument();
       vi.unstubAllEnvs();
     });
@@ -237,9 +237,7 @@ describe('WasmFallback', () => {
       await waitFor(() => {
         expect(copyToClipboard).toHaveBeenCalledTimes(1);
       });
-      expect(copyToClipboard).toHaveBeenCalledWith(
-        expect.stringContaining('WASM_INIT_FAILED')
-      );
+      expect(copyToClipboard).toHaveBeenCalledWith(expect.stringContaining('WASM_INIT_FAILED'));
 
       vi.unstubAllEnvs();
     });

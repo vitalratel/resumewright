@@ -6,8 +6,6 @@
 
  */
 
-import type { WasmCompatibilityReport } from '@/shared/infrastructure/wasm/compatibility';
-import type { ConversionError } from '@/shared/types/models';
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -23,6 +21,8 @@ import {
 } from '@/shared/errors';
 import { ErrorCategory, ErrorCode } from '@/shared/errors/';
 import { getLogger } from '@/shared/infrastructure/logging';
+import type { WasmCompatibilityReport } from '@/shared/infrastructure/wasm/compatibility';
+import type { ConversionError } from '@/shared/types/models';
 import { useLoadingState } from '../../hooks/ui/useLoadingState';
 import { tokens } from '../../styles/tokens';
 import { WASM } from '../common';
@@ -328,7 +328,7 @@ export const WasmFallback = React.memo(
                     issues: report.issues,
                   },
                   null,
-                  2
+                  2,
                 )}
               </pre>
             </div>
@@ -336,5 +336,5 @@ export const WasmFallback = React.memo(
         </div>
       </div>
     );
-  }
+  },
 );

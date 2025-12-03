@@ -5,7 +5,6 @@
  * Extracted from useConversionHandlers for single responsibility
  */
 
-import type { AppState } from '../integration/useAppState';
 import { useCallback } from 'react';
 import { ErrorCode } from '@/shared/errors/';
 import { generateErrorId } from '@/shared/errors/tracking/telemetry';
@@ -13,6 +12,7 @@ import { getLogger } from '@/shared/infrastructure/logging';
 import { ERROR_MESSAGES, FILE_SIZE_THRESHOLDS } from '../../constants/app';
 import { extensionAPI } from '../../services/extensionAPI';
 import { useProgressStore } from '../../store/progressStore';
+import type { AppState } from '../integration/useAppState';
 
 export interface ConversionExecutionHandlers {
   handleExportClick: () => Promise<void>;
@@ -33,13 +33,7 @@ export function useConversionExecution({
   currentJobId,
   wasmInitialized,
 }: UseConversionExecutionOptions): ConversionExecutionHandlers {
-  const {
-    importedFile,
-    setValidationError,
-    startConversion,
-    setError,
-    reset,
-  } = appState;
+  const { importedFile, setValidationError, startConversion, setError, reset } = appState;
 
   // Handle export button click - start conversion immediately
   const handleExportClick = useCallback(async () => {
@@ -57,14 +51,20 @@ export function useConversionExecution({
         timestamp: Date.now(),
         errorId: generateErrorId(),
         recoverable: true,
-        suggestions: ['Reload the extension', 'Restart your browser', 'Check browser compatibility'],
+        suggestions: [
+          'Reload the extension',
+          'Restart your browser',
+          'Check browser compatibility',
+        ],
       });
       return;
     }
 
     // Pre-flight warning for large files (non-blocking, just log)
     if (importedFile.size > FILE_SIZE_THRESHOLDS.largeFileWarning) {
-      getLogger().info('ConversionExecution', 'Converting large file - may take longer', { size: importedFile.size });
+      getLogger().info('ConversionExecution', 'Converting large file - may take longer', {
+        size: importedFile.size,
+      });
     }
 
     // Start conversion in both stores
@@ -79,8 +79,7 @@ export function useConversionExecution({
       });
       await extensionAPI.startConversion(importedFile.content, importedFile.name);
       getLogger().info('ConversionExecution', 'Conversion request sent successfully');
-    }
-    catch (err) {
+    } catch (err) {
       getLogger().error('ConversionExecution', 'Conversion request failed', err);
       getLogger().error('ConversionExecution', 'Error details', {
         message: err instanceof Error ? err.message : String(err),
@@ -95,7 +94,11 @@ export function useConversionExecution({
         timestamp: Date.now(),
         errorId: generateErrorId(),
         recoverable: true,
-        suggestions: ['Try converting again', 'Make sure your file is from Claude', 'Check your internet connection'],
+        suggestions: [
+          'Try converting again',
+          'Make sure your file is from Claude',
+          'Check your internet connection',
+        ],
         technicalDetails: err instanceof Error ? err.message : String(err),
       });
     }

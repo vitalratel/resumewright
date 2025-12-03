@@ -5,13 +5,17 @@
  * timestamp formatting, error ID display, and accessibility.
  */
 
-import type { ConversionError } from '@/shared/types/models';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 import { ErrorCategory, ErrorCode } from '@/shared/errors/';
 // Import mocked functions for assertions
-import { copyToClipboard, formatErrorDetailsForClipboard, formatErrorTimestamp } from '@/shared/errors/tracking/telemetry';
+import {
+  copyToClipboard,
+  formatErrorDetailsForClipboard,
+  formatErrorTimestamp,
+} from '@/shared/errors/tracking/telemetry';
+import type { ConversionError } from '@/shared/types/models';
 
 import { ErrorDetails } from '../ErrorDetails';
 

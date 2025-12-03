@@ -1,13 +1,13 @@
 // ABOUTME: Wraps messaging for popup use cases.
 // ABOUTME: Handles TSX validation, conversion requests, and message subscriptions.
 
+import { getLogger } from '@/shared/infrastructure/logging';
+import { onMessage, sendMessage } from '@/shared/messaging';
 import type {
   ConversionCompletePayload,
   ConversionErrorPayload,
   ConversionProgressPayload,
 } from '../../shared/types/messages';
-import { getLogger } from '@/shared/infrastructure/logging';
-import { onMessage, sendMessage } from '@/shared/messaging';
 
 class ExtensionAPI {
   /**
@@ -17,8 +17,7 @@ class ExtensionAPI {
     try {
       const response = await sendMessage('validateTsx', { tsx: tsxContent });
       return response.valid;
-    }
-    catch (error) {
+    } catch (error) {
       getLogger().error('ExtensionAPI', 'TSX validation failed', error);
       return false;
     }
@@ -36,8 +35,7 @@ class ExtensionAPI {
     try {
       await sendMessage('ping', {});
       getLogger().info('ExtensionAPI', 'Service worker is alive');
-    }
-    catch (pingError) {
+    } catch (pingError) {
       getLogger().error('ExtensionAPI', 'Service worker ping failed', pingError);
       getLogger().error('ExtensionAPI', 'This usually means the background script is not running');
     }
@@ -54,8 +52,7 @@ class ExtensionAPI {
       });
       getLogger().info('ExtensionAPI', 'Received response from background', response);
       return response;
-    }
-    catch (error) {
+    } catch (error) {
       getLogger().error('ExtensionAPI', 'sendMessage failed', error);
       getLogger().error('ExtensionAPI', 'Error details', {
         message: error instanceof Error ? error.message : String(error),

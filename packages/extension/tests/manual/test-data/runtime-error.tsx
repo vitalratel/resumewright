@@ -4,7 +4,7 @@
 const CV = () => {
   // This will throw a runtime error
   throw new Error('Intentional runtime error for testing');
-  
+
   return (
     <div className="cv-container">
       <h1>This will never render</h1>

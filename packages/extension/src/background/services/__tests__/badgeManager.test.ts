@@ -167,7 +167,6 @@ describe('BadgeManager', () => {
 
       await expect(badgeManager.showError()).resolves.toBeUndefined();
     });
-
   });
 
   describe('error logging', () => {
@@ -234,9 +233,7 @@ describe('BadgeManager', () => {
 
     it('should never throw errors from showError', async () => {
       vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValue(new Error('Badge error'));
-      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValue(
-        new Error('Color error'),
-      );
+      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValue(new Error('Color error'));
       vi.mocked(fakeBrowser.storage.local.set).mockRejectedValue(new Error('Storage error'));
 
       await expect(badgeManager.showError()).resolves.toBeUndefined();
@@ -246,9 +243,7 @@ describe('BadgeManager', () => {
 
     it('should handle complete badge API failure', async () => {
       vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValue(new Error('Badge API broken'));
-      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValue(
-        new Error('Badge API broken'),
-      );
+      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValue(new Error('Badge API broken'));
 
       await expect(badgeManager.showSuccess()).resolves.toBeUndefined();
       await expect(badgeManager.showError()).resolves.toBeUndefined();

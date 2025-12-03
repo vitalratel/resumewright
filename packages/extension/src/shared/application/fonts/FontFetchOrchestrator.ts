@@ -17,7 +17,7 @@ import type { ILogger } from '../../infrastructure/logging';
 export type FontFetchProgressCallback = (
   current: number,
   total: number,
-  fontFamily: string
+  fontFamily: string,
 ) => void;
 
 /**
@@ -32,7 +32,7 @@ export type FontFetchProgressCallback = (
 export class FontFetchOrchestrator {
   constructor(
     private readonly fontRepository: IFontRepository,
-    private readonly logger: ILogger
+    private readonly logger: ILogger,
   ) {}
 
   /**
@@ -50,7 +50,7 @@ export class FontFetchOrchestrator {
    */
   async fetchFontsFromRequirements(
     requirements: FontRequirement[],
-    progressCallback?: FontFetchProgressCallback
+    progressCallback?: FontFetchProgressCallback,
   ): Promise<FontData[]> {
     const fontData: FontData[] = [];
 
@@ -68,13 +68,16 @@ export class FontFetchOrchestrator {
     });
 
     // Web-safe fonts don't need fetching - PDF generator has them built-in
-    this.logger.debug('FontFetchOrchestrator', `Skipping ${webSafeFonts.length} web-safe fonts (built-in)`);
+    this.logger.debug(
+      'FontFetchOrchestrator',
+      `Skipping ${webSafeFonts.length} web-safe fonts (built-in)`,
+    );
 
     // Log warning for custom fonts (no upload UI exists)
     if (customFonts.length > 0) {
       this.logger.warn(
         'FontFetchOrchestrator',
-        `${customFonts.length} custom font(s) requested but custom font upload is not available. Fonts will fallback to web-safe.`
+        `${customFonts.length} custom font(s) requested but custom font upload is not available. Fonts will fallback to web-safe.`,
       );
     }
 
@@ -85,7 +88,7 @@ export class FontFetchOrchestrator {
 
     this.logger.debug(
       'FontFetchOrchestrator',
-      `Fetched ${fontData.length} fonts (${googleFonts.length} Google)`
+      `Fetched ${fontData.length} fonts (${googleFonts.length} Google)`,
     );
 
     return fontData;
@@ -100,7 +103,7 @@ export class FontFetchOrchestrator {
     progressCallback: FontFetchProgressCallback | undefined,
     currentOffset: number,
     total: number,
-    index: number = 0
+    index: number = 0,
   ): Promise<void> {
     if (index >= requirements.length) {
       return;
@@ -113,7 +116,7 @@ export class FontFetchOrchestrator {
     try {
       this.logger.debug(
         'FontFetchOrchestrator',
-        `Fetching Google Font: ${req.family} ${req.weight} ${req.style}`
+        `Fetching Google Font: ${req.family} ${req.weight} ${req.style}`,
       );
 
       const bytes = await this.fontRepository.fetchGoogleFont(req.family, req.weight, req.style);
@@ -128,16 +131,27 @@ export class FontFetchOrchestrator {
 
       this.logger.debug('FontFetchOrchestrator', `✓ Fetched ${req.family} (${bytes.length} bytes)`);
     } catch (error) {
-      this.logger.error('FontFetchOrchestrator', `✗ Failed to fetch Google Font ${req.family}:`, error);
+      this.logger.error(
+        'FontFetchOrchestrator',
+        `✗ Failed to fetch Google Font ${req.family}:`,
+        error,
+      );
 
       // For MVP: Log warning but continue with fallback
       this.logger.warn(
         'FontFetchOrchestrator',
-        `Continuing without ${req.family} (will fallback to web-safe font)`
+        `Continuing without ${req.family} (will fallback to web-safe font)`,
       );
     }
 
-    return this.fetchGoogleFonts(requirements, fontData, progressCallback, currentOffset, total, index + 1);
+    return this.fetchGoogleFonts(
+      requirements,
+      fontData,
+      progressCallback,
+      currentOffset,
+      total,
+      index + 1,
+    );
   }
 
   /**

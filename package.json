@@ -37,10 +37,10 @@
     }
   },
   "lint-staged": {
-    "packages/extension/src/**/*.{ts,tsx}": [
-      "eslint --config packages/extension/eslint.config.js --fix"
+    "packages/extension/{src,tests,entrypoints}/**/*.{ts,tsx,js,json}": [
+      "pnpm --filter extension exec biome check --write --no-errors-on-unmatched"
     ],
-    "packages/extension/**/*.{js,json,css}": [
+    "packages/extension/**/*.css": [
       "prettier --write"
     ],
     "**/*.rs": [

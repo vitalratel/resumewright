@@ -224,7 +224,7 @@ describe('usePopupStore - UI State', () => {
     let renderCount = 0;
     const { result: trackingResult } = renderHook(() => {
       renderCount += 1;
-      return usePopupStore(state => state.uiState);
+      return usePopupStore((state) => state.uiState);
     });
 
     const initialRenderCount = renderCount;

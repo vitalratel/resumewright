@@ -12,10 +12,10 @@
  * - Basic recovery detection (logs warning, doesn't auto-resume)
  */
 
-import type { ConversionStatus } from '../shared/types/models';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import { localExtStorage } from '@/shared/infrastructure/storage';
+import type { ConversionStatus } from '../shared/types/models';
 
 /**
  * Simple job state for persistence
@@ -69,8 +69,7 @@ export class LifecycleManager {
       if (details.reason === 'install') {
         getLogger().info('LifecycleManager', 'Extension installed. Initializing...');
         void this.initialize();
-      }
-      else if (details.reason === 'update') {
+      } else if (details.reason === 'update') {
         const previousVersion = details.previousVersion;
         getLogger().info('LifecycleManager', ` Updated from version ${previousVersion}`);
         void this.handleUpdate(previousVersion);
@@ -80,7 +79,7 @@ export class LifecycleManager {
     // Startup event - browser starts / extension reloads
     browser.runtime.onStartup.addListener(() => {
       void (async () => {
-      getLogger().info('LifecycleManager', 'onStartup: Browser started');
+        getLogger().info('LifecycleManager', 'onStartup: Browser started');
         await this.checkForOrphanedJobs();
       })();
     });
@@ -98,8 +97,7 @@ export class LifecycleManager {
     try {
       await settingsStore.loadSettings();
       getLogger().info('LifecycleManager', 'Default settings initialized');
-    }
-    catch (error) {
+    } catch (error) {
       getLogger().error('LifecycleManager', '[Lifecycle] Failed to initialize settings', error);
     }
   }
@@ -119,7 +117,7 @@ export class LifecycleManager {
    */
   private async checkForOrphanedJobs(): Promise<void> {
     try {
-      const jobStates = await localExtStorage.getItem('resumewright_job_states') ?? {};
+      const jobStates = (await localExtStorage.getItem('resumewright_job_states')) ?? {};
 
       const now = Date.now();
       const orphanedJobs: string[] = [];
@@ -131,19 +129,24 @@ export class LifecycleManager {
         if (elapsedSinceUpdate < 5 * 60 * 1000) {
           if (state.status !== 'completed' && state.status !== 'failed') {
             orphanedJobs.push(jobId);
-            getLogger().warn('LifecycleManager', `[Lifecycle] Orphaned job detected: ${jobId} (status: ${state.status}, `
-            + `last updated ${(elapsedSinceUpdate / 1000).toFixed(0)}s ago)`);
+            getLogger().warn(
+              'LifecycleManager',
+              `[Lifecycle] Orphaned job detected: ${jobId} (status: ${state.status}, ` +
+                `last updated ${(elapsedSinceUpdate / 1000).toFixed(0)}s ago)`,
+            );
           }
         }
       }
 
       if (orphanedJobs.length > 0) {
-        getLogger().warn('LifecycleManager', `[Lifecycle] Found ${orphanedJobs.length} orphaned job(s). `
-        + 'User may need to retry conversion. '
-        + '(Auto-recovery to be implemented in future)');
+        getLogger().warn(
+          'LifecycleManager',
+          `[Lifecycle] Found ${orphanedJobs.length} orphaned job(s). ` +
+            'User may need to retry conversion. ' +
+            '(Auto-recovery to be implemented in future)',
+        );
       }
-    }
-    catch (error) {
+    } catch (error) {
       getLogger().error('LifecycleManager', '[Lifecycle] Error checking for orphaned jobs', error);
     }
   }
@@ -152,15 +155,12 @@ export class LifecycleManager {
    * Save job state checkpoint before critical operations
    * This provides basic resilience without full recovery logic
    */
-  async saveJobCheckpoint(
-    jobId: string,
-    status: ConversionStatus,
-    tsx?: string,
-  ): Promise<void> {
+  async saveJobCheckpoint(jobId: string, status: ConversionStatus, tsx?: string): Promise<void> {
+    const existingStartTime = this.activeJobs.get(jobId)?.startTime;
     const state: JobState = {
       jobId,
       status,
-      startTime: (this.activeJobs.get(jobId)?.startTime !== null && this.activeJobs.get(jobId)?.startTime !== undefined && this.activeJobs.get(jobId)?.startTime !== 0) ? this.activeJobs.get(jobId)!.startTime : Date.now(),
+      startTime: existingStartTime ?? Date.now(),
       lastUpdate: Date.now(),
       tsx,
     };
@@ -168,14 +168,17 @@ export class LifecycleManager {
     this.activeJobs.set(jobId, state);
 
     try {
-      const jobStates = await localExtStorage.getItem('resumewright_job_states') ?? {};
+      const jobStates = (await localExtStorage.getItem('resumewright_job_states')) ?? {};
       jobStates[jobId] = state;
       await localExtStorage.setItem('resumewright_job_states', jobStates);
 
       getLogger().info('LifecycleManager', ` Checkpoint saved: ${jobId} @ ${status}`);
-    }
-    catch (error) {
-      getLogger().error('LifecycleManager', `[Lifecycle] Failed to save checkpoint for ${jobId}`, error);
+    } catch (error) {
+      getLogger().error(
+        'LifecycleManager',
+        `[Lifecycle] Failed to save checkpoint for ${jobId}`,
+        error,
+      );
       // Don't throw - checkpoint failure shouldn't block conversion
     }
   }
@@ -187,14 +190,17 @@ export class LifecycleManager {
     this.activeJobs.delete(jobId);
 
     try {
-      const jobStates = await localExtStorage.getItem('resumewright_job_states') ?? {};
+      const jobStates = (await localExtStorage.getItem('resumewright_job_states')) ?? {};
       delete jobStates[jobId];
       await localExtStorage.setItem('resumewright_job_states', jobStates);
 
       getLogger().info('LifecycleManager', ` Checkpoint cleared: ${jobId}`);
-    }
-    catch (error) {
-      getLogger().error('LifecycleManager', `[Lifecycle] Failed to clear checkpoint for ${jobId}`, error);
+    } catch (error) {
+      getLogger().error(
+        'LifecycleManager',
+        `[Lifecycle] Failed to clear checkpoint for ${jobId}`,
+        error,
+      );
     }
   }
 
@@ -212,5 +218,3 @@ export class LifecycleManager {
     return this.activeJobs.has(jobId);
   }
 }
-
-

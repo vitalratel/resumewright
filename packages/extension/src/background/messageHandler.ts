@@ -1,15 +1,16 @@
 // ABOUTME: Central message routing for background script using @webext-core/messaging.
 // ABOUTME: Registers typed message handlers for all popup ↔ background communication.
 
-import type { TsxToPdfConverter } from '../shared/domain/pdf/types';
-import type { ConversionStatus } from '../shared/types/models';
-import type { LifecycleManager } from './lifecycleManager';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import { localExtStorage } from '@/shared/infrastructure/storage';
-import { createConverterInstance, isWASMInitialized } from '@/shared/infrastructure/wasm';
+import { createConverterInstance } from '@/shared/infrastructure/wasm/instance';
+import { isWASMInitialized } from '@/shared/infrastructure/wasm/loader';
 import { onMessage, sendMessage } from '@/shared/messaging';
+import type { TsxToPdfConverter } from '../shared/domain/pdf/types';
 import { validateTsxSyntax } from '../shared/domain/pdf/validation';
+import type { ConversionStatus } from '../shared/types/models';
+import type { LifecycleManager } from './lifecycleManager';
 import { ConversionService } from './services/ConversionService';
 import { ProgressTracker } from './services/ProgressTracker';
 import { parseConversionError } from './utils/errorParser';
@@ -98,7 +99,8 @@ export function setupMessageHandler(lifecycleManager: LifecycleManager): void {
       let errorMessage: string;
       if (!wasmModuleReady && wasmStatus.status === 'success') {
         // Storage says success but module not ready - race condition on startup
-        errorMessage = 'PDF generation engine is still loading. Please wait a moment and try again.';
+        errorMessage =
+          'PDF generation engine is still loading. Please wait a moment and try again.';
       } else if (wasmStatus.status === 'initializing') {
         errorMessage = 'PDF generation engine is initializing. Please wait a moment and try again.';
       } else if (wasmStatus.status === 'failed') {
@@ -121,7 +123,11 @@ export function setupMessageHandler(lifecycleManager: LifecycleManager): void {
       };
 
       const onRetry = (attempt: number, delay: number, error: Error) => {
-        getLogger().warn('MessageHandler', `Conversion retry attempt ${attempt}/3 after ${delay}ms delay`, { error: error.message });
+        getLogger().warn(
+          'MessageHandler',
+          `Conversion retry attempt ${attempt}/3 after ${delay}ms delay`,
+          { error: error.message },
+        );
         progressTracker.sendRetryProgress(jobId, attempt, 3, delay, error);
       };
 
@@ -155,10 +161,14 @@ export function setupMessageHandler(lifecycleManager: LifecycleManager): void {
 
       const conversionError = parseConversionError(error, jobId);
 
-      getLogger().error('MessageHandler', `[${jobId}] ${conversionError.code}: ${conversionError.message}`, {
-        stage: conversionError.stage,
-        error,
-      });
+      getLogger().error(
+        'MessageHandler',
+        `[${jobId}] ${conversionError.code}: ${conversionError.message}`,
+        {
+          stage: conversionError.stage,
+          error,
+        },
+      );
 
       // Send error broadcast
       void sendMessage('conversionError', {

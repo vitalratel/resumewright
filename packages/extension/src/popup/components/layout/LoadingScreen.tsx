@@ -30,30 +30,42 @@ export function LoadingScreen() {
       {/* Skeleton Header */}
       <SkeletonHeader />
 
-      {/* Main Content with Loading State - Add ARIA labels for screen readers */}
+      {/* Main Content with Loading State */}
       <div
         className={`flex-1 ${tokens.spacing.containerPadding} ${tokens.spacing.sectionGap} ${tokens.animations.fadeIn} overflow-y-auto`}
-        role="status"
-        aria-label="Loading ResumeWright extension"
       >
         {/* Loading Message */}
         <div className={`text-center ${tokens.spacing.gapMedium}`}>
           <div className="relative inline-block">
-            <div className={`${tokens.animations.spin} ${tokens.borders.full} h-12 w-12 border-4 ${tokens.colors.loading.spinner} ${tokens.colors.loading.spinnerDark}`}></div>
+            <div
+              className={`${tokens.animations.spin} ${tokens.borders.full} h-12 w-12 border-4 ${tokens.colors.loading.spinner} ${tokens.colors.loading.spinnerDark}`}
+            ></div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className={`h-6 w-6 ${tokens.borders.full} ${tokens.colors.loading.skeleton} animate-pulse`}></div>
+              <div
+                className={`h-6 w-6 ${tokens.borders.full} ${tokens.colors.loading.skeleton} animate-pulse`}
+              ></div>
             </div>
           </div>
 
           <div className="space-y-1">
-            <p className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text}`}>{WASM_LOADING_MESSAGES.title}</p>
-            <p className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted}`}>{WASM_LOADING_MESSAGES.subtitle}</p>
+            <p
+              className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text}`}
+            >
+              {WASM_LOADING_MESSAGES.title}
+            </p>
+            <p className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted}`}>
+              {WASM_LOADING_MESSAGES.subtitle}
+            </p>
           </div>
 
           {/* Progress bar */}
           <div className="w-48 mx-auto">
-            <div className={`h-1 ${tokens.colors.neutral.bg} ${tokens.borders.full} overflow-hidden`}>
-              <div className={`h-full w-1/3 ${tokens.colors.primary.bg} ${tokens.borders.full} animate-shimmer motion-reduce:animate-pulse motion-reduce:w-2/3`}></div>
+            <div
+              className={`h-1 ${tokens.colors.neutral.bg} ${tokens.borders.full} overflow-hidden`}
+            >
+              <div
+                className={`h-full w-1/3 ${tokens.colors.primary.bg} ${tokens.borders.full} animate-shimmer motion-reduce:animate-pulse motion-reduce:w-2/3`}
+              ></div>
             </div>
           </div>
 
@@ -69,7 +81,8 @@ export function LoadingScreen() {
                     <strong>This is taking longer than expected.</strong>
                   </p>
                   <p className={tokens.typography.small}>
-                    The extension may be having trouble initializing. This could be due to a slow connection or browser issue.
+                    The extension may be having trouble initializing. This could be due to a slow
+                    connection or browser issue.
                   </p>
                   <button
                     type="button"

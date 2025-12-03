@@ -137,13 +137,20 @@ export function extractTruncatedCodeContext(
 
     // Truncate long lines
     if (content.length > maxLineLength) {
-      if (i === errorIndex && (errorColumn !== null && errorColumn !== undefined && errorColumn !== 0)) {
+      if (
+        i === errorIndex &&
+        errorColumn !== null &&
+        errorColumn !== undefined &&
+        errorColumn !== 0
+      ) {
         // For error line, show context around error column
         const start = Math.max(0, errorColumn - Math.floor(maxLineLength / 2));
         const end = Math.min(content.length, start + maxLineLength);
-        content = (start > 0 ? '...' : '') + content.slice(start, end) + (end < content.length ? '...' : '');
-      }
-      else {
+        content =
+          (start > 0 ? '...' : '') +
+          content.slice(start, end) +
+          (end < content.length ? '...' : '');
+      } else {
         // For other lines, truncate from start
         content = `${content.slice(0, maxLineLength)}...`;
       }
@@ -156,9 +163,10 @@ export function extractTruncatedCodeContext(
     });
   }
 
-  const formatted = (errorColumn !== null && errorColumn !== undefined && errorColumn !== 0)
-    ? formatCodeContextWithColumn(contextLinesData, errorColumn)
-    : formatCodeContext(contextLinesData);
+  const formatted =
+    errorColumn !== null && errorColumn !== undefined && errorColumn !== 0
+      ? formatCodeContextWithColumn(contextLinesData, errorColumn)
+      : formatCodeContext(contextLinesData);
 
   return {
     lines: contextLinesData,
@@ -174,17 +182,23 @@ export function extractTruncatedCodeContext(
  * @param code - Full code string
  * @returns Enhanced error with code context in metadata
  */
-export function addCodeContextToError<T extends { metadata?: { line?: number; column?: number; codeContext?: string } }>(
-  error: T,
-  code: string,
-): T {
-  if (error.metadata?.line === null || error.metadata?.line === undefined || error.metadata?.line === 0) {
+export function addCodeContextToError<
+  T extends { metadata?: { line?: number; column?: number; codeContext?: string } },
+>(error: T, code: string): T {
+  if (
+    error.metadata?.line === null ||
+    error.metadata?.line === undefined ||
+    error.metadata?.line === 0
+  ) {
     return error;
   }
 
-  const context = (error.metadata.column !== null && error.metadata.column !== undefined && error.metadata.column !== 0)
-    ? extractCodeContextWithColumn(code, error.metadata.line, error.metadata.column)
-    : extractCodeContext(code, error.metadata.line);
+  const context =
+    error.metadata.column !== null &&
+    error.metadata.column !== undefined &&
+    error.metadata.column !== 0
+      ? extractCodeContextWithColumn(code, error.metadata.line, error.metadata.column)
+      : extractCodeContext(code, error.metadata.line);
 
   return {
     ...error,

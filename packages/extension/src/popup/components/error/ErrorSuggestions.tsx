@@ -9,13 +9,10 @@
  * - Intelligent retry warnings after multiple attempts
  */
 
-import type { ConversionError } from '@/shared/types/models';
 import { ArrowTopRightOnSquareIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { memo } from 'react';
-import {
-  getHelpLinkForSuggestion,
-  getHelpResourcesForError,
-} from '@/shared/errors/helpResources';
+import { getHelpLinkForSuggestion, getHelpResourcesForError } from '@/shared/errors/helpResources';
+import type { ConversionError } from '@/shared/types/models';
 import { tokens } from '../../styles/tokens';
 
 interface ErrorSuggestionsProps {
@@ -72,6 +69,7 @@ export const ErrorSuggestions = memo(
                 className={`${tokens.icons.sm} mr-1.5 shrink-0`}
                 fill="currentColor"
                 viewBox="0 0 20 20"
+                aria-hidden="true"
               >
                 <path
                   fillRule="evenodd"
@@ -100,7 +98,6 @@ export const ErrorSuggestions = memo(
                           className={`inline-flex items-center px-2 py-0.5 ${tokens.borders.rounded} ${tokens.typography.small} ${tokens.typography.semibold} ${tokens.colors.success.bg} ${tokens.colors.success.textStrong} ${tokens.colors.success.border} shrink-0`
                             .trim()
                             .replace(/\s+/g, ' ')}
-                          aria-label="Most likely to help"
                         >
                           Most likely
                         </span>
@@ -188,6 +185,7 @@ export const ErrorSuggestions = memo(
                 className={`${tokens.icons.md} ${tokens.colors.info.icon} shrink-0 mt-0.5`}
                 fill="currentColor"
                 viewBox="0 0 20 20"
+                aria-hidden="true"
               >
                 <path
                   fillRule="evenodd"
@@ -259,6 +257,7 @@ export const ErrorSuggestions = memo(
                 className={`${tokens.icons.sm} ${tokens.colors.neutral.textMuted} shrink-0 mt-0.5`}
                 fill="currentColor"
                 viewBox="0 0 20 20"
+                aria-hidden="true"
               >
                 <path
                   fillRule="evenodd"
@@ -283,5 +282,5 @@ export const ErrorSuggestions = memo(
         )}
       </>
     );
-  }
+  },
 );

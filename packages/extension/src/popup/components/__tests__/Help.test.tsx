@@ -33,7 +33,7 @@ describe('Help', () => {
       const links = screen.getAllByRole('link');
 
       // Links should have focus styles (at least one link has focus:ring-2)
-      const hasForusStyles = links.some(link => link.className.includes('focus:ring'));
+      const hasForusStyles = links.some((link) => link.className.includes('focus:ring'));
       expect(hasForusStyles).toBe(true);
     });
 
@@ -74,8 +74,9 @@ describe('Help', () => {
       const links = screen.getAllByRole('link');
 
       // At least some links should have focus:outline-none with custom focus:ring
-      const hasCustomFocus = links.some(link =>
-        link.className.includes('focus:outline-none') && link.className.includes('focus:ring'),
+      const hasCustomFocus = links.some(
+        (link) =>
+          link.className.includes('focus:outline-none') && link.className.includes('focus:ring'),
       );
       expect(hasCustomFocus).toBe(true);
     });

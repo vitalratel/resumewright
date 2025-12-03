@@ -1,9 +1,9 @@
 // ABOUTME: Manages WASM compatibility checking and initialization state.
 // ABOUTME: Queries background worker for WASM status with retry logic.
 
-import type { WasmCompatibilityReport } from '@/shared/infrastructure/wasm/compatibility';
 import { useEffect, useState } from 'react';
 import { getLogger } from '@/shared/infrastructure/logging';
+import type { WasmCompatibilityReport } from '@/shared/infrastructure/wasm/compatibility';
 import { WasmCompatibilityChecker } from '@/shared/infrastructure/wasm/compatibility';
 import { sendMessage } from '@/shared/messaging';
 
@@ -55,7 +55,7 @@ export function useWasmCompatibility(): UseWasmCompatibilityReturn {
          * Recursive retry function to avoid await-in-loop
          */
         async function attemptWasmStatusQuery(
-          attempt: number
+          attempt: number,
         ): Promise<{ status?: { initialized: boolean; error?: string }; error?: Error }> {
           try {
             const status = await sendMessage('getWasmStatus', {});
@@ -69,7 +69,7 @@ export function useWasmCompatibility(): UseWasmCompatibilityReturn {
             if (attempt < maxRetries - 1) {
               logger.debug(
                 'useWasmCompatibility',
-                `WASM still initializing (attempt ${attempt + 1}/${maxRetries}), retrying...`
+                `WASM still initializing (attempt ${attempt + 1}/${maxRetries}), retrying...`,
               );
               await new Promise((resolve) => {
                 const timer = setTimeout(resolve, retryDelay);
@@ -90,7 +90,7 @@ export function useWasmCompatibility(): UseWasmCompatibilityReturn {
             ) {
               logger.debug(
                 'useWasmCompatibility',
-                `Background worker not ready (attempt ${attempt + 1}/${maxRetries}), retrying...`
+                `Background worker not ready (attempt ${attempt + 1}/${maxRetries}), retrying...`,
               );
               await new Promise((resolve) => {
                 const timer = setTimeout(resolve, retryDelay);
@@ -113,7 +113,7 @@ export function useWasmCompatibility(): UseWasmCompatibilityReturn {
           logger.error(
             'useWasmCompatibility',
             'Failed to query WASM status from background',
-            lastError
+            lastError,
           );
           setWasmInitialized(false);
 
@@ -133,7 +133,7 @@ export function useWasmCompatibility(): UseWasmCompatibilityReturn {
           setWasmInitialized(true);
           logger.info(
             'useWasmCompatibility',
-            'WASM is initialized (checked from background worker)'
+            'WASM is initialized (checked from background worker)',
           );
         } else {
           setWasmInitialized(false);

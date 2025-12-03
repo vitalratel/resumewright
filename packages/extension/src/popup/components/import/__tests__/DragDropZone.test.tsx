@@ -52,7 +52,9 @@ describe('DragDropZone', () => {
     });
 
     it('renders upload icon', () => {
-      const { container } = render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />);
+      const { container } = render(
+        <DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />,
+      );
 
       // Check for ArrowUpTrayIcon SVG
       const icon = container.querySelector('svg[aria-hidden="true"]');
@@ -134,7 +136,9 @@ describe('DragDropZone', () => {
     });
 
     it('shows spinner when validating', () => {
-      const { container } = render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={true} />);
+      const { container } = render(
+        <DragDropZone onFileDrop={mockOnFileDrop} isValidating={true} />,
+      );
 
       const spinner = container.querySelector('svg.animate-spin');
       expect(spinner).toBeInTheDocument();
@@ -199,14 +203,18 @@ describe('DragDropZone', () => {
     });
 
     it('upload icon has aria-hidden', () => {
-      const { container } = render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />);
+      const { container } = render(
+        <DragDropZone onFileDrop={mockOnFileDrop} isValidating={false} />,
+      );
 
       const icon = container.querySelector('svg[aria-hidden="true"]');
       expect(icon).toBeInTheDocument();
     });
 
     it('spinner has aria-hidden when validating', () => {
-      const { container } = render(<DragDropZone onFileDrop={mockOnFileDrop} isValidating={true} />);
+      const { container } = render(
+        <DragDropZone onFileDrop={mockOnFileDrop} isValidating={true} />,
+      );
 
       const spinner = container.querySelector('svg.animate-spin');
       expect(spinner).toHaveAttribute('aria-hidden', 'true');

@@ -143,11 +143,15 @@ export const tokens = {
   effects: {
     hoverScale: 'hover:scale-105 active:scale-95',
     hoverBorder: 'hover:border-gray-400 dark:hover:border-gray-600',
-    focusRing: 'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-blue-400 dark:ring-offset-gray-900',
+    focusRing:
+      'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-blue-400 dark:ring-offset-gray-900',
     focusRingLight: 'focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-400',
-    focusRingEnhanced: 'focus:outline-none focus:ring-[3px] focus:ring-blue-600 dark:focus:ring-blue-500 focus:ring-offset-2 dark:ring-offset-gray-900', // Enhanced visibility for form inputs
-    focusRounded: 'focus:outline-none focus:ring-2 focus:ring-blue-300 focus:rounded dark:focus:ring-blue-400',
-    disabledState: 'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800',
+    focusRingEnhanced:
+      'focus:outline-none focus:ring-[3px] focus:ring-blue-600 dark:focus:ring-blue-500 focus:ring-offset-2 dark:ring-offset-gray-900', // Enhanced visibility for form inputs
+    focusRounded:
+      'focus:outline-none focus:ring-2 focus:ring-blue-300 focus:rounded dark:focus:ring-blue-400',
+    disabledState:
+      'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800',
 
     // Shadows - use borders in dark mode for subtle separation
     shadow: 'shadow-sm dark:shadow-none dark:border dark:border-gray-700',
@@ -189,19 +193,25 @@ export const tokens = {
     },
     variants: {
       danger: 'bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-500 active:bg-red-700',
-      warning: 'bg-yellow-600 dark:bg-yellow-500 hover:bg-yellow-700 dark:hover:bg-yellow-600 active:bg-yellow-800',
-      success: 'bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-500 active:bg-green-700 dark:active:bg-green-400',
+      warning:
+        'bg-yellow-600 dark:bg-yellow-500 hover:bg-yellow-700 dark:hover:bg-yellow-600 active:bg-yellow-800',
+      success:
+        'bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-500 active:bg-green-700 dark:active:bg-green-400',
       // Improved dark mode hover contrast (gray-800 → gray-700 for 3:1 contrast ratio)
       // Fixed dark mode hover contrast (gray-700 → gray-600 for 3:1 WCAG ratio)
-      ghost: 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-500 border border-transparent hover:border-gray-300 dark:hover:border-gray-600',
+      ghost:
+        'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-500 border border-transparent hover:border-gray-300 dark:hover:border-gray-600',
       ghostPrimary: 'hover:bg-blue-500/30 dark:hover:bg-blue-400/30',
       link: 'bg-transparent hover:underline hover:text-blue-600 dark:hover:text-blue-400 active:text-blue-700 dark:active:text-blue-300 p-0',
       // Improved dark mode hover contrast (gray-700 → gray-600)
-      tertiary: 'hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300 dark:active:bg-gray-500',
-      secondaryBorder: 'hover:bg-gray-50 dark:hover:bg-gray-600 active:bg-gray-100 dark:active:bg-gray-500',
+      tertiary:
+        'hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300 dark:active:bg-gray-500',
+      secondaryBorder:
+        'hover:bg-gray-50 dark:hover:bg-gray-600 active:bg-gray-100 dark:active:bg-gray-500',
       iconActive: 'active:bg-gray-200 dark:active:bg-gray-700',
     },
-    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-2 focus:ring-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:focus:ring-gray-500',
+    secondary:
+      'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-2 focus:ring-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:focus:ring-gray-500',
   },
   icons: {
     xs: 'w-4 h-4',
@@ -271,10 +281,10 @@ export const tokens = {
  * Type-safe token accessor
  * Use this to ensure tokens are used correctly throughout the codebase
  */
-export type TokenPath
-  = | keyof typeof tokens.colors
-    | keyof typeof tokens.spacing
-    | keyof typeof tokens.typography
-    | keyof typeof tokens.transitions
-    | keyof typeof tokens.effects
-    | keyof typeof tokens.borders;
+export type TokenPath =
+  | keyof typeof tokens.colors
+  | keyof typeof tokens.spacing
+  | keyof typeof tokens.typography
+  | keyof typeof tokens.transitions
+  | keyof typeof tokens.effects
+  | keyof typeof tokens.borders;

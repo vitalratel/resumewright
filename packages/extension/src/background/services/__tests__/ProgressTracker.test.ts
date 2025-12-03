@@ -56,7 +56,7 @@ describe('ProgressTracker', () => {
             percentage: 0,
             currentOperation: 'Starting conversion...',
           }),
-        })
+        }),
       );
     });
   });
@@ -69,17 +69,14 @@ describe('ProgressTracker', () => {
       const progressCallback = tracker.createProgressCallback(jobId);
       progressCallback('parsing', 25);
 
-      expect(mocks.sendMessage).toHaveBeenCalledWith(
-        'conversionProgress',
-        {
-          jobId,
-          progress: {
-            stage: 'parsing',
-            percentage: 25,
-            currentOperation: 'Parsing TSX code...',
-          },
-        }
-      );
+      expect(mocks.sendMessage).toHaveBeenCalledWith('conversionProgress', {
+        jobId,
+        progress: {
+          stage: 'parsing',
+          percentage: 25,
+          currentOperation: 'Parsing TSX code...',
+        },
+      });
     });
 
     it('should update active conversion state', async () => {
@@ -100,7 +97,7 @@ describe('ProgressTracker', () => {
             stage: 'rendering',
             percentage: 50,
           }),
-        })
+        }),
       );
     });
 
@@ -117,7 +114,7 @@ describe('ProgressTracker', () => {
           progress: expect.objectContaining({
             currentOperation: 'Processing (unknown-stage)...',
           }),
-        })
+        }),
       );
     });
 
@@ -173,7 +170,7 @@ describe('ProgressTracker', () => {
             retryAttempt: 1,
             lastError: 'Network timeout',
           }),
-        })
+        }),
       );
     });
 
@@ -205,11 +202,11 @@ describe('ProgressTracker', () => {
       expect(mocks.sendMessage).toHaveBeenCalledTimes(2);
       expect(mocks.sendMessage).toHaveBeenCalledWith(
         'conversionProgress',
-        expect.objectContaining({ jobId: jobId1 })
+        expect.objectContaining({ jobId: jobId1 }),
       );
       expect(mocks.sendMessage).toHaveBeenCalledWith(
         'conversionProgress',
-        expect.objectContaining({ jobId: jobId2 })
+        expect.objectContaining({ jobId: jobId2 }),
       );
     });
 
@@ -236,7 +233,7 @@ describe('ProgressTracker', () => {
             stage: 'layout',
             percentage: 80,
           }),
-        })
+        }),
       );
     });
   });
@@ -289,7 +286,7 @@ describe('ProgressTracker', () => {
             progress: expect.objectContaining({
               currentOperation: expected,
             }),
-          })
+          }),
         );
       }
     });

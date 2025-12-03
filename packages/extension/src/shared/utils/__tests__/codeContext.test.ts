@@ -99,8 +99,7 @@ describe('extractCodeContext', () => {
       // Should clamp to available lines and show what exists
       if (context.lines.length > 0) {
         expect(context.lines[context.lines.length - 1].lineNumber).toBeLessThanOrEqual(2);
-      }
-      else {
+      } else {
         // If line is way beyond code, may return empty context
         expect(context.lines).toHaveLength(0);
       }
@@ -113,7 +112,7 @@ describe('extractCodeContext', () => {
       const context = extractCodeContext(code, 50, 2);
 
       // All line numbers should be same width (3 digits)
-      const lines = context.formatted.split('\n').filter(l => l.includes('|'));
+      const lines = context.formatted.split('\n').filter((l) => l.includes('|'));
       lines.forEach((line) => {
         const match = line.match(/\d+/);
         expect(match).toBeTruthy();
@@ -148,7 +147,7 @@ describe('extractCodeContextWithColumn', () => {
 
       // Count spaces before ^ in formatted output
       const lines = context.formatted.split('\n');
-      const indicatorLine = lines.find(l => l.includes('^') && !l.includes('|'));
+      const indicatorLine = lines.find((l) => l.includes('^') && !l.includes('|'));
       expect(indicatorLine).toBeTruthy();
     });
 
@@ -185,7 +184,7 @@ describe('extractCodeContextWithColumn', () => {
       const context = extractCodeContextWithColumn(code, 2, 5, 1);
 
       const formattedLines = context.formatted.split('\n');
-      const indicatorLines = formattedLines.filter(l => l.includes('^'));
+      const indicatorLines = formattedLines.filter((l) => l.includes('^'));
 
       // Only one line should have column indicator
       expect(indicatorLines.length).toBe(1);
@@ -201,7 +200,7 @@ describe('extractTruncatedCodeContext', () => {
       const context = extractTruncatedCodeContext(code, 2, undefined, 80, 1);
 
       // Line 2 should be truncated
-      const errorLine = context.lines.find(l => l.isError);
+      const errorLine = context.lines.find((l) => l.isError);
       expect(errorLine?.content.length).toBeLessThanOrEqual(83); // 80 + '...'
       expect(errorLine?.content).toContain('...');
     });
@@ -210,7 +209,7 @@ describe('extractTruncatedCodeContext', () => {
       const code = 'short\nline\ncode';
       const context = extractTruncatedCodeContext(code, 2, undefined, 80, 1);
 
-      const errorLine = context.lines.find(l => l.isError);
+      const errorLine = context.lines.find((l) => l.isError);
       expect(errorLine?.content).toBe('line');
       expect(errorLine?.content).not.toContain('...');
     });
@@ -220,7 +219,7 @@ describe('extractTruncatedCodeContext', () => {
       const code = `line 1\n${longLine}\nline 3`;
       const context = extractTruncatedCodeContext(code, 2, 100, 80, 1);
 
-      const errorLine = context.lines.find(l => l.isError);
+      const errorLine = context.lines.find((l) => l.isError);
 
       // Should show context around column 100
       expect(errorLine?.content).toContain('...');
@@ -232,7 +231,7 @@ describe('extractTruncatedCodeContext', () => {
       const code = `line 1\n${longLine}\nline 3`;
       const context = extractTruncatedCodeContext(code, 2, undefined, 50, 1);
 
-      const errorLine = context.lines.find(l => l.isError);
+      const errorLine = context.lines.find((l) => l.isError);
       expect(errorLine?.content.length).toBeLessThanOrEqual(53); // 50 + '...'
     });
   });
@@ -252,7 +251,7 @@ describe('extractTruncatedCodeContext', () => {
       const code = `${longLine}`;
       const context = extractTruncatedCodeContext(code, 1, 1, 80, 0);
 
-      const errorLine = context.lines.find(l => l.isError);
+      const errorLine = context.lines.find((l) => l.isError);
       expect(errorLine?.content).toContain('xxx');
       expect(errorLine?.content.length).toBeLessThanOrEqual(83);
     });
@@ -262,7 +261,7 @@ describe('extractTruncatedCodeContext', () => {
       const code = `${longLine}`;
       const context = extractTruncatedCodeContext(code, 1, 200, 80, 0);
 
-      const errorLine = context.lines.find(l => l.isError);
+      const errorLine = context.lines.find((l) => l.isError);
       expect(errorLine?.content).toContain('...');
     });
   });
@@ -272,7 +271,10 @@ describe('addCodeContextToError', () => {
   describe('Error Enhancement', () => {
     it('should add code context to error with line metadata', () => {
       const code = 'line 1\nline 2\nline 3';
-      const error: { message: string; metadata?: { line?: number; column?: number; codeContext?: string } } = {
+      const error: {
+        message: string;
+        metadata?: { line?: number; column?: number; codeContext?: string };
+      } = {
         message: 'Test error',
         metadata: { line: 2 },
       };
@@ -286,7 +288,10 @@ describe('addCodeContextToError', () => {
 
     it('should add code context with column when available', () => {
       const code = 'const x = 5;';
-      const error: { message: string; metadata?: { line?: number; column?: number; codeContext?: string } } = {
+      const error: {
+        message: string;
+        metadata?: { line?: number; column?: number; codeContext?: string };
+      } = {
         message: 'Test error',
         metadata: { line: 1, column: 7 },
       };
@@ -299,7 +304,10 @@ describe('addCodeContextToError', () => {
 
     it('should not modify error without line metadata', () => {
       const code = 'line 1\nline 2';
-      const error: { message: string; metadata?: { line?: number; column?: number; codeContext?: string } } = {
+      const error: {
+        message: string;
+        metadata?: { line?: number; column?: number; codeContext?: string };
+      } = {
         message: 'Test error',
         metadata: {},
       };
@@ -311,7 +319,10 @@ describe('addCodeContextToError', () => {
 
     it('should not modify error without metadata', () => {
       const code = 'line 1\nline 2';
-      const error: { message: string; metadata?: { line?: number; column?: number; codeContext?: string } } = {
+      const error: {
+        message: string;
+        metadata?: { line?: number; column?: number; codeContext?: string };
+      } = {
         message: 'Test error',
       };
 
@@ -322,7 +333,16 @@ describe('addCodeContextToError', () => {
 
     it('should preserve existing metadata fields', () => {
       const code = 'line 1\nline 2';
-      const error: { message: string; metadata?: { line?: number; column?: number; codeContext?: string; custom?: string; fileSize?: number } } = {
+      const error: {
+        message: string;
+        metadata?: {
+          line?: number;
+          column?: number;
+          codeContext?: string;
+          custom?: string;
+          fileSize?: number;
+        };
+      } = {
         message: 'Test error',
         metadata: { line: 2, custom: 'value', fileSize: 1000 },
       };
@@ -347,7 +367,11 @@ describe('addCodeContextToError', () => {
   );
 }`;
 
-      const error: { code: string; message: string; metadata?: { line?: number; column?: number; codeContext?: string } } = {
+      const error: {
+        code: string;
+        message: string;
+        metadata?: { line?: number; column?: number; codeContext?: string };
+      } = {
         code: 'TSX_PARSE_ERROR',
         message: 'Unexpected token',
         metadata: { line: 5, column: 9 },
@@ -363,7 +387,11 @@ describe('addCodeContextToError', () => {
     it('should handle error at end of file', () => {
       const tsx = 'const x = 1;\nconst y = 2;\nconst z = ';
 
-      const error: { code: string; message: string; metadata?: { line?: number; column?: number; codeContext?: string } } = {
+      const error: {
+        code: string;
+        message: string;
+        metadata?: { line?: number; column?: number; codeContext?: string };
+      } = {
         code: 'SYNTAX_ERROR',
         message: 'Unexpected end of input',
         metadata: { line: 3, column: 11 },

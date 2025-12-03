@@ -214,9 +214,7 @@ describe('Logger', () => {
 
       logger.info('Test', 'Test message');
 
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        expect.stringContaining('[TestApp]'),
-      );
+      expect(mockConsole.log).toHaveBeenCalledWith(expect.stringContaining('[TestApp]'));
     });
 
     it('should include context when provided', () => {
@@ -224,9 +222,7 @@ describe('Logger', () => {
 
       logger.info('ComponentName', 'Test message');
 
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        expect.stringContaining('[ComponentName]'),
-      );
+      expect(mockConsole.log).toHaveBeenCalledWith(expect.stringContaining('[ComponentName]'));
     });
 
     it('should exclude context when includeContext is false', () => {
@@ -269,10 +265,7 @@ describe('Logger', () => {
 
       logger.debug('Test', 'Debug message', data);
 
-      expect(mockConsole.debug).toHaveBeenCalledWith(
-        expect.stringContaining('[DEBUG]'),
-        data,
-      );
+      expect(mockConsole.debug).toHaveBeenCalledWith(expect.stringContaining('[DEBUG]'), data);
     });
 
     it('should log warn messages with data', () => {
@@ -281,10 +274,7 @@ describe('Logger', () => {
 
       logger.warn('Test', 'Warning message', data);
 
-      expect(mockConsole.warn).toHaveBeenCalledWith(
-        expect.stringContaining('[WARN]'),
-        data,
-      );
+      expect(mockConsole.warn).toHaveBeenCalledWith(expect.stringContaining('[WARN]'), data);
     });
 
     it('should log error messages with error object', () => {
@@ -293,10 +283,7 @@ describe('Logger', () => {
 
       logger.error('Test', 'Error occurred', error);
 
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        expect.stringContaining('[ERROR]'),
-        error,
-      );
+      expect(mockConsole.error).toHaveBeenCalledWith(expect.stringContaining('[ERROR]'), error);
     });
 
     it('should log error messages without error object', () => {
@@ -304,9 +291,7 @@ describe('Logger', () => {
 
       logger.error('Test', 'Error occurred');
 
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        expect.stringContaining('Error occurred'),
-      );
+      expect(mockConsole.error).toHaveBeenCalledWith(expect.stringContaining('Error occurred'));
     });
   });
 });

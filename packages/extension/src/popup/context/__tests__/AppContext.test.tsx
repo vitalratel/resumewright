@@ -3,9 +3,9 @@
  * Tests for AppProvider and useAppContext hook
  */
 
-import type { AppState } from '../../hooks/integration/useAppState';
 import { render, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import type { AppState } from '../../hooks/integration/useAppState';
 import { AppProvider, useAppContext } from '../AppContext';
 
 describe('AppContext', () => {

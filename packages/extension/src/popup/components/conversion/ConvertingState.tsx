@@ -68,9 +68,9 @@ export const ConvertingState = React.memo(() => {
     >
       {/* P1-A11Y-005: Throttled announcements for screen readers */}
       {shouldAnnounce && (
-        <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        <output aria-live="polite" aria-atomic="true" className="sr-only">
           Converting: {currentProgress.percentage}% complete. {currentProgress.currentOperation}.
-        </div>
+        </output>
       )}
 
       {/* Animated Spinner - 32px blue-500 - aria-label for screen readers */}

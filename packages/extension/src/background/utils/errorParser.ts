@@ -4,6 +4,8 @@
  * Sanitizes error messages for security
  */
 
+import { generateErrorId } from '@/shared/errors/tracking/telemetry';
+import { ERROR_CATEGORIES, ErrorCategory } from '../../shared/errors';
 /**
  * Parse and enrich error information for ConversionError.
  * Provides user-friendly errors with full debugging context.
@@ -11,17 +13,25 @@
  */
 import type { ErrorCode } from '../../shared/errors/codes';
 import type { ConversionError } from '../../shared/types/models';
-import { generateErrorId } from '@/shared/errors/tracking/telemetry';
-import { ERROR_CATEGORIES, ErrorCategory } from '../../shared/errors';
 
 import { sanitizeErrorMessage, sanitizeTechnicalDetails } from './errorSanitization';
 
 export function parseConversionError(error: unknown, _jobId: string): ConversionError {
   // If already a ConversionError, use it directly
-  if ((error !== null && error !== undefined) && typeof error === 'object' && 'code' in error && 'message' in error) {
+  if (
+    error !== null &&
+    error !== undefined &&
+    typeof error === 'object' &&
+    'code' in error &&
+    'message' in error
+  ) {
     const existing = error as ConversionError;
     // Ensure category is set
-    if ((existing.category === null || existing.category === undefined) && (existing.code !== null && existing.code !== undefined)) {
+    if (
+      (existing.category === null || existing.category === undefined) &&
+      existing.code !== null &&
+      existing.code !== undefined
+    ) {
       existing.category = ERROR_CATEGORIES[existing.code];
     }
     return existing;
@@ -51,8 +61,7 @@ export function parseConversionError(error: unknown, _jobId: string): Conversion
       'Try regenerating the CV in Claude',
       'Report this issue if the problem persists',
     ];
-  }
-  else if (errorMessage.includes('WASM') || errorMessage.includes('WebAssembly')) {
+  } else if (errorMessage.includes('WASM') || errorMessage.includes('WebAssembly')) {
     code = 'WASM_EXECUTION_ERROR';
     category = ErrorCategory.SYSTEM;
     stage = 'queued';
@@ -61,18 +70,12 @@ export function parseConversionError(error: unknown, _jobId: string): Conversion
       'Check if your browser supports WebAssembly',
       'Update your browser to the latest version',
     ];
-  }
-  else if (errorMessage.includes('memory') || errorMessage.includes('heap')) {
+  } else if (errorMessage.includes('memory') || errorMessage.includes('heap')) {
     code = 'MEMORY_LIMIT_EXCEEDED';
     category = ErrorCategory.SIZE;
     stage = 'laying-out';
-    suggestions = [
-      'Your CV is too large',
-      'Try reducing the content',
-      'Split into multiple CVs',
-    ];
-  }
-  else if (errorMessage.includes('timeout')) {
+    suggestions = ['Your CV is too large', 'Try reducing the content', 'Split into multiple CVs'];
+  } else if (errorMessage.includes('timeout')) {
     code = 'CONVERSION_TIMEOUT';
     category = ErrorCategory.SYSTEM;
     stage = 'generating-pdf';
@@ -81,8 +84,7 @@ export function parseConversionError(error: unknown, _jobId: string): Conversion
       'Try a simpler CV',
       'Check your system resources',
     ];
-  }
-  else if (errorMessage.includes('font')) {
+  } else if (errorMessage.includes('font')) {
     code = 'FONT_LOAD_ERROR';
     category = ErrorCategory.NETWORK;
     stage = 'generating-pdf';
@@ -91,8 +93,7 @@ export function parseConversionError(error: unknown, _jobId: string): Conversion
       'Try using a standard font',
       'Reload the extension',
     ];
-  }
-  else if (errorMessage.includes('layout')) {
+  } else if (errorMessage.includes('layout')) {
     code = 'PDF_LAYOUT_ERROR';
     category = ErrorCategory.SYSTEM;
     stage = 'laying-out';
@@ -101,8 +102,7 @@ export function parseConversionError(error: unknown, _jobId: string): Conversion
       'Try a different page size',
       'Simplify CV formatting',
     ];
-  }
-  else {
+  } else {
     code = 'PDF_GENERATION_FAILED';
     category = ErrorCategory.SYSTEM;
     stage = 'generating-pdf';
@@ -117,7 +117,11 @@ export function parseConversionError(error: unknown, _jobId: string): Conversion
   // This prevents file paths, extension IDs, and other sensitive info from being displayed
   // Note: Original error is still logged in conversionHandler for debugging
   const sanitizedMessage = sanitizeErrorMessage(errorMessage);
-  const sanitizedTechnicalDetails = sanitizeTechnicalDetails((errorStack !== null && errorStack !== undefined && errorStack !== '') ? errorStack : errorMessage);
+  const sanitizedTechnicalDetails = sanitizeTechnicalDetails(
+    errorStack !== null && errorStack !== undefined && errorStack !== ''
+      ? errorStack
+      : errorMessage,
+  );
 
   return {
     stage,

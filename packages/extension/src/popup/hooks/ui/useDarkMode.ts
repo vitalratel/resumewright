@@ -18,8 +18,8 @@ export function useDarkMode() {
   });
 
   // Track system preference separately
-  const [systemPrefersDark, setSystemPrefersDark] = useState(() =>
-    window.matchMedia('(prefers-color-scheme: dark)').matches,
+  const [systemPrefersDark, setSystemPrefersDark] = useState(
+    () => window.matchMedia('(prefers-color-scheme: dark)').matches,
   );
 
   // Compute isDark as a derived value (not state)

@@ -2,8 +2,8 @@
  * Tests for Progress Calculation Utilities
  */
 
-import type { ConversionStatus } from '../../types/models';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ConversionStatus } from '../../types/models';
 import {
   calculateETA,
   formatTimeRemaining,

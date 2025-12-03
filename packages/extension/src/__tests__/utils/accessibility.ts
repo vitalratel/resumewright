@@ -4,8 +4,8 @@
  * Wrapper for axe-core with WCAG 2.1 Level A/AA config
  */
 
-import type { Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import type { Page } from '@playwright/test';
 
 /**
  * Run axe accessibility scan on a page
@@ -16,7 +16,7 @@ import AxeBuilder from '@axe-core/playwright';
  */
 export async function runAccessibilityScan(
   page: Page,
-  tags: string[] = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
+  tags: string[] = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'],
 ) {
   const builder = new AxeBuilder({ page }).withTags(tags);
 
@@ -38,12 +38,12 @@ export async function assertNoLevelAViolations(page: Page) {
     const violationSummary = results.violations
       .map(
         (v: { id: string; description: string; nodes: unknown[] }) =>
-          `- ${v.id}: ${v.description} (${v.nodes.length} instances)`
+          `- ${v.id}: ${v.description} (${v.nodes.length} instances)`,
       )
       .join('\n');
 
     throw new Error(
-      `Found ${results.violations.length} WCAG Level A violation(s):\n${violationSummary}`
+      `Found ${results.violations.length} WCAG Level A violation(s):\n${violationSummary}`,
     );
   }
 

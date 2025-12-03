@@ -2,7 +2,7 @@ import { browserConfigs, expect, test } from '../fixtures';
 
 /**
  * E2E tests for extension loading and basic functionality.
- * 
+ *
  * Validates:
  * - Extension loads successfully
  * - Service worker is active
@@ -27,7 +27,7 @@ test.describe('Extension Loading', () => {
     // context.serviceWorkers() in Manifest V3 persistent contexts.
     // This is a known Playwright limitation, not an extension bug.
   });
-  
+
   test('should open converter page', async ({ page, extensionId, browserType }) => {
     // Navigate to extension converter using browser-specific protocol
     const config = browserConfigs[browserType];
@@ -42,7 +42,7 @@ test.describe('Extension Loading', () => {
     // Verify React app mounted
     await expect(page.locator('#root')).toBeVisible();
   });
-  
+
   test('should have correct manifest version', async ({ context, extensionId, browserType }) => {
     // Verify extension by loading its converter and checking metadata
     const page = await context.newPage();

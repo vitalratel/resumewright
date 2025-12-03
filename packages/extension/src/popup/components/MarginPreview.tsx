@@ -112,7 +112,9 @@ const MarginPreviewComponent: React.FC<MarginPreviewProps> = ({
       {/* Preview Container */}
       <div className="flex flex-col items-center">
         {/* Title */}
-        <div className={`${tokens.typography.xs} ${tokens.typography.semibold} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}>
+        <div
+          className={`${tokens.typography.xs} ${tokens.typography.semibold} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
+        >
           Margin Preview
         </div>
 
@@ -127,7 +129,9 @@ const MarginPreviewComponent: React.FC<MarginPreviewProps> = ({
             style={topMarginStyle}
             aria-hidden="true"
           >
-            <div className={`text-[9px] ${tokens.typography.semibold} ${tokens.marginPreview.topBottomText} text-center ${tokens.spacing.marginSmall}`}>
+            <div
+              className={`text-[9px] ${tokens.typography.semibold} ${tokens.marginPreview.topBottomText} text-center ${tokens.spacing.marginSmall}`}
+            >
               {margins.top}
               &quot;
             </div>
@@ -167,7 +171,9 @@ const MarginPreviewComponent: React.FC<MarginPreviewProps> = ({
             style={bottomMarginStyle}
             aria-hidden="true"
           >
-            <div className={`text-[9px] ${tokens.typography.semibold} ${tokens.marginPreview.topBottomText} text-center ${tokens.spacing.marginSmall}`}>
+            <div
+              className={`text-[9px] ${tokens.typography.semibold} ${tokens.marginPreview.topBottomText} text-center ${tokens.spacing.marginSmall}`}
+            >
               {margins.bottom}
               &quot;
             </div>
@@ -181,14 +187,35 @@ const MarginPreviewComponent: React.FC<MarginPreviewProps> = ({
           >
             {/* Simulated text lines to show content area */}
             <div className={tokens.spacing.gapSmall}>
-              <div className={`h-1 ${tokens.marginPreview.contentLine} rounded`} style={TEXT_LINE_WIDTHS.full} />
-              <div className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`} style={TEXT_LINE_WIDTHS.wide} />
-              <div className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`} style={TEXT_LINE_WIDTHS.medium} />
-              <div className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`} style={TEXT_LINE_WIDTHS.narrow} />
+              <div
+                className={`h-1 ${tokens.marginPreview.contentLine} rounded`}
+                style={TEXT_LINE_WIDTHS.full}
+              />
+              <div
+                className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`}
+                style={TEXT_LINE_WIDTHS.wide}
+              />
+              <div
+                className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`}
+                style={TEXT_LINE_WIDTHS.medium}
+              />
+              <div
+                className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`}
+                style={TEXT_LINE_WIDTHS.narrow}
+              />
               <div className="h-0.5" />
-              <div className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`} style={TEXT_LINE_WIDTHS.full} />
-              <div className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`} style={TEXT_LINE_WIDTHS.mediumWide} />
-              <div className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`} style={TEXT_LINE_WIDTHS.mediumNarrow} />
+              <div
+                className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`}
+                style={TEXT_LINE_WIDTHS.full}
+              />
+              <div
+                className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`}
+                style={TEXT_LINE_WIDTHS.mediumWide}
+              />
+              <div
+                className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`}
+                style={TEXT_LINE_WIDTHS.mediumNarrow}
+              />
             </div>
 
             {/* Content area dimensions label */}
@@ -204,13 +231,21 @@ const MarginPreviewComponent: React.FC<MarginPreviewProps> = ({
         </div>
 
         {/* Legend - Enhanced colors */}
-        <div className={`${tokens.spacing.marginMedium} flex ${tokens.spacing.gapLarge} text-[10px] ${tokens.colors.neutral.text}`}>
+        <div
+          className={`${tokens.spacing.marginMedium} flex ${tokens.spacing.gapLarge} text-[10px] ${tokens.colors.neutral.text}`}
+        >
           <div className="flex items-center gap-1.5">
-            <div className={`w-3.5 h-3.5 ${tokens.marginPreview.topBottom} border-2 opacity-70 rounded-sm`} aria-hidden="true" />
+            <div
+              className={`w-3.5 h-3.5 ${tokens.marginPreview.topBottom} border-2 opacity-70 rounded-sm`}
+              aria-hidden="true"
+            />
             <span>Top/Bottom</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className={`w-3.5 h-3.5 ${tokens.marginPreview.leftRight} border-2 opacity-70 rounded-sm`} aria-hidden="true" />
+            <div
+              className={`w-3.5 h-3.5 ${tokens.marginPreview.leftRight} border-2 opacity-70 rounded-sm`}
+              aria-hidden="true"
+            />
             <span>Left/Right</span>
           </div>
         </div>

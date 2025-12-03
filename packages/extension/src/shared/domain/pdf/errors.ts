@@ -5,10 +5,10 @@
  */
 
 import type { InferOutput } from 'valibot';
-import type { ConversionError } from '../../types/models';
 import { array, boolean, object, optional, safeParse, string } from 'valibot';
 import { ErrorCode } from '../../errors/codes';
 import { generateErrorId } from '../../errors/tracking/telemetry';
+import type { ConversionError } from '../../types/models';
 
 /**
  * Valibot schema for WASM error JSON format
@@ -30,12 +30,12 @@ type WasmError = InferOutput<typeof WasmErrorSchema>;
  */
 function mapStageToConversionStatus(stage: string): ConversionError['stage'] {
   const stageMap: Record<string, ConversionError['stage']> = {
-    'parsing': 'parsing',
+    parsing: 'parsing',
     'extracting-metadata': 'extracting-metadata',
-    'rendering': 'rendering',
+    rendering: 'rendering',
     'laying-out': 'laying-out',
     'generating-pdf': 'generating-pdf',
-    'completed': 'completed',
+    completed: 'completed',
   };
 
   return stageMap[stage] || 'failed';
@@ -61,19 +61,28 @@ export function parseWasmError(error: unknown): ConversionError {
     if (result.success) {
       const errorJson: WasmError = result.output;
       return {
-        stage: mapStageToConversionStatus((errorJson.stage !== null && errorJson.stage !== undefined && errorJson.stage !== '') ? errorJson.stage : 'unknown'),
+        stage: mapStageToConversionStatus(
+          errorJson.stage !== null && errorJson.stage !== undefined && errorJson.stage !== ''
+            ? errorJson.stage
+            : 'unknown',
+        ),
         code: errorJson.code as ErrorCode,
         message: errorJson.message,
         timestamp: Date.now(),
         errorId: generateErrorId(),
         technicalDetails: errorJson.technicalDetails,
-        recoverable: (errorJson.recoverable !== null && errorJson.recoverable !== undefined) ? errorJson.recoverable : false,
-        suggestions: (errorJson.suggestions !== null && errorJson.suggestions !== undefined) ? errorJson.suggestions : [],
+        recoverable:
+          errorJson.recoverable !== null && errorJson.recoverable !== undefined
+            ? errorJson.recoverable
+            : false,
+        suggestions:
+          errorJson.suggestions !== null && errorJson.suggestions !== undefined
+            ? errorJson.suggestions
+            : [],
       };
     }
     // If validation fails, fall through to default error handling
-  }
-  catch {
+  } catch {
     // Not valid JSON or parsing failed, fall through to default
   }
 
@@ -82,12 +91,10 @@ export function parseWasmError(error: unknown): ConversionError {
   let errorMessage: string;
   if (error instanceof Error) {
     errorMessage = error.message;
-  }
-  else if (typeof error === 'object' && error !== null) {
+  } else if (typeof error === 'object' && error !== null) {
     // Try to extract meaningful information from error object
     errorMessage = JSON.stringify(error, Object.getOwnPropertyNames(error));
-  }
-  else {
+  } else {
     errorMessage = String(error);
   }
 

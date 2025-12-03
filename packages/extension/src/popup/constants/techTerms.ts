@@ -9,7 +9,7 @@
 export const TECH_TERMS = {
   TSX: {
     term: 'TSX',
-    explanation: 'TypeScript XML - React\'s syntax for defining components with type safety',
+    explanation: "TypeScript XML - React's syntax for defining components with type safety",
   },
   WASM: {
     term: 'WASM',

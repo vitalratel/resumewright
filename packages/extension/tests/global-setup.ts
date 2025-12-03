@@ -18,15 +18,15 @@ async function cleanupStaleProfiles(packageDir: string): Promise<void> {
   try {
     const entries = await readdir(packageDir, { withFileTypes: true });
     const staleProfiles = entries.filter(
-      (entry) => entry.isDirectory() && entry.name.startsWith('.test-profile-')
+      (entry) => entry.isDirectory() && entry.name.startsWith('.test-profile-'),
     );
 
     if (staleProfiles.length > 0) {
       console.warn(`[Global Setup] Cleaning up ${staleProfiles.length} stale test profile(s)...`);
       await Promise.all(
         staleProfiles.map((profile) =>
-          rm(path.join(packageDir, profile.name), { recursive: true, force: true })
-        )
+          rm(path.join(packageDir, profile.name), { recursive: true, force: true }),
+        ),
       );
       console.warn('[Global Setup] ✓ Stale profiles cleaned up');
     }

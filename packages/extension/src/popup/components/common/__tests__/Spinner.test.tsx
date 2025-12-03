@@ -5,9 +5,9 @@
  * color customization, and accessibility attributes.
  */
 
-import type { SpinnerSize } from '../Spinner';
 import { render } from '@testing-library/react';
 import { describe, expect } from 'vitest';
+import type { SpinnerSize } from '../Spinner';
 import { Spinner } from '../Spinner';
 
 describe('Spinner', () => {
@@ -58,7 +58,7 @@ describe('Spinner', () => {
 
     it('applies custom color with multiple classes', () => {
       const { container } = render(
-        <Spinner color="text-green-600 dark:text-green-400" delayMs={0} />
+        <Spinner color="text-green-600 dark:text-green-400" delayMs={0} />,
       );
       const svg = container.querySelector('svg');
       expect(svg).toHaveClass('text-green-600', 'dark:text-green-400');
@@ -165,7 +165,7 @@ describe('Spinner', () => {
           className="mx-auto"
           ariaLabel="Processing"
           delayMs={0}
-        />
+        />,
       );
       const svg = container.querySelector('svg');
 
@@ -178,7 +178,7 @@ describe('Spinner', () => {
 
     it('handles size and color variations', () => {
       const { container, rerender } = render(
-        <Spinner size="small" color="text-gray-400" delayMs={0} />
+        <Spinner size="small" color="text-gray-400" delayMs={0} />,
       );
       const svg = container.querySelector('svg');
 
@@ -192,7 +192,7 @@ describe('Spinner', () => {
   describe('Memoization', () => {
     it('does not re-render with same props', () => {
       const { container, rerender } = render(
-        <Spinner size="medium" color="text-blue-500" delayMs={0} />
+        <Spinner size="medium" color="text-blue-500" delayMs={0} />,
       );
       const svg = container.querySelector('svg');
       const initialSvg = svg;
@@ -235,7 +235,7 @@ describe('Spinner', () => {
 
     it('trims whitespace in className', () => {
       const { container } = render(
-        <Spinner className="  extra-class  " size="small" color="text-red-500" delayMs={0} />
+        <Spinner className="  extra-class  " size="small" color="text-red-500" delayMs={0} />,
       );
       const svg = container.querySelector('svg');
 

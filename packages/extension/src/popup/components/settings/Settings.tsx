@@ -31,10 +31,10 @@
  * @see {@link UnsavedChangesModal} for navigation protection
  */
 
-import type { UserSettings } from '@/shared/types/settings';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
+import type { UserSettings } from '@/shared/types/settings';
 import { DEBOUNCE_DELAYS, UI_DELAYS } from '../../constants/timings';
 import { useUnsavedChanges } from '../../hooks';
 import { useBeforeUnload } from '../../hooks/core';
@@ -98,7 +98,7 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
     pendingSavesRef.current.push(savePromise.then(() => {})); // Track as void promise
     const result = await savePromise;
     pendingSavesRef.current = pendingSavesRef.current.filter(
-      (p) => p !== savePromise.then(() => {})
+      (p) => p !== savePromise.then(() => {}),
     );
     return result;
   }, []);
@@ -128,18 +128,21 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
   }, [isDirty, settings, saveImmediate, debouncedAutoSave]);
 
   // Memoize callbacks for stable references + auto-save
-  const handlePageSizeChange = useCallback((pageSize: 'Letter' | 'A4' | 'Legal') => {
-    setSettings((prev) => {
-      if (!prev) return prev;
-      const newSettings = {
-        ...prev,
-        defaultConfig: { ...prev.defaultConfig, pageSize },
-      };
-      // Trigger auto-save
-      void debouncedAutoSave(newSettings);
-      return newSettings;
-    });
-  }, [debouncedAutoSave]);
+  const handlePageSizeChange = useCallback(
+    (pageSize: 'Letter' | 'A4' | 'Legal') => {
+      setSettings((prev) => {
+        if (!prev) return prev;
+        const newSettings = {
+          ...prev,
+          defaultConfig: { ...prev.defaultConfig, pageSize },
+        };
+        // Trigger auto-save
+        void debouncedAutoSave(newSettings);
+        return newSettings;
+      });
+    },
+    [debouncedAutoSave],
+  );
 
   const handleMarginChange = useCallback(
     (side: 'top' | 'right' | 'bottom' | 'left', value: number) => {
@@ -157,7 +160,7 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
         return newSettings;
       });
     },
-    [debouncedAutoSave]
+    [debouncedAutoSave],
   );
 
   // Show confirmation modal instead of native confirm

@@ -8,13 +8,12 @@
 
 export { TECH_TERMS } from '../../constants/techTerms';
 export { getShortcutDisplay } from '../../utils/shortcuts';
-export { Alert } from './Alert';
 export type { AlertVariant } from './Alert';
+export { Alert } from './Alert';
 
 export { Button } from './Button';
-
-export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps } from './ConfirmDialog';
+export { ConfirmDialog } from './ConfirmDialog';
 
 export {
   Skeleton,
@@ -23,12 +22,10 @@ export {
   SkeletonHeader,
   SkeletonSettings,
 } from './Skeleton';
-
-export { Spinner } from './Spinner';
 export type { SpinnerSize } from './Spinner';
-
-export { TabGroup } from './TabGroup';
+export { Spinner } from './Spinner';
 export type { Tab } from './TabGroup';
+export { TabGroup } from './TabGroup';
 export {
   ATS,
   Compatible,

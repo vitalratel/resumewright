@@ -1,9 +1,9 @@
 /**
  * Manual Testing Script for Error Handling
- * 
+ *
  * This script sets up the extension and provides interactive test scenarios.
  * Run with: pnpm --filter extension playwright test tests/manual/error-testing.spec.ts --headed
- * 
+ *
  * Instructions:
  * 1. The test will pause at each scenario
  * 2. Follow the on-screen instructions to trigger each error
@@ -11,8 +11,8 @@
  * 4. Continue to next scenario when ready
  */
 
+import { fileURLToPath } from 'node:url';
 import { test } from '../fixtures';
-import { fileURLToPath } from 'url';
 
 test.describe('Manual Error Handling Testing', () => {
   test('Interactive Error Testing Suite', async ({ context, extensionId }) => {
@@ -20,13 +20,15 @@ test.describe('Manual Error Handling Testing', () => {
     console.log('Error Handling Manual Testing');
     console.log('========================================\n');
     console.log(`Extension ID: ${extensionId}`);
-    console.log(`Extension loaded from: ${fileURLToPath(new URL('../../../dist', import.meta.url))}\n`);
+    console.log(
+      `Extension loaded from: ${fileURLToPath(new URL('../../../dist', import.meta.url))}\n`,
+    );
 
     // Open the extension popup
     const page = await context.newPage();
     const popupUrl = `chrome-extension://${extensionId}/converter.html`;
     await page.goto(popupUrl);
-    
+
     console.log('✅ Extension popup opened');
     console.log(`URL: ${popupUrl}\n`);
 
@@ -51,7 +53,7 @@ test.describe('Manual Error Handling Testing', () => {
     console.log('   ✓  Shows line/column number');
     console.log('   ✓  "Try Again" button visible');
     console.log('   ✓  Console shows full error\n');
-    
+
     await page.pause(); // Pause for manual testing
 
     console.log('\n📋 SCENARIO 1.2: TSX_VALIDATION_ERROR');
@@ -61,7 +63,7 @@ test.describe('Manual Error Handling Testing', () => {
     console.log('   const CV = () => <div>Not a proper CV</div>');
     console.log('2. Import the file');
     console.log('3. Validate same criteria as 1.1\n');
-    
+
     await page.pause();
 
     console.log('\n📋 SCENARIO 1.3: TSX_EXECUTION_ERROR');
@@ -71,7 +73,7 @@ test.describe('Manual Error Handling Testing', () => {
     console.log('   const CV = () => { throw new Error("Test"); return <div/>; }');
     console.log('2. Import the file');
     console.log('3. Validate same criteria as 1.1\n');
-    
+
     await page.pause();
 
     console.log('\n========================================');
@@ -89,7 +91,7 @@ test.describe('Manual Error Handling Testing', () => {
     console.log('   ✓  Shows size: "X MB / 4 MB"');
     console.log('   ✓  NO "Try Again" button');
     console.log('   ✓  "Dismiss" button present\n');
-    
+
     await page.pause();
 
     console.log('\n📋 SCENARIO 2.2: FILE_TOO_LARGE');
@@ -98,7 +100,7 @@ test.describe('Manual Error Handling Testing', () => {
     console.log('1. Create TSX file >10MB');
     console.log('2. Import the file');
     console.log('3. Validate similar to 2.1\n');
-    
+
     await page.pause();
 
     console.log('\n========================================');
@@ -111,7 +113,7 @@ test.describe('Manual Error Handling Testing', () => {
     console.log('1. This is hard to trigger manually');
     console.log('2. Check if WasmFallback UI appears on old browser');
     console.log('3. Or manually trigger in code/DevTools\n');
-    
+
     await page.pause();
 
     console.log('\n========================================');
@@ -125,7 +127,7 @@ test.describe('Manual Error Handling Testing', () => {
     console.log('2. Look for "Report Issue" button');
     console.log('3. Click it - should open GitHub with pre-filled template');
     console.log('4. Verify template includes error details\n');
-    
+
     await page.pause();
 
     console.log('\n📋 TESTING: AC10 - Console Logging');
@@ -137,7 +139,7 @@ test.describe('Manual Error Handling Testing', () => {
     console.log('4. Verify console shows:');
     console.log('   ✓ Format: [ERROR] [jobId] [category] code: message');
     console.log('   ✓ Includes timestamp, category, code, message, stack trace\n');
-    
+
     await page.pause();
 
     console.log('\n========================================');
@@ -152,7 +154,7 @@ test.describe('Manual Error Handling Testing', () => {
     console.log('3. Verify focus cycles through: Try Again → Dismiss → Report Issue');
     console.log('4. Press Enter/Space on focused button - should activate it');
     console.log('5. Press Escape - should dismiss error (optional)\n');
-    
+
     await page.pause();
 
     console.log('\n📋 TESTING: Screen Reader (Optional)');
@@ -163,7 +165,7 @@ test.describe('Manual Error Handling Testing', () => {
     console.log('3. Verify error is announced immediately');
     console.log('4. Verify role="alert" and aria-live="assertive" present');
     console.log('5. Tab through buttons - verify labels are clear\n');
-    
+
     await page.pause();
 
     console.log('\n========================================');
@@ -180,7 +182,7 @@ test.describe('Manual Error Handling Testing', () => {
 
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/converter.html`);
-    
+
     // Wait for popup to load
     await page.waitForTimeout(1000);
 
@@ -201,7 +203,7 @@ test.describe('Manual Error Handling Testing', () => {
 
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/converter.html`);
-    
+
     await page.waitForTimeout(1000);
 
     console.log('Extension popup loaded. Ready for large file test.');

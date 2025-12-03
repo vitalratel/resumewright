@@ -11,7 +11,7 @@
  * - Focus management
  */
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UnsavedChangesModal } from '../UnsavedChangesModal';
 
@@ -36,7 +36,8 @@ describe('UnsavedChangesModal', () => {
 
       const dialog = screen.getByRole('dialog');
       expect(dialog).toBeInTheDocument();
-      expect(dialog).toHaveAttribute('aria-modal', 'true');
+      // Native <dialog> has implicit aria-modal when opened with showModal()
+      expect(dialog.tagName).toBe('DIALOG');
       expect(dialog).toHaveAttribute('aria-labelledby', 'unsaved-modal-title');
       expect(dialog).toHaveAttribute('aria-describedby', 'unsaved-modal-description');
     });
@@ -45,15 +46,21 @@ describe('UnsavedChangesModal', () => {
       render(<UnsavedChangesModal {...defaultProps} />);
 
       expect(screen.getByText('You have unsaved changes')).toBeInTheDocument();
-      expect(screen.getByText('Do you want to save your settings before leaving?')).toBeInTheDocument();
+      expect(
+        screen.getByText('Do you want to save your settings before leaving?'),
+      ).toBeInTheDocument();
     });
 
     it('should render all three action buttons', () => {
       render(<UnsavedChangesModal {...defaultProps} />);
 
       expect(screen.getByRole('button', { name: 'Save changes and go back' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Discard changes and go back' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Cancel and stay on settings' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Discard changes and go back' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Cancel and stay on settings' }),
+      ).toBeInTheDocument();
     });
 
     it('should display warning icon', () => {
@@ -127,7 +134,9 @@ describe('UnsavedChangesModal', () => {
     it('should call onCancel when Escape key is pressed', () => {
       render(<UnsavedChangesModal {...defaultProps} />);
 
-      fireEvent.keyDown(document, { key: 'Escape' });
+      // Native <dialog> handles Escape via 'cancel' event
+      const dialog = screen.getByRole('dialog');
+      fireEvent(dialog, new Event('cancel', { bubbles: true }));
 
       expect(mockOnCancel).toHaveBeenCalledTimes(1);
       expect(mockOnSave).not.toHaveBeenCalled();
@@ -158,14 +167,14 @@ describe('UnsavedChangesModal', () => {
   });
 
   describe('Focus Management - + P1-LAYOUT-001', () => {
-    it('should focus first focusable element on mount (useFocusTrap)', async () => {
+    it('should use native dialog showModal() for focus management', () => {
       render(<UnsavedChangesModal {...defaultProps} />);
 
-      await waitFor(() => {
-        // useFocusTrap focuses the first focusable element (Save button)
-        const saveButton = screen.getByRole('button', { name: 'Save changes and go back' });
-        expect(saveButton).toHaveFocus();
-      });
+      // Native <dialog> with showModal() provides automatic focus management
+      // JSDOM doesn't fully implement this, so we verify the dialog is open
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toHaveAttribute('open');
+      expect(dialog.tagName).toBe('DIALOG');
     });
   });
 
@@ -174,7 +183,8 @@ describe('UnsavedChangesModal', () => {
       render(<UnsavedChangesModal {...defaultProps} />);
 
       const dialog = screen.getByRole('dialog');
-      expect(dialog).toHaveAttribute('aria-modal', 'true');
+      // Native <dialog> has implicit aria-modal="true" when opened with showModal()
+      expect(dialog.tagName).toBe('DIALOG');
       expect(dialog).toHaveAttribute('aria-labelledby', 'unsaved-modal-title');
       expect(dialog).toHaveAttribute('aria-describedby', 'unsaved-modal-description');
     });

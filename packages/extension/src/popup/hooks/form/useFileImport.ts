@@ -5,11 +5,11 @@
  * Extracted from useConversionHandlers for single responsibility
  */
 
-import type { AppState } from '../integration/useAppState';
 import { useCallback } from 'react';
 import { validateTsxFile } from '@/shared/domain/pdf/validation';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { ERROR_MESSAGES } from '../../constants/app';
+import type { AppState } from '../integration/useAppState';
 
 export interface FileImportHandlers {
   handleFileValidated: (content: string, fileName: string, fileSize: number) => Promise<void>;
@@ -33,32 +33,35 @@ export function useFileImport({ appState }: UseFileImportOptions): FileImportHan
   } = appState;
 
   // Handle file validated
-  const handleFileValidated = useCallback(async (content: string, fileName: string, fileSize: number) => {
-    setValidating(true);
+  const handleFileValidated = useCallback(
+    async (content: string, fileName: string, fileSize: number) => {
+      setValidating(true);
 
-    try {
-      const result = await validateTsxFile(content, fileSize, fileName, getLogger());
+      try {
+        const result = await validateTsxFile(content, fileSize, fileName, getLogger());
 
-      if (result.valid) {
-        setImportedFile(fileName, fileSize, content);
-        appState.setUIState('file_validated');
-        clearValidationError();
+        if (result.valid) {
+          setImportedFile(fileName, fileSize, content);
+          appState.setUIState('file_validated');
+          clearValidationError();
+        } else {
+          const errorMessage =
+            result.error !== null && result.error !== undefined && result.error !== ''
+              ? result.error
+              : 'Validation failed';
+          setValidationError(errorMessage);
+          // AC10: Logging for validation errors
+          getLogger().error('FileImport', 'Validation Error', { errorMessage, fileName, fileSize });
+        }
+      } catch {
+        // P1-A11Y-001: Simplified error message
+        setValidationError(ERROR_MESSAGES.fileReadFailed);
+      } finally {
+        setValidating(false);
       }
-      else {
-        const errorMessage = (result.error !== null && result.error !== undefined && result.error !== '') ? result.error : 'Validation failed';
-        setValidationError(errorMessage);
-        // AC10: Logging for validation errors
-        getLogger().error('FileImport', 'Validation Error', { errorMessage, fileName, fileSize });
-      }
-    }
-    catch {
-      // P1-A11Y-001: Simplified error message
-      setValidationError(ERROR_MESSAGES.fileReadFailed);
-    }
-    finally {
-      setValidating(false);
-    }
-  }, [setValidating, setImportedFile, setValidationError, clearValidationError, appState]);
+    },
+    [setValidating, setImportedFile, setValidationError, clearValidationError, appState],
+  );
 
   // Handle import different file from error state
   const handleImportDifferent = useCallback(() => {

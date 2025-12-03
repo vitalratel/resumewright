@@ -5,8 +5,8 @@
  * Enhances accessibility and usability for power users.
  */
 
-import type { ShortcutConfig } from '../hooks/ui/useKeyboardShortcuts';
 import { useCallback, useRef, useState } from 'react';
+import type { ShortcutConfig } from '../hooks/ui/useKeyboardShortcuts';
 import { formatShortcut } from '../hooks/ui/useKeyboardShortcuts';
 import { tokens } from '../styles/tokens';
 import { Modal } from './common/Modal';
@@ -42,7 +42,7 @@ function categorizeShortcuts(shortcuts: ShortcutConfig[]): ShortcutCategory[] {
 
   // Filter enabled shortcuts and categorize them
   shortcuts
-    .filter(s => s.enabled !== false)
+    .filter((s) => s.enabled !== false)
     .forEach((s) => {
       const formatted = {
         shortcut: formatShortcut(s),
@@ -53,11 +53,9 @@ function categorizeShortcuts(shortcuts: ShortcutConfig[]): ShortcutCategory[] {
       const desc = s.description.toLowerCase();
       if (desc.includes('help') || desc.includes('shortcuts')) {
         categories.Help.push(formatted);
-      }
-      else if (desc.includes('settings') || desc.includes('close') || desc.includes('back')) {
+      } else if (desc.includes('settings') || desc.includes('close') || desc.includes('back')) {
         categories.General.push(formatted);
-      }
-      else {
+      } else {
         categories.Actions.push(formatted);
       }
     });
@@ -86,14 +84,13 @@ export function KeyboardShortcutsModal({
 
   // Filter shortcuts based on search query
   const filteredShortcuts = shortcuts.filter((s) => {
-    if (!searchQuery)
-      return s.enabled !== false;
+    if (!searchQuery) return s.enabled !== false;
 
     const query = searchQuery.toLowerCase();
     const matchesDescription = s.description.toLowerCase().includes(query);
     const matchesKey = formatShortcut(s).toLowerCase().includes(query);
 
-    return (s.enabled !== false) && (matchesDescription || matchesKey);
+    return s.enabled !== false && (matchesDescription || matchesKey);
   });
 
   const categories = categorizeShortcuts(filteredShortcuts);
@@ -118,7 +115,9 @@ export function KeyboardShortcutsModal({
         <button
           type="button"
           onClick={onClose}
-          className={`${tokens.colors.neutral.textMuted} ${tokens.colors.neutral.hover} ${tokens.effects.focusRing} ${tokens.borders.rounded} ${tokens.transitions.default}`.trim().replace(/\s+/g, ' ')}
+          className={`${tokens.colors.neutral.textMuted} ${tokens.colors.neutral.hover} ${tokens.effects.focusRing} ${tokens.borders.rounded} ${tokens.transitions.default}`
+            .trim()
+            .replace(/\s+/g, ' ')}
           aria-label="Close shortcuts help"
         >
           <svg
@@ -126,6 +125,7 @@ export function KeyboardShortcutsModal({
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -149,7 +149,9 @@ export function KeyboardShortcutsModal({
           value={searchQuery}
           onChange={handleSearchChange}
           placeholder="Search shortcuts..."
-          className={`w-full px-3 py-2 ${tokens.typography.small} ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.colors.neutral.text} ${tokens.colors.neutral.bgWhite} focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 ${tokens.transitions.default}`.trim().replace(/\s+/g, ' ')}
+          className={`w-full px-3 py-2 ${tokens.typography.small} ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.colors.neutral.text} ${tokens.colors.neutral.bgWhite} focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 ${tokens.transitions.default}`
+            .trim()
+            .replace(/\s+/g, ' ')}
           aria-describedby="search-description"
         />
         <p id="search-description" className="sr-only">
@@ -159,51 +161,54 @@ export function KeyboardShortcutsModal({
 
       {/* Content - Scrollable */}
       <div className={`p-4 ${tokens.spacing.sectionGap} overflow-y-auto flex-1`}>
-        {hasResults
-          ? (
-              categories.map(category => (
-                <div key={category.title}>
-                  <h3 className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}>
-                    {category.title}
-                  </h3>
-                  <dl className={tokens.spacing.gapSmall}>
-                    {category.shortcuts.map((item) => (
-                      <div
-                        key={item.shortcut}
-                        className="flex items-center justify-between"
+        {hasResults ? (
+          categories.map((category) => (
+            <div key={category.title}>
+              <h3
+                className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}
+              >
+                {category.title}
+              </h3>
+              <dl className={tokens.spacing.gapSmall}>
+                {category.shortcuts.map((item) => (
+                  <div key={item.shortcut} className="flex items-center justify-between">
+                    <dt className={`${tokens.typography.small} ${tokens.colors.neutral.text}`}>
+                      {item.description}
+                    </dt>
+                    <dd className="ml-4">
+                      <kbd
+                        className={`${tokens.code.kbd} ${tokens.typography.semibold} ${tokens.colors.neutral.text} ${tokens.colors.neutral.bg} ${tokens.effects.shadow}`
+                          .trim()
+                          .replace(/\s+/g, ' ')}
                       >
-                        <dt className={`${tokens.typography.small} ${tokens.colors.neutral.text}`}>
-                          {item.description}
-                        </dt>
-                        <dd className="ml-4">
-                          <kbd className={`${tokens.code.kbd} ${tokens.typography.semibold} ${tokens.colors.neutral.text} ${tokens.colors.neutral.bg} ${tokens.effects.shadow}`.trim().replace(/\s+/g, ' ')}>
-                            {item.shortcut}
-                          </kbd>
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                </div>
-              ))
-            )
-          : (
-              <div className="text-center py-8">
-                <p className={`${tokens.typography.small} ${tokens.colors.neutral.textMuted}`}>
-                  No shortcuts match &quot;
-                  {searchQuery}
-                  &quot;
-                </p>
-              </div>
-            )}
+                        {item.shortcut}
+                      </kbd>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-8">
+            <p className={`${tokens.typography.small} ${tokens.colors.neutral.textMuted}`}>
+              No shortcuts match &quot;
+              {searchQuery}
+              &quot;
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Footer */}
       <div className={`p-4 border-t ${tokens.borders.default} ${tokens.colors.neutral.bg}`}>
         <p className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} text-center`}>
-          Press
-          {' '}
-          <kbd className={`px-1 py-0.5 ${tokens.typography.xs} ${tokens.typography.semibold} ${tokens.colors.neutral.bg} ${tokens.borders.rounded}`}>Esc</kbd>
-          {' '}
+          Press{' '}
+          <kbd
+            className={`px-1 py-0.5 ${tokens.typography.xs} ${tokens.typography.semibold} ${tokens.colors.neutral.bg} ${tokens.borders.rounded}`}
+          >
+            Esc
+          </kbd>{' '}
           to close
         </p>
       </div>

@@ -5,13 +5,12 @@
  * based on UI state and proper prop passing to child components.
  */
 
-import type { AppContextValue } from '../../../context/AppContext';
-import type { ConversionHandlers } from '../../../hooks/conversion/useConversionHandlers';
 import { render, screen } from '@testing-library/react';
-
 import { beforeEach, describe, expect, vi } from 'vitest';
 import { ErrorCode } from '@/shared/errors/codes';
 import { generateFilename } from '../../../../shared/utils/filenameSanitization';
+import type { AppContextValue } from '../../../context/AppContext';
+import type { ConversionHandlers } from '../../../hooks/conversion/useConversionHandlers';
 import { Success } from '../../conversion';
 import { ErrorState } from '../../conversion/ErrorState';
 import { ErrorBoundary } from '../../ErrorBoundary';
@@ -174,10 +173,11 @@ describe('MainContent', () => {
     it('renders as main element with correct attributes', () => {
       const { container } = render(<MainContent />);
 
+      // <main> element has implicit role="main" per HTML spec
       const main = container.querySelector('main');
       expect(main).toBeInTheDocument();
       expect(main).toHaveAttribute('id', 'main-content');
-      expect(main).toHaveAttribute('role', 'main');
+      expect(main?.tagName).toBe('MAIN');
     });
 
     it('applies correct layout classes', () => {
@@ -352,7 +352,7 @@ describe('MainContent', () => {
             element?.textContent === `Filename: ${TEST_FILENAME}` ||
             element?.textContent === `Filename:${TEST_FILENAME}`
           );
-        })
+        }),
       ).toBeInTheDocument();
     });
 
@@ -375,7 +375,7 @@ describe('MainContent', () => {
             element?.textContent === 'Filename: generated-resume.pdf' ||
             element?.textContent === 'Filename:generated-resume.pdf'
           );
-        })
+        }),
       ).toBeInTheDocument();
     });
 
@@ -477,7 +477,7 @@ describe('MainContent', () => {
             element?.textContent === `Error: ${TEST_ERROR.message}` ||
             element?.textContent === `Error:${TEST_ERROR.message}`
           );
-        })
+        }),
       ).toBeInTheDocument();
     });
 

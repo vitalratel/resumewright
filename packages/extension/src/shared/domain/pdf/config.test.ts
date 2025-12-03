@@ -3,9 +3,9 @@
  * Tests for configuration conversion and validation
  */
 
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ILogger } from '../../infrastructure/logging';
 import type { ConversionConfig } from '../../types/models';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { convertConfigToRust } from './config';
 
 import { validateWasmPdfConfig } from './wasmSchemas';
@@ -34,7 +34,9 @@ describe('PDF Config', () => {
     vi.clearAllMocks();
     // Setup default mock implementation for validateWasmPdfConfig
     const { validateWasmPdfConfig } = await import('./wasmSchemas');
-    vi.mocked(validateWasmPdfConfig).mockImplementation((config: unknown) => config as ReturnType<typeof validateWasmPdfConfig>);
+    vi.mocked(validateWasmPdfConfig).mockImplementation(
+      (config: unknown) => config as ReturnType<typeof validateWasmPdfConfig>,
+    );
 
     // Setup default mock implementation for getLogger
     const { getLogger } = await import('../../infrastructure/logging');
@@ -132,8 +134,7 @@ describe('PDF Config', () => {
 
       try {
         convertConfigToRust(validConfig, localMockLogger);
-      }
-      catch {
+      } catch {
         // Expected to throw
       }
 

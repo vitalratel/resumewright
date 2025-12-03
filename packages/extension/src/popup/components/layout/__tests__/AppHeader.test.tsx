@@ -287,11 +287,7 @@ describe('AppHeader', () => {
 
       // With both optional buttons
       rerender(
-        <AppHeader
-          {...defaultProps}
-          onShowHelp={vi.fn()}
-          onShowKeyboardShortcuts={vi.fn()}
-        />,
+        <AppHeader {...defaultProps} onShowHelp={vi.fn()} onShowKeyboardShortcuts={vi.fn()} />,
       );
       expect(screen.getByRole('button', { name: /help/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /shortcuts/i })).toBeInTheDocument();

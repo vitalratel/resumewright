@@ -29,12 +29,7 @@ interface TechTermProps {
  * Uses <abbr> element with title attribute for native browser tooltips
  * and keyboard/screen reader accessibility
  */
-export function TechTerm({
-  term,
-  explanation,
-  children,
-  showUnderline = true,
-}: TechTermProps) {
+export function TechTerm({ term, explanation, children, showUnderline = true }: TechTermProps) {
   return (
     <abbr
       title={explanation}
@@ -46,7 +41,9 @@ export function TechTerm({
         ${tokens.effects.hoverBorder}
         ${tokens.effects.focusRingLight}
         ${tokens.borders.rounded}
-      `.trim().replace(/\s+/g, ' ')}
+      `
+        .trim()
+        .replace(/\s+/g, ' ')}
       aria-label={`${term}: ${explanation}`}
     >
       {children ?? term}

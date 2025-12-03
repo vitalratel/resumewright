@@ -9,19 +9,12 @@
  */
 
 import type { BaseIssue } from 'valibot';
-import type {
-  UserSettings,
-  ValidationError,
-  ValidationResult,
-} from '@/shared/types/settings';
 import { safeParse } from 'valibot';
-import {
-  CURRENT_SETTINGS_VERSION,
-  DEFAULT_USER_SETTINGS,
-} from '@/shared/domain/settings/defaults';
+import { CURRENT_SETTINGS_VERSION, DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
 import { UserSettingsSchema } from '@/shared/domain/validation/settings';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { localExtStorage, syncExtStorage } from '@/shared/infrastructure/storage';
+import type { UserSettings, ValidationError, ValidationResult } from '@/shared/types/settings';
 
 /**
  * SettingsStore manages user settings persistence.
@@ -54,8 +47,7 @@ class SettingsStore {
       const defaults = DEFAULT_USER_SETTINGS;
       await this.saveSettings(defaults);
       return defaults;
-    }
-    catch (error) {
+    } catch (error) {
       getLogger().error('SettingsStore', 'Failed to load settings from sync storage', error);
       // Fallback to local storage
       return this.loadSettingsLocal();
@@ -75,8 +67,7 @@ class SettingsStore {
         }
       }
       return DEFAULT_USER_SETTINGS;
-    }
-    catch (error) {
+    } catch (error) {
       getLogger().error('SettingsStore', 'Failed to load settings from local storage', error);
       return DEFAULT_USER_SETTINGS;
     }
@@ -90,9 +81,7 @@ class SettingsStore {
     // Validate settings
     const validation = this.validateSettings(settings);
     if (!validation.valid) {
-      throw new Error(
-        `Invalid settings: ${validation.errors.map(e => e.message).join(', ')}`,
-      );
+      throw new Error(`Invalid settings: ${validation.errors.map((e) => e.message).join(', ')}`);
     }
 
     // Ensure version and timestamp are current
@@ -104,8 +93,7 @@ class SettingsStore {
 
     try {
       await syncExtStorage.setItem('resumewright-settings', toSave);
-    }
-    catch (error) {
+    } catch (error) {
       getLogger().error('SettingsStore', 'Failed to save settings to sync storage', error);
       // Fallback to local storage
       await localExtStorage.setItem('resumewright-settings', toSave);
@@ -132,7 +120,12 @@ class SettingsStore {
     if (!result.success) {
       // Convert Valibot errors to ValidationError format
       result.issues.forEach((issue: BaseIssue<unknown>) => {
-        const field = (issue.path?.map(p => String(p.key)).join('.') !== null && issue.path?.map(p => String(p.key)).join('.') !== undefined && issue.path?.map(p => String(p.key)).join('.') !== '') ? issue.path.map(p => String(p.key)).join('.') : 'settings';
+        const field =
+          issue.path?.map((p) => String(p.key)).join('.') !== null &&
+          issue.path?.map((p) => String(p.key)).join('.') !== undefined &&
+          issue.path?.map((p) => String(p.key)).join('.') !== ''
+            ? issue.path.map((p) => String(p.key)).join('.')
+            : 'settings';
         errors.push({
           field,
           message: issue.message,
@@ -151,8 +144,7 @@ class SettingsStore {
               message: `Invalid ${name} margin: ${value}" is outside the allowed range of 0.25" to 1.0"`,
             });
           }
-        }
-        else {
+        } else {
           errors.push({
             field: `margin.${name}`,
             message: `Invalid ${name} margin: expected a number, received ${typeof value}`,

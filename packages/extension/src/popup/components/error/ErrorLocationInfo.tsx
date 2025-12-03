@@ -36,13 +36,13 @@ export function ErrorLocationInfo({ line, column, fileSize, maxSize }: ErrorLoca
   }
 
   return (
-    <div className={`w-full max-w-md ${tokens.typography.small} ${tokens.colors.neutral.textMuted} ${tokens.colors.info.bg} ${tokens.spacing.cardSmall} ${tokens.borders.roundedLg} ${tokens.colors.info.border}`}>
+    <div
+      className={`w-full max-w-md ${tokens.typography.small} ${tokens.colors.neutral.textMuted} ${tokens.colors.info.bg} ${tokens.spacing.cardSmall} ${tokens.borders.roundedLg} ${tokens.colors.info.border}`}
+    >
       {/* Parse error line/column */}
       {line !== undefined && (
         <p className="font-mono" data-testid="error-location">
-          Line
-          {' '}
-          {line}
+          Line {line}
           {column !== undefined && `, Column ${column}`}
         </p>
       )}
@@ -50,9 +50,7 @@ export function ErrorLocationInfo({ line, column, fileSize, maxSize }: ErrorLoca
       {/* File size information */}
       {fileSize !== undefined && maxSize !== undefined && (
         <p data-testid="error-size">
-          File size:
-          {' '}
-          <span className={tokens.typography.semibold}>{formatFileSize(fileSize)}</span>
+          File size: <span className={tokens.typography.semibold}>{formatFileSize(fileSize)}</span>
           {' / '}
           <span className={tokens.colors.neutral.textMuted}>
             max:

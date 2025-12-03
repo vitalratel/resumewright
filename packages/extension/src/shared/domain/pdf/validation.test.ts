@@ -1,9 +1,9 @@
 // ABOUTME: Tests for TSX file and syntax validation.
 // ABOUTME: Verifies file checks, WASM status polling, and syntax validation.
 
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ILogger } from '../../infrastructure/logging';
 import type { TsxToPdfConverter } from './types';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { validateTsxFile, validateTsxSyntax } from './validation';
 
 const mockLogger: ILogger = {

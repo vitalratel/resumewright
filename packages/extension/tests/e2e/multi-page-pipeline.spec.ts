@@ -21,11 +21,9 @@ import { expect, test } from '../fixtures';
  */
 
 const FIXTURES_DIR = fileURLToPath(
-  new URL('../../../../test-fixtures/tsx-samples/multi-page', import.meta.url)
+  new URL('../../../../test-fixtures/tsx-samples/multi-page', import.meta.url),
 );
-const OUTPUT_DIR = fileURLToPath(
-  new URL('../../../../test-fixtures/pdf-output', import.meta.url)
-);
+const OUTPUT_DIR = fileURLToPath(new URL('../../../../test-fixtures/pdf-output', import.meta.url));
 
 interface PageInfo {
   pageNumber: number;
@@ -81,7 +79,7 @@ test.describe('Integration - Multi-Page Pipeline', () => {
     // 3. PDF output received
 
     const outputPath = fileURLToPath(
-      new URL('01-two-page-traditional-integration.pdf', `file://${OUTPUT_DIR}/`)
+      new URL('01-two-page-traditional-integration.pdf', `file://${OUTPUT_DIR}/`),
     );
 
     // Analyze generated PDF
@@ -93,7 +91,7 @@ test.describe('Integration - Multi-Page Pipeline', () => {
 
     pdfInfo.pages.forEach((p) => {
       console.warn(
-        `  Page ${p.pageNumber}: ${p.width}x${p.height}pt, content: ${p.contentLength} bytes`
+        `  Page ${p.pageNumber}: ${p.width}x${p.height}pt, content: ${p.contentLength} bytes`,
       );
     });
 
@@ -113,7 +111,7 @@ test.describe('Integration - Multi-Page Pipeline', () => {
     test.setTimeout(60000);
 
     const outputPath = fileURLToPath(
-      new URL('02-three-page-academic-integration.pdf', `file://${OUTPUT_DIR}/`)
+      new URL('02-three-page-academic-integration.pdf', `file://${OUTPUT_DIR}/`),
     );
 
     const pdfInfo = await analyzePdf(outputPath);
@@ -135,7 +133,7 @@ test.describe('Integration - Multi-Page Pipeline', () => {
     test.setTimeout(90000);
 
     const outputPath = fileURLToPath(
-      new URL('03-six-page-executive-integration.pdf', `file://${OUTPUT_DIR}/`)
+      new URL('03-six-page-executive-integration.pdf', `file://${OUTPUT_DIR}/`),
     );
 
     const pdfInfo = await analyzePdf(outputPath);
@@ -164,7 +162,7 @@ test.describe('Integration - Pagination Behavior', () => {
     // (no one page is significantly emptier than others)
 
     const outputPath = fileURLToPath(
-      new URL('02-three-page-academic-integration.pdf', `file://${OUTPUT_DIR}/`)
+      new URL('02-three-page-academic-integration.pdf', `file://${OUTPUT_DIR}/`),
     );
     const pdfInfo = await analyzePdf(outputPath);
 
@@ -213,7 +211,7 @@ test.describe('Integration - Content Integrity', () => {
     // Verify no content is lost during pipeline
 
     const _tsxPath = fileURLToPath(
-      new URL('01-two-page-traditional.tsx', `file://${FIXTURES_DIR}/`)
+      new URL('01-two-page-traditional.tsx', `file://${FIXTURES_DIR}/`),
     );
     const tsxContent = readFileSync(_tsxPath, 'utf-8');
 
@@ -283,7 +281,7 @@ test.describe('Integration - Error Handling', () => {
 test.describe('Integration - PDF Validity', () => {
   test('generates valid PDF structure', async ({ page: _page }) => {
     const outputPath = fileURLToPath(
-      new URL('01-two-page-traditional-integration.pdf', `file://${OUTPUT_DIR}/`)
+      new URL('01-two-page-traditional-integration.pdf', `file://${OUTPUT_DIR}/`),
     );
 
     // Verify PDF can be loaded by pdf-lib (standard validation)
@@ -299,7 +297,7 @@ test.describe('Integration - PDF Validity', () => {
     // For now, pdf-lib validation is sufficient
 
     const outputPath = fileURLToPath(
-      new URL('02-three-page-academic-integration.pdf', `file://${OUTPUT_DIR}/`)
+      new URL('02-three-page-academic-integration.pdf', `file://${OUTPUT_DIR}/`),
     );
     const pdfBuffer = readFileSync(outputPath);
 
@@ -336,7 +334,7 @@ test.describe('Integration - Acceptance Criteria Validation', () => {
     // CVs that exceed one page height automatically paginate
 
     const outputPath = fileURLToPath(
-      new URL('01-two-page-traditional-integration.pdf', `file://${OUTPUT_DIR}/`)
+      new URL('01-two-page-traditional-integration.pdf', `file://${OUTPUT_DIR}/`),
     );
     const pdfInfo = await analyzePdf(outputPath);
 

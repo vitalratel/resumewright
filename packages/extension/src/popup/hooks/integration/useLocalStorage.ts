@@ -35,9 +35,8 @@ export function useLocalStorage<T>(
       // Get from localStorage by key
       const item = window.localStorage.getItem(key);
       // Parse stored json or return initialValue
-      return (item != null && item !== '') ? (JSON.parse(item) as T) : initialValue;
-    }
-    catch (error) {
+      return item != null && item !== '' ? (JSON.parse(item) as T) : initialValue;
+    } catch (error) {
       // If error also return initialValue
       getLogger().warn('LocalStorage', `Error reading localStorage key "${key}"`, error);
       return initialValue;
@@ -50,7 +49,10 @@ export function useLocalStorage<T>(
     (value: T | ((val: T) => T)) => {
       // Check if window and localStorage are available (SSR-safe)
       if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
-        getLogger().warn('LocalStorage', `Cannot set localStorage key "${key}": localStorage not available`);
+        getLogger().warn(
+          'LocalStorage',
+          `Cannot set localStorage key "${key}": localStorage not available`,
+        );
         return;
       }
 
@@ -58,15 +60,15 @@ export function useLocalStorage<T>(
         // Allow value to be a function so we have same API as useState
         // CRITICAL: Use functional update to avoid stale closure over storedValue
         setStoredValue((prevValue) => {
-          const valueToStore = typeof value === 'function' ? (value as (val: T) => T)(prevValue) : value;
+          const valueToStore =
+            typeof value === 'function' ? (value as (val: T) => T)(prevValue) : value;
 
           // Save to localStorage
           window.localStorage.setItem(key, JSON.stringify(valueToStore));
 
           return valueToStore;
         });
-      }
-      catch (error) {
+      } catch (error) {
         // A more advanced implementation would handle the error case
         getLogger().warn('LocalStorage', `Error setting localStorage key "${key}"`, error);
       }
@@ -85,8 +87,7 @@ export function useLocalStorage<T>(
       if (e.key === key && e.newValue !== null) {
         try {
           setStoredValue(JSON.parse(e.newValue) as T);
-        }
-        catch (error) {
+        } catch (error) {
           getLogger().warn('LocalStorage', `Error parsing storage event for key "${key}"`, error);
         }
       }

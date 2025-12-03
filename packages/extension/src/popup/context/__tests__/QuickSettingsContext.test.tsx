@@ -3,9 +3,9 @@
  * Tests for QuickSettingsProvider and useQuickSettings hook
  */
 
-import type { UserSettings } from '@/shared/types/settings';
 import { render, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import type { UserSettings } from '@/shared/types/settings';
 import { QuickSettingsProvider, useQuickSettings } from '../QuickSettingsContext';
 
 describe('QuickSettingsContext', () => {

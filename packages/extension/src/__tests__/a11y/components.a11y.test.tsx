@@ -32,7 +32,7 @@ describe('Component Accessibility', () => {
       await testA11y(
         <Alert variant="error">
           <p>Failed to convert file</p>
-        </Alert>
+        </Alert>,
       );
     });
 
@@ -40,7 +40,7 @@ describe('Component Accessibility', () => {
       await testA11y(
         <Alert variant="success">
           <p>File converted successfully</p>
-        </Alert>
+        </Alert>,
       );
     });
 
@@ -48,7 +48,7 @@ describe('Component Accessibility', () => {
       await testA11y(
         <Alert variant="info">
           <p>Drag and drop your CV file here</p>
-        </Alert>
+        </Alert>,
       );
     });
 
@@ -56,7 +56,7 @@ describe('Component Accessibility', () => {
       await testA11y(
         <Alert variant="warning">
           <p>File size is close to the limit</p>
-        </Alert>
+        </Alert>,
       );
     });
 
@@ -64,7 +64,7 @@ describe('Component Accessibility', () => {
       await testA11y(
         <Alert variant="info" dismissible onDismiss={() => {}}>
           <p>This message can be dismissed</p>
-        </Alert>
+        </Alert>,
       );
     });
   });
@@ -98,14 +98,12 @@ describe('Component Accessibility', () => {
         <div>
           <Spinner size="small" delayMs={0} />
           <span>Loading...</span>
-        </div>
+        </div>,
       );
     });
 
     it('has accessible label when used as primary indicator', async () => {
-      await testA11y(
-        <Spinner size="large" ariaLabel="Loading content" delayMs={0} />
-      );
+      await testA11y(<Spinner size="large" ariaLabel="Loading content" delayMs={0} />);
     });
 
     it('all size variants have no violations', async () => {
@@ -114,7 +112,7 @@ describe('Component Accessibility', () => {
           <Spinner size="small" delayMs={0} />
           <Spinner size="medium" delayMs={0} />
           <Spinner size="large" delayMs={0} />
-        </div>
+        </div>,
       );
     });
   });
@@ -132,7 +130,7 @@ describe('Component Accessibility', () => {
           <p id="modal-desc">Are you sure you want to proceed?</p>
           <button type="button">Confirm</button>
           <button type="button">Cancel</button>
-        </Modal>
+        </Modal>,
       );
     });
 
@@ -140,7 +138,7 @@ describe('Component Accessibility', () => {
       await testA11y(
         <Modal isOpen={false} onClose={() => {}}>
           <p>This should not render</p>
-        </Modal>
+        </Modal>,
       );
     });
   });
@@ -156,7 +154,7 @@ describe('Component Accessibility', () => {
           max={1.0}
           step={0.05}
           onChange={() => {}}
-        />
+        />,
       );
     });
 
@@ -170,7 +168,7 @@ describe('Component Accessibility', () => {
           max={1.0}
           step={0.05}
           onChange={() => {}}
-        />
+        />,
       );
     });
 
@@ -184,7 +182,7 @@ describe('Component Accessibility', () => {
           max={1.0}
           step={0.05}
           onChange={() => {}}
-        />
+        />,
       );
     });
 
@@ -198,7 +196,7 @@ describe('Component Accessibility', () => {
           max={1.0}
           step={0.05}
           onChange={() => {}}
-        />
+        />,
       );
     });
   });

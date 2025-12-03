@@ -69,7 +69,7 @@ export const CONVERSION_STAGES = [
   'generating-pdf',
 ] as const;
 
-export type ConversionStage = typeof CONVERSION_STAGES[number];
+export type ConversionStage = (typeof CONVERSION_STAGES)[number];
 
 /**
  * Progress percentage ranges for each stage
@@ -79,9 +79,9 @@ export type ConversionStage = typeof CONVERSION_STAGES[number];
 export const STAGE_PROGRESS_RANGES = {
   'detecting-fonts': { start: 0, end: 5 },
   'fetching-fonts': { start: 5, end: 10 },
-  'parsing': { start: 10, end: 15 },
-  'rendering': { start: 15, end: 40 },
-  'layout': { start: 40, end: 70 },
+  parsing: { start: 10, end: 15 },
+  rendering: { start: 15, end: 40 },
+  layout: { start: 40, end: 70 },
   'generating-pdf': { start: 70, end: 100 },
 } as const satisfies Record<ConversionStage, { start: number; end: number }>;
 
@@ -95,7 +95,7 @@ export const PDF_STANDARDS = {
   PDFA1B: 'PDFA1b',
 } as const;
 
-export type PdfStandard = typeof PDF_STANDARDS[keyof typeof PDF_STANDARDS];
+export type PdfStandard = (typeof PDF_STANDARDS)[keyof typeof PDF_STANDARDS];
 
 /**
  * Page sizes supported
@@ -109,7 +109,7 @@ export const PAGE_SIZES = {
   LEGAL: 'Legal',
 } as const;
 
-export type PageSize = typeof PAGE_SIZES[keyof typeof PAGE_SIZES];
+export type PageSize = (typeof PAGE_SIZES)[keyof typeof PAGE_SIZES];
 
 /**
  * Default PDF configuration values
@@ -153,7 +153,7 @@ export const WEB_SAFE_FONTS = [
   'Verdana',
 ] as const;
 
-export type WebSafeFont = typeof WEB_SAFE_FONTS[number];
+export type WebSafeFont = (typeof WEB_SAFE_FONTS)[number];
 
 /**
  * Error retry configuration

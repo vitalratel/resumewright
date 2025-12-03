@@ -3,13 +3,17 @@
  * Tests message subscription management and cleanup
  */
 
-import type { Mock } from 'vitest';
-import type { ConversionCompletePayload, ConversionErrorPayload, ConversionProgressPayload } from '../../../../shared/types/messages';
-import type { ConversionProgress } from '../../../../shared/types/models';
 import { renderHook } from '@testing-library/react';
+import type { Mock } from 'vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ErrorCode } from '../../../../shared/errors/codes';
 import { downloadPDF } from '../../../../shared/infrastructure/pdf/downloader';
+import type {
+  ConversionCompletePayload,
+  ConversionErrorPayload,
+  ConversionProgressPayload,
+} from '../../../../shared/types/messages';
+import type { ConversionProgress } from '../../../../shared/types/models';
 import { extensionAPI } from '../../../services/extensionAPI';
 import { usePopupStore } from '../../../store';
 import { useProgressStore } from '../../../store/progressStore';

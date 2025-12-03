@@ -10,8 +10,8 @@
  * - Selector functions
  */
 
-import type { ConversionProgress } from '../../../shared/types/models';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ConversionProgress } from '../../../shared/types/models';
 import { useProgressStore } from '../progressStore';
 
 // Don't mock calculateETA - use the real implementation for ETA tests

@@ -10,9 +10,9 @@
  * - Backdrop click behavior
  */
 
-import type { UserSettings } from '@/shared/types/settings';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { UserSettings } from '@/shared/types/settings';
 import { ResetConfirmationModal } from '../ResetConfirmationModal';
 
 describe('ResetConfirmationModal', () => {
@@ -58,7 +58,8 @@ describe('ResetConfirmationModal', () => {
 
       const dialog = screen.getByRole('dialog');
       expect(dialog).toBeInTheDocument();
-      expect(dialog).toHaveAttribute('aria-modal', 'true');
+      // Native <dialog> has implicit aria-modal="true" when opened with showModal()
+      expect(dialog.tagName).toBe('DIALOG');
       expect(dialog).toHaveAttribute('aria-labelledby', 'reset-modal-title');
     });
 
@@ -195,7 +196,7 @@ describe('ResetConfirmationModal', () => {
     });
 
     it('should NOT call onCancel when modal content is clicked', () => {
-      const { container } = render(
+      render(
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
@@ -203,13 +204,12 @@ describe('ResetConfirmationModal', () => {
         />,
       );
 
-      // The modal content is the inner div with stopPropagation
-      const modalContent = container.querySelector('.bg-white');
-      if (modalContent) {
-        fireEvent.click(modalContent);
-        expect(mockOnCancel).not.toHaveBeenCalled();
-        expect(mockOnConfirm).not.toHaveBeenCalled();
-      }
+      // Click on inner content (title), not the dialog element itself
+      const title = screen.getByText('Reset Settings to Defaults?');
+      fireEvent.click(title);
+
+      expect(mockOnCancel).not.toHaveBeenCalled();
+      expect(mockOnConfirm).not.toHaveBeenCalled();
     });
   });
 
@@ -223,7 +223,9 @@ describe('ResetConfirmationModal', () => {
         />,
       );
 
-      fireEvent.keyDown(document, { key: 'Escape' });
+      // Native <dialog> handles Escape via 'cancel' event
+      const dialog = screen.getByRole('dialog');
+      fireEvent(dialog, new Event('cancel', { bubbles: true }));
 
       expect(mockOnCancel).toHaveBeenCalledTimes(1);
       expect(mockOnConfirm).not.toHaveBeenCalled();

@@ -41,16 +41,25 @@ export function sanitizeErrorMessage(message: string): string {
   // Improved regex robustness for edge cases
 
   // Remove Windows UNC network paths (\\server\share\path\file.tsx)
-  sanitized = sanitized.replace(/\\\\[^\s\\]+\\\S+\.(?:json|wasm|tsx|jsx|map|ts|js|rs)/gi, '[file]');
+  sanitized = sanitized.replace(
+    /\\\\[^\s\\]+\\\S+\.(?:json|wasm|tsx|jsx|map|ts|js|rs)/gi,
+    '[file]',
+  );
 
   // Remove absolute Unix file paths (must have at least 2 path segments: /path/to/file.tsx)
   // This prevents matching relative paths like /background.js
   // Expanded file extensions to cover more cases
-  sanitized = sanitized.replace(/\/[^/\s]+\/\S+\.(?:json|wasm|html|tsx|jsx|css|map|ts|js|rs)/g, '[file]');
+  sanitized = sanitized.replace(
+    /\/[^/\s]+\/\S+\.(?:json|wasm|html|tsx|jsx|css|map|ts|js|rs)/g,
+    '[file]',
+  );
 
   // Remove absolute Windows file paths (C:\path\to\file.tsx)
   // Also handles mixed separators (C:/path/to/file.tsx)
-  sanitized = sanitized.replace(/[A-Z]:[\\/]\S+\.(?:json|wasm|html|tsx|jsx|css|map|ts|js|rs)/gi, '[file]');
+  sanitized = sanitized.replace(
+    /[A-Z]:[\\/]\S+\.(?:json|wasm|html|tsx|jsx|css|map|ts|js|rs)/gi,
+    '[file]',
+  );
 
   // Replace technical error patterns with user-friendly messages
   const friendlyReplacements: Array<[RegExp, string]> = [
@@ -163,8 +172,7 @@ export function sanitizeErrorForLogging(error: Error): Error {
   // Sanitize stack trace (keep relative paths, remove absolute paths)
   if (error.stack !== null && error.stack !== undefined && error.stack !== '') {
     sanitized.stack = sanitizeTechnicalDetails(error.stack);
-  }
-  else {
+  } else {
     // Explicitly preserve undefined stack if original had none
     sanitized.stack = undefined;
   }

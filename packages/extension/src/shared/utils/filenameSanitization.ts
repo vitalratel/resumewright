@@ -64,12 +64,11 @@ export function sanitizeFilename(name: string | undefined, fallback = 'Resume'):
   // This handles Latin accents, Cyrillic, CJK, Greek, Arabic, etc.
   try {
     sanitized = transliterate(sanitized);
-  }
-  catch (error) {
+  } catch (error) {
     // If transliteration fails, strip non-ASCII characters as fallback
     getLogger().warn('FilenameSanitization', 'Transliteration failed, stripping non-ASCII', error);
     // Keep only printable ASCII (space through tilde), excluding control characters
-    sanitized = sanitized.replace(/[^\x20-\x7E]/g, '')
+    sanitized = sanitized.replace(/[^\x20-\x7E]/g, '');
   }
 
   // 2. Replace spaces with underscores

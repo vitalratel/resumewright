@@ -49,9 +49,7 @@ describe('useUnsavedChanges', () => {
     });
 
     it('returns false when values are identical', () => {
-      const { result } = renderHook(() =>
-        useUnsavedChanges(originalSettings, originalSettings),
-      );
+      const { result } = renderHook(() => useUnsavedChanges(originalSettings, originalSettings));
 
       expect(result.current.isDirty).toBe(false);
     });
@@ -188,8 +186,20 @@ describe('useUnsavedChanges', () => {
 
   describe('Deep Equality Edge Cases', () => {
     it('handles different object key order', () => {
-      const original = { defaultConfig: { pageSize: 'Letter' as const, margin: { top: 1, right: 1, bottom: 1, left: 1 } }, customFonts: [] };
-      const modified = { customFonts: [], defaultConfig: { margin: { left: 1, bottom: 1, right: 1, top: 1 }, pageSize: 'Letter' as const } };
+      const original = {
+        defaultConfig: {
+          pageSize: 'Letter' as const,
+          margin: { top: 1, right: 1, bottom: 1, left: 1 },
+        },
+        customFonts: [],
+      };
+      const modified = {
+        customFonts: [],
+        defaultConfig: {
+          margin: { left: 1, bottom: 1, right: 1, top: 1 },
+          pageSize: 'Letter' as const,
+        },
+      };
 
       const { result } = renderHook(() => useUnsavedChanges(modified, original));
 

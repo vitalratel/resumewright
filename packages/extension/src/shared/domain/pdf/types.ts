@@ -176,4 +176,3 @@ export interface WasmFontData {
  * ```
  */
 export type WasmInitFunction = (input?: string | URL | Request | BufferSource) => Promise<void>;
-

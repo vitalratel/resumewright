@@ -5,8 +5,8 @@
  */
 
 import type { BaseIssue, BaseSchema } from 'valibot';
-import type { ILogger } from '@/shared/infrastructure/logging';
 import { safeParse } from 'valibot';
+import type { ILogger } from '@/shared/infrastructure/logging';
 
 /**
  * Validation result with success flag
@@ -36,7 +36,7 @@ export function validateWithSchema<
   const parseResult = safeParse(schema, value);
 
   if (!parseResult.success) {
-    const errorMsg = parseResult.issues.map(e => e.message).join(', ');
+    const errorMsg = parseResult.issues.map((e) => e.message).join(', ');
     logger.error(context, 'Validation failed', errorMsg);
     return { success: false };
   }
@@ -52,15 +52,10 @@ export function validateWithSchema<
  * @param context - Context string for error messages
  * @returns Parsed value or null if parsing fails
  */
-export function safeJsonParse(
-  raw: string,
-  logger: ILogger,
-  context: string,
-): unknown | null {
+export function safeJsonParse(raw: string, logger: ILogger, context: string): unknown | null {
   try {
     return JSON.parse(raw);
-  }
-  catch (error) {
+  } catch (error) {
     logger.error(context, 'Failed to parse JSON', error);
     return null;
   }

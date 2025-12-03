@@ -3,10 +3,10 @@
  * Provides context providers for testing
  */
 
-import type { ConversionHandlers } from '../../../hooks/conversion/useConversionHandlers';
-import type { AppState } from '../../../hooks/integration/useAppState';
 import React from 'react';
 import { AppProvider, ConversionProvider, QuickSettingsProvider } from '../../../context';
+import type { ConversionHandlers } from '../../../hooks/conversion/useConversionHandlers';
+import type { AppState } from '../../../hooks/integration/useAppState';
 import { ConvertingState } from '../ConvertingState';
 
 interface ConvertingStateWrapperProps {

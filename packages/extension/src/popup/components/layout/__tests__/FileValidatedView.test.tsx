@@ -5,12 +5,12 @@
  * conditional display of export button and settings summary, and handler passing.
  */
 
-import type { AppContextValue } from '../../../context/AppContext';
-import type { QuickSettingsContextValue } from '../../../context/QuickSettingsContext';
-import type { ConversionHandlers } from '../../../hooks/conversion/useConversionHandlers';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { AppContextValue } from '../../../context/AppContext';
+import type { QuickSettingsContextValue } from '../../../context/QuickSettingsContext';
+import type { ConversionHandlers } from '../../../hooks/conversion/useConversionHandlers';
 import { FileValidatedView } from '../FileValidatedView';
 
 // Mock contexts
@@ -231,7 +231,10 @@ describe('FileValidatedView', () => {
       render(<FileValidatedView />);
 
       const button = screen.getByTestId('export-button');
-      expect(button).toHaveAttribute('aria-label', 'Export to PDF using current settings (Ctrl+E shortcut)');
+      expect(button).toHaveAttribute(
+        'aria-label',
+        'Export to PDF using current settings (Ctrl+E shortcut)',
+      );
     });
 
     it('calls handleExportClick when export button clicked', async () => {
@@ -298,7 +301,10 @@ describe('FileValidatedView', () => {
 
       const changeButton = screen.getByText('Change');
       expect(changeButton).toBeInTheDocument();
-      expect(changeButton).toHaveAttribute('aria-label', 'Open settings to change export configuration');
+      expect(changeButton).toHaveAttribute(
+        'aria-label',
+        'Open settings to change export configuration',
+      );
     });
 
     it('calls onOpenSettings when Change clicked', async () => {

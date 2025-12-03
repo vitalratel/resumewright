@@ -53,7 +53,7 @@ export function AppShell({ children }: AppShellProps): React.ReactElement | null
   // Initialize dark mode (applies theme class to <html>)
   useDarkMode();
 
-  const storeHydrated = usePopupStore(state => state._hasHydrated);
+  const storeHydrated = usePopupStore((state) => state._hasHydrated);
 
   // Check WASM compatibility
   const { wasmInitialized, wasmReport } = useWasmCompatibility();

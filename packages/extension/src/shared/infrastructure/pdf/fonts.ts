@@ -8,7 +8,7 @@
 import type { FontRequirement } from '../../domain/fonts/types';
 import { parseFontRequirements } from '../../domain/pdf/wasmSchemas';
 import { getLogger } from '../../infrastructure/logging';
-import { createConverterInstance } from '../wasm';
+import { createConverterInstance } from '../wasm/instance';
 
 /**
  * Simple cache for font detection results
@@ -54,10 +54,7 @@ function hashTsx(tsx: string): string {
  * console.log(`Found ${fonts.length} fonts:`, fonts);
  * ```
  */
-export async function detectFonts(
-  tsx: string,
-  useCache = true,
-): Promise<FontRequirement[]> {
+export async function detectFonts(tsx: string, useCache = true): Promise<FontRequirement[]> {
   if (!tsx || tsx.trim().length === 0) {
     throw new Error('TSX input is empty');
   }
@@ -67,7 +64,9 @@ export async function detectFonts(
     const cacheKey = hashTsx(tsx);
     const cached = fontDetectionCache.get(cacheKey);
     if (cached) {
-      getLogger().debug('FontService', 'Cache hit - returning cached fonts', { count: cached.length });
+      getLogger().debug('FontService', 'Cache hit - returning cached fonts', {
+        count: cached.length,
+      });
       return cached;
     }
   }
@@ -83,7 +82,10 @@ export async function detectFonts(
     // Parse and validate JSON result (runtime type safety)
     const fontRequirements = parseFontRequirements(fontsJson);
 
-    getLogger().debug('FontService', 'Found font requirements', { count: fontRequirements.length, fontRequirements });
+    getLogger().debug('FontService', 'Found font requirements', {
+      count: fontRequirements.length,
+      fontRequirements,
+    });
 
     // Cache result
     if (useCache) {
@@ -101,8 +103,7 @@ export async function detectFonts(
     }
 
     return fontRequirements;
-  }
-  catch (error) {
+  } catch (error) {
     getLogger().error('FontService', 'Failed to detect fonts', error);
     throw new Error(`Font detection failed: ${String(error)}`);
   }

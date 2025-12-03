@@ -9,8 +9,8 @@
 
 import type { FontCacheStats, IFontRepository } from '../../domain/fonts/IFontRepository';
 import type { FontStyle, FontWeight } from '../../domain/fonts/types';
-import type { IRetryPolicy } from '../retry/ExponentialBackoffRetryPolicy';
 import { getLogger } from '../logging';
+import type { IRetryPolicy } from '../retry/ExponentialBackoffRetryPolicy';
 import { ExponentialBackoffRetryPolicy } from '../retry/ExponentialBackoffRetryPolicy';
 
 /**
@@ -72,13 +72,13 @@ export class FontFetchError extends Error {
 export class GoogleFontsRepository implements IFontRepository {
   /** In-memory font cache with LRU eviction */
   private readonly fontCache = new Map<string, CachedFont>();
-  
+
   /** Maximum number of fonts to cache */
   private readonly maxCachedFonts = 20; // ~4MB max cache size
-  
+
   /** Cache TTL in milliseconds */
   private readonly cacheTtlMs = 3600000; // 1 hour
-  
+
   /** Font fetch timeout in milliseconds */
   private readonly fetchTimeoutMs = 30000; // 30 seconds
 
@@ -154,7 +154,9 @@ export class GoogleFontsRepository implements IFontRepository {
 
       // Step 4: Convert to Uint8Array and decompress if needed
       const arrayBuffer = await fontResponse.arrayBuffer();
-      let fontBytes: Uint8Array<ArrayBufferLike> | Uint8Array<ArrayBuffer> = new Uint8Array(arrayBuffer);
+      let fontBytes: Uint8Array<ArrayBufferLike> | Uint8Array<ArrayBuffer> = new Uint8Array(
+        arrayBuffer,
+      );
 
       // Decompress WOFF2 to TrueType using Rust WASM
       if (fontInfo.format === 'woff2') {
@@ -166,7 +168,7 @@ export class GoogleFontsRepository implements IFontRepository {
 
       getLogger().debug(
         'GoogleFontsRepository',
-        `Fetched ${fontBytes.length} bytes for ${cacheKey} (cache: ${this.fontCache.size}/${this.maxCachedFonts})`
+        `Fetched ${fontBytes.length} bytes for ${cacheKey} (cache: ${this.fontCache.size}/${this.maxCachedFonts})`,
       );
 
       return fontBytes;
@@ -178,7 +180,11 @@ export class GoogleFontsRepository implements IFontRepository {
   /**
    * Get cached font if available
    */
-  async getCachedFont(family: string, weight: FontWeight, style: FontStyle): Promise<Uint8Array | null> {
+  async getCachedFont(
+    family: string,
+    weight: FontWeight,
+    style: FontStyle,
+  ): Promise<Uint8Array | null> {
     const cacheKey = this.getCacheKey(family, weight, style);
     const cached = this.fontCache.get(cacheKey);
 
@@ -196,7 +202,7 @@ export class GoogleFontsRepository implements IFontRepository {
     cached.hits += 1;
     getLogger().debug(
       'GoogleFontsRepository',
-      `Cache hit: ${cacheKey} (${cached.hits} hits, ${cached.size} bytes)`
+      `Cache hit: ${cacheKey} (${cached.hits} hits, ${cached.size} bytes)`,
     );
 
     return cached.bytes;
@@ -205,7 +211,12 @@ export class GoogleFontsRepository implements IFontRepository {
   /**
    * Cache font binary data
    */
-  async cacheFont(family: string, weight: FontWeight, style: FontStyle, data: Uint8Array): Promise<void> {
+  async cacheFont(
+    family: string,
+    weight: FontWeight,
+    style: FontStyle,
+    data: Uint8Array,
+  ): Promise<void> {
     const cacheKey = this.getCacheKey(family, weight, style);
 
     this.fontCache.set(cacheKey, {
@@ -284,16 +295,19 @@ export class GoogleFontsRepository implements IFontRepository {
    */
   private async decompressWoff2(fontBytes: Uint8Array, family: string): Promise<Uint8Array> {
     try {
-      getLogger().debug('GoogleFontsRepository', `Decompressing WOFF2: ${family} (${fontBytes.length} bytes)`);
-      
+      getLogger().debug(
+        'GoogleFontsRepository',
+        `Decompressing WOFF2: ${family} (${fontBytes.length} bytes)`,
+      );
+
       const wasmModule = await import('@pkg/wasm_bridge');
       const decompressed = new Uint8Array(wasmModule.decompress_woff2_font(fontBytes));
-      
+
       getLogger().info(
         'GoogleFontsRepository',
-        `WOFF2 decompressed: ${family} ${fontBytes.length} → ${decompressed.length} bytes`
+        `WOFF2 decompressed: ${family} ${fontBytes.length} → ${decompressed.length} bytes`,
       );
-      
+
       return decompressed;
     } catch (error) {
       throw new FontFetchError(
@@ -304,8 +318,6 @@ export class GoogleFontsRepository implements IFontRepository {
     }
   }
 
-  
-
   /**
    * Evict least recently used fonts
    */
@@ -314,15 +326,14 @@ export class GoogleFontsRepository implements IFontRepository {
       return;
     }
 
-    const sorted = Array.from(this.fontCache.entries())
-      .sort(([, a], [, b]) => a.hits - b.hits);
+    const sorted = Array.from(this.fontCache.entries()).sort(([, a], [, b]) => a.hits - b.hits);
 
     const toEvict = sorted.slice(0, this.fontCache.size - this.maxCachedFonts);
 
     for (const [key] of toEvict) {
       getLogger().debug(
         'GoogleFontsRepository',
-        `Evicting ${key} (${this.fontCache.get(key)?.hits} hits)`
+        `Evicting ${key} (${this.fontCache.get(key)?.hits} hits)`,
       );
       this.fontCache.delete(key);
     }
@@ -359,4 +370,3 @@ export class GoogleFontsRepository implements IFontRepository {
     );
   }
 }
-

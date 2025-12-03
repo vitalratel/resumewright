@@ -173,7 +173,7 @@ describe('ThemeSelector', () => {
       expect(radios).toHaveLength(3);
 
       // Exactly one should be checked
-      const checkedRadios = radios.filter(radio => (radio as HTMLInputElement).checked);
+      const checkedRadios = radios.filter((radio) => (radio as HTMLInputElement).checked);
       expect(checkedRadios).toHaveLength(1);
     });
 

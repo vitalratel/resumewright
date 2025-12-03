@@ -26,8 +26,7 @@ export function getDefaultNodeWasmPath(): string {
       // Check if file exists synchronously - no await needed
       accessSync(pkgPath);
       return pkgPath;
-    }
-    catch {
+    } catch {
       // Move up one directory
       const parentDir = dirname(currentDir);
       if (parentDir === currentDir) {

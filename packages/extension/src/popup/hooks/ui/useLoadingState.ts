@@ -66,12 +66,7 @@ type LoadingStateReturn<T> = LoadingStateResult<T> | LoadingStateError;
  * Hook for managing loading, error, and success states consistently
  */
 export function useLoadingState<T = void>(options: UseLoadingStateOptions = {}) {
-  const {
-    trackSuccess = false,
-    successDuration = 2000,
-    onSuccess,
-    onError,
-  } = options;
+  const { trackSuccess = false, successDuration = 2000, onSuccess, onError } = options;
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -130,8 +125,7 @@ export function useLoadingState<T = void>(options: UseLoadingStateOptions = {}) 
         onSuccess?.();
 
         return { success: true, data, error: null };
-      }
-      catch (err) {
+      } catch (err) {
         if (!isMountedRef.current) {
           return { success: false, data: null, error: err as Error };
         }

@@ -30,7 +30,10 @@ export function generateErrorId(): string {
   const timeStr = `${hours}${minutes}${seconds}`;
 
   // Random component: 4 hex chars for uniqueness
-  const randomStr = Math.floor(Math.random() * 65536).toString(16).toUpperCase().padStart(4, '0');
+  const randomStr = Math.floor(Math.random() * 65536)
+    .toString(16)
+    .toUpperCase()
+    .padStart(4, '0');
 
   return `ERR-${dateStr}-${timeStr}-${randomStr}`;
 }
@@ -73,17 +76,25 @@ export function formatErrorDetailsForClipboard(details: ErrorDetails): string {
     `Error ID: ${details.errorId}`,
     `Timestamp: ${details.timestamp}`,
     `Error Code: ${details.code}`,
-    `Category: ${(details.category !== null && details.category !== undefined && details.category !== '') ? details.category : 'N/A'}`,
+    `Category: ${details.category !== null && details.category !== undefined && details.category !== '' ? details.category : 'N/A'}`,
     '',
     '--- User-Facing Message ---',
     details.message,
   ];
 
-  if (details.technicalDetails !== null && details.technicalDetails !== undefined && details.technicalDetails !== '') {
+  if (
+    details.technicalDetails !== null &&
+    details.technicalDetails !== undefined &&
+    details.technicalDetails !== ''
+  ) {
     lines.push('', '--- Technical Details ---', details.technicalDetails);
   }
 
-  if ((details.metadata !== null && details.metadata !== undefined) && Object.keys(details.metadata).length > 0) {
+  if (
+    details.metadata !== null &&
+    details.metadata !== undefined &&
+    Object.keys(details.metadata).length > 0
+  ) {
     lines.push('', '--- Metadata ---', JSON.stringify(details.metadata, null, 2));
   }
 
@@ -111,8 +122,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 
     await navigator.clipboard.writeText(text);
     return true;
-  }
-  catch (error) {
+  } catch (error) {
     getLogger().error('ErrorTelemetry', 'Failed to copy to clipboard', error);
     return false;
   }
@@ -187,11 +197,11 @@ export async function trackError(details: ErrorDetails): Promise<void> {
     };
 
     // Get existing errors
-    let errors: ErrorEvent[] = await localExtStorage.getItem('errorTelemetry') ?? [];
+    let errors: ErrorEvent[] = (await localExtStorage.getItem('errorTelemetry')) ?? [];
 
     // Clean old errors
     const now = Date.now();
-    errors = errors.filter(e => now - e.timestamp < MAX_ERROR_AGE_MS);
+    errors = errors.filter((e) => now - e.timestamp < MAX_ERROR_AGE_MS);
 
     // Add new error
     errors.push(event);
@@ -209,8 +219,7 @@ export async function trackError(details: ErrorDetails): Promise<void> {
       code: details.code,
       totalStored: errors.length,
     });
-  }
-  catch (error) {
+  } catch (error) {
     // Don't fail the app if telemetry fails
     logger.error('ErrorTelemetry', 'Failed to track error', error);
   }
@@ -223,9 +232,8 @@ export async function trackError(details: ErrorDetails): Promise<void> {
  */
 export async function getStoredErrors(): Promise<ErrorEvent[]> {
   try {
-    return await localExtStorage.getItem('errorTelemetry') ?? [];
-  }
-  catch (error) {
+    return (await localExtStorage.getItem('errorTelemetry')) ?? [];
+  } catch (error) {
     logger.error('ErrorTelemetry', 'Failed to get stored errors', error);
     return [];
   }
@@ -240,8 +248,7 @@ export async function clearStoredErrors(): Promise<void> {
   try {
     await localExtStorage.removeItem('errorTelemetry');
     logger.info('ErrorTelemetry', 'Cleared all stored errors');
-  }
-  catch (error) {
+  } catch (error) {
     logger.error('ErrorTelemetry', 'Failed to clear stored errors', error);
     throw error;
   }
@@ -256,8 +263,7 @@ export async function exportErrors(): Promise<string> {
   try {
     const errors = await getStoredErrors();
     return JSON.stringify(errors, null, 2);
-  }
-  catch (error) {
+  } catch (error) {
     logger.error('ErrorTelemetry', 'Failed to export errors', error);
     throw error;
   }
@@ -302,11 +308,10 @@ export async function getTelemetryStats(): Promise<{
       totalErrors: errors.length,
       errorsByCode,
       errorsByCategory,
-      oldestError: Math.min(...errors.map(e => e.timestamp)),
-      newestError: Math.max(...errors.map(e => e.timestamp)),
+      oldestError: Math.min(...errors.map((e) => e.timestamp)),
+      newestError: Math.max(...errors.map((e) => e.timestamp)),
     };
-  }
-  catch (error) {
+  } catch (error) {
     logger.error('ErrorTelemetry', 'Failed to get telemetry stats', error);
     throw error;
   }

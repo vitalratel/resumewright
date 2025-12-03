@@ -15,8 +15,7 @@
  * formatFileSize(0) // "0 Bytes"
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0)
-    return '0 Bytes';
+  if (bytes === 0) return '0 Bytes';
 
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB'];
@@ -29,8 +28,7 @@ export function formatFileSize(bytes: number): string {
   if (i === 0) {
     // Bytes - no decimal
     return `${Math.round(value)} ${sizes[i]}`;
-  }
-  else {
+  } else {
     // KB/MB/GB - always show 1 decimal place
     return `${value.toFixed(1)} ${sizes[i]}`;
   }

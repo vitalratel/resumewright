@@ -15,10 +15,7 @@ import { useEffect, useState } from 'react';
  * return shouldShowSpinner ? <Spinner /> : null;
  * ```
  */
-export function useDelayedSpinner(
-  isLoading: boolean,
-  delayMs: number = 300,
-): boolean {
+export function useDelayedSpinner(isLoading: boolean, delayMs: number = 300): boolean {
   const [shouldShow, setShouldShow] = useState(delayMs === 0);
 
   useEffect(() => {

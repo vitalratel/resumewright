@@ -23,23 +23,22 @@ interface ErrorCodeContextProps {
  */
 export function ErrorCodeContext({ codeContext, line }: ErrorCodeContextProps) {
   return (
-    <div
+    <section
       className={`w-full max-w-md ${tokens.colors.tooltip.bg} ${tokens.colors.neutral.text} ${tokens.spacing.card} ${tokens.borders.roundedLg} font-mono ${tokens.typography.small} overflow-x-auto focus:outline-none focus:ring-2 focus:ring-blue-500`}
+      // biome-ignore lint/a11y/noNoninteractiveTabindex: Scrollable content needs tabIndex for keyboard accessibility
       tabIndex={0}
-      role="region"
       aria-label="Error code context"
     >
       {line !== undefined && (
-        <div className={`${tokens.colors.neutral.textMuted} ${tokens.typography.small} ${tokens.spacing.marginSmall}`}>
-          Error on line
-          {' '}
-          {line}
-          :
+        <div
+          className={`${tokens.colors.neutral.textMuted} ${tokens.typography.small} ${tokens.spacing.marginSmall}`}
+        >
+          Error on line {line}:
         </div>
       )}
       <pre className={`${tokens.typography.small} leading-relaxed whitespace-pre-wrap`}>
         {codeContext}
       </pre>
-    </div>
+    </section>
   );
 }

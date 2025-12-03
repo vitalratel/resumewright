@@ -46,16 +46,17 @@ export function logBackgroundError(
   const timestamp = new Date().toISOString();
 
   // Extract error details
-  const errorDetails = error instanceof Error
-    ? {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      }
-    : {
-        message: String(error),
-        raw: error,
-      };
+  const errorDetails =
+    error instanceof Error
+      ? {
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+        }
+      : {
+          message: String(error),
+          raw: error,
+        };
 
   // Build structured log data
   const logData = {

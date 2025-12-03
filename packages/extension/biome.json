@@ -1,0 +1,59 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
+  "files": {
+    "includes": [
+      "src/**",
+      "tests/**",
+      "entrypoints/**",
+      "!tests/manual/test-data",
+      "!tests/.tmp",
+      "!**/*.css"
+    ]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 100
+  },
+  "linter": {
+    "rules": {
+      "suspicious": {
+        "noConsole": "warn"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single"
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["src/shared/infrastructure/logging/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/__tests__/**", "**/*.test.*", "tests/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off",
+            "noExplicitAny": "off",
+            "noImplicitAnyLet": "off"
+          },
+          "style": {
+            "noNonNullAssertion": "off"
+          },
+          "correctness": {
+            "noEmptyPattern": "off"
+          }
+        }
+      }
+    }
+  ]
+}

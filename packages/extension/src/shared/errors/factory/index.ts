@@ -10,7 +10,7 @@
 export * from './enrichment';
 
 // Base factory
-export { createConversionError, type CreateErrorOptions } from './errorFactory';
+export { type CreateErrorOptions, createConversionError } from './errorFactory';
 
 // Network errors
 export { createFontLoadError } from './networkErrors';

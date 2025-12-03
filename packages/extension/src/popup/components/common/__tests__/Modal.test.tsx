@@ -32,30 +32,12 @@ describe('Modal', () => {
   });
 
   describe('Modal Entrance Animation', () => {
-    it('should apply slide-down animation class to modal content', () => {
-      render(<Modal {...defaultProps} />);
-
-      const modalContent = screen.getByRole('dialog');
-      expect(modalContent).toHaveClass('animate-slide-down');
-    });
-
     it('should apply fade-in animation to modal content', () => {
       render(<Modal {...defaultProps} />);
 
       const modalContent = screen.getByRole('dialog');
       // Check for fadeIn animation class (from tokens.animations.fadeIn)
       expect(modalContent.className).toMatch(/animate-fade-in|animate-\[fadeIn/);
-    });
-
-    it('should apply both fade-in and slide-down animations', () => {
-      render(<Modal {...defaultProps} />);
-
-      const modalContent = screen.getByRole('dialog');
-      const classes = modalContent.className;
-
-      // Should have both animations
-      expect(classes).toContain('animate-slide-down');
-      expect(classes).toMatch(/animate-fade-in|animate-\[fadeIn/);
     });
   });
 
@@ -65,7 +47,8 @@ describe('Modal', () => {
 
       const dialog = screen.getByRole('dialog');
       expect(dialog).toBeInTheDocument();
-      expect(dialog).toHaveAttribute('aria-modal', 'true');
+      // Native <dialog> has implicit aria-modal when opened with showModal()
+      expect(dialog.tagName).toBe('DIALOG');
       expect(dialog).toHaveAttribute('aria-labelledby', 'modal-title');
       expect(dialog).toHaveAttribute('aria-describedby', 'modal-description');
     });
@@ -83,86 +66,71 @@ describe('Modal', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
-    it('should render backdrop when showBackdrop is true', () => {
-      const { container } = render(<Modal {...defaultProps} showBackdrop={true} />);
+    it('should use native dialog backdrop via CSS pseudo-element', () => {
+      render(<Modal {...defaultProps} />);
 
-      // Backdrop has bg-black and fadeIn animation
-      const backdrop = container.querySelector('.bg-black');
-      expect(backdrop).toBeInTheDocument();
-    });
-
-    it('should not render backdrop when showBackdrop is false', () => {
-      const { container } = render(<Modal {...defaultProps} showBackdrop={false} />);
-
-      const backdrop = container.querySelector('.bg-black');
-      expect(backdrop).not.toBeInTheDocument();
+      // Native <dialog> uses ::backdrop pseudo-element styled via backdrop: classes
+      const dialog = screen.getByRole('dialog');
+      expect(dialog.className).toContain('backdrop:bg-black');
     });
   });
 
   describe('Keyboard Interaction', () => {
-    it('should call onClose when Escape key is pressed', () => {
+    it('should call onClose when native cancel event fires (Escape key)', () => {
       const onClose = vi.fn();
       render(<Modal {...defaultProps} onClose={onClose} />);
 
-      fireEvent.keyDown(window, { key: 'Escape' });
+      // Native <dialog> handles Escape via 'cancel' event, not keydown
+      const dialog = screen.getByRole('dialog');
+      fireEvent(dialog, new Event('cancel', { bubbles: true }));
 
       expect(onClose).toHaveBeenCalledTimes(1);
     });
 
-    it('should not call onClose on Escape when closeOnEscape is false', () => {
+    it('should not call onClose on cancel event when closeOnEscape is false', () => {
       const onClose = vi.fn();
       render(<Modal {...defaultProps} onClose={onClose} closeOnEscape={false} />);
 
-      fireEvent.keyDown(window, { key: 'Escape' });
-
-      expect(onClose).not.toHaveBeenCalled();
-    });
-
-    it('should not respond to other keys', () => {
-      const onClose = vi.fn();
-      render(<Modal {...defaultProps} onClose={onClose} />);
-
-      fireEvent.keyDown(window, { key: 'Enter' });
-      fireEvent.keyDown(window, { key: 'Tab' });
+      // Native <dialog> handles Escape via 'cancel' event
+      const dialog = screen.getByRole('dialog');
+      fireEvent(dialog, new Event('cancel', { bubbles: true }));
 
       expect(onClose).not.toHaveBeenCalled();
     });
   });
 
   describe('Backdrop Click Behavior', () => {
-    it('should call onClose when backdrop is clicked', () => {
-      const onClose = vi.fn();
-      const { container } = render(<Modal {...defaultProps} onClose={onClose} showBackdrop={true} />);
-
-      // Click the backdrop (fixed inset-0 container with bg-black class)
-      const backdrop = container.querySelector('.bg-black');
-      if (backdrop) {
-        fireEvent.click(backdrop);
-        expect(onClose).toHaveBeenCalledTimes(1);
-      }
-    });
-
-    it('should not call onClose when modal content is clicked', () => {
+    it('should call onClose when dialog element itself is clicked (backdrop area)', () => {
       const onClose = vi.fn();
       render(<Modal {...defaultProps} onClose={onClose} />);
 
+      // Click the dialog element itself (simulates backdrop click via native dialog)
       const dialog = screen.getByRole('dialog');
       fireEvent.click(dialog);
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call onClose when modal content (child) is clicked', () => {
+      const onClose = vi.fn();
+      render(<Modal {...defaultProps} onClose={onClose} />);
+
+      // Click on child content, not the dialog element itself
+      const title = screen.getByText('Test Modal');
+      fireEvent.click(title);
 
       expect(onClose).not.toHaveBeenCalled();
     });
 
     it('should not call onClose on backdrop click when closeOnBackdropClick is false', () => {
       const onClose = vi.fn();
-      const { container } = render(
-        <Modal {...defaultProps} onClose={onClose} closeOnBackdropClick={false} showBackdrop={true} />,
-      );
+      render(<Modal {...defaultProps} onClose={onClose} closeOnBackdropClick={false} />);
 
-      const backdrop = container.querySelector('.bg-black');
-      if (backdrop) {
-        fireEvent.click(backdrop);
-        expect(onClose).not.toHaveBeenCalled();
-      }
+      // Click the dialog element itself
+      const dialog = screen.getByRole('dialog');
+      fireEvent.click(dialog);
+
+      expect(onClose).not.toHaveBeenCalled();
     });
   });
 
@@ -181,15 +149,6 @@ describe('Modal', () => {
       expect(dialog).toHaveClass('custom-modal-class');
     });
 
-    it('should use custom backdrop opacity', () => {
-      const { container } = render(
-        <Modal {...defaultProps} backdropOpacity="bg-opacity-75" showBackdrop={true} />,
-      );
-
-      const backdrop = container.querySelector('.bg-black');
-      expect(backdrop).toHaveClass('bg-opacity-75');
-    });
-
     it('should apply default maxWidth when not provided', () => {
       render(<Modal {...defaultProps} />);
 
@@ -198,21 +157,13 @@ describe('Modal', () => {
     });
   });
 
-  describe('Z-Index Management', () => {
-    it('should use token-based z-index for backdrop by default', () => {
-      const { container } = render(<Modal {...defaultProps} showBackdrop={true} />);
+  describe('Native Dialog Styling', () => {
+    it('should use native dialog with backdrop pseudo-element styling', () => {
+      render(<Modal {...defaultProps} />);
 
-      const backdrop = container.querySelector('.bg-black');
-      // Should use z-${tokens.zIndex.backdrop} which is z-40
-      expect(backdrop?.className).toMatch(/z-40/);
-    });
-
-    it('should use token-based z-index for modal by default', () => {
-      const { container } = render(<Modal {...defaultProps} />);
-
-      const modalContainer = container.querySelector('.fixed.inset-0.flex');
-      // Should use z-${tokens.zIndex.modal} which is z-50
-      expect(modalContainer?.className).toMatch(/z-50/);
+      const dialog = screen.getByRole('dialog');
+      // Native <dialog> uses backdrop: pseudo-element classes
+      expect(dialog.className).toContain('backdrop:bg-black');
     });
   });
 
@@ -231,18 +182,20 @@ describe('Modal', () => {
   });
 
   describe('Accessibility', () => {
-    it('should have proper dialog role', () => {
+    it('should have proper dialog role via native element', () => {
       render(<Modal {...defaultProps} />);
 
+      // Native <dialog> has implicit role="dialog"
       const dialog = screen.getByRole('dialog');
-      expect(dialog).toHaveAttribute('role', 'dialog');
+      expect(dialog.tagName).toBe('DIALOG');
     });
 
-    it('should mark modal as aria-modal', () => {
+    it('should be modal via native showModal()', () => {
       render(<Modal {...defaultProps} />);
 
+      // Native <dialog> has implicit aria-modal="true" when opened with showModal()
       const dialog = screen.getByRole('dialog');
-      expect(dialog).toHaveAttribute('aria-modal', 'true');
+      expect(dialog.tagName).toBe('DIALOG');
     });
 
     it('should connect aria-labelledby to title', () => {
@@ -257,13 +210,6 @@ describe('Modal', () => {
 
       const dialog = screen.getByRole('dialog');
       expect(dialog).toHaveAttribute('aria-describedby', 'custom-description');
-    });
-
-    it('should mark backdrop as aria-hidden', () => {
-      const { container } = render(<Modal {...defaultProps} showBackdrop={true} />);
-
-      const backdrop = container.querySelector('.bg-black');
-      expect(backdrop).toHaveAttribute('aria-hidden', 'true');
     });
   });
 });

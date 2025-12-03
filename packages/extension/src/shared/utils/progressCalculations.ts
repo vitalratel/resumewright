@@ -108,16 +108,16 @@ export function formatTimeRemaining(seconds: number): string {
 export function getStageDisplayName(stage: ConversionStatus): string {
   // User-friendly stage names
   const names: Record<ConversionStatus, string> = {
-    'queued': 'Getting ready...',
-    'parsing': 'Reading your resume...',
+    queued: 'Getting ready...',
+    parsing: 'Reading your resume...',
     'extracting-metadata': 'Analyzing content...',
-    'rendering': 'Creating PDF layout...',
+    rendering: 'Creating PDF layout...',
     'laying-out': 'Creating PDF layout...',
-    'optimizing': 'Optimizing for ATS compatibility...',
+    optimizing: 'Optimizing for ATS compatibility...',
     'generating-pdf': 'Generating PDF...',
-    'completed': 'Complete',
-    'failed': 'Failed',
-    'cancelled': 'Cancelled',
+    completed: 'Complete',
+    failed: 'Failed',
+    cancelled: 'Cancelled',
   };
   return names[stage] || stage;
 }
@@ -130,16 +130,16 @@ export function getStageDisplayName(stage: ConversionStatus): string {
  */
 export function getStageIcon(stage: ConversionStatus): string {
   const icons: Record<ConversionStatus, string> = {
-    'queued': '⏳',
-    'parsing': '📄',
+    queued: '⏳',
+    parsing: '📄',
     'extracting-metadata': '🔍',
-    'rendering': '🎨',
+    rendering: '🎨',
     'laying-out': '📐',
-    'optimizing': '⚡',
+    optimizing: '⚡',
     'generating-pdf': '📋',
-    'completed': '✅',
-    'failed': '❌',
-    'cancelled': '🚫',
+    completed: '✅',
+    failed: '❌',
+    cancelled: '🚫',
   };
   return icons[stage] || '⚙️';
 }

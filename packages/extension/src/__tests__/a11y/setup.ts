@@ -3,11 +3,11 @@
  * Helper functions for WCAG 2.1 AA compliance testing
  */
 
+import { render } from '@testing-library/react';
 import type { MatchersObject } from '@vitest/expect';
 import type { RunOptions } from 'axe-core';
-import type { ReactElement } from 'react';
-import { render } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import type { ReactElement } from 'react';
 
 // Extend Vitest expect with jest-axe matchers
 // Type assertion needed - jest-axe designed for Jest, but works with Vitest at runtime

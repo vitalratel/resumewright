@@ -136,16 +136,22 @@ function useDownloadSearch(filename: string | undefined, apiAvailable: boolean) 
     dispatch({ type: 'SEARCH_START' });
 
     // Perform search
-    browser.downloads.search({
-      filename,
-      orderBy: ['-startTime'],
-      limit: 1,
-    })
+    browser.downloads
+      .search({
+        filename,
+        orderBy: ['-startTime'],
+        limit: 1,
+      })
       .then((results) => {
         // Ignore if component unmounted or deps changed
         if (ignoreRef.current) return;
 
-        if (results !== null && results !== undefined && results[0] !== null && results[0] !== undefined) {
+        if (
+          results !== null &&
+          results !== undefined &&
+          results[0] !== null &&
+          results[0] !== undefined
+        ) {
           dispatch({ type: 'SEARCH_SUCCESS', downloadId: results[0].id });
         } else {
           dispatch({ type: 'SEARCH_NOT_FOUND' });
@@ -177,14 +183,17 @@ function useDownloadSearch(filename: string | undefined, apiAvailable: boolean) 
  * Hook for download actions (open, show)
  * Single Responsibility: Only provides action methods
  */
-function useDownloadActions(
-  downloadId: number | null,
-  apiAvailable: boolean
-) {
+function useDownloadActions(downloadId: number | null, apiAvailable: boolean) {
   const [actionError, setActionError] = useState<string | null>(null);
 
   const openDownload = useCallback(() => {
-    if (downloadId === null || downloadId === undefined || !apiAvailable || browser?.downloads === null || browser?.downloads === undefined) {
+    if (
+      downloadId === null ||
+      downloadId === undefined ||
+      !apiAvailable ||
+      browser?.downloads === null ||
+      browser?.downloads === undefined
+    ) {
       setActionError('Cannot open download: API not available or download not found');
       return;
     }
@@ -198,7 +207,13 @@ function useDownloadActions(
   }, [downloadId, apiAvailable]);
 
   const showInFolder = useCallback(() => {
-    if (downloadId === null || downloadId === undefined || !apiAvailable || browser?.downloads === null || browser?.downloads === undefined) {
+    if (
+      downloadId === null ||
+      downloadId === undefined ||
+      !apiAvailable ||
+      browser?.downloads === null ||
+      browser?.downloads === undefined
+    ) {
       setActionError('Cannot show in folder: API not available or download not found');
       return;
     }
@@ -235,11 +250,12 @@ export function useBrowserDownloads(filename: string | undefined): UseBrowserDow
   const { openDownload, showInFolder, actionError } = useDownloadActions(downloadId, apiAvailable);
 
   // Combine errors (priority: action > search > api)
-  const error = (actionError !== null && actionError !== undefined && actionError !== '')
-    ? actionError
-    : (searchError !== null && searchError !== undefined && searchError !== '')
-      ? searchError
-      : apiError;
+  const error =
+    actionError !== null && actionError !== undefined && actionError !== ''
+      ? actionError
+      : searchError !== null && searchError !== undefined && searchError !== ''
+        ? searchError
+        : apiError;
 
   return {
     downloadId,

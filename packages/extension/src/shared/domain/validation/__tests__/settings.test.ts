@@ -12,15 +12,11 @@
  * Coverage target: >85%
  */
 
-import type { UserSettings } from '@/shared/types/settings';
 import { safeParse } from 'valibot';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONVERSION_CONFIG } from '@/shared/types/models';
-import {
-  parseUserSettings,
-  UserSettingsSchema,
-  validateUserSettings,
-} from '../settings';
+import type { UserSettings } from '@/shared/types/settings';
+import { parseUserSettings, UserSettingsSchema, validateUserSettings } from '../settings';
 
 describe('UserSettings Schema', () => {
   const validSettings: UserSettings = {

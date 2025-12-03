@@ -26,9 +26,10 @@ const { localStorage } = vi.hoisted(() => {
     async get(keys: string | string[] | null): Promise<Record<string, unknown>> {
       const result: Record<string, unknown> = {};
       if (keys === null || keys === undefined) {
-        this.data.forEach((value, key) => { result[key] = value; });
-      }
-      else {
+        this.data.forEach((value, key) => {
+          result[key] = value;
+        });
+      } else {
         const keyArray = Array.isArray(keys) ? keys : [keys];
         keyArray.forEach((key) => {
           if (this.data.has(key)) {
@@ -47,7 +48,9 @@ const { localStorage } = vi.hoisted(() => {
 
     async remove(keys: string | string[]): Promise<void> {
       const keyArray = Array.isArray(keys) ? keys : [keys];
-      keyArray.forEach(key => this.data.delete(key));
+      for (const key of keyArray) {
+        this.data.delete(key);
+      }
     }
 
     async clear(): Promise<void> {

@@ -84,7 +84,7 @@ describe('WASM Loader', () => {
 
         // In Vitest/Node.js, getBrowserPolyfill should throw
         expect(() => getBrowserPolyfill()).toThrow(
-          'browser polyfill should not be accessed in Node.js environment'
+          'browser polyfill should not be accessed in Node.js environment',
         );
       });
 
@@ -96,11 +96,10 @@ describe('WASM Loader', () => {
 
         // In Node.js environment, should check process.versions and throw
         expect(() => getBrowserPolyfill()).toThrow(
-          'browser polyfill should not be accessed in Node.js environment'
+          'browser polyfill should not be accessed in Node.js environment',
         );
       });
     });
-
   });
 
   beforeEach(() => {
@@ -145,7 +144,7 @@ describe('WASM Loader', () => {
 
     it('should preserve Error instances with stack traces', async () => {
       const originalError = new Error('Original WASM error');
-      
+
       // Mock Node.js loader to fail with original error
       const { initWASMNode } = await import('../loader.node.js');
       vi.mocked(initWASMNode).mockRejectedValue(originalError);
@@ -172,7 +171,7 @@ describe('WASM Loader', () => {
       const loaderModule = await import('../loader');
 
       await expect(loaderModule.initWASM()).rejects.toThrow(
-        'WASM initialization failed: String error'
+        'WASM initialization failed: String error',
       );
     });
   });

@@ -5,9 +5,13 @@
  * Extracted from useConversionHandlers for single responsibility
  */
 
-import type { AppState } from '../integration/useAppState';
 import { useCallback } from 'react';
-import { copyToClipboard, formatErrorDetailsForClipboard, formatErrorTimestamp } from '@/shared/errors';
+import {
+  copyToClipboard,
+  formatErrorDetailsForClipboard,
+  formatErrorTimestamp,
+} from '@/shared/errors';
+import type { AppState } from '../integration/useAppState';
 
 export interface ConversionCleanupHandlers {
   handleRetry: () => void;
@@ -22,7 +26,9 @@ interface UseConversionCleanupOptions {
 /**
  * Hook for managing error recovery and cleanup operations
  */
-export function useConversionCleanup({ appState }: UseConversionCleanupOptions): ConversionCleanupHandlers {
+export function useConversionCleanup({
+  appState,
+}: UseConversionCleanupOptions): ConversionCleanupHandlers {
   const { lastError, reset } = appState;
 
   // Handle retry on error

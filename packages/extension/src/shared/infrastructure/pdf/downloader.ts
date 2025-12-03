@@ -17,7 +17,10 @@ import { generateFilename } from '../../utils/filenameSanitization';
  */
 export async function downloadPDF(pdfBytes: Uint8Array, filename?: string): Promise<void> {
   // Use fallback filename with proper date stamping
-  const downloadFilename = (filename !== null && filename !== undefined && filename !== '') ? filename : generateFilename(undefined);
+  const downloadFilename =
+    filename !== null && filename !== undefined && filename !== ''
+      ? filename
+      : generateFilename(undefined);
 
   getLogger().debug('PdfDownloader', 'Starting download process', {
     pdfSize: pdfBytes.length,
@@ -65,8 +68,7 @@ export async function downloadPDF(pdfBytes: Uint8Array, filename?: string): Prom
       URL.revokeObjectURL(blobUrl);
       getLogger().debug('PdfDownloader', 'Blob URL revoked');
     }, 1000);
-  }
-  catch (error) {
+  } catch (error) {
     // Clean up blob URL on error
     URL.revokeObjectURL(blobUrl);
 
@@ -77,4 +79,3 @@ export async function downloadPDF(pdfBytes: Uint8Array, filename?: string): Prom
     throw new Error(`Download failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
-

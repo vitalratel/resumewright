@@ -3,9 +3,9 @@
  * Tests for ConversionProvider and useConversion hook
  */
 
-import type { ConversionHandlers } from '../../hooks/conversion/useConversionHandlers';
 import { render, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import type { ConversionHandlers } from '../../hooks/conversion/useConversionHandlers';
 import { ConversionProvider, useConversion } from '../ConversionContext';
 
 describe('ConversionContext', () => {

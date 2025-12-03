@@ -11,21 +11,21 @@ import { getLogger } from '@/shared/infrastructure/logging';
 
 /**
  * Hook to manage focus on component mount or state changes
- * @param dependency - State or value to trigger focus management
+ * @param shouldFocus - Whether the element should receive focus
  * @param focusDelay - Delay in ms before focusing (allows DOM updates)
  */
-export function useFocusOnMount(dependency?: unknown, focusDelay = 100) {
+export function useFocusOnMount(shouldFocus: boolean, focusDelay = 100) {
   const elementRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!shouldFocus) return;
+
     const timer = setTimeout(() => {
-      if (elementRef.current) {
-        elementRef.current.focus();
-      }
+      elementRef.current?.focus();
     }, focusDelay);
 
     return () => clearTimeout(timer);
-  }, [dependency, focusDelay]);
+  }, [shouldFocus, focusDelay]);
 
   return elementRef;
 }
@@ -119,12 +119,16 @@ export function useFocusTrap(isActive: boolean) {
     if (isActive) {
       // Save current focus for restoration (only if it's a valid focusable element)
       const activeEl = document.activeElement as HTMLElement;
-      if ((activeEl !== null && activeEl !== undefined) && activeEl !== document.body && typeof activeEl.focus === 'function') {
+      if (
+        activeEl !== null &&
+        activeEl !== undefined &&
+        activeEl !== document.body &&
+        typeof activeEl.focus === 'function'
+      ) {
         previousFocusRef.current = activeEl;
       }
 
-      if (containerRef.current === null || containerRef.current === undefined)
-        return;
+      if (containerRef.current === null || containerRef.current === undefined) return;
 
       const container = containerRef.current;
 
@@ -136,26 +140,27 @@ export function useFocusTrap(isActive: boolean) {
       };
 
       const initialFocusableElements = getFocusableElements();
-      if (initialFocusableElements.length === 0)
-        return;
+      if (initialFocusableElements.length === 0) return;
 
       const firstElement = initialFocusableElements[0];
 
       // Auto-focus first interactive element with delay for DOM updates
       const focusTimeout = setTimeout(() => {
-        if ((firstElement !== null && firstElement !== undefined) && typeof firstElement.focus === 'function') {
+        if (
+          firstElement !== null &&
+          firstElement !== undefined &&
+          typeof firstElement.focus === 'function'
+        ) {
           firstElement.focus();
         }
       }, 50);
 
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key !== 'Tab')
-          return;
+        if (e.key !== 'Tab') return;
 
         // Refresh focusable elements on each Tab (handles dynamic content)
         const focusableElements = getFocusableElements();
-        if (focusableElements.length === 0)
-          return;
+        if (focusableElements.length === 0) return;
 
         const focusableArray = Array.from(focusableElements);
         const firstEl = focusableArray[0];
@@ -169,8 +174,7 @@ export function useFocusTrap(isActive: boolean) {
           e.preventDefault();
           if (e.shiftKey) {
             lastEl.focus();
-          }
-          else {
+          } else {
             firstEl.focus();
           }
           return;
@@ -182,8 +186,7 @@ export function useFocusTrap(isActive: boolean) {
             e.preventDefault();
             lastEl.focus();
           }
-        }
-        else {
+        } else {
           // Tab: wrap from last to first
           if (document.activeElement === lastEl) {
             e.preventDefault();
@@ -198,8 +201,7 @@ export function useFocusTrap(isActive: boolean) {
         clearTimeout(focusTimeout);
         container.removeEventListener('keydown', handleKeyDown);
       };
-    }
-    else if (previousFocusRef.current) {
+    } else if (previousFocusRef.current) {
       // Restore focus when deactivated (robust restoration)
       const elementToRestore = previousFocusRef.current;
       previousFocusRef.current = null;
@@ -208,14 +210,14 @@ export function useFocusTrap(isActive: boolean) {
       // Track restoration timeout for cleanup
       const restoreTimeout = setTimeout(() => {
         if (
-          (elementToRestore !== null && elementToRestore !== undefined)
-          && document.body.contains(elementToRestore)
-          && typeof elementToRestore.focus === 'function'
+          elementToRestore !== null &&
+          elementToRestore !== undefined &&
+          document.body.contains(elementToRestore) &&
+          typeof elementToRestore.focus === 'function'
         ) {
           try {
             elementToRestore.focus();
-          }
-          catch (error) {
+          } catch (error) {
             // Fail silently if focus restoration errors (element may have been removed)
             getLogger().debug('FocusManagement', 'Focus restoration failed', error);
           }

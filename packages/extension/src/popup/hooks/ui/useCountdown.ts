@@ -51,12 +51,10 @@ export function useCountdown(
   }
 
   useEffect(() => {
-    if (countdown === undefined || countdown === 0)
-      return;
+    if (countdown === undefined || countdown === 0) return;
 
     // Only run timer when not paused
-    if (isPaused)
-      return;
+    if (isPaused) return;
 
     const timer = setInterval(() => {
       setCountdown((prev) => {

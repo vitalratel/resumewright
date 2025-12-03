@@ -14,6 +14,7 @@ import {
 import { initializeWASM } from '../src/background/wasmInit';
 
 import { getLogger } from '../src/shared/infrastructure/logging';
+
 const logger = getLogger();
 
 resetServiceWorkerStartTime();

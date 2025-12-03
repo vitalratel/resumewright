@@ -5,8 +5,8 @@
  * start times, and progress histories for velocity-based time estimates.
  */
 
-import type { ConversionProgress } from '../../shared/types/models';
 import { create } from 'zustand';
+import type { ConversionProgress } from '../../shared/types/models';
 import { calculateETA } from '../../shared/utils/progressCalculations';
 
 interface ProgressState {
@@ -39,7 +39,7 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
 
   startConversion: (jobId: string) => {
     const now = Date.now();
-    set(state => ({
+    set((state) => ({
       activeConversions: {
         ...state.activeConversions,
         [jobId]: {
@@ -75,8 +75,13 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
         const isSameTotalPages = existing.totalPages === progress.totalPages;
 
         // If all values identical, return existing state (same reference)
-        if (isSameStage && isSamePercentage && isSameOperation
-          && isSamePagesProcessed && isSameTotalPages) {
+        if (
+          isSameStage &&
+          isSamePercentage &&
+          isSameOperation &&
+          isSamePagesProcessed &&
+          isSameTotalPages
+        ) {
           return state; // No change - prevents component re-render
         }
       }
@@ -130,11 +135,10 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
 
   clearConversion: (jobId: string) => {
     set((state) => {
-       
       const { [jobId]: _removedConversion, ...restConversions } = state.activeConversions;
-       
+
       const { [jobId]: _removedStartTime, ...restStartTimes } = state.startTimes;
-       
+
       const { [jobId]: _removedHistory, ...restHistories } = state.progressHistories;
 
       return {

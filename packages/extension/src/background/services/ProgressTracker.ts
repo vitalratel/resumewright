@@ -1,15 +1,15 @@
 // ABOUTME: Manages conversion progress state and UI updates.
 // ABOUTME: Handles throttled progress messaging and popup synchronization.
 
-import type { ConversionProgress, ConversionStatus } from '../../shared/types/models';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { sendMessage } from '@/shared/messaging';
+import type { ConversionProgress, ConversionStatus } from '../../shared/types/models';
 import { throttleProgress } from '../../shared/utils/progressThrottle';
 
 /**
  * Configuration constants for progress behavior
  */
-const PROGRESS_THROTTLE_MS = 100;    // Throttle progress updates to every 100ms
+const PROGRESS_THROTTLE_MS = 100; // Throttle progress updates to every 100ms
 
 /**
  * Active conversion state tracking
@@ -93,7 +93,7 @@ export class ProgressTracker {
       }
 
       // Send progress update to UI (fire-and-forget - errors logged but not thrown)
-      sendMessage('conversionProgress', { jobId, progress }).catch(err => {
+      sendMessage('conversionProgress', { jobId, progress }).catch((err) => {
         getLogger().error('ProgressTracker', 'Failed to send progress message', err);
       });
     }, PROGRESS_THROTTLE_MS);
@@ -118,7 +118,7 @@ export class ProgressTracker {
     attempt: number,
     maxAttempts: number,
     delay: number,
-    error: Error
+    error: Error,
   ): void {
     const retryProgress: ConversionProgress = {
       stage: 'queued',
@@ -135,7 +135,7 @@ export class ProgressTracker {
     }
 
     // Send retry progress update (fire-and-forget)
-    sendMessage('conversionProgress', { jobId, progress: retryProgress }).catch(err => {
+    sendMessage('conversionProgress', { jobId, progress: retryProgress }).catch((err) => {
       getLogger().error('ProgressTracker', 'Failed to send retry progress message', err);
     });
   }
@@ -155,7 +155,7 @@ export class ProgressTracker {
           jobId,
           progress: conversion.currentProgress,
         });
-      })
+      }),
     );
   }
 
@@ -179,12 +179,12 @@ export class ProgressTracker {
    */
   private getOperationDescription(stage: string): string {
     const descriptions: Record<string, string> = {
-      'queued': 'Preparing conversion...',
-      'parsing': 'Parsing TSX code...',
-      'rendering': 'Rendering React components...',
-      'layout': 'Calculating layout...',
+      queued: 'Preparing conversion...',
+      parsing: 'Parsing TSX code...',
+      rendering: 'Rendering React components...',
+      layout: 'Calculating layout...',
       'pdf-generation': 'Generating PDF...',
-      'complete': 'Complete!',
+      complete: 'Complete!',
     };
     return descriptions[stage] || `Processing (${stage})...`;
   }

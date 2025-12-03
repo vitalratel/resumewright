@@ -1,17 +1,11 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '../fixtures';
-import {
-  captureDiagnostics,
-  measureDuration,
-  openExtensionPopup,
-  setupConsoleCapture,
-  uploadTsxContent,
-  uploadTsxFile,
-  waitForBothWasmReady,
-  waitForPdfDownload,
-  waitForProgressIndicator,
-} from '../helpers';
+import { openExtensionPopup } from '../helpers/browserConfig';
+import { captureDiagnostics, measureDuration, setupConsoleCapture } from '../helpers/diagnostics';
+import { uploadTsxContent, uploadTsxFile } from '../helpers/fileUpload';
+import { waitForPdfDownload, waitForProgressIndicator } from '../helpers/pdfDownload';
+import { waitForBothWasmReady } from '../helpers/wasmReadiness';
 
 // Test timeout constants for consistency
 const TIMEOUTS = {
@@ -23,7 +17,7 @@ const TIMEOUTS = {
 
 // Use fixture files (same as conversion.spec.ts)
 const FIXTURES_PATH = fileURLToPath(
-  new URL('../../../../test-fixtures/tsx-samples/single-page', import.meta.url)
+  new URL('../../../../test-fixtures/tsx-samples/single-page', import.meta.url),
 );
 
 /**
@@ -64,10 +58,12 @@ test.describe('Conversion Flow', () => {
     // Log service worker status for diagnostics
     if (wasmReadiness.serviceWorkerLogs.length > 0) {
       console.warn('[Test] Service Worker Logs:');
-      wasmReadiness.serviceWorkerLogs.forEach((log) => console.warn('  ', log));
+      for (const log of wasmReadiness.serviceWorkerLogs) {
+        console.warn('  ', log);
+      }
     } else {
       console.warn(
-        '[Test] ⚠️  No service worker logs captured - background script may not be loading'
+        '[Test] ⚠️  No service worker logs captured - background script may not be loading',
       );
     }
 
@@ -83,12 +79,12 @@ test.describe('Conversion Flow', () => {
           `  Error: ${wasmReadiness.error ?? 'Unknown'}\n` +
           `\n` +
           `  Note: Conversion happens in background service worker, not popup.\n` +
-          `  The popup only validates TSX. Service worker WASM must be initialized.`
+          `  The popup only validates TSX. Service worker WASM must be initialized.`,
       );
     }
 
     console.warn(
-      '[Test] ✅ Both WASM instances ready - popup and service worker initialized successfully'
+      '[Test] ✅ Both WASM instances ready - popup and service worker initialized successfully',
     );
 
     // Upload test file (use actual fixture)
@@ -111,7 +107,7 @@ test.describe('Conversion Flow', () => {
 
     // Log any errors or warnings from browser console
     const errorLogs = logs.filter(
-      (log: { type: string }) => log.type === 'error' || log.type === 'warn'
+      (log: { type: string }) => log.type === 'error' || log.type === 'warn',
     );
     if (errorLogs.length > 0) {
       console.warn('[Test] Browser console errors/warnings:', errorLogs);
@@ -138,7 +134,9 @@ test.describe('Conversion Flow', () => {
     // Log service worker console output
     if (wasmReadiness.serviceWorkerLogs.length > 0) {
       console.warn('[Test] Service Worker Logs:');
-      wasmReadiness.serviceWorkerLogs.forEach((log) => console.warn('  ', log));
+      for (const log of wasmReadiness.serviceWorkerLogs) {
+        console.warn('  ', log);
+      }
     } else {
       console.warn('[Test] No service worker logs captured');
     }
@@ -153,11 +151,11 @@ test.describe('Conversion Flow', () => {
         `WASM initialization failed. ` +
           `Popup: ${wasmReadiness.popupReady ? 'ready' : 'NOT ready'}, ` +
           `Service Worker: ${wasmReadiness.serviceWorkerReady ? 'ready' : 'NOT ready'}. ` +
-          `Error: ${wasmReadiness.error}`
+          `Error: ${wasmReadiness.error}`,
       );
     }
     console.warn(
-      `[Test] WASM ready - Popup: ${wasmReadiness.popupDurationMs}ms, Service Worker: ${wasmReadiness.serviceWorkerDurationMs}ms`
+      `[Test] WASM ready - Popup: ${wasmReadiness.popupDurationMs}ms, Service Worker: ${wasmReadiness.serviceWorkerDurationMs}ms`,
     );
 
     // Create file with invalid TSX (proper format but broken JSX)
@@ -186,14 +184,17 @@ export default function InvalidResume() {
 
       // Verify error message appears during conversion
       await expect(
-        page.locator('text=Error').or(page.locator('.bg-red-50')).or(page.locator('[role="alert"]'))
+        page
+          .locator('text=Error')
+          .or(page.locator('.bg-red-50'))
+          .or(page.locator('[role="alert"]')),
       ).toBeVisible({ timeout: TIMEOUTS.CONVERSION });
     } catch {
       // Expected to fail at validation stage
       console.warn('[Test] File correctly rejected during validation');
       const validationLogs = logs.filter(
         (log: { text: string }) =>
-          log.text.includes('validate') || log.text.includes('detect_fonts')
+          log.text.includes('validate') || log.text.includes('detect_fonts'),
       );
       console.warn('[Test] Validation logs:', validationLogs);
     }
@@ -212,7 +213,9 @@ export default function InvalidResume() {
     // Log service worker console output
     if (wasmReadiness.serviceWorkerLogs.length > 0) {
       console.warn('[Test] Service Worker Logs:');
-      wasmReadiness.serviceWorkerLogs.forEach((log) => console.warn('  ', log));
+      for (const log of wasmReadiness.serviceWorkerLogs) {
+        console.warn('  ', log);
+      }
     } else {
       console.warn('[Test] No service worker logs captured');
     }
@@ -227,11 +230,11 @@ export default function InvalidResume() {
         `WASM initialization failed. ` +
           `Popup: ${wasmReadiness.popupReady ? 'ready' : 'NOT ready'}, ` +
           `Service Worker: ${wasmReadiness.serviceWorkerReady ? 'ready' : 'NOT ready'}. ` +
-          `Error: ${wasmReadiness.error}`
+          `Error: ${wasmReadiness.error}`,
       );
     }
     console.warn(
-      `[Test] WASM ready - Popup: ${wasmReadiness.popupDurationMs}ms, Service Worker: ${wasmReadiness.serviceWorkerDurationMs}ms`
+      `[Test] WASM ready - Popup: ${wasmReadiness.popupDurationMs}ms, Service Worker: ${wasmReadiness.serviceWorkerDurationMs}ms`,
     );
 
     // Upload empty file expecting validation error
@@ -243,7 +246,7 @@ export default function InvalidResume() {
 
     // Log validation logs for debugging
     const validationLogs = logs.filter(
-      (log: { text: string }) => log.text.includes('validate') || log.text.includes('empty')
+      (log: { text: string }) => log.text.includes('validate') || log.text.includes('empty'),
     );
     console.warn('[Test] Validation logs for empty file:', validationLogs);
   });

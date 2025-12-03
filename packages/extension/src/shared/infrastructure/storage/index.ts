@@ -3,14 +3,14 @@
  * Re-exports validated storage operations and helpers
  */
 
-export { safeJsonParse, validateWithSchema, type ValidationResult } from './helpers';
+export { safeJsonParse, type ValidationResult, validateWithSchema } from './helpers';
 
 export {
   type JobState,
-  localExtStorage,
   type LocalStorageSchema,
-  syncExtStorage,
+  localExtStorage,
   type SyncStorageSchema,
+  syncExtStorage,
   type WasmBadgeError,
 } from './typedStorage';
 

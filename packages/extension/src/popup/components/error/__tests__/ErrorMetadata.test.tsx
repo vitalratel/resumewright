@@ -10,10 +10,10 @@
  * - Different metadata types
  */
 
-import type { ErrorCategory } from '@/shared/errors/';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, vi } from 'vitest';
+import type { ErrorCategory } from '@/shared/errors/';
 import { ErrorCode } from '@/shared/errors/';
 import { ErrorMetadata } from '../ErrorMetadata';
 
@@ -23,9 +23,14 @@ const mockFormatErrorDetailsForClipboard = vi.fn();
 const mockCopyToClipboard = vi.fn();
 
 vi.mock('@/shared/errors/tracking/telemetry', () => ({
-  formatErrorTimestamp: (...args: unknown[]): ReturnType<typeof mockFormatErrorTimestamp> => mockFormatErrorTimestamp(...args),
-  formatErrorDetailsForClipboard: (...args: unknown[]): ReturnType<typeof mockFormatErrorDetailsForClipboard> => mockFormatErrorDetailsForClipboard(...args),
-  copyToClipboard: (...args: unknown[]): ReturnType<typeof mockCopyToClipboard> => mockCopyToClipboard(...args),
+  formatErrorTimestamp: (...args: unknown[]): ReturnType<typeof mockFormatErrorTimestamp> =>
+    mockFormatErrorTimestamp(...args),
+  formatErrorDetailsForClipboard: (
+    ...args: unknown[]
+  ): ReturnType<typeof mockFormatErrorDetailsForClipboard> =>
+    mockFormatErrorDetailsForClipboard(...args),
+  copyToClipboard: (...args: unknown[]): ReturnType<typeof mockCopyToClipboard> =>
+    mockCopyToClipboard(...args),
 }));
 
 describe('ErrorMetadata', () => {
@@ -128,7 +133,7 @@ describe('ErrorMetadata', () => {
 
     it('shows loading state during copy', async () => {
       const user = userEvent.setup();
-      let resolveCopy: (value: boolean) => void;
+      let resolveCopy: ((value: boolean) => void) | undefined;
       const copyPromise = new Promise<boolean>((resolve) => {
         resolveCopy = resolve;
       });
@@ -146,7 +151,8 @@ describe('ErrorMetadata', () => {
       });
 
       // Resolve copy
-      resolveCopy!(true);
+      expect(resolveCopy).toBeDefined();
+      resolveCopy?.(true);
 
       // Loading should disappear
       await waitFor(() => {
@@ -171,7 +177,7 @@ describe('ErrorMetadata', () => {
 
     it('prevents duplicate copy attempts', async () => {
       const user = userEvent.setup();
-      let resolveCopy: (value: boolean) => void;
+      let resolveCopy: ((value: boolean) => void) | undefined;
       const copyPromise = new Promise<boolean>((resolve) => {
         resolveCopy = resolve;
       });
@@ -189,7 +195,8 @@ describe('ErrorMetadata', () => {
       // Should only call once
       expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
 
-      resolveCopy!(true);
+      expect(resolveCopy).toBeDefined();
+      resolveCopy?.(true);
     });
 
     it('handles copy failure gracefully', async () => {
@@ -314,7 +321,7 @@ describe('ErrorMetadata', () => {
 
     it('copy button aria-label updates during loading', async () => {
       const user = userEvent.setup();
-      let resolveCopy: (value: boolean) => void;
+      let resolveCopy: ((value: boolean) => void) | undefined;
       const copyPromise = new Promise<boolean>((resolve) => {
         resolveCopy = resolve;
       });
@@ -329,12 +336,13 @@ describe('ErrorMetadata', () => {
         expect(screen.getByLabelText('Copying error details...')).toBeInTheDocument();
       });
 
-      resolveCopy!(true);
+      expect(resolveCopy).toBeDefined();
+      resolveCopy?.(true);
     });
 
     it('copy button is disabled during copying', async () => {
       const user = userEvent.setup();
-      let resolveCopy: (value: boolean) => void;
+      let resolveCopy: ((value: boolean) => void) | undefined;
       const copyPromise = new Promise<boolean>((resolve) => {
         resolveCopy = resolve;
       });
@@ -349,7 +357,8 @@ describe('ErrorMetadata', () => {
         expect(copyButton).toBeDisabled();
       });
 
-      resolveCopy!(true);
+      expect(resolveCopy).toBeDefined();
+      resolveCopy?.(true);
 
       await waitFor(() => {
         expect(copyButton).not.toBeDisabled();

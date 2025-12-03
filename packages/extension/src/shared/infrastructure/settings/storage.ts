@@ -5,8 +5,8 @@
  * Uses localStorage for popup-specific settings (e.g., dark mode).
  */
 
-import type { UserSettings } from '@/shared/types/settings';
 import { getLogger } from '@/shared/infrastructure/logging';
+import type { UserSettings } from '@/shared/types/settings';
 import { CURRENT_SETTINGS_VERSION, DEFAULT_USER_SETTINGS } from '../../domain/settings/defaults';
 import { UserSettingsSchema } from '../../domain/validation/settings';
 import { safeJsonParse, validateWithSchema } from '../storage/helpers';
@@ -22,7 +22,10 @@ export function loadSettings(storageKey = 'userSettings'): UserSettings {
   try {
     // Guard against service worker context where localStorage is undefined
     if (typeof localStorage === 'undefined') {
-      getLogger().warn('SettingsStorage', 'localStorage not available (service worker context), using defaults');
+      getLogger().warn(
+        'SettingsStorage',
+        'localStorage not available (service worker context), using defaults',
+      );
       return DEFAULT_USER_SETTINGS;
     }
     const raw = localStorage.getItem(storageKey);
@@ -44,8 +47,7 @@ export function loadSettings(storageKey = 'userSettings'): UserSettings {
 
     getLogger().warn('SettingsStorage', 'Invalid stored settings, using defaults');
     return DEFAULT_USER_SETTINGS;
-  }
-  catch (error) {
+  } catch (error) {
     getLogger().error('SettingsStorage', 'Failed to load settings:', error);
     return DEFAULT_USER_SETTINGS;
   }
@@ -63,7 +65,10 @@ export function saveSettings(settings: UserSettings, storageKey = 'userSettings'
   try {
     // Guard against service worker context where localStorage is undefined
     if (typeof localStorage === 'undefined') {
-      getLogger().warn('SettingsStorage', 'localStorage not available (service worker context), cannot save');
+      getLogger().warn(
+        'SettingsStorage',
+        'localStorage not available (service worker context), cannot save',
+      );
       return false;
     }
 
@@ -83,8 +88,7 @@ export function saveSettings(settings: UserSettings, storageKey = 'userSettings'
 
     localStorage.setItem(storageKey, JSON.stringify(toSave));
     return true;
-  }
-  catch (error) {
+  } catch (error) {
     getLogger().error('SettingsStorage', 'Failed to save settings:', error);
     return false;
   }
