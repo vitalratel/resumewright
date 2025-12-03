@@ -108,5 +108,3 @@ export function parseWasmError(error: unknown): ConversionError {
     suggestions: ['Check TSX syntax', 'Try again', 'Contact support if error persists'],
   };
 }
-
-export { mapStageToConversionStatus };

@@ -81,12 +81,3 @@ MB.displayName = 'MB';
 
 export const KB = () => <TechTerm {...TECH_TERMS.KB} />;
 KB.displayName = 'KB';
-
-export const Compression = () => <TechTerm {...TECH_TERMS.Compression} />;
-Compression.displayName = 'Compression';
-
-export const Fallback = () => <TechTerm {...TECH_TERMS.Fallback} />;
-Fallback.displayName = 'Fallback';
-
-export const Compatible = () => <TechTerm {...TECH_TERMS.Compatible} />;
-Compatible.displayName = 'Compatible';

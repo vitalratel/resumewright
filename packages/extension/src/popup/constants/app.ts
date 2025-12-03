@@ -9,7 +9,7 @@ import { getViewContext } from '../utils/viewContext';
 /**
  * Popup window dimensions (in pixels)
  */
-export const POPUP_DIMENSIONS = {
+const POPUP_DIMENSIONS = {
   width: 400,
   height: 600,
 } as const;
@@ -17,19 +17,13 @@ export const POPUP_DIMENSIONS = {
 /**
  * CSS class for popup container
  */
-export const POPUP_CONTAINER = `w-[${POPUP_DIMENSIONS.width}px] h-[${POPUP_DIMENSIONS.height}px] overflow-hidden`;
+const POPUP_CONTAINER = `w-[${POPUP_DIMENSIONS.width}px] h-[${POPUP_DIMENSIONS.height}px] overflow-hidden`;
 
 /**
  * CSS class for full-page converter container
  * Uses flex centering and responsive max-width for better UX on large screens
  */
-export const CONVERTER_CONTAINER = `min-h-screen flex flex-col items-center ${tokens.colors.neutral.bgPage}`;
-
-/**
- * CSS class for converter content wrapper
- * Constrains max width while allowing responsive behavior
- */
-export const CONVERTER_CONTENT = 'w-full max-w-2xl mx-auto';
+const CONVERTER_CONTAINER = `min-h-screen flex flex-col items-center ${tokens.colors.neutral.bgPage}`;
 
 /**
  * Get the appropriate container class based on view context
@@ -83,12 +77,3 @@ export const ERROR_MESSAGES = {
  * Default job ID for single conversion
  */
 export const DEFAULT_JOB_ID = 'default';
-
-/**
- * CV placeholder defaults
- * Default values for CVDetected component when CV info is unavailable
- */
-export const CV_DEFAULTS = {
-  name: 'John Doe',
-  role: 'Software Engineer',
-} as const;

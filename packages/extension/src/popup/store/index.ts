@@ -27,10 +27,13 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { getLogger } from '../../shared/infrastructure/logging/instance';
 import { debounceAsync } from '../../shared/utils/debounce';
-import type { CVMetadata, PersistedSlice } from './slices/persistedSlice';
+import type { PersistedSlice } from './slices/persistedSlice';
 import { createPersistedSlice } from './slices/persistedSlice';
-import type { ErrorInfo, UISlice, UIState } from './slices/uiSlice';
+import type { UISlice, UIState } from './slices/uiSlice';
 import { createUISlice } from './slices/uiSlice';
+
+// Re-export UIState for external consumers
+export type { UIState };
 
 // Import types from slices (CVMetadata comes from persistedSlice, not persistedStore)
 
@@ -63,14 +66,11 @@ const PopupStateSchema = object({
 });
 
 // Combined store type
-export type PopupStore = PersistedSlice &
+type PopupStore = PersistedSlice &
   UISlice & {
     // Unified reset action
     reset: () => void;
   };
-
-// Re-export types from slices
-export type { CVMetadata, ErrorInfo, UIState };
 
 // Store debounced setter at module level so tests can cancel pending operations
 const debouncedStorageSet = debounceAsync(
@@ -86,14 +86,6 @@ if (typeof window !== 'undefined') {
   window.addEventListener('beforeunload', () => {
     void debouncedStorageSet.flush();
   });
-}
-
-/**
- * Cancel any pending debounced storage writes
- * Used in test cleanup to prevent memory leaks
- */
-export function cancelPendingWrites(): void {
-  debouncedStorageSet.cancel();
 }
 
 /**

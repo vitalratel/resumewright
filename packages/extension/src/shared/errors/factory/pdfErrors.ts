@@ -26,39 +26,3 @@ export function createPdfGenerationError(
     technicalDetails,
   });
 }
-
-/**
- * Creates a PDF layout error
- *
- * @param stage - Conversion stage where error occurred
- * @param technicalDetails - Optional technical error details
- * @returns ConversionError for layout calculation failures
- */
-export function createPdfLayoutError(
-  stage: ConversionStatus,
-  technicalDetails?: string,
-): ConversionError {
-  return createConversionError({
-    code: ErrorCode.PDF_LAYOUT_ERROR,
-    stage,
-    technicalDetails,
-  });
-}
-
-/**
- * Creates a download failed error
- *
- * @param stage - Conversion stage where error occurred
- * @param technicalDetails - Optional technical error details
- * @returns ConversionError for PDF download failures
- */
-export function createDownloadFailedError(
-  stage: ConversionStatus,
-  technicalDetails?: string,
-): ConversionError {
-  return createConversionError({
-    code: ErrorCode.DOWNLOAD_FAILED,
-    stage,
-    technicalDetails,
-  });
-}

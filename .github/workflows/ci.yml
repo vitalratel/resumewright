@@ -265,21 +265,6 @@ jobs:
           echo "   git add packages/rust-core/test-fixtures/baselines/"
           echo "   git commit -m 'chore: add visual regression baselines'"
 
-      # E2E performance tests (optional)
-      - name: Run E2E performance tests
-        run: xvfb-run --auto-servernum pnpm playwright test tests/performance/conversion-benchmarks.spec.ts --reporter=list
-        continue-on-error: true
-        env:
-          CI: true
-
-      - name: Upload E2E performance results
-        if: always()
-        uses: actions/upload-artifact@v5
-        with:
-          name: e2e-performance-results
-          path: packages/extension/test-results/
-          retention-days: 7
-
   rust-benchmarks:
     name: Rust Performance Benchmarks
     runs-on: ubuntu-latest
