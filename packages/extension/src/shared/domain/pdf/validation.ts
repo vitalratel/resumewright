@@ -96,6 +96,7 @@ export async function validateTsxFile(
      */
     async function pollWasmStatus(): Promise<{ ready: boolean; error?: string }> {
       if (Date.now() - startTime >= maxWaitMs) {
+        // Stryker disable next-line ObjectLiteral: Equivalent mutant - !undefined equals !false
         return { ready: false };
       }
 
@@ -211,8 +212,6 @@ function generateDetailedErrorMessage(content: string): string {
     error += ' Missing export statement - make sure the file exports a CV component.';
   } else if (!content.includes('function') && !content.includes('=>')) {
     error += ' No component function found - the file should contain a React component.';
-  } else if (!content.includes('return')) {
-    error += ' Missing return statement - components must return JSX.';
   } else if (content.includes('import ') && !content.includes('React')) {
     error += ' React imports may be missing or incorrect.';
   } else {

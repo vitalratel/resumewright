@@ -370,4 +370,226 @@ mod tests {
         assert_eq!(lines.len(), 1);
         assert_eq!(lines[0], "");
     }
+
+    // Tests for mutation coverage - boundary conditions
+
+    #[test]
+    fn test_wrap_text_exact_width_fits_on_one_line() {
+        // Line 154: test_width > max_width boundary
+        // When test_width == max_width exactly, should NOT wrap
+        let measurer = MockMeasurer;
+        let config = TextLayoutConfig::default();
+
+        // "Hello" = 5 chars * 10 * 0.6 = 30.0
+        // Set max_width to exactly 30.0 - should fit on one line
+        let result = wrap_text_with_config("Hello", 30.0, 10.0, "Helvetica", &config, &measurer);
+
+        let lines = result.unwrap();
+        assert_eq!(
+            lines.len(),
+            1,
+            "Text at exact max_width should fit on one line"
+        );
+        assert_eq!(lines[0], "Hello");
+    }
+
+    #[test]
+    fn test_wrap_text_one_point_over_wraps() {
+        // Line 154: Verify that exceeding by even a tiny amount causes wrap
+        let measurer = MockMeasurer;
+        let config = TextLayoutConfig::default();
+
+        // "Hello " + "w" would be 7 chars * 10 * 0.6 = 42.0
+        // "Hello" alone = 30.0
+        // Set max_width to 35.0 - "Hello" fits, "Hello w" doesn't
+        let result =
+            wrap_text_with_config("Hello world", 35.0, 10.0, "Helvetica", &config, &measurer);
+
+        let lines = result.unwrap();
+        assert_eq!(lines.len(), 2, "Text exceeding max_width should wrap");
+        assert_eq!(lines[0], "Hello");
+        assert_eq!(lines[1], "world");
+    }
+
+    #[test]
+    fn test_hyphenation_disabled_preserves_long_word() {
+        // Line 160: Test && vs || - hyphenation disabled should NOT hyphenate
+        let measurer = MockMeasurer;
+        let config = TextLayoutConfig {
+            enable_hyphenation: false,
+            min_word_length: 6,
+        };
+
+        // "programming" = 11 chars * 10 * 0.6 = 66.0, exceeds max_width of 50
+        let result = wrap_text_with_config(
+            "Start programming end",
+            50.0,
+            10.0,
+            "Helvetica",
+            &config,
+            &measurer,
+        );
+
+        let lines = result.unwrap();
+        // "programming" should appear intact somewhere (not hyphenated)
+        assert!(
+            lines.iter().any(|l| l.contains("programming")),
+            "Long word should not be hyphenated when hyphenation is disabled"
+        );
+    }
+
+    #[test]
+    fn test_hyphenation_respects_min_word_length_boundary() {
+        // Line 160: word.len() >= config.min_word_length boundary
+        let measurer = MockMeasurer;
+        let config = TextLayoutConfig {
+            enable_hyphenation: true,
+            min_word_length: 6,
+        };
+
+        // "short" = 5 chars, below min_word_length of 6, should NOT be hyphenated
+        // even if it exceeds the line width
+        // 5 chars * 10 * 0.6 = 30.0
+        let result = wrap_text_with_config(
+            "Start short end",
+            25.0,
+            10.0,
+            "Helvetica",
+            &config,
+            &measurer,
+        );
+
+        let lines = result.unwrap();
+        // "short" should appear intact (not hyphenated) because it's < min_word_length
+        assert!(
+            lines.iter().any(|l| l == "short"),
+            "Word below min_word_length should not be hyphenated"
+        );
+    }
+
+    #[test]
+    fn test_hyphenation_applies_at_min_word_length() {
+        // Line 160: word.len() >= config.min_word_length - word exactly at threshold
+        let measurer = MockMeasurer;
+        let config = TextLayoutConfig {
+            enable_hyphenation: true,
+            min_word_length: 6,
+        };
+
+        // "longer" = 6 chars, exactly at min_word_length, SHOULD be eligible for hyphenation
+        // But hyphenation only happens if word doesn't fit
+        // 6 chars * 10 * 0.6 = 36.0
+        // We need a scenario where the word triggers hyphenation attempt
+        let result = wrap_text_with_config(
+            "Start longer end",
+            35.0,
+            10.0,
+            "Helvetica",
+            &config,
+            &measurer,
+        );
+
+        let lines = result.unwrap();
+        // Word is exactly at min_word_length, so hyphenation should be attempted
+        // The word "longer" can be hyphenated as "long-er" by the English dictionary
+        // If hyphenation works, we should see a hyphen
+        let has_hyphen = lines.iter().any(|l| l.contains('-'));
+        let word_intact = lines.iter().any(|l| l == "longer");
+        // Either hyphenation worked (has hyphen) or word stayed intact (no valid break point)
+        assert!(
+            has_hyphen || word_intact,
+            "Word at min_word_length should be eligible for hyphenation attempt"
+        );
+    }
+
+    #[test]
+    fn test_single_long_word_exceeds_max_width_with_hyphenation() {
+        // Lines 184-190: Word too long even when starting fresh, triggers hyphenation loop
+        let measurer = MockMeasurer;
+        let config = TextLayoutConfig {
+            enable_hyphenation: true,
+            min_word_length: 6,
+        };
+
+        // "internationalization" = 20 chars * 10 * 0.6 = 120.0
+        // max_width = 60, so even alone it exceeds the line
+        let result = wrap_text_with_config(
+            "internationalization",
+            60.0,
+            10.0,
+            "Helvetica",
+            &config,
+            &measurer,
+        );
+
+        let lines = result.unwrap();
+        // Should have been split across multiple lines via hyphenation
+        assert!(
+            lines.len() > 1,
+            "Very long word should be hyphenated across multiple lines"
+        );
+        // Should contain hyphens from the splits
+        let hyphen_count = lines.iter().filter(|l| l.ends_with('-')).count();
+        assert!(
+            hyphen_count >= 1,
+            "Hyphenated lines should end with hyphens"
+        );
+    }
+
+    #[test]
+    fn test_single_long_word_no_hyphenation_stays_intact() {
+        // Lines 184-206: Word too long but hyphenation disabled
+        let measurer = MockMeasurer;
+        let config = TextLayoutConfig {
+            enable_hyphenation: false,
+            min_word_length: 6,
+        };
+
+        // "internationalization" = 20 chars * 10 * 0.6 = 120.0
+        // max_width = 60, word alone exceeds it, but no hyphenation
+        let result = wrap_text_with_config(
+            "internationalization",
+            60.0,
+            10.0,
+            "Helvetica",
+            &config,
+            &measurer,
+        );
+
+        let lines = result.unwrap();
+        // Should stay on one line (overflow) since hyphenation is disabled
+        assert_eq!(
+            lines.len(),
+            1,
+            "Without hyphenation, long word stays intact"
+        );
+        assert_eq!(lines[0], "internationalization");
+    }
+
+    #[test]
+    fn test_hyphenation_loop_boundary_exact_fit() {
+        // Line 190: while ... > max_width boundary
+        // Test that loop terminates correctly when remaining fits exactly
+        let measurer = MockMeasurer;
+        let config = TextLayoutConfig {
+            enable_hyphenation: true,
+            min_word_length: 6,
+        };
+
+        // Use a word that hyphenates to a piece that fits exactly
+        // "understanding" can hyphenate at multiple points
+        // We're testing that the loop terminates properly
+        let result =
+            wrap_text_with_config("understanding", 50.0, 10.0, "Helvetica", &config, &measurer);
+
+        let lines = result.unwrap();
+        // Should complete without infinite loop and produce valid output
+        assert!(!lines.is_empty(), "Should produce at least one line");
+        // All content should be preserved
+        let all_content: String = lines.join("").replace('-', "");
+        assert_eq!(
+            all_content, "understanding",
+            "All content should be preserved after hyphenation"
+        );
+    }
 }

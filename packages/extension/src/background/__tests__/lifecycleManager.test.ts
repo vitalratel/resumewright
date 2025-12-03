@@ -13,21 +13,27 @@ import type { UserSettings } from '../../shared/types/settings';
 
 const STORAGE_KEY = 'resumewright_job_states';
 
-// Mock logger
-vi.mock('../../shared/infrastructure/logging/instance', () => ({
-  getLogger: vi.fn(() => ({
+// Use vi.hoisted to create shared mock instances that persist across module resets
+const mocks = vi.hoisted(() => ({
+  logger: {
     info: vi.fn(),
     debug: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
-  })),
-}));
-
-// Mock settingsStore
-vi.mock('@/shared/infrastructure/settings/SettingsStore', () => ({
+  },
   settingsStore: {
     loadSettings: vi.fn(),
   },
+}));
+
+// Mock logger with shared instance
+vi.mock('../../shared/infrastructure/logging/instance', () => ({
+  getLogger: () => mocks.logger,
+}));
+
+// Mock settingsStore with shared instance
+vi.mock('@/shared/infrastructure/settings/SettingsStore', () => ({
+  settingsStore: mocks.settingsStore,
 }));
 
 describe('LifecycleManager', () => {
@@ -57,8 +63,12 @@ describe('LifecycleManager', () => {
   };
 
   beforeEach(async () => {
-    vi.clearAllMocks();
+    // Reset all mocks - clears call history AND resets implementations
+    vi.resetAllMocks();
     vi.resetModules();
+
+    // Set default mock implementation for settings
+    mocks.settingsStore.loadSettings.mockResolvedValue(mockSettings);
 
     // Clear storage
     await fakeBrowser.storage.local.clear();
@@ -109,18 +119,8 @@ describe('LifecycleManager', () => {
     });
 
     it('should handle settings initialization failure gracefully', async () => {
-      const { getLogger } = await import('../../shared/infrastructure/logging/instance');
-      const mockLogger = {
-        info: vi.fn(),
-        debug: vi.fn(),
-        warn: vi.fn(),
-        error: vi.fn(),
-      };
-      vi.mocked(getLogger).mockReturnValue(mockLogger as never);
-
-      const { settingsStore } = await import('@/shared/infrastructure/settings/SettingsStore');
       const testError = new Error('Settings initialization failed');
-      vi.mocked(settingsStore.loadSettings).mockRejectedValue(testError);
+      mocks.settingsStore.loadSettings.mockRejectedValue(testError);
 
       const { LifecycleManager } = await import('../lifecycleManager');
       const manager = new LifecycleManager();
@@ -129,7 +129,7 @@ describe('LifecycleManager', () => {
       await expect(manager.initialize()).resolves.not.toThrow();
 
       // Verify error was logged
-      expect(mockLogger.error).toHaveBeenCalledWith(
+      expect(mocks.logger.error).toHaveBeenCalledWith(
         'LifecycleManager',
         '[Lifecycle] Failed to initialize settings',
         testError,
@@ -137,28 +137,18 @@ describe('LifecycleManager', () => {
     });
 
     it('should log success when settings initialization succeeds', async () => {
-      const { getLogger } = await import('../../shared/infrastructure/logging/instance');
-      const mockLogger = {
-        info: vi.fn(),
-        debug: vi.fn(),
-        warn: vi.fn(),
-        error: vi.fn(),
-      };
-      vi.mocked(getLogger).mockReturnValue(mockLogger as never);
-
-      const { settingsStore } = await import('@/shared/infrastructure/settings/SettingsStore');
-      vi.mocked(settingsStore.loadSettings).mockResolvedValue(mockSettings);
+      mocks.settingsStore.loadSettings.mockResolvedValue(mockSettings);
 
       const { LifecycleManager } = await import('../lifecycleManager');
       const manager = new LifecycleManager();
 
       await manager.initialize();
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mocks.logger.info).toHaveBeenCalledWith(
         'LifecycleManager',
         'Default settings initialized',
       );
-      expect(mockLogger.error).not.toHaveBeenCalled();
+      expect(mocks.logger.error).not.toHaveBeenCalled();
     });
   });
 
@@ -233,15 +223,6 @@ describe('LifecycleManager', () => {
 
   describe('orphaned job detection', () => {
     it('should detect abandoned jobs after service worker restart', async () => {
-      const { getLogger } = await import('../../shared/infrastructure/logging/instance');
-      const mockLogger = {
-        info: vi.fn(),
-        debug: vi.fn(),
-        warn: vi.fn(),
-        error: vi.fn(),
-      };
-      vi.mocked(getLogger).mockReturnValue(mockLogger as never);
-
       const orphanedJob = {
         jobId: 'orphaned-123',
         status: 'generating-pdf' as ConversionStatus,
@@ -255,8 +236,8 @@ describe('LifecycleManager', () => {
       onStartupListener?.();
 
       await vi.waitFor(() => {
-        expect(mockLogger.warn).toHaveBeenCalled();
-        const warnCalls = mockLogger.warn.mock.calls;
+        expect(mocks.logger.warn).toHaveBeenCalled();
+        const warnCalls = mocks.logger.warn.mock.calls;
         const hasOrphanedWarning = warnCalls.some(
           (call) => typeof call[1] === 'string' && call[1].includes('orphaned-123'),
         );
@@ -265,15 +246,6 @@ describe('LifecycleManager', () => {
     });
 
     it('should not flag old jobs as orphaned (>5 minutes)', async () => {
-      const { getLogger } = await import('../../shared/infrastructure/logging/instance');
-      const mockLogger = {
-        info: vi.fn(),
-        debug: vi.fn(),
-        warn: vi.fn(),
-        error: vi.fn(),
-      };
-      vi.mocked(getLogger).mockReturnValue(mockLogger as never);
-
       const oldJob = {
         jobId: 'old-456',
         status: 'generating-pdf' as ConversionStatus,
@@ -290,7 +262,7 @@ describe('LifecycleManager', () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Jobs older than 5 minutes should not be flagged
-      const warnCalls = mockLogger.warn.mock.calls;
+      const warnCalls = mocks.logger.warn.mock.calls;
       const hasOrphanedWarning = warnCalls.some(
         (call) => typeof call[1] === 'string' && call[1].includes('old-456'),
       );
