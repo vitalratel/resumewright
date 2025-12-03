@@ -14,7 +14,7 @@ import { generateFilename } from '../../shared/utils/filenameSanitization';
 /**
  * CV metadata extracted from TSX content
  */
-export interface CVMetadata {
+interface CVMetadata {
   /** Candidate name extracted from CV */
   name?: string;
   /** Job title extracted from CV */
@@ -24,7 +24,7 @@ export interface CVMetadata {
 /**
  * Result of CV metadata extraction
  */
-export interface CVExtractionResult {
+interface CVExtractionResult {
   /** TSX source code */
   tsxContent: string;
   /** Extracted CV metadata (may be null if extraction failed) */
@@ -34,7 +34,7 @@ export interface CVExtractionResult {
 /**
  * Result of PDF conversion
  */
-export interface ConversionResult {
+interface ConversionResult {
   /** Generated PDF bytes */
   pdfBytes: Uint8Array;
   /** Sanitized filename (undefined if generation failed) */
@@ -46,7 +46,7 @@ export interface ConversionResult {
 /**
  * Retry callback for progress updates during retry attempts
  */
-export type RetryCallback = (attempt: number, delay: number, error: Error) => void;
+type RetryCallback = (attempt: number, delay: number, error: Error) => void;
 
 /**
  * Conversion Service

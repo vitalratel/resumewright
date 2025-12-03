@@ -12,7 +12,7 @@ import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import type { UserSettings } from '@/shared/types/settings';
 import { MARGIN_PRESETS } from '../../constants/margins';
 
-export interface QuickSettingsHandlers {
+interface QuickSettingsHandlers {
   handlePageSizeChange: (pageSize: 'A4' | 'Letter' | 'Legal') => Promise<void>;
   handleMarginsChange: (
     preset: 'compact' | 'narrow' | 'normal' | 'wide' | 'spacious',
@@ -23,7 +23,7 @@ export interface QuickSettingsHandlers {
   ) => Promise<void>;
 }
 
-export interface UseQuickSettingsReturn {
+interface UseQuickSettingsReturn {
   settings: UserSettings | null;
   handlers: QuickSettingsHandlers;
   reloadSettings: () => Promise<void>;

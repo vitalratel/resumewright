@@ -142,12 +142,6 @@ export function isRetryErrorMetadata(
   return metadata?.type === 'retry';
 }
 
-export function isWasmErrorMetadata(
-  metadata: ErrorMetadata | undefined,
-): metadata is WasmErrorMetadata {
-  return metadata?.type === 'wasm';
-}
-
 export function isLocationErrorMetadata(
   metadata: ErrorMetadata | undefined,
 ): metadata is LocationErrorMetadata {

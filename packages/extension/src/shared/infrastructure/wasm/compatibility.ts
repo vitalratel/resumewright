@@ -10,7 +10,7 @@
 /**
  * Compatibility issue detected
  */
-export interface CompatibilityIssue {
+interface CompatibilityIssue {
   /** Issue severity */
   severity: 'error' | 'warning';
 
@@ -238,7 +238,7 @@ async function testWasmInstantiation(): Promise<boolean> {
  *
  * @returns Compatibility report with issues and recommendations
  */
-export async function checkWasmCompatibility(): Promise<WasmCompatibilityReport> {
+async function checkWasmCompatibility(): Promise<WasmCompatibilityReport> {
   const userAgent = navigator.userAgent;
   const { browserName, browserVersion } = parseBrowserInfo(userAgent);
 
@@ -285,7 +285,7 @@ export async function checkWasmCompatibility(): Promise<WasmCompatibilityReport>
  *
  * @returns true if basic WASM support is present
  */
-export function isWasmSupported(): boolean {
+function isWasmSupported(): boolean {
   return typeof WebAssembly !== 'undefined';
 }
 
@@ -295,7 +295,7 @@ export function isWasmSupported(): boolean {
  * @param report - Compatibility report
  * @returns Array of issue messages
  */
-export function getCompatibilitySummary(report: WasmCompatibilityReport): string[] {
+function getCompatibilitySummary(report: WasmCompatibilityReport): string[] {
   return report.issues.map(
     (issue) => `[${issue.severity.toUpperCase()}] ${issue.message}: ${issue.recommendation}`,
   );

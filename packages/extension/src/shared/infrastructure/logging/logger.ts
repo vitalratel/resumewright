@@ -17,7 +17,7 @@ export enum LogLevel {
 /**
  * Logger configuration
  */
-export interface LoggerConfig {
+interface LoggerConfig {
   level: LogLevel;
   prefix: string;
   includeTimestamp: boolean;

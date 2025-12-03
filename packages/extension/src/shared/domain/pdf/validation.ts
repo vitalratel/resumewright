@@ -12,7 +12,7 @@ export { SIZE_LIMITS as FILE_SIZE_LIMITS };
 /**
  * Validation result with optional error and warnings
  */
-export interface TsxValidationResult {
+interface TsxValidationResult {
   /** Whether the TSX is valid */
   valid: boolean;
   /** Error message if invalid */

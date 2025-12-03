@@ -177,24 +177,7 @@ class SettingsStore {
 }
 
 /**
- * Factory function for creating SettingsStore instances
- * Use in tests to create isolated store instances
- *
- * @example
- * ```ts
- * // Production code - use singleton
- * import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
- *
- * // Test code - use factory
- * const testStore = createSettingsStore();
- * ```
- */
-export function createSettingsStore(): SettingsStore {
-  return new SettingsStore();
-}
-
-/**
  * Singleton instance for production use
  * Shared across all extension contexts (background, popup, content)
  */
-export const settingsStore = createSettingsStore();
+export const settingsStore = new SettingsStore();

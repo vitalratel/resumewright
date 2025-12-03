@@ -124,12 +124,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "anyhow"
-version = "1.0.100"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
-
-[[package]]
 name = "arrayvec"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -703,11 +697,9 @@ checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 name = "font-toolkit"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "criterion",
  "flate2",
  "lopdf",
- "serde",
  "serde_json",
  "subsetter",
  "thiserror",
@@ -956,7 +948,6 @@ dependencies = [
  "hyphenation",
  "layout-types",
  "pdf-generator",
- "serde",
  "serde_json",
  "style-resolver",
  "taffy",
@@ -1966,10 +1957,8 @@ version = "0.1.0"
 dependencies = [
  "layout-types",
  "pdf-generator",
- "serde",
  "serde_json",
  "tailwind-css-fixes",
- "thiserror",
 ]
 
 [[package]]
@@ -2394,8 +2383,6 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
- "style-resolver",
- "thiserror",
  "tsx-parser",
  "wasm-bindgen",
  "wasm-bindgen-test",

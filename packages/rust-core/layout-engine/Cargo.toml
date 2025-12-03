@@ -8,7 +8,6 @@ publish = false
 description = "Box layout engine with flexbox support for PDF rendering"
 
 [dependencies]
-serde = { workspace = true }
 thiserror = { workspace = true }
 layout-types = { path = "../layout-types" }
 pdf-generator = { path = "../pdf-generator" }

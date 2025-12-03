@@ -23,5 +23,9 @@
     "prettier",
     "tailwindcss"
   ],
-  "ignoreBinaries": ["wasm-pack", "prettier"]
+  "ignoreBinaries": ["wasm-pack", "prettier"],
+  "ignoreExportsUsedInFile": {
+    "interface": true,
+    "type": true
+  }
 }

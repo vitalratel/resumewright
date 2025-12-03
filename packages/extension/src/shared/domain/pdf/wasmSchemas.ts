@@ -63,7 +63,7 @@ export const FontRequirementSchema = object({
  * Array of font requirements schema
  * Validates the complete JSON response from WASM detect_fonts()
  */
-export const FontRequirementsArraySchema = array(FontRequirementSchema);
+const FontRequirementsArraySchema = array(FontRequirementSchema);
 
 /**
  * Type-safe parser for WASM font detection response
@@ -110,7 +110,7 @@ export function parseFontRequirements(jsonString: string) {
 /**
  * WASM PDF config schema (for validation before sending to WASM)
  */
-export const WasmPdfConfigSchema = object({
+const WasmPdfConfigSchema = object({
   page_size: picklist(['Letter', 'A4', 'Legal']),
   margin: object({
     top: pipe(number(), minValue(0)),

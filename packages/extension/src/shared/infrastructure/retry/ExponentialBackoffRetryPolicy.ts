@@ -9,7 +9,7 @@ import { getLogger } from '../logging/instance';
 /**
  * Retry configuration options
  */
-export interface RetryConfig {
+interface RetryConfig {
   /** Maximum number of retry attempts */
   maxAttempts: number;
 
@@ -29,7 +29,7 @@ export interface RetryConfig {
 /**
  * Retry callback for progress updates
  */
-export type RetryCallback = (attempt: number, delay: number, error: Error) => void;
+type RetryCallback = (attempt: number, delay: number, error: Error) => void;
 
 /**
  * Retry Policy Interface

@@ -23,7 +23,7 @@ import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { tokens } from '../../styles/tokens';
 
-export interface ConfirmDialogProps {
+interface ConfirmDialogProps {
   /** Controls dialog visibility */
   isOpen: boolean;
 

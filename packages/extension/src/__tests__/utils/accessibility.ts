@@ -14,7 +14,7 @@ import type { Page } from '@playwright/test';
  * @param tags - Accessibility tags to test (default: WCAG 2.1 A and AA)
  * @returns Axe scan results
  */
-export async function runAccessibilityScan(
+async function runAccessibilityScan(
   page: Page,
   tags: string[] = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'],
 ) {

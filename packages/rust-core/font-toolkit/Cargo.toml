@@ -22,9 +22,7 @@ flate2 = "1.1"       # WOFF decompression
 lopdf = { workspace = true }  # Uses workspace config (rayon disabled)
 
 # Workspace dependencies
-serde = { workspace = true }
 thiserror = { workspace = true }
-anyhow = { workspace = true }
 
 [dev-dependencies]
 serde_json = { workspace = true }

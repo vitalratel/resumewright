@@ -276,15 +276,3 @@ export const tokens = {
     tooltip: 60, // Reserved for future tooltips
   },
 } as const;
-
-/**
- * Type-safe token accessor
- * Use this to ensure tokens are used correctly throughout the codebase
- */
-export type TokenPath =
-  | keyof typeof tokens.colors
-  | keyof typeof tokens.spacing
-  | keyof typeof tokens.typography
-  | keyof typeof tokens.transitions
-  | keyof typeof tokens.effects
-  | keyof typeof tokens.borders;

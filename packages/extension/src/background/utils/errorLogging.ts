@@ -10,7 +10,7 @@ import { getLogger } from '@/shared/infrastructure/logging/instance';
 /**
  * Structured context for error logging
  */
-export interface ErrorContext {
+interface ErrorContext {
   /** Which step/phase of the operation failed */
   step?: string;
   /** Additional context-specific data */

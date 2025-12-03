@@ -9,7 +9,7 @@
 
 import type { StateCreator } from 'zustand';
 
-export interface CVMetadata {
+interface CVMetadata {
   name?: string;
   role?: string;
   confidence: number;

@@ -17,6 +17,7 @@
 import { Buffer } from 'node:buffer';
 import type { Page } from '@playwright/test';
 import { browserConfigs, expect, test } from '../fixtures';
+import { expectValidationError } from '../helpers/pdfDownload';
 
 /**
  * Helper to upload file content directly without filesystem
@@ -44,18 +45,8 @@ test.describe('Automated Error Handling', () => {
     await uploadFileContent(page, 'invalid-syntax.tsx', 'const CV = () => <div>Unclosed tag');
 
     // Wait for validation error (inline in FileImport component)
-    const validationError = page.locator('[role="alert"]');
-    await expect(validationError).toBeVisible({ timeout: 5000 });
-
-    // Error message is shown (actual message: "This file doesn't appear to be a valid CV")
-    await expect(validationError).toContainText(/valid|CV|appear/i);
-
-    // Validation errors show inline in FileImport, not in ErrorState component
-    // The ErrorState component is only used for conversion-time errors
-    // So we verify the validation error message is displayed correctly
-    const errorText = await validationError.textContent();
-    expect(errorText).toBeTruthy();
-    expect(errorText!.length).toBeGreaterThan(10); // Has meaningful error message
+    // Error message shown: "This file doesn't appear to be a valid CV"
+    await expectValidationError(page);
 
     await page.close();
   });
@@ -81,11 +72,7 @@ test.describe('Automated Error Handling', () => {
     );
 
     // Wait for validation error
-    const validationError = page.locator('[role="alert"]');
-    await expect(validationError).toBeVisible({ timeout: 5000 });
-
-    // Validate error message is shown
-    await expect(validationError).toContainText(/valid|structure|CV/i);
+    await expectValidationError(page);
 
     await page.close();
   });
@@ -108,12 +95,8 @@ test.describe('Automated Error Handling', () => {
       `const CV = () => <div>${largeContent}</div>; export default CV;`,
     );
 
-    // Wait for validation error
-    const validationError = page.locator('[role="alert"]');
-    await expect(validationError).toBeVisible({ timeout: 5000 });
-
-    // Expected error message: "CV is too large to process"
-    await expect(validationError).toContainText(/too large|size|MB/i);
+    // Expected error message: "This file is too big"
+    await expectValidationError(page, 'too big');
 
     await page.close();
   });
@@ -142,8 +125,7 @@ test.describe('Automated Error Handling', () => {
     await uploadFileContent(page, 'console-test.tsx', 'const CV = () => <div>Unclosed');
 
     // Wait for validation error
-    const validationError = page.locator('[role="alert"]');
-    await expect(validationError).toBeVisible({ timeout: 5000 });
+    await expectValidationError(page);
     await page.waitForTimeout(1000); // Wait for console logging
 
     // Verify console shows error with proper format
@@ -174,12 +156,8 @@ test.describe('Automated Error Handling', () => {
       `const CV = () => <div>${veryLargeContent}</div>;`,
     );
 
-    // Wait for validation error
-    const validationError = page.locator('[role="alert"]');
-    await expect(validationError).toBeVisible({ timeout: 5000 });
-
     // Should show size error (actual message: "This file is too big")
-    await expect(validationError).toContainText(/too big|MB/i);
+    await expectValidationError(page, 'too big');
 
     await page.close();
   });
@@ -194,8 +172,7 @@ test.describe('Automated Error Handling', () => {
     await uploadFileContent(page, 'recovery-invalid.tsx', 'const CV = () => <div>Unclosed');
 
     // Wait for validation error
-    const validationError = page.locator('[role="alert"]');
-    await expect(validationError).toBeVisible({ timeout: 5000 });
+    await expectValidationError(page);
 
     // 2. Import a different (valid) file directly
     await uploadFileContent(
@@ -211,6 +188,7 @@ test.describe('Automated Error Handling', () => {
 
     // 3. Error should be cleared (validation error disappears with valid file)
     // We just verify the error is no longer visible or that file was accepted
+    const validationError = page.locator('[role="alert"]');
     const errorStillVisible = await validationError.isVisible().catch(() => false);
     // Either error is gone, or we can see the export button (file accepted)
     if (errorStillVisible) {
@@ -236,14 +214,13 @@ test.describe('Automated Error Handling', () => {
     await uploadFileContent(page, 'dismiss-test.tsx', 'const CV = () => <div>Unclosed');
 
     // Wait for validation error
-    const validationError = page.locator('[role="alert"]');
-    await expect(validationError).toBeVisible({ timeout: 5000 });
+    await expectValidationError(page);
 
     // Import same invalid file again
     await uploadFileContent(page, 'dismiss-test.tsx', 'const CV = () => <div>Unclosed');
 
     // Should still show error
-    await expect(validationError).toBeVisible({ timeout: 5000 });
+    await expectValidationError(page);
 
     await page.close();
   });

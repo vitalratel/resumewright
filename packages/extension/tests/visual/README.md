@@ -8,7 +8,6 @@ E2E tests that require **real browser rendering** and user interaction:
 
 - **`popup-ui.spec.ts`** - Popup UI states (initial, input, converting, success, error)
 - **`dark-mode.spec.ts`** - Dark mode rendering across all views
-- **`custom-fonts-ui.spec.ts`** - Custom fonts UI (empty state, upload form, storage, badges, messages)
 
 ## Running Tests
 

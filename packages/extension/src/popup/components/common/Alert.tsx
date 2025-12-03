@@ -19,7 +19,7 @@ import React from 'react';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { tokens } from '../../styles/tokens';
 
-export type AlertVariant = 'error' | 'success' | 'info' | 'warning';
+type AlertVariant = 'error' | 'success' | 'info' | 'warning';
 
 interface AlertProps {
   /** Visual and semantic variant */

@@ -14,7 +14,7 @@ import { extensionAPI } from '../../services/extensionAPI';
 import { useProgressStore } from '../../store/progressStore';
 import type { AppState } from '../integration/useAppState';
 
-export interface ConversionExecutionHandlers {
+interface ConversionExecutionHandlers {
   handleExportClick: () => Promise<void>;
   handleCancelConversion: () => void;
 }

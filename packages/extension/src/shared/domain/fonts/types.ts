@@ -4,7 +4,7 @@
 /**
  * Font source type
  */
-export type FontSource = 'google' | 'custom' | 'websafe';
+type FontSource = 'google' | 'custom' | 'websafe';
 
 /**
  * Font style
@@ -19,7 +19,7 @@ export type FontWeight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
 /**
  * Font format
  */
-export type FontFormat = 'ttf' | 'woff' | 'woff2';
+type FontFormat = 'ttf' | 'woff' | 'woff2';
 
 /**
  * Font requirement detected from TSX

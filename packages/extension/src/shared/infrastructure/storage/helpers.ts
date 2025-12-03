@@ -11,7 +11,7 @@ import type { ILogger } from '@/shared/infrastructure/logging/logger';
 /**
  * Validation result with success flag
  */
-export interface ValidationResult<T> {
+interface ValidationResult<T> {
   success: boolean;
   data?: T;
 }

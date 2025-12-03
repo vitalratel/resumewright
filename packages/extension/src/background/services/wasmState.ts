@@ -13,7 +13,7 @@ import { setValidatedStorage } from '@/shared/infrastructure/storage/validation'
 /**
  * WASM initialization status types
  */
-export type WasmStatus = 'initializing' | 'success' | 'failed' | 'unknown';
+type WasmStatus = 'initializing' | 'success' | 'failed' | 'unknown';
 
 /**
  * Detailed WASM status information

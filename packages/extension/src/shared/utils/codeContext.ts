@@ -9,7 +9,7 @@
 /**
  * Code context with line highlighting
  */
-export interface CodeContext {
+interface CodeContext {
   /** Array of code lines with line numbers */
   lines: Array<{ lineNumber: number; content: string; isError: boolean }>;
 

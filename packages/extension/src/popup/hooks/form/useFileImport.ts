@@ -11,7 +11,7 @@ import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { ERROR_MESSAGES } from '../../constants/app';
 import type { AppState } from '../integration/useAppState';
 
-export interface FileImportHandlers {
+interface FileImportHandlers {
   handleFileValidated: (content: string, fileName: string, fileSize: number) => Promise<void>;
   handleImportDifferent: () => void;
 }
