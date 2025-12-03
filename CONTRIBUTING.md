@@ -19,66 +19,15 @@ Thank you for your interest in contributing to ResumeWright! This document provi
 
 ## Getting Started
 
-### Prerequisites
-
-Before contributing, ensure you have the following installed:
-
-| Tool | Minimum Version | Check Command |
-|------|----------------|---------------|
-| Node.js | 22.0+ | `node --version` |
-| pnpm | 10.0+ | `pnpm --version` |
-| Rust | 1.91+ | `rustc --version` |
-| wasm-pack | 0.12+ | `wasm-pack --version` |
-| Git | any recent | `git --version` |
-
-See `README.md` for detailed installation instructions.
-
-### First-Time Setup
+See [README.md](README.md#prerequisites) for prerequisites and [Setup Guide](docs-public/SETUP.md) for installation instructions.
 
 ```bash
-# Fork and clone the repository
 git clone https://github.com/vitalratel/resumewright.git
 cd resumewright
-
-# Install dependencies
 pnpm install
-
-# Build WASM
-pnpm build:wasm
-
-# Run tests to verify setup
-pnpm test
-
-# Start development server
-pnpm dev
+pnpm build
+pnpm test  # verify setup
 ```
-
-### Verify Your Setup
-
-```bash
-# Full CI validation (must pass before contributing)
-pnpm ci
-```
-
-This runs: typecheck → lint → build → test
-
----
-
-## Development Setup
-
-### IDE Recommendations
-
-**VS Code** (recommended):
-- Extensions: Rust Analyzer, ESLint, Prettier, Tailwind CSS IntelliSense
-- Settings: Enable format on save, enable ESLint auto-fix
-
-**Other IDEs:**
-- Any IDE with Rust and TypeScript support works
-- Ensure Rust Analyzer and ESLint are configured
-
-### Environment Configuration
-
-No special environment variables required for local development.
 
 ---
 
@@ -91,30 +40,28 @@ resumewright/
 │   │   ├── src/
 │   │   │   ├── background/   # Service worker
 │   │   │   ├── popup/        # React UI
-│   │   │   ├── content/      # TSX extractor
 │   │   │   └── shared/       # Shared types
-│   │   └── tests/            # E2E and visual tests
-│   └── rust-core/       # Rust/WASM core (14 crates)
+│   │   └── tests/        # E2E and visual tests
+│   └── rust-core/       # Rust/WASM core
 │       ├── tsx-parser/
 │       ├── cv-domain/
 │       ├── layout-engine/
 │       ├── pdf-generator/
 │       └── ...
-├── docs/                # Documentation
+├── docs-public/         # Documentation
 ├── scripts/             # Build and utility scripts
-└── ARCHITECTURE.md      # Architecture overview
 ```
 
 **Key Concepts:**
 - **Monorepo:** Uses pnpm workspaces (TypeScript) + Cargo workspaces (Rust)
 - **WASM Bridge:** `rust-core/wasm-bridge/` connects Rust to TypeScript
-- **Modular Crates:** Each Rust crate has a focused purpose (100-450 lines per module)
+- **Modular Crates:** Each Rust crate has a focused purpose
 
-See `ARCHITECTURE.md` for detailed architectural information.
+See `docs-public/ARCHITECTURE.md` for detailed architectural information.
 
 ---
 
-## Development Workflow
+## Contribution Workflow
 
 ### Creating a New Feature
 
@@ -130,7 +77,7 @@ See `ARCHITECTURE.md` for detailed architectural information.
 
 3. **Test locally:**
    ```bash
-   pnpm ci  # Must pass
+   pnpm typecheck && pnpm lint && pnpm test
    ```
 
 4. **Commit changes:**
@@ -275,8 +222,7 @@ pub fn parse_tsx(input: &str) -> Result<Document, ParseError> {
 ```
 
 **Module Organization:**
-- Keep modules focused (100-450 lines ideal)
-- Use `lib.rs` as module hub
+- Keep modules focused
 - Separate concerns (parsing, validation, transformation)
 
 **Error Handling:**
@@ -349,8 +295,8 @@ pub fn parse_tsx(input: &str) -> Result<Document, ParseError> {
 - Refactoring: Ensure existing tests pass
 
 **Coverage Targets:**
-- Rust: 70%+ (current: 77.33%)
-- TypeScript: 80%+ (current: 79.7%)
+- Rust: 80%+ 
+- TypeScript: 80%+
 
 ### Running Tests
 
@@ -443,39 +389,24 @@ ResumeWright uses GitHub Actions for continuous integration and deployment. All 
 
 ### Automated Workflows
 
-**1. Main CI Pipeline (`.github/workflows/ci.yml`)**
-- Rust format check and clippy
+**1. CI Pipeline (`.github/workflows/ci.yml`)**
+- Rust checks (format, clippy, tests)
+- WASM build and bundle size validation
 - TypeScript lint and typecheck
-- All tests (Rust, TypeScript, E2E)
-- WASM build verification
+- Unit tests (sharded for speed)
+- Playwright tests (accessibility, visual regression)
+- Extension build verification
 
-**2. Test Suite (`.github/workflows/test.yml`)**
-- Comprehensive test execution across all test types
-- Visual regression tests
-- Accessibility tests
-- ATS compatibility tests
+**2. Weekly CI (`.github/workflows/ci-weekly.yml`)**
+- Cross-platform testing
+- Extended test coverage
 
-**3. Bundle Size Check (`.github/workflows/bundle-size-check.yml`)**
-- Monitors WASM bundle size
-- Fails if compressed bundle exceeds 1.6 MB
-- Posts PR comments with size report
+**3. Security Audit (`.github/workflows/audit.yml`)**
+- npm and cargo security audits
 
-**4. Performance Regression (`.github/workflows/performance-regression.yml`)**
-- Runs performance benchmarks
-- Compares against baseline
-- Fails if 50% slower than baseline
-
-**5. Pre-Release Validation (`.github/workflows/pre-release.yml`)**
+**4. Pre-Release (`.github/workflows/pre-release.yml`)**
 - Manual trigger for release candidates
-- Full validation: tests, build, bundle size, version check
-- Creates draft GitHub release
-
-### Test Counts
-
-- **Rust:** 750+ tests (unit + integration + doc tests)
-- **TypeScript:** 396+ unit tests
-- **Playwright:** 159+ tests (E2E + visual + performance + accessibility)
-- **Total:** 1,305+ automated tests
+- Full validation and draft GitHub release
 
 ### CI Requirements
 
@@ -501,10 +432,6 @@ ResumeWright uses GitHub Actions for continuous integration and deployment. All 
 Before pushing, run the same checks locally:
 
 ```bash
-# Full CI validation
-pnpm ci
-
-# Individual checks
 cargo fmt -- --check           # Rust formatting
 cargo clippy -- -D warnings    # Rust linting
 pnpm lint                      # TypeScript linting
@@ -531,7 +458,7 @@ pnpm build                     # Full build
 ```
 ❌ FAIL: Compressed bundle exceeds limit
 ```
-**Solution:** Optimize dependencies or WASM code. See `docs/architecture/performance-optimization.md`.
+**Solution:** Optimize dependencies or WASM code.
 
 **2. Performance Regression**
 ```
@@ -568,7 +495,7 @@ git commit -m "docs: update README [skip ci]"
 
 1. **Ensure all tests pass:**
    ```bash
-   pnpm ci
+   pnpm typecheck && pnpm lint && pnpm test
    ```
 
 2. **Run linters:**
@@ -607,7 +534,7 @@ Brief description of changes (2-3 sentences).
 - [ ] Code follows project style guidelines
 - [ ] Tests added for new functionality
 - [ ] Documentation updated
-- [ ] `pnpm ci` passes
+- [ ] All checks pass (`pnpm typecheck && pnpm lint && pnpm test`)
 - [ ] No new ESLint/clippy warnings
 ```
 
@@ -680,29 +607,7 @@ Any alternative solutions you've considered?
 
 ## Code of Conduct
 
-### Our Standards
-
-- **Be respectful:** Treat all contributors with respect
-- **Be collaborative:** Work together constructively
-- **Be inclusive:** Welcome diverse perspectives
-- **Be patient:** Remember we're all volunteers
-- **Be constructive:** Provide helpful feedback
-
-### Unacceptable Behavior
-
-- Harassment, discrimination, or offensive comments
-- Trolling, insulting, or derogatory remarks
-- Publishing others' private information
-- Other unprofessional conduct
-
-### Enforcement
-
-Violations may result in:
-1. Warning
-2. Temporary ban
-3. Permanent ban
-
-Report violations to: [project maintainer email]
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ---
 
@@ -711,10 +616,9 @@ Report violations to: [project maintainer email]
 **Stuck?** Here's how to get help:
 
 1. **Check documentation:**
-   - `README.md` - Setup and getting started
-   - `ARCHITECTURE.md` - Architecture overview
-   - `docs/TROUBLESHOOTING.md` - Common issues
-   - `docs/architecture/` - Detailed architecture
+   - `docs-public/SETUP.md` - Setup and installation
+   - `docs-public/ARCHITECTURE.md` - Architecture overview
+   - `docs-public/TROUBLESHOOTING.md` - Common issues
 
 2. **Search existing issues:**
    - Someone may have already asked your question

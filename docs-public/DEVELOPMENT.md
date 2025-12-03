@@ -23,17 +23,11 @@ This guide covers setting up your development environment, building, testing, an
 See [README.md](../README.md#prerequisites) for detailed installation instructions.
 
 **Required:**
-- Node.js 18+
-- pnpm 8+
-- Rust 1.86+
+- Node.js 22+
+- pnpm 10+
+- Rust 1.91+
 - wasm-pack 0.12+
 - Git
-
-**Verify setup:**
-```bash
-./scripts/verify-prerequisites.sh  # Unix/macOS/Linux
-.\scripts\verify-prerequisites.ps1  # Windows
-```
 
 ---
 
@@ -75,7 +69,7 @@ resumewright/
 │   │   ├── tests/          # Vitest unit tests
 │   │   └── wxt.config.ts   # WXT configuration
 │   └── rust-core/          # Rust/WASM backend
-│       ├── tsx-parser/     # TSX parsing with SWC
+│       ├── tsx-parser/     # TSX parsing with OXC
 │       ├── cv-domain/      # Domain models
 │       ├── layout-engine/  # Box layout algorithm
 │       ├── pdf-generator/  # PDF generation
@@ -229,10 +223,8 @@ pnpm zip:firefox  # Creates resumewright-[version]-firefox.zip
 ### Bundle Size Validation
 
 ```bash
-pnpm validate:bundle  # Ensures WASM < 2MB threshold
+pnpm validate:bundle  # Ensures WASM < 4MB threshold
 ```
-
-Current WASM size: **1.43 MB compressed** (target: < 2 MB)
 
 ---
 
@@ -269,16 +261,6 @@ To bypass (emergencies only):
 git commit --no-verify -m "Emergency fix"
 ```
 
-### Full CI Validation
-
-Run the complete CI pipeline locally:
-
-```bash
-pnpm ci  # typecheck → lint → build → test → bundle validation
-```
-
-**Use before creating pull requests** to ensure CI passes.
-
 ---
 
 ## Common Tasks
@@ -303,7 +285,7 @@ cargo add <crate>
 **Check WASM loading:**
 1. Open browser DevTools (F12)
 2. Network tab → Filter "wasm"
-3. Verify `wasm_bridge_bg.wasm` loads (should be ~1.4 MB)
+3. Verify `wasm_bridge_bg.wasm` loads
 
 **Check WASM errors:**
 1. Console tab
@@ -378,7 +360,7 @@ See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues and solutions.
 
 ## Contributing
 
-See [CONTRIBUTING.md](../../CONTRIBUTING.md) for:
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for:
 - Code style guidelines
 - Pull request process
 - Commit message conventions

@@ -1,7 +1,5 @@
 # Privacy Policy
 
-**Last Updated:** November 19, 2025
-
 ## Overview
 
 ResumeWright is committed to protecting your privacy. This privacy policy explains how we handle data when you use our browser extension to convert Claude.ai-generated resume code into PDF files.
@@ -121,14 +119,13 @@ Your preferences are stored locally and can be reset by:
 
 ResumeWright is open source software:
 - **Source Code:** https://github.com/vitalratel/resumewright
-- **License:** MIT
+- **License:** AGPL-3.0
 - You can inspect the code to verify our privacy claims
 
 ## Contact
 
 For privacy questions or concerns:
 - **GitHub Issues:** https://github.com/vitalratel/resumewright/issues
-- **Repository:** https://github.com/vitalratel/resumewright
 
 ---
 

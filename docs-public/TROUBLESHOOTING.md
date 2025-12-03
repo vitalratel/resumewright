@@ -44,10 +44,10 @@ pnpm install
 
 #### 4. Check Node.js version
 ```bash
-node --version  # Should be v18+
+node --version  # Should be v22+
 
-# If using nvm, switch to Node 18 LTS
-nvm use 18
+# If using nvm, switch to Node 22 LTS
+nvm use 22
 pnpm install
 ```
 
@@ -129,9 +129,9 @@ cargo check --all
 pnpm build
 ```
 
-2. Verify dist/ folder exists:
+2. Verify output folder exists:
 ```bash
-ls -la dist/
+ls -la packages/extension/.output/chrome-mv3/
 ```
 
 3. Check Chrome console for errors:
@@ -142,7 +142,7 @@ ls -la dist/
 
 4. Try rebuilding from scratch:
 ```bash
-rm -rf dist/ .wxt/
+rm -rf packages/extension/.output/ packages/extension/.wxt/
 pnpm build
 ```
 
@@ -157,7 +157,7 @@ ls -la packages/extension/public/icons/
 
 2. Check WXT generated the manifest correctly:
 ```bash
-cat dist/manifest.json | jq .icons
+cat packages/extension/.output/chrome-mv3/manifest.json | jq .icons
 ```
 
 3. Rebuild the extension:
@@ -172,7 +172,7 @@ pnpm build
 ```bash
 # Install test dependencies explicitly
 cd packages/extension
-pnpm add -D vitest @testing-library/react @testing-library/jest-dom jsdom
+pnpm add -D vitest @testing-library/react @testing-library/jest-dom happy-dom
 
 # Run tests
 pnpm test

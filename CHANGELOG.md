@@ -15,17 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Local-only processing (zero data transmission)
 - Support for A4 and Letter paper sizes
 - Google Fonts integration
-- ATS-optimized PDF output
 - Comprehensive test suite (Rust, TypeScript, Playwright)
 
-### Performance
-- Single-page CV conversion: 1-2s (25x faster than 10s target)
-- Multi-page CV conversion: 2-4s (14x faster than 10s target)
-- WASM bundle size: 1.43 MB compressed (under 2 MB limit)
-
 ### Quality Metrics
-- Rust test coverage: 77.33% (target: 70%) ✅
-- TypeScript test coverage: 79.7% (target: 80%) ⚠️
+- Rust test coverage target: 80%
+- TypeScript test coverage target: 80%
 - WCAG 2.1 Level A compliance: 100%
 
 
@@ -35,4 +29,4 @@ Initial beta release for testing and feedback.
 
 ---
 
-**Note:** This project is currently in beta. Version 1.0.0 will be released after Quality Assurance & Launch phase completion.
+**Note:** This project is currently in beta.

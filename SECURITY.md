@@ -74,7 +74,7 @@ The following are **not** security vulnerabilities:
 
 1. **TSX Code Execution** - TSX files are transpiled and executed in browser context. Only import TSX from trusted sources (e.g., your own Claude.ai conversations).
 2. **Font File Parsing** - Custom fonts are parsed by `ttf-parser` (Rust crate). While robustly tested, malformed fonts could theoretically cause issues.
-3. **Local Storage** - Settings and history stored in browser's local storage (unencrypted). Use browser master password for protection.
+3. **Local Storage** - Settings stored in browser's local storage (unencrypted). Use browser master password for protection.
 
 ---
 
@@ -229,7 +229,7 @@ pnpm audit
 
 **Critical Dependencies:**
 - `lopdf` - PDF generation (Rust)
-- `swc` - TSX parsing (Rust)
+- `oxc_parser` - TSX parsing (Rust)
 - `ttf-parser` - Font parsing (Rust)
 - `React` - UI framework (JavaScript)
 - `Zustand` - State management (JavaScript)
