@@ -5,7 +5,7 @@
  */
 
 import type { BaseIssue, BaseSchema, InferOutput } from 'valibot';
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { validateWithSchema } from './helpers';
 
 /**

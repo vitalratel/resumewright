@@ -46,7 +46,8 @@
  */
 
 import React, { useCallback, useState } from 'react';
-import { useBrowserDownloads, useCountdown } from '../../hooks';
+import { useBrowserDownloads } from '../../hooks/integration/useBrowserDownloads';
+import { useCountdown } from '../../hooks/ui/useCountdown';
 import { Alert } from '../common/Alert';
 import { Button } from '../common/Button';
 import { SuccessView } from './SuccessView';

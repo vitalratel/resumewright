@@ -30,8 +30,8 @@
 import { DocumentTextIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FILE_SIZE_LIMITS, validateFileExtension } from '@/shared/domain/pdf/validation';
-import { getLogger } from '@/shared/infrastructure/logging';
-import { useFileReader } from '../hooks';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
+import { useFileReader } from '../hooks/integration/useFileReader';
 import { tokens } from '../styles/tokens';
 import { formatFileSize } from '../utils/formatting';
 import { ConfirmDialog } from './common/ConfirmDialog';

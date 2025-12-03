@@ -2,7 +2,7 @@
 // ABOUTME: Provides comprehensive file validation and fast syntax-only validation.
 
 import { sendMessage } from '@/shared/messaging';
-import type { ILogger } from '../../infrastructure/logging';
+import type { ILogger } from '../../infrastructure/logging/logger';
 import { FILE_SIZE_LIMITS as SIZE_LIMITS } from './constants';
 import type { TsxToPdfConverter } from './types';
 import { parseFontRequirements } from './wasmSchemas';

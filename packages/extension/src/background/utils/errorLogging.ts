@@ -5,7 +5,7 @@
  * Provides structured logging with operation context for all background errors.
  */
 
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 
 /**
  * Structured context for error logging

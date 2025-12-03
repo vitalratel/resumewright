@@ -12,7 +12,8 @@
 import { useEffect, useState } from 'react';
 import { WASM_LOADING_MESSAGES } from '../../constants/app';
 import { tokens } from '../../styles/tokens';
-import { Alert, SkeletonExportSection, SkeletonFileImport, SkeletonHeader } from '../common';
+import { Alert } from '../common/Alert';
+import { SkeletonExportSection, SkeletonFileImport, SkeletonHeader } from '../common/Skeleton';
 
 export function LoadingScreen() {
   // Timeout fallback after 30 seconds

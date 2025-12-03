@@ -13,7 +13,7 @@ import {
 } from '../src/background/serviceWorkerState';
 import { initializeWASM } from '../src/background/wasmInit';
 
-import { getLogger } from '../src/shared/infrastructure/logging';
+import { getLogger } from '../src/shared/infrastructure/logging/instance';
 
 const logger = getLogger();
 

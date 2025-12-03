@@ -8,9 +8,11 @@
  * Screen readers will announce this as a radio group with proper selection state.
  */
 
-import { useDarkMode } from '@/popup/hooks/ui';
+import { useDarkMode } from '@/popup/hooks/ui/useDarkMode';
 import { tokens } from '../../styles/tokens';
-import { ComputerIcon, MoonIcon, SunIcon } from '../common/icons';
+import { ComputerIcon } from '../common/icons/ComputerIcon';
+import { MoonIcon } from '../common/icons/MoonIcon';
+import { SunIcon } from '../common/icons/SunIcon';
 
 export function ThemeSelector() {
   const { theme, setTheme } = useDarkMode();

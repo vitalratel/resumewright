@@ -45,9 +45,10 @@ import {
   FolderOpenIcon,
 } from '@heroicons/react/24/outline';
 import React, { useCallback, useState } from 'react';
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { tokens } from '../../styles/tokens';
-import { Alert, PDF } from '../common';
+import { Alert } from '../common/Alert';
+import { PDF } from '../common/TechTerm';
 
 // Extract copy feedback timeout constant
 const COPY_FEEDBACK_TIMEOUT_MS = 2000;

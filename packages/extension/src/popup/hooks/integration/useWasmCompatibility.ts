@@ -2,7 +2,7 @@
 // ABOUTME: Queries background worker for WASM status with retry logic.
 
 import { useEffect, useState } from 'react';
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 import type { WasmCompatibilityReport } from '@/shared/infrastructure/wasm/compatibility';
 import { WasmCompatibilityChecker } from '@/shared/infrastructure/wasm/compatibility';
 import { sendMessage } from '@/shared/messaging';

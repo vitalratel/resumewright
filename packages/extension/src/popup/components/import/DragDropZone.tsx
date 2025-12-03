@@ -6,9 +6,9 @@
 import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import type { ChangeEvent } from 'react';
 import React, { useRef } from 'react';
-import { useDragAndDrop } from '../../hooks';
+import { useDragAndDrop } from '../../hooks/ui/useDragAndDrop';
 import { tokens } from '../../styles/tokens';
-import { TSX } from '../common';
+import { TSX } from '../common/TechTerm';
 
 interface DragDropZoneProps {
   /** Callback when file is dropped or selected - can be async */

@@ -13,7 +13,7 @@ import {
   copyToClipboard,
   formatErrorDetailsForClipboard,
   formatErrorTimestamp,
-} from '@/shared/errors';
+} from '@/shared/errors/tracking/telemetry';
 import type { ConversionError } from '@/shared/types/models';
 import { useLoadingState } from '../../hooks/ui/useLoadingState';
 import { tokens } from '../../styles/tokens';

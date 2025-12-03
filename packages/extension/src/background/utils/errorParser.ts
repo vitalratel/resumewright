@@ -5,13 +5,14 @@
  */
 
 import { generateErrorId } from '@/shared/errors/tracking/telemetry';
-import { ERROR_CATEGORIES, ErrorCategory } from '../../shared/errors';
 /**
  * Parse and enrich error information for ConversionError.
  * Provides user-friendly errors with full debugging context.
  * Sanitizes messages to prevent information disclosure.
  */
 import type { ErrorCode } from '../../shared/errors/codes';
+import { ErrorCategory } from '../../shared/errors/codes';
+import { ERROR_CATEGORIES } from '../../shared/errors/metadata';
 import type { ConversionError } from '../../shared/types/models';
 
 import { sanitizeErrorMessage, sanitizeTechnicalDetails } from './errorSanitization';

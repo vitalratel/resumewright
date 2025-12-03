@@ -7,7 +7,7 @@
 
 import { useCallback } from 'react';
 import { validateTsxFile } from '@/shared/domain/pdf/validation';
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { ERROR_MESSAGES } from '../../constants/app';
 import type { AppState } from '../integration/useAppState';
 

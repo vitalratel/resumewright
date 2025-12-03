@@ -40,8 +40,12 @@
  */
 
 import { memo, useEffect } from 'react';
-import { useErrorLogging, useErrorPresentation, useErrorSuggestions } from '@/popup/hooks/ui';
-import { ERROR_CATEGORIES, ERROR_MESSAGES, ErrorCategory } from '@/shared/errors/';
+import { useErrorLogging } from '@/popup/hooks/ui/useErrorLogging';
+import { useErrorPresentation } from '@/popup/hooks/ui/useErrorPresentation';
+import { useErrorSuggestions } from '@/popup/hooks/ui/useErrorSuggestions';
+import { ErrorCategory } from '@/shared/errors/codes';
+import { ERROR_MESSAGES } from '@/shared/errors/messages';
+import { ERROR_CATEGORIES } from '@/shared/errors/metadata';
 import type { ConversionError } from '@/shared/types/models';
 import {
   isLocationErrorMetadata,

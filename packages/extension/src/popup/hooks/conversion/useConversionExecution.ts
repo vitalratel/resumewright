@@ -6,9 +6,9 @@
  */
 
 import { useCallback } from 'react';
-import { ErrorCode } from '@/shared/errors/';
+import { ErrorCode } from '@/shared/errors/codes';
 import { generateErrorId } from '@/shared/errors/tracking/telemetry';
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { ERROR_MESSAGES, FILE_SIZE_THRESHOLDS } from '../../constants/app';
 import { extensionAPI } from '../../services/extensionAPI';
 import { useProgressStore } from '../../store/progressStore';

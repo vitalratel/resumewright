@@ -12,9 +12,9 @@
  * - Basic recovery detection (logs warning, doesn't auto-resume)
  */
 
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
-import { localExtStorage } from '@/shared/infrastructure/storage';
+import { localExtStorage } from '@/shared/infrastructure/storage/typedStorage';
 import type { ConversionStatus } from '../shared/types/models';
 
 /**

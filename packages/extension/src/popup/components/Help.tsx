@@ -18,7 +18,7 @@ import {
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 import { tokens } from '../styles/tokens';
-import { getShortcutDisplay } from './common';
+import { getShortcutDisplay } from '../utils/shortcuts';
 
 interface HelpProps {
   onBack: () => void;

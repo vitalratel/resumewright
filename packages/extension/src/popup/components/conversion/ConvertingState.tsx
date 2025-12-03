@@ -4,10 +4,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useConversion } from '../../context/ConversionContext';
-import { useThrottledAnnouncement } from '../../hooks/ui';
+import { useThrottledAnnouncement } from '../../hooks/ui/useThrottledAnnouncement';
 import { useProgressStore } from '../../store/progressStore';
 import { tokens } from '../../styles/tokens';
-import { ConfirmDialog, Spinner } from '../common';
+import { ConfirmDialog } from '../common/ConfirmDialog';
+import { Spinner } from '../common/Spinner';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { ProgressBar } from './ProgressBar';
 import { ProgressStatus } from './ProgressStatus';

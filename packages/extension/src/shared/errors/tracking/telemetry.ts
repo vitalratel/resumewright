@@ -6,8 +6,8 @@
  * Users can export error logs for bug reports.
  */
 
-import { getLogger } from '../../infrastructure/logging';
-import { localExtStorage } from '../../infrastructure/storage';
+import { getLogger } from '../../infrastructure/logging/instance';
+import { localExtStorage } from '../../infrastructure/storage/typedStorage';
 
 /**
  * Generate a unique error ID based on timestamp and random component

@@ -9,7 +9,7 @@
 
 import type { IFontRepository } from '../../domain/fonts/IFontRepository';
 import type { FontData, FontRequirement } from '../../domain/fonts/types';
-import type { ILogger } from '../../infrastructure/logging';
+import type { ILogger } from '../../infrastructure/logging/logger';
 
 /**
  * Font fetch progress callback

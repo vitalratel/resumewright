@@ -6,8 +6,9 @@
  */
 
 import { null_, number, picklist, string } from 'valibot';
-import { getLogger } from '@/shared/infrastructure/logging';
-import { localExtStorage, setValidatedStorage } from '@/shared/infrastructure/storage';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
+import { localExtStorage } from '@/shared/infrastructure/storage/typedStorage';
+import { setValidatedStorage } from '@/shared/infrastructure/storage/validation';
 
 /**
  * WASM initialization status types

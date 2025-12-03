@@ -1,7 +1,7 @@
 // ABOUTME: Type definitions for the TSX-to-PDF conversion pipeline.
 // ABOUTME: Contains status, progress, error, configuration types and error metadata.
 
-import type { ErrorCategory, ErrorCode } from '../errors';
+import type { ErrorCategory, ErrorCode } from '../errors/codes';
 
 // Default config - canonical source is @/shared/domain/settings/defaults
 export { DEFAULT_CONVERSION_CONFIG } from '../domain/settings/defaults';

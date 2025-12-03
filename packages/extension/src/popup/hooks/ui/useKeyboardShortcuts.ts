@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 
 /**
  * Configuration for a keyboard shortcut

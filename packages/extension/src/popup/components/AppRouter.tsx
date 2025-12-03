@@ -29,18 +29,24 @@ import type React from 'react';
 import { lazy, Suspense } from 'react';
 import type { UserSettings } from '@/shared/types/settings';
 import { DEFAULT_JOB_ID, getContainerClass, getContentWrapperClass } from '../constants/app';
-import { AppProvider, ConversionProvider, QuickSettingsProvider } from '../context';
+import { AppProvider } from '../context/AppContext';
+import { ConversionProvider } from '../context/ConversionContext';
+import { QuickSettingsProvider } from '../context/QuickSettingsContext';
 import type { ConversionHandlers } from '../hooks/conversion/useConversionHandlers';
 import type { AppState } from '../hooks/integration/useAppState';
 import { useFocusTrap } from '../hooks/ui/useFocusManagement';
 import type { ShortcutConfig } from '../hooks/ui/useKeyboardShortcuts';
 import { tokens } from '../styles/tokens';
 import { ErrorBoundary } from './ErrorBoundary';
-import { AppFooter, AppHeader, MainContent } from './layout';
+import { AppFooter } from './layout/AppFooter';
+import { AppHeader } from './layout/AppHeader';
+import { MainContent } from './layout/MainContent';
 
 // Lazy load heavy components to reduce initial bundle size
-// P2-PERF: Code splitting for Settings, Help, and modals (~150KB reduction)
-const Settings = lazy(async () => import('./settings').then((m) => ({ default: m.Settings })));
+// Code splitting for Settings, Help, and modals (~150KB reduction)
+const Settings = lazy(async () =>
+  import('./settings/Settings').then((m) => ({ default: m.Settings })),
+);
 const Help = lazy(async () => import('./Help').then((m) => ({ default: m.Help })));
 const KeyboardShortcutsModal = lazy(async () =>
   import('./KeyboardShortcutsModal').then((m) => ({ default: m.KeyboardShortcutsModal })),
@@ -143,7 +149,7 @@ export function AppRouter({
 
   // Settings View
   // Wrap Settings in ErrorBoundary to prevent crashes from propagating
-  // P2-PERF: Lazy load Settings component to reduce initial bundle
+  // Lazy load Settings component to reduce initial bundle
   if (currentView === 'settings') {
     return (
       <div className={getContainerClass()} ref={settingsTrapRef}>

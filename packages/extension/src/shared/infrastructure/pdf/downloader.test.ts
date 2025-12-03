@@ -2,8 +2,8 @@
 // ABOUTME: Verifies browser.downloads API usage and blob URL handling.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Logger } from '../../infrastructure/logging';
-import { resetLogger, setLogger } from '../../infrastructure/logging';
+import { resetLogger, setLogger } from '../../infrastructure/logging/instance';
+import type { Logger } from '../../infrastructure/logging/logger';
 import { downloadPDF } from './downloader';
 
 // Mock browser

@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { useDelayedSpinner } from '../../hooks/ui';
+import { useDelayedSpinner } from '../../hooks/ui/useDelayedSpinner';
 import { tokens } from '../../styles/tokens';
 
 export type SpinnerSize = 'small' | 'medium' | 'large';

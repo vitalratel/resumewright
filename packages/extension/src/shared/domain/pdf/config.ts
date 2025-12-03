@@ -4,7 +4,7 @@
  * Converts TypeScript ConversionConfig to WASM-compatible format.
  */
 
-import type { ILogger } from '../../infrastructure/logging';
+import type { ILogger } from '../../infrastructure/logging/logger';
 import type { ConversionConfig } from '../../types/models';
 import { DEFAULT_PDF_CONFIG, PDF_STANDARDS } from './constants';
 import type { WasmPdfConfig } from './types';

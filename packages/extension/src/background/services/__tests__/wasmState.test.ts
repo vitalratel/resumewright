@@ -8,8 +8,9 @@
 
 import { fakeBrowser } from '@webext-core/fake-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Logger, LogLevel, resetLogger, setLogger } from '@/shared/infrastructure/logging';
-import { localExtStorage } from '@/shared/infrastructure/storage';
+import { resetLogger, setLogger } from '@/shared/infrastructure/logging/instance';
+import { Logger, LogLevel } from '@/shared/infrastructure/logging/logger';
+import { localExtStorage } from '@/shared/infrastructure/storage/typedStorage';
 import { WasmStateManager } from '../wasmState';
 
 describe('WasmStateManager', () => {

@@ -12,7 +12,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
-import { Settings } from '../settings';
+import { Settings } from '../settings/Settings';
 
 // Mock settingsStore
 vi.mock('@/shared/infrastructure/settings/SettingsStore', () => ({

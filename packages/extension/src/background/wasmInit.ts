@@ -5,11 +5,13 @@
  * Refactored for maintainability and separation of concerns.
  */
 
-import { getLogger } from '@/shared/infrastructure/logging';
-import { createWasmInitError } from '../shared/errors/factory';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
+import { createWasmInitError } from '../shared/errors/factory/wasmErrors';
+import { ExponentialBackoffRetryPolicy } from '../shared/infrastructure/retry/ExponentialBackoffRetryPolicy';
 import { initWASM } from '../shared/infrastructure/wasm/loader';
-import type { WasmStatusInfo } from './services';
-import { BadgeManager, ExponentialBackoffRetryPolicy, WasmStateManager } from './services';
+import { BadgeManager } from './services/badgeManager';
+import type { WasmStatusInfo } from './services/wasmState';
+import { WasmStateManager } from './services/wasmState';
 
 // WASM initialization configuration
 const MAX_INIT_RETRIES = 3;

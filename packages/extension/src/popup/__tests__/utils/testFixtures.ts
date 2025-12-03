@@ -1,7 +1,7 @@
 // ABOUTME: Reusable test data for popup tests.
 // ABOUTME: Provides consistent fixtures for common scenarios.
 
-import { ErrorCategory, ErrorCode } from '@/shared/errors';
+import { ErrorCategory, ErrorCode } from '@/shared/errors/codes';
 import type { ConversionError } from '@/shared/types/models';
 import type { CVMetadata } from '../../store';
 

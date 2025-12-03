@@ -12,8 +12,8 @@ import type { BaseIssue } from 'valibot';
 import { safeParse } from 'valibot';
 import { CURRENT_SETTINGS_VERSION, DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
 import { UserSettingsSchema } from '@/shared/domain/validation/settings';
-import { getLogger } from '@/shared/infrastructure/logging';
-import { localExtStorage, syncExtStorage } from '@/shared/infrastructure/storage';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
+import { localExtStorage, syncExtStorage } from '@/shared/infrastructure/storage/typedStorage';
 import type { UserSettings, ValidationError, ValidationResult } from '@/shared/types/settings';
 
 /**

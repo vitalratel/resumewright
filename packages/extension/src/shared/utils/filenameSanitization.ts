@@ -6,7 +6,7 @@
  */
 
 import { transliterate } from 'transliteration';
-import { getLogger } from '../infrastructure/logging';
+import { getLogger } from '../infrastructure/logging/instance';
 
 /**
  * Sanitizes a string for use in a filename.
