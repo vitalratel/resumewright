@@ -36,6 +36,9 @@ Thumbs.db
 # Test coverage
 coverage/
 
+# Mutation testing output
+mutants.out*
+
 # Playwright test profiles
 .test-profile*
 .test-extension-id-cache

@@ -41,10 +41,7 @@ export function convertConfigToRust(config: ConversionConfig, logger: ILogger): 
       left: convertInchesToPoints(config.margin.left),
     },
     standard: PDF_STANDARDS.PDFA1B, // Use PDF/A-1b for maximum ATS compatibility
-    title:
-      config.filename !== null && config.filename !== undefined && config.filename !== ''
-        ? config.filename
-        : DEFAULT_PDF_CONFIG.filename,
+    title: config.filename || DEFAULT_PDF_CONFIG.filename,
     author: null,
     subject: 'Curriculum Vitae',
     keywords: null,

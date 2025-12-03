@@ -1,9 +1,5 @@
-/**
- * WASM Response Validation Schemas
- *
- * Valibot schemas for runtime validation of WASM JSON responses.
- * Prevents runtime crashes from malformed WASM data.
- */
+// ABOUTME: Valibot schemas for runtime validation of WASM JSON responses.
+// ABOUTME: Prevents runtime crashes from malformed WASM data.
 
 import {
   array,
@@ -22,6 +18,7 @@ import {
   string,
   union,
 } from 'valibot';
+import { formatValidationIssues } from '../validation/utils';
 
 /**
  * Font weight schema (100-900 in increments of 100)
@@ -88,13 +85,9 @@ export function parseFontRequirements(jsonString: string) {
     const result = safeParse(FontRequirementsArraySchema, parsed);
 
     if (!result.success) {
-      const issues = result.issues
-        .map(
-          (issue) =>
-            `${issue.path !== null && issue.path !== undefined ? issue.path.map((p) => p.key).join('.') || 'root' : 'root'}: ${issue.message}`,
-        )
-        .join(', ');
-      throw new Error(`Invalid font requirements from WASM: ${issues}`);
+      throw new Error(
+        `Invalid font requirements from WASM: ${formatValidationIssues(result.issues)}`,
+      );
     }
 
     return result.output;
@@ -137,13 +130,7 @@ export function validateWasmPdfConfig(config: unknown) {
   const result = safeParse(WasmPdfConfigSchema, config);
 
   if (!result.success) {
-    const issues = result.issues
-      .map(
-        (issue) =>
-          `${issue.path !== null && issue.path !== undefined ? issue.path.map((p) => p.key).join('.') || 'root' : 'root'}: ${issue.message}`,
-      )
-      .join(', ');
-    throw new Error(`Invalid PDF config: ${issues}`);
+    throw new Error(`Invalid PDF config: ${formatValidationIssues(result.issues)}`);
   }
 
   return result.output;
@@ -161,7 +148,6 @@ export const PdfBytesSchema = pipe(
   custom<ArrayLike<number>>(
     (value): value is ArrayLike<number> =>
       value !== null &&
-      value !== undefined &&
       typeof value === 'object' &&
       'length' in value &&
       typeof value.length === 'number',
@@ -201,13 +187,7 @@ export function validatePdfBytes(bytes: unknown): Uint8Array {
   const result = safeParse(PdfBytesSchema, bytes);
 
   if (!result.success) {
-    const issues = result.issues
-      .map(
-        (issue) =>
-          `${issue.path !== null && issue.path !== undefined ? issue.path.map((p) => p.key).join('.') || 'root' : 'root'}: ${issue.message}`,
-      )
-      .join(', ');
-    throw new Error(`Invalid PDF bytes from WASM: ${issues}`);
+    throw new Error(`Invalid PDF bytes from WASM: ${formatValidationIssues(result.issues)}`);
   }
 
   // Convert to Uint8Array
@@ -215,7 +195,7 @@ export function validatePdfBytes(bytes: unknown): Uint8Array {
 
   // Validate PDF magic bytes (PDF files start with "%PDF")
   const header = String.fromCharCode(...Array.from(pdfArray.slice(0, 4)));
-  if (!header.startsWith('%PDF')) {
+  if (header !== '%PDF') {
     throw new Error(`Invalid PDF format: expected header "%PDF", got "${header}"`);
   }
 
@@ -241,12 +221,8 @@ export function validateProgressParams(stage: unknown, percentage: unknown): voi
   const result = safeParse(ProgressCallbackParamsSchema, { stage, percentage });
 
   if (!result.success) {
-    const issues = result.issues
-      .map(
-        (issue) =>
-          `${issue.path !== null && issue.path !== undefined ? issue.path.map((p) => p.key).join('.') || 'root' : 'root'}: ${issue.message}`,
-      )
-      .join(', ');
-    throw new Error(`Invalid progress callback params from WASM: ${issues}`);
+    throw new Error(
+      `Invalid progress callback params from WASM: ${formatValidationIssues(result.issues)}`,
+    );
   }
 }

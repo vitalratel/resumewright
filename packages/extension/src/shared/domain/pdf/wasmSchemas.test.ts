@@ -169,6 +169,50 @@ describe('WASM Schema Validation', () => {
 
       expect(() => parseFontRequirements(json)).toThrow('Invalid font requirements from WASM');
     });
+
+    it('should use different error message format for syntax errors vs validation errors', () => {
+      // SyntaxError should use "Failed to parse font requirements JSON:" prefix
+      expect(() => parseFontRequirements('{invalid json}')).toThrow(
+        'Failed to parse font requirements JSON:',
+      );
+
+      // Validation errors should use "Invalid font requirements from WASM:" prefix
+      // (not "Failed to parse font requirements JSON:")
+      const validJson = JSON.stringify([
+        { family: '', weight: 400, style: 'normal', source: 'google' },
+      ]);
+      try {
+        parseFontRequirements(validJson);
+        expect.fail('Should have thrown');
+      } catch (error) {
+        const message = (error as Error).message;
+        expect(message).not.toContain('Failed to parse font requirements JSON');
+        expect(message).toContain('Invalid font requirements from WASM');
+      }
+    });
+
+    it('should include path in error message for nested validation failures', () => {
+      // Test that error messages include the field path (e.g., "0.weight")
+      const json = JSON.stringify([
+        { family: 'Test', weight: 450, style: 'normal', source: 'google' },
+      ]);
+
+      expect(() => parseFontRequirements(json)).toThrow('0.weight');
+    });
+
+    it('should join multiple errors with comma separator', () => {
+      // Test that multiple validation errors are joined with ", "
+      const json = JSON.stringify([{ family: '', weight: 450, style: 'invalid', source: 'bad' }]);
+
+      try {
+        parseFontRequirements(json);
+        expect.fail('Should have thrown');
+      } catch (error) {
+        const message = (error as Error).message;
+        // Should have multiple errors joined by ", "
+        expect(message).toContain(', ');
+      }
+    });
   });
 
   describe('validateWasmPdfConfig', () => {
@@ -381,6 +425,35 @@ describe('WASM Schema Validation', () => {
 
     it('should throw error for object without length', () => {
       expect(() => validatePdfBytes({ data: [1, 2, 3] })).toThrow('Invalid PDF bytes from WASM');
+    });
+
+    it('should throw error for object with non-number length property', () => {
+      // With proper validation, this should fail at custom validator level
+      // If typeof check is bypassed, it would fail at check() with different error
+      const objWithStringLength = { length: 'not a number', 0: 0x25, 1: 0x50, 2: 0x44, 3: 0x46 };
+      try {
+        validatePdfBytes(objWithStringLength);
+        expect.fail('Should have thrown');
+      } catch (error) {
+        const message = (error as Error).message;
+        // Must fail at schema level (custom validator), not at size check level
+        expect(message).toContain('Invalid PDF bytes from WASM');
+        expect(message).not.toContain('at least 50 bytes');
+      }
+    });
+
+    it('should validate PDF at exactly 10MB boundary', () => {
+      const pdfBytes = createValidPdf(10 * 1024 * 1024); // Exactly 10MB
+
+      const result = validatePdfBytes(pdfBytes);
+
+      expect(result.length).toBe(10 * 1024 * 1024);
+    });
+
+    it('should reject PDF at 10MB + 1 byte', () => {
+      const pdfBytes = createValidPdf(10 * 1024 * 1024 + 1);
+
+      expect(() => validatePdfBytes(pdfBytes)).toThrow('PDF cannot exceed 10MB');
     });
   });
 

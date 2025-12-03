@@ -93,6 +93,65 @@ describe('Conversion Validation', () => {
 
       expect(validateConversionProgress(invalidProgress)).toBe(false);
     });
+
+    it('should reject pagesProcessed greater than totalPages', () => {
+      const invalidProgress = {
+        stage: 'rendering',
+        percentage: 50,
+        currentOperation: 'Rendering',
+        pagesProcessed: 10,
+        totalPages: 5,
+      };
+
+      expect(validateConversionProgress(invalidProgress)).toBe(false);
+    });
+
+    it('should accept pagesProcessed equal to totalPages', () => {
+      const validProgress = {
+        stage: 'rendering',
+        percentage: 100,
+        currentOperation: 'Done',
+        pagesProcessed: 5,
+        totalPages: 5,
+      };
+
+      expect(validateConversionProgress(validProgress)).toBe(true);
+    });
+
+    it('should accept pagesProcessed less than totalPages', () => {
+      const validProgress = {
+        stage: 'rendering',
+        percentage: 50,
+        currentOperation: 'Processing',
+        pagesProcessed: 3,
+        totalPages: 5,
+      };
+
+      expect(validateConversionProgress(validProgress)).toBe(true);
+    });
+
+    it('should accept progress without page count fields', () => {
+      const validProgress = {
+        stage: 'rendering',
+        percentage: 50,
+        currentOperation: 'Processing',
+        // no pagesProcessed or totalPages - should be valid
+      };
+
+      expect(validateConversionProgress(validProgress)).toBe(true);
+    });
+
+    it('should accept totalPages without pagesProcessed', () => {
+      const validProgress = {
+        stage: 'rendering',
+        percentage: 50,
+        currentOperation: 'Processing',
+        totalPages: 5,
+        // pagesProcessed intentionally omitted - should be valid
+      };
+
+      expect(validateConversionProgress(validProgress)).toBe(true);
+    });
   });
 
   describe('validateConversionConfig', () => {

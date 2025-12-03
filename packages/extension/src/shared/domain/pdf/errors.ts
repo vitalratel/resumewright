@@ -1,8 +1,5 @@
-/**
- * Error Parser Module
- *
- * Parses WASM errors into ConversionError format.
- */
+// ABOUTME: Parses WASM errors into ConversionError format.
+// ABOUTME: Handles JSON error parsing with Valibot validation and fallback handling.
 
 import type { InferOutput } from 'valibot';
 import { array, boolean, object, optional, safeParse, string } from 'valibot';
@@ -61,24 +58,14 @@ export function parseWasmError(error: unknown): ConversionError {
     if (result.success) {
       const errorJson: WasmError = result.output;
       return {
-        stage: mapStageToConversionStatus(
-          errorJson.stage !== null && errorJson.stage !== undefined && errorJson.stage !== ''
-            ? errorJson.stage
-            : 'unknown',
-        ),
+        stage: mapStageToConversionStatus(errorJson.stage ?? ''),
         code: errorJson.code as ErrorCode,
         message: errorJson.message,
         timestamp: Date.now(),
         errorId: generateErrorId(),
         technicalDetails: errorJson.technicalDetails,
-        recoverable:
-          errorJson.recoverable !== null && errorJson.recoverable !== undefined
-            ? errorJson.recoverable
-            : false,
-        suggestions:
-          errorJson.suggestions !== null && errorJson.suggestions !== undefined
-            ? errorJson.suggestions
-            : [],
+        recoverable: errorJson.recoverable ?? false,
+        suggestions: errorJson.suggestions ?? [],
       };
     }
     // If validation fails, fall through to default error handling

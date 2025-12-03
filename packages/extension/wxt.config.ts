@@ -57,11 +57,14 @@ export default defineConfig({
         matches: [], // Extension pages only - WASM loaded via browser.runtime.getURL()
       },
     ],
-    // Add Firefox-specific extension ID for E2E testing
+    // Add Firefox-specific settings
     ...(browser === 'firefox' && {
       browser_specific_settings: {
         gecko: {
           id: 'extension@resumewright.com',
+          data_collection_permissions: {
+            required: ['none'],
+          },
         },
       },
     }),

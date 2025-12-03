@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "vitest",
+  "plugins": ["@stryker-mutator/vitest-runner", "@sgohlke/stryker-log-ignorer"],
+  "ignorers": ["log-ignore"],
+  "logignore": {
+    "objectNames": ["console", "logger"]
+  },
+  "vitest": {
+    "configFile": "vitest.config.stryker.ts"
+  },
+  "mutate": [
+    "src/shared/domain/**/*.ts",
+    "src/shared/application/**/*.ts",
+    "!src/**/*.test.ts",
+    "!src/**/*.spec.ts",
+    "!src/**/*.d.ts",
+    "!src/**/__tests__/**"
+  ],
+  "ignorePatterns": [
+    "docs/**",
+    "tests/**",
+    "coverage/**",
+    "reports/**",
+    "node_modules/**",
+    ".wxt/**",
+    "*.html"
+  ],
+  "disableTypeChecks": "src/**/*.{ts,tsx}",
+  "reporters": ["clear-text", "progress", "html"],
+  "htmlReporter": {
+    "fileName": "reports/mutation/index.html"
+  },
+  "inPlace": false,
+  "coverageAnalysis": "perTest",
+  "ignoreStatic": true,
+  "thresholds": {
+    "high": 80,
+    "low": 60,
+    "break": null
+  },
+  "concurrency": 4,
+  "timeoutMS": 10000,
+  "incremental": true,
+  "incrementalFile": "reports/stryker-incremental.json"
+}
