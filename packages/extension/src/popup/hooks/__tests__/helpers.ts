@@ -46,36 +46,3 @@ export function createMockAppState(overrides?: Partial<AppState>): AppState {
     ...overrides,
   } as unknown as AppState;
 }
-
-// Helper to temporarily remove API
-export function withoutAPI<T>(
-  getter: () => T,
-  setter: (val: T | undefined) => void,
-  testFn: () => void | Promise<void>,
-) {
-  return async () => {
-    const orig = getter();
-    setter(undefined);
-    try {
-      await testFn();
-    } finally {
-      setter(orig);
-    }
-  };
-}
-
-// Console spy helper
-export function withSuppressedConsole(
-  method: 'error' | 'warn' | 'info',
-  testFn: () => void | Promise<void>,
-) {
-  return async () => {
-    const spy = vi.spyOn(console, method).mockImplementation(() => {});
-    try {
-      await testFn();
-      return spy;
-    } finally {
-      spy.mockRestore();
-    }
-  };
-}

@@ -26,21 +26,3 @@ export function createWasmInitError(
     technicalDetails,
   });
 }
-
-/**
- * Creates a WASM execution error
- *
- * @param stage - Conversion stage where error occurred
- * @param technicalDetails - Optional technical error details
- * @returns ConversionError for WASM runtime failures
- */
-export function createWasmExecutionError(
-  stage: ConversionStatus,
-  technicalDetails?: string,
-): ConversionError {
-  return createConversionError({
-    code: ErrorCode.WASM_EXECUTION_ERROR,
-    stage,
-    technicalDetails,
-  });
-}

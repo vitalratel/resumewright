@@ -29,21 +29,3 @@ export function createTsxParseError(
     metadata,
   });
 }
-
-/**
- * Creates an invalid TSX structure error
- *
- * @param stage - Conversion stage where error occurred
- * @param technicalDetails - Optional technical error details
- * @returns ConversionError for structural validation failures
- */
-export function createInvalidStructureError(
-  stage: ConversionStatus,
-  technicalDetails?: string,
-): ConversionError {
-  return createConversionError({
-    code: ErrorCode.INVALID_TSX_STRUCTURE,
-    stage,
-    technicalDetails,
-  });
-}

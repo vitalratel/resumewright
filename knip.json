@@ -1,0 +1,27 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/*.{js,mjs}"],
+      "project": ["scripts/**/*.{js,mjs}"]
+    },
+    "packages/extension": {
+      "entry": [
+        "entrypoints/**/*.{ts,tsx}",
+        "src/**/*.test.{ts,tsx}",
+        "src/**/*.d.ts"
+      ],
+      "project": ["src/**/*.{ts,tsx}", "entrypoints/**/*.{ts,tsx}"],
+      "ignore": ["src/__tests__/**"]
+    }
+  },
+  "ignoreDependencies": [
+    "@babel/core",
+    "@babel/preset-react",
+    "@babel/preset-typescript",
+    "@pkg/wasm_bridge",
+    "prettier",
+    "tailwindcss"
+  ],
+  "ignoreBinaries": ["wasm-pack", "prettier"]
+}

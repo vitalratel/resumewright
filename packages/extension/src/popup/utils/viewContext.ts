@@ -20,17 +20,3 @@ export function getViewContext(): ViewContext {
   // Default to popup
   return 'popup';
 }
-
-/**
- * Check if currently in popup context
- */
-export function isPopupContext(): boolean {
-  return getViewContext() === 'popup';
-}
-
-/**
- * Check if currently in full-page converter context
- */
-export function isConverterContext(): boolean {
-  return getViewContext() === 'converter';
-}
