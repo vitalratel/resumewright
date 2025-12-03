@@ -6,9 +6,9 @@
  * showing the current values that will be lost.
  */
 
-import type { UserSettings } from '@/shared/types/settings';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import type { UserSettings } from '@/shared/types/settings';
 import { tokens } from '../styles/tokens';
 import { Modal } from './common/Modal';
 
@@ -20,7 +20,13 @@ interface ResetConfirmationModalProps {
 
 export const ResetConfirmationModal = React.memo(
   ({ currentSettings, onConfirm, onCancel }: ResetConfirmationModalProps) => {
+    const cancelButtonRef = useRef<HTMLButtonElement>(null);
     const { pageSize, margin } = currentSettings.defaultConfig;
+
+    // Focus Cancel button when modal opens (safe default for destructive action)
+    useEffect(() => {
+      cancelButtonRef.current?.focus();
+    }, []);
 
     // Compare current values with defaults to highlight only changes
     const defaultPageSize = 'Letter';
@@ -193,12 +199,12 @@ export const ResetConfirmationModal = React.memo(
           {/* Action buttons */}
           <div className={`flex ${tokens.spacing.gapMedium} pt-2`}>
             <button
+              ref={cancelButtonRef}
               type="button"
               onClick={onCancel}
               className={`flex-1 px-4 py-2 ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.colors.neutral.bgWhite} border ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.colors.neutral.hover} ${tokens.effects.hoverBorder} ${tokens.effects.focusRing} ${tokens.transitions.default}`
                 .trim()
                 .replace(/\s+/g, ' ')}
-              autoFocus
             >
               Cancel
             </button>
@@ -215,5 +221,5 @@ export const ResetConfirmationModal = React.memo(
         </div>
       </Modal>
     );
-  }
+  },
 );

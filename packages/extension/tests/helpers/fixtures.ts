@@ -102,9 +102,11 @@ export type FixtureKey = keyof typeof TEST_FIXTURES;
  */
 export const FIXTURE_PATHS = {
   singlePage: fileURLToPath(
-    new URL('../../../../test-fixtures/tsx-samples/single-page', import.meta.url)
+    new URL('../../../../test-fixtures/tsx-samples/single-page', import.meta.url),
   ),
-  multiPage: fileURLToPath(new URL('../../../../test-fixtures/tsx-samples/multi-page', import.meta.url)),
+  multiPage: fileURLToPath(
+    new URL('../../../../test-fixtures/tsx-samples/multi-page', import.meta.url),
+  ),
   invalid: fileURLToPath(new URL('../../../../test-fixtures/tsx-samples/invalid', import.meta.url)),
 } as const;
 
@@ -166,7 +168,7 @@ export function getFixtureMetadata(fixture: FixtureKey): FixtureMetadata {
  */
 export function getFixturesByCategory(category: FixtureMetadata['category']): FixtureKey[] {
   return (Object.keys(TEST_FIXTURES) as FixtureKey[]).filter(
-    (key) => TEST_FIXTURES[key].category === category
+    (key) => TEST_FIXTURES[key].category === category,
   );
 }
 
@@ -177,7 +179,7 @@ export function getFixturesByCategory(category: FixtureMetadata['category']): Fi
  */
 export function getValidFixtures(): FixtureKey[] {
   return (Object.keys(TEST_FIXTURES) as FixtureKey[]).filter(
-    (key) => TEST_FIXTURES[key].shouldValidate
+    (key) => TEST_FIXTURES[key].shouldValidate,
   );
 }
 
@@ -188,7 +190,7 @@ export function getValidFixtures(): FixtureKey[] {
  */
 export function getInvalidFixtures(): FixtureKey[] {
   return (Object.keys(TEST_FIXTURES) as FixtureKey[]).filter(
-    (key) => !TEST_FIXTURES[key].shouldValidate
+    (key) => !TEST_FIXTURES[key].shouldValidate,
   );
 }
 

@@ -38,10 +38,7 @@ interface SkeletonProps {
  * // Circle skeleton (for avatars/icons)
  * <Skeleton className="w-10 h-10" variant="circle" />
  */
-export const Skeleton = React.memo(({
-  className = '',
-  variant = 'rect',
-}: SkeletonProps) => {
+export const Skeleton = React.memo(({ className = '', variant = 'rect' }: SkeletonProps) => {
   const baseClasses = `animate-pulse ${tokens.colors.neutral.bg}`;
   const variantClasses = {
     text: `h-4 ${tokens.borders.rounded}`,
@@ -63,7 +60,11 @@ export const Skeleton = React.memo(({
  */
 export const SkeletonFileImport = React.memo(() => {
   return (
-    <div className={`border-2 ${tokens.borders.default} ${tokens.borders.roundedLg} ${tokens.spacing.card} ${tokens.spacing.sectionGap}`} aria-hidden="true" role="presentation">
+    <div
+      className={`border-2 ${tokens.borders.default} ${tokens.borders.roundedLg} ${tokens.spacing.card} ${tokens.spacing.sectionGap}`}
+      aria-hidden="true"
+      role="presentation"
+    >
       {/* Icon skeleton */}
       <div className="flex justify-center">
         <Skeleton className="w-10 h-10" variant="circle" />
@@ -73,9 +74,7 @@ export const SkeletonFileImport = React.memo(() => {
       <div className={tokens.spacing.gapSmall}>
         <Skeleton className="w-48 h-4 mx-auto" variant="text" />
         <Skeleton className="w-12 h-3 mx-auto" variant="text" />
-        <Skeleton className="w-24 h-8 mx-auto" />
-        {' '}
-        {/* Button */}
+        <Skeleton className="w-24 h-8 mx-auto" /> {/* Button */}
         <Skeleton className="w-40 h-3 mx-auto" variant="text" />
       </div>
     </div>
@@ -102,11 +101,9 @@ export const SkeletonSettings = React.memo(() => {
       {/* Margins section */}
       <div className={tokens.spacing.gapMedium}>
         <Skeleton className="w-16 h-4" variant="text" />
-        <Skeleton className="w-full h-4 mb-2" variant="text" />
-        {' '}
-        {/* Helper text */}
-        {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} className={tokens.spacing.gapSmall}>
+        <Skeleton className="w-full h-4 mb-2" variant="text" /> {/* Helper text */}
+        {['top', 'right', 'bottom', 'left'].map((side) => (
+          <div key={side} className={tokens.spacing.gapSmall}>
             <Skeleton className="w-12 h-3" variant="text" />
             <Skeleton className="w-full h-6" />
           </div>
@@ -127,7 +124,11 @@ export const SkeletonSettings = React.memo(() => {
  */
 export const SkeletonHeader = React.memo(() => {
   return (
-    <div className={`flex justify-between items-center ${tokens.spacing.card} border-b ${tokens.borders.default}`} aria-hidden="true" role="presentation">
+    <div
+      className={`flex justify-between items-center ${tokens.spacing.card} border-b ${tokens.borders.default}`}
+      aria-hidden="true"
+      role="presentation"
+    >
       <div className={`flex items-center ${tokens.spacing.gapSmall}`}>
         <Skeleton className="w-6 h-6" variant="circle" />
         <Skeleton className="w-32 h-5" variant="text" />
@@ -142,7 +143,11 @@ export const SkeletonHeader = React.memo(() => {
  */
 export const SkeletonExportSection = React.memo(() => {
   return (
-    <div className={`${tokens.spacing.containerPadding} ${tokens.spacing.stack}`} aria-hidden="true" role="presentation">
+    <div
+      className={`${tokens.spacing.containerPadding} ${tokens.spacing.stack}`}
+      aria-hidden="true"
+      role="presentation"
+    >
       {/* Export button skeleton */}
       <Skeleton className="w-full h-11" />
       {/* Settings summary line skeleton */}

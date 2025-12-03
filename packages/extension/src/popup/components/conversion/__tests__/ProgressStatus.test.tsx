@@ -10,9 +10,9 @@
  * - Accessibility
  */
 
-import type { ConversionStatus } from '@/shared/types/models';
 import { render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { ConversionStatus } from '@/shared/types/models';
 import { ProgressStatus } from '../ProgressStatus';
 
 describe('ProgressStatus', () => {
@@ -49,7 +49,7 @@ describe('ProgressStatus', () => {
 
     it('should show stable ETA during rapid updates', async () => {
       const { rerender } = render(
-        <ProgressStatus stage="rendering" currentOperation="Rendering..." eta={10} />
+        <ProgressStatus stage="rendering" currentOperation="Rendering..." eta={10} />,
       );
 
       // Simulate rapid ETA changes (as user would experience)
@@ -62,13 +62,13 @@ describe('ProgressStatus', () => {
         () => {
           expect(screen.getByText(/seconds remaining/i)).toBeInTheDocument();
         },
-        { timeout: 1000 }
+        { timeout: 1000 },
       );
     });
 
     it('should update ETA when change is significant (>= 1 second)', async () => {
       const { rerender } = render(
-        <ProgressStatus stage="rendering" currentOperation="Rendering..." eta={10} />
+        <ProgressStatus stage="rendering" currentOperation="Rendering..." eta={10} />,
       );
 
       expect(screen.getByText('10 seconds remaining')).toBeInTheDocument();
@@ -81,7 +81,7 @@ describe('ProgressStatus', () => {
         () => {
           expect(screen.getByText('8 seconds remaining')).toBeInTheDocument();
         },
-        { timeout: 1000 }
+        { timeout: 1000 },
       );
     });
 
@@ -95,15 +95,15 @@ describe('ProgressStatus', () => {
       expect(screen.queryByText(/remaining/i)).not.toBeInTheDocument();
     });
 
-    it.each<ConversionStatus>(['completed', 'failed'])(
-      'should not show default message for %s stage',
-      (stage) => {
-        render(<ProgressStatus stage={stage} currentOperation="Done" />);
+    it.each<ConversionStatus>([
+      'completed',
+      'failed',
+    ])('should not show default message for %s stage', (stage) => {
+      render(<ProgressStatus stage={stage} currentOperation="Done" />);
 
-        expect(screen.queryByText(/Usually completes/i)).not.toBeInTheDocument();
-        expect(screen.queryByText(/remaining/i)).not.toBeInTheDocument();
-      }
-    );
+      expect(screen.queryByText(/Usually completes/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/remaining/i)).not.toBeInTheDocument();
+    });
   });
 
   describe('Page Progress', () => {
@@ -114,7 +114,7 @@ describe('ProgressStatus', () => {
           currentOperation="Rendering..."
           pagesProcessed={2}
           totalPages={5}
-        />
+        />,
       );
 
       expect(screen.getByText('Page 2 of 5')).toBeInTheDocument();
@@ -127,7 +127,7 @@ describe('ProgressStatus', () => {
           currentOperation="Rendering..."
           pagesProcessed={1}
           totalPages={1}
-        />
+        />,
       );
 
       expect(screen.queryByText(/Page/i)).not.toBeInTheDocument();
@@ -149,7 +149,7 @@ describe('ProgressStatus', () => {
           currentOperation="Rendering..."
           pagesProcessed={current}
           totalPages={total}
-        />
+        />,
       );
 
       expect(screen.getByText(expected)).toBeInTheDocument();
@@ -166,7 +166,7 @@ describe('ProgressStatus', () => {
 
     it('should use semantic text hierarchy', () => {
       render(
-        <ProgressStatus stage="rendering" currentOperation="Rendering components..." eta={5} />
+        <ProgressStatus stage="rendering" currentOperation="Rendering components..." eta={5} />,
       );
 
       const stageDisplay = screen.getByTestId('progress-status');
@@ -209,7 +209,7 @@ describe('ProgressStatus', () => {
 
     it('should handle undefined to defined ETA transition', async () => {
       const { rerender } = render(
-        <ProgressStatus stage="rendering" currentOperation="Rendering..." />
+        <ProgressStatus stage="rendering" currentOperation="Rendering..." />,
       );
 
       expect(screen.getByText(/Usually completes/i)).toBeInTheDocument();
@@ -220,7 +220,7 @@ describe('ProgressStatus', () => {
         () => {
           expect(screen.getByText('3 seconds remaining')).toBeInTheDocument();
         },
-        { timeout: 1000 }
+        { timeout: 1000 },
       );
     });
   });

@@ -37,14 +37,13 @@ function ThrowError({ shouldThrow }: { shouldThrow: boolean }) {
 }
 
 describe('ErrorBoundary', () => {
-  // Suppress console.error for these tests
-  const originalError = console.error;
+  // Suppress console.error for these tests (React logs errors when boundaries catch)
   beforeEach(() => {
-    console.error = vi.fn();
+    vi.spyOn(globalThis.console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    console.error = originalError;
+    vi.restoreAllMocks();
   });
 
   it('should render children when there is no error', () => {
@@ -131,10 +130,12 @@ describe('ErrorBoundary', () => {
     expect(consoleErrorMock).toHaveBeenCalled();
     // ErrorBoundary calls console.error, but React also logs errors
     // Check that at least one call contains our message
-    const errorBoundaryCalls = consoleErrorMock.mock.calls.some(call =>
-      (call[0] != null) && Boolean(call[0].toString().includes('React Error Boundary caught an error:')),
+    const errorBoundaryCalls = consoleErrorMock.mock.calls.some(
+      (call) =>
+        call[0] != null &&
+        Boolean(call[0].toString().includes('React Error Boundary caught an error:')),
     );
-    expect((errorBoundaryCalls === true) || (consoleErrorMock.mock.calls.length > 0)).toBe(true);
+    expect(errorBoundaryCalls === true || consoleErrorMock.mock.calls.length > 0).toBe(true);
   });
 
   // Verify ErrorBoundary catches store initialization errors
@@ -193,7 +194,9 @@ describe('ErrorBoundary', () => {
       vi.stubEnv('PROD', true);
       vi.stubEnv('DEV', false);
 
-      vi.mocked(browser.runtime.getManifest).mockReturnValue(undefined as unknown as ReturnType<typeof browser.runtime.getManifest>);
+      vi.mocked(browser.runtime.getManifest).mockReturnValue(
+        undefined as unknown as ReturnType<typeof browser.runtime.getManifest>,
+      );
 
       const { logErrorToService } = await import('@/shared/errors/tracking/telemetry');
 

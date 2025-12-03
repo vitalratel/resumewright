@@ -5,8 +5,8 @@
  * Separated from Logger class to break the import cycle.
  */
 
-import type { Logger } from './logger';
 import { ContextLogger } from './contextLogger';
+import type { Logger } from './logger';
 
 /**
  * Create a context-bound logger

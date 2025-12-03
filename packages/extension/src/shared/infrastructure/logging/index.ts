@@ -48,9 +48,6 @@ export { ContextLogger } from './contextLogger';
 export { createContextLogger } from './contextLoggerFactory';
 // Global logger instance (most common import)
 export { getLogger, resetLogger, setLogger } from './instance';
-// Logger classes (for advanced usage)
-export { Logger } from './logger';
-
-export { LogLevel } from './logger';
-
 export type { ILogger, LoggerConfig } from './logger';
+// Logger classes (for advanced usage)
+export { Logger, LogLevel } from './logger';

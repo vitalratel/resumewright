@@ -1,8 +1,8 @@
 // ABOUTME: Tests for PDF download functionality.
 // ABOUTME: Verifies browser.downloads API usage and blob URL handling.
 
-import type { Logger } from '../../infrastructure/logging';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Logger } from '../../infrastructure/logging';
 import { resetLogger, setLogger } from '../../infrastructure/logging';
 import { downloadPDF } from './downloader';
 
@@ -22,8 +22,6 @@ vi.mock('wxt/browser', () => ({
     },
   },
 }));
-
-
 
 describe('downloader', () => {
   const mockLogger = {

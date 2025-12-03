@@ -29,8 +29,7 @@ export class BadgeManager {
   async showSuccess(): Promise<void> {
     try {
       await browser.action.setBadgeText({ text: '' });
-    }
-    catch (error) {
+    } catch (error) {
       await this.logBadgeError('success_clear', error);
     }
   }
@@ -45,8 +44,7 @@ export class BadgeManager {
     try {
       await browser.action.setBadgeText({ text: '!' });
       await browser.action.setBadgeBackgroundColor({ color: '#DC2626' }); // red-600
-    }
-    catch (error) {
+    } catch (error) {
       await this.logBadgeError('error_display', error);
     }
   }
@@ -66,8 +64,7 @@ export class BadgeManager {
         errorMessage: 'Badge update failed (non-critical)',
         timestamp: Date.now(),
       });
-    }
-    catch {
+    } catch {
       // Storage failure is truly non-critical - silently ignore
     }
   }

@@ -21,10 +21,7 @@ const POPUP_CONTAINER_STYLE = {
 
 export function PopupContainer({ children }: PopupContainerProps) {
   return (
-    <div
-      className="overflow-hidden"
-      style={POPUP_CONTAINER_STYLE}
-    >
+    <div className="overflow-hidden" style={POPUP_CONTAINER_STYLE}>
       {children}
     </div>
   );

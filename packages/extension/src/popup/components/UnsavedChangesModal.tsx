@@ -101,5 +101,5 @@ export const UnsavedChangesModal = React.memo(
         </div>
       </Modal>
     );
-  }
+  },
 );

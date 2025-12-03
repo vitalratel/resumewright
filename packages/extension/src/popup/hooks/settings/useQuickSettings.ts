@@ -5,16 +5,22 @@
  * Manages loading and updating user settings for quick access
  */
 
-import type { UserSettings } from '@/shared/types/settings';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
+import { getLogger } from '@/shared/infrastructure/logging';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
+import type { UserSettings } from '@/shared/types/settings';
 import { MARGIN_PRESETS } from '../../constants/margins';
 
 export interface QuickSettingsHandlers {
   handlePageSizeChange: (pageSize: 'A4' | 'Letter' | 'Legal') => Promise<void>;
-  handleMarginsChange: (preset: 'compact' | 'narrow' | 'normal' | 'wide' | 'spacious') => Promise<void>;
-  handleCustomMarginChange: (side: 'top' | 'right' | 'bottom' | 'left', value: number) => Promise<void>;
+  handleMarginsChange: (
+    preset: 'compact' | 'narrow' | 'normal' | 'wide' | 'spacious',
+  ) => Promise<void>;
+  handleCustomMarginChange: (
+    side: 'top' | 'right' | 'bottom' | 'left',
+    value: number,
+  ) => Promise<void>;
 }
 
 export interface UseQuickSettingsReturn {
@@ -22,8 +28,6 @@ export interface UseQuickSettingsReturn {
   handlers: QuickSettingsHandlers;
   reloadSettings: () => Promise<void>;
 }
-
-
 
 /**
  * Hook for managing quick settings
@@ -41,13 +45,14 @@ export function useQuickSettings(): UseQuickSettingsReturn {
     // Reduced from 5s to ensure faster fallback in E2E tests
     const timeoutId = setTimeout(() => {
       if (mounted) {
-        console.warn('Settings load timeout after 2s, using defaults');
+        getLogger().warn('QuickSettings', 'Settings load timeout after 2s, using defaults');
         setSettings(DEFAULT_USER_SETTINGS);
       }
     }, 2000);
 
     // Attempt to load settings
-    settingsStore.loadSettings()
+    settingsStore
+      .loadSettings()
       .then((loadedSettings) => {
         if (mounted) {
           clearTimeout(timeoutId);
@@ -57,7 +62,7 @@ export function useQuickSettings(): UseQuickSettingsReturn {
       .catch((error) => {
         if (mounted) {
           clearTimeout(timeoutId);
-          console.error('Failed to load settings, using defaults:', error);
+          getLogger().error('QuickSettings', 'Failed to load settings, using defaults', error);
           setSettings(DEFAULT_USER_SETTINGS);
         }
       });
@@ -75,63 +80,69 @@ export function useQuickSettings(): UseQuickSettingsReturn {
   }, []);
 
   // Handle quick settings page size change
-  const handlePageSizeChange = useCallback(async (pageSize: 'A4' | 'Letter' | 'Legal') => {
-    if (!settings)
-      return;
+  const handlePageSizeChange = useCallback(
+    async (pageSize: 'A4' | 'Letter' | 'Legal') => {
+      if (!settings) return;
 
-    const updatedSettings: UserSettings = {
-      ...settings,
-      defaultConfig: {
-        ...settings.defaultConfig,
-        pageSize,
-      },
-    };
+      const updatedSettings: UserSettings = {
+        ...settings,
+        defaultConfig: {
+          ...settings.defaultConfig,
+          pageSize,
+        },
+      };
 
-    await settingsStore.saveSettings(updatedSettings);
-    setSettings(updatedSettings);
-  }, [settings]);
+      await settingsStore.saveSettings(updatedSettings);
+      setSettings(updatedSettings);
+    },
+    [settings],
+  );
 
   // Handle quick settings margins change
   // Support for compact and spacious presets
-  const handleMarginsChange = useCallback(async (preset: 'compact' | 'narrow' | 'normal' | 'wide' | 'spacious') => {
-    if (!settings)
-      return;
+  const handleMarginsChange = useCallback(
+    async (preset: 'compact' | 'narrow' | 'normal' | 'wide' | 'spacious') => {
+      if (!settings) return;
 
-    const updatedSettings: UserSettings = {
-      ...settings,
-      defaultConfig: {
-        ...settings.defaultConfig,
-        margin: MARGIN_PRESETS[preset],
-      },
-    };
+      const updatedSettings: UserSettings = {
+        ...settings,
+        defaultConfig: {
+          ...settings.defaultConfig,
+          margin: MARGIN_PRESETS[preset],
+        },
+      };
 
-    await settingsStore.saveSettings(updatedSettings);
-    setSettings(updatedSettings);
-  }, [settings]);
+      await settingsStore.saveSettings(updatedSettings);
+      setSettings(updatedSettings);
+    },
+    [settings],
+  );
 
   // Handle custom margin changes
-  const handleCustomMarginChange = useCallback(async (side: 'top' | 'right' | 'bottom' | 'left', value: number) => {
-    if (!settings)
-      return;
+  const handleCustomMarginChange = useCallback(
+    async (side: 'top' | 'right' | 'bottom' | 'left', value: number) => {
+      if (!settings) return;
 
-    // Validate: 0-2 inches in 0.05" increments
-    const roundedValue = Math.round(value / 0.05) * 0.05;
-    const clampedValue = Math.max(0, Math.min(2, roundedValue));
+      // Validate: 0-2 inches in 0.05" increments
+      const roundedValue = Math.round(value / 0.05) * 0.05;
+      const clampedValue = Math.max(0, Math.min(2, roundedValue));
 
-    const updatedSettings: UserSettings = {
-      ...settings,
-      defaultConfig: {
-        ...settings.defaultConfig,
-        margin: {
-          ...settings.defaultConfig.margin,
-          [side]: clampedValue,
+      const updatedSettings: UserSettings = {
+        ...settings,
+        defaultConfig: {
+          ...settings.defaultConfig,
+          margin: {
+            ...settings.defaultConfig.margin,
+            [side]: clampedValue,
+          },
         },
-      },
-    };
+      };
 
-    await settingsStore.saveSettings(updatedSettings);
-    setSettings(updatedSettings);
-  }, [settings]);
+      await settingsStore.saveSettings(updatedSettings);
+      setSettings(updatedSettings);
+    },
+    [settings],
+  );
 
   // Memoize handlers object to prevent unnecessary re-renders
   // Object only recreates when the callbacks change (i.e., when settings changes)

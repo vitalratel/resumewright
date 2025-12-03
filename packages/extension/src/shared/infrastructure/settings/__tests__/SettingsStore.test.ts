@@ -4,22 +4,27 @@
  * Tests settings persistence, validation, and reset functionality
  */
 
-import type { UserSettings } from '@/shared/types/settings';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
+import type { UserSettings } from '@/shared/types/settings';
 import { settingsStore } from '../SettingsStore';
 
 // Use vi.hoisted to ensure mock functions are available when vi.mock factory runs
-const { mockSyncGet, mockSyncSet, mockLocalGet, mockLocalSet, mockAddListener, mockRemoveListener } =
-  vi.hoisted(() => ({
-    mockSyncGet: vi.fn(),
-    mockSyncSet: vi.fn(),
-    mockLocalGet: vi.fn(),
-    mockLocalSet: vi.fn(),
-    mockAddListener: vi.fn(),
-    mockRemoveListener: vi.fn(),
-  }));
+const {
+  mockSyncGet,
+  mockSyncSet,
+  mockLocalGet,
+  mockLocalSet,
+  mockAddListener,
+  mockRemoveListener,
+} = vi.hoisted(() => ({
+  mockSyncGet: vi.fn(),
+  mockSyncSet: vi.fn(),
+  mockLocalGet: vi.fn(),
+  mockLocalSet: vi.fn(),
+  mockAddListener: vi.fn(),
+  mockRemoveListener: vi.fn(),
+}));
 
 // Mock wxt/browser
 vi.mock('wxt/browser', () => ({
@@ -162,9 +167,7 @@ describe('SettingsStore', () => {
 
       await settingsStore.saveSettings(DEFAULT_USER_SETTINGS);
 
-      const savedSettings = mockSyncSet.mock.calls[0][0][
-        'resumewright-settings'
-      ] as UserSettings;
+      const savedSettings = mockSyncSet.mock.calls[0][0]['resumewright-settings'] as UserSettings;
       expect(savedSettings.lastUpdated).toBeGreaterThanOrEqual(beforeSave);
     });
 

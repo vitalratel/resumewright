@@ -60,18 +60,16 @@ function App() {
   // Subscribe to primitive values from stores (stable, no object wrappers)
   // Use currentJobId for progress tracking (supports multiple jobs)
   const progressPercentage = useProgressStore(
-    (state) => state.activeConversions[currentJobId]?.percentage
+    (state) => state.activeConversions[currentJobId]?.percentage,
   );
   const progressOperation = useProgressStore(
-    (state) => state.activeConversions[currentJobId]?.currentOperation
+    (state) => state.activeConversions[currentJobId]?.currentOperation,
   );
   const lastErrorMessage = appState.lastError?.message;
 
   // Focus management for screen readers
-  const successRef = useFocusOnMount(
-    appState.uiState === 'success' ? appState.lastFilename : undefined
-  );
-  const errorRef = useFocusOnMount(appState.uiState === 'error' ? lastErrorMessage : undefined);
+  const successRef = useFocusOnMount(appState.uiState === 'success');
+  const errorRef = useFocusOnMount(appState.uiState === 'error');
 
   // Screen reader announcements for conversion progress
   // Simple string concatenation - no useMemo needed (overhead > savings)

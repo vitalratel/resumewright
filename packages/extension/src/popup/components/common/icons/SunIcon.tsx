@@ -5,11 +5,18 @@
  * Used in theme selection UI.
  */
 
-import React from 'react';
+import type React from 'react';
 
 export function SunIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" {...props}>
+    <svg
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={2}
+      stroke="currentColor"
+      aria-hidden="true"
+      {...props}
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"

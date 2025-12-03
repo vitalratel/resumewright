@@ -34,11 +34,7 @@ describe('PopupContainer', () => {
     it('renders children', () => {
       const { getByText } = render(
         <PopupContainer>
-          <div>
-            {TEST_CONTENT.SIMPLE}
-            {' '}
-            Content
-          </div>
+          <div>{TEST_CONTENT.SIMPLE} Content</div>
         </PopupContainer>,
       );
       expect(getByText(`${TEST_CONTENT.SIMPLE} Content`)).toBeInTheDocument();
@@ -124,30 +120,20 @@ describe('PopupContainer', () => {
 
   describe('Edge Cases', () => {
     it('handles empty children', () => {
-      const { container } = render(
-        <PopupContainer>
-          {null}
-        </PopupContainer>,
-      );
+      const { container } = render(<PopupContainer>{null}</PopupContainer>);
       expect(container.firstChild).toBeInTheDocument();
     });
 
     it('handles undefined children', () => {
-      const { container } = render(
-        <PopupContainer>
-          {undefined}
-        </PopupContainer>,
-      );
+      const { container } = render(<PopupContainer>{undefined}</PopupContainer>);
       expect(container.firstChild).toBeInTheDocument();
     });
 
-    it('handles fragment children', () => {
+    it('handles multiple children', () => {
       const { getByText } = render(
         <PopupContainer>
-          <>
-            <div>{TEST_CONTENT.FRAGMENT_CHILD_1}</div>
-            <div>{TEST_CONTENT.FRAGMENT_CHILD_2}</div>
-          </>
+          <div>{TEST_CONTENT.FRAGMENT_CHILD_1}</div>
+          <div>{TEST_CONTENT.FRAGMENT_CHILD_2}</div>
         </PopupContainer>,
       );
       expect(getByText(TEST_CONTENT.FRAGMENT_CHILD_1)).toBeInTheDocument();

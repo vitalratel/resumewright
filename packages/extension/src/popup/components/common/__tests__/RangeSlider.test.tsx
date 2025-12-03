@@ -55,9 +55,7 @@ describe('RangeSlider', () => {
     });
 
     it('applies custom className', () => {
-      const { container } = render(
-        <RangeSlider {...defaultProps} className="custom-class" />,
-      );
+      const { container } = render(<RangeSlider {...defaultProps} className="custom-class" />);
 
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper).toHaveClass('custom-class');

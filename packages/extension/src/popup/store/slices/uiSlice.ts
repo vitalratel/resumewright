@@ -12,7 +12,13 @@
 import type { StateCreator } from 'zustand';
 import type { ConversionError } from '../../../shared/types/models';
 
-export type UIState = 'waiting_for_import' | 'file_validated' | 'validation_error' | 'converting' | 'success' | 'error';
+export type UIState =
+  | 'waiting_for_import'
+  | 'file_validated'
+  | 'validation_error'
+  | 'converting'
+  | 'success'
+  | 'error';
 
 // Re-export for convenience
 export type ErrorInfo = ConversionError;
@@ -36,12 +42,7 @@ export interface UISlice {
   resetUI: () => void;
 }
 
-export const createUISlice: StateCreator<
-  UISlice,
-  [],
-  [],
-  UISlice
-> = set => ({
+export const createUISlice: StateCreator<UISlice, [], [], UISlice> = (set) => ({
   // Initial state
   uiState: 'waiting_for_import',
   validationError: null,
@@ -50,18 +51,16 @@ export const createUISlice: StateCreator<
   lastFilename: null,
 
   // Actions
-  setUIState: state =>
-    set({ uiState: state }),
+  setUIState: (state) => set({ uiState: state }),
 
-  setValidationError: error =>
+  setValidationError: (error) =>
     set({
       uiState: 'validation_error',
       validationError: error,
       isValidating: false,
     }),
 
-  setValidating: isValidating =>
-    set({ isValidating }),
+  setValidating: (isValidating) => set({ isValidating }),
 
   clearValidationError: () =>
     set({
@@ -75,14 +74,14 @@ export const createUISlice: StateCreator<
       lastError: null,
     }),
 
-  setSuccess: filename =>
+  setSuccess: (filename) =>
     set({
       uiState: 'success',
       lastFilename: filename,
       lastError: null,
     }),
 
-  setError: error =>
+  setError: (error) =>
     set({
       uiState: 'error',
       lastError: error,

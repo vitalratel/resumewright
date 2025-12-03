@@ -22,7 +22,7 @@ export interface PersistedSlice {
   // State
   cvMetadata: CVMetadata | null;
   importedFile: { name: string; size: number; content: string } | null;
-  
+
   // Hydration state (not persisted)
   _hasHydrated: boolean;
   _hydrationError: Error | null;
@@ -38,12 +38,9 @@ export interface PersistedSlice {
   resetPersisted: () => void;
 }
 
-export const createPersistedSlice: StateCreator<
-  PersistedSlice,
-  [],
-  [],
-  PersistedSlice
-> = set => ({
+export const createPersistedSlice: StateCreator<PersistedSlice, [], [], PersistedSlice> = (
+  set,
+) => ({
   // Initial state
   cvMetadata: null,
   importedFile: null,
@@ -51,7 +48,7 @@ export const createPersistedSlice: StateCreator<
   _hydrationError: null,
 
   // Actions
-  setCVDetected: metadata =>
+  setCVDetected: (metadata) =>
     set({
       cvMetadata: metadata,
     }),

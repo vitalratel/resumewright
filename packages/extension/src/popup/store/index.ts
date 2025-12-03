@@ -12,14 +12,24 @@
  * - Simpler component imports
  */
 
-import type { CVMetadata, PersistedSlice } from './slices/persistedSlice';
-import type { ErrorInfo, UISlice, UIState } from './slices/uiSlice';
-import { boolean, literal, nullable, number, object, optional, safeParse, string, union } from 'valibot';
+import {
+  boolean,
+  literal,
+  nullable,
+  number,
+  object,
+  optional,
+  safeParse,
+  string,
+  union,
+} from 'valibot';
 import { create } from 'zustand';
-
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { getLogger } from '../../shared/infrastructure/logging';
 import { debounceAsync } from '../../shared/utils/debounce';
+import type { CVMetadata, PersistedSlice } from './slices/persistedSlice';
 import { createPersistedSlice } from './slices/persistedSlice';
+import type { ErrorInfo, UISlice, UIState } from './slices/uiSlice';
 import { createUISlice } from './slices/uiSlice';
 
 // Import types from slices (CVMetadata comes from persistedSlice, not persistedStore)
@@ -53,10 +63,11 @@ const PopupStateSchema = object({
 });
 
 // Combined store type
-export type PopupStore = PersistedSlice & UISlice & {
-  // Unified reset action
-  reset: () => void;
-};
+export type PopupStore = PersistedSlice &
+  UISlice & {
+    // Unified reset action
+    reset: () => void;
+  };
 
 // Re-export types from slices
 export type { CVMetadata, ErrorInfo, UIState };
@@ -94,7 +105,7 @@ const chromeStorage = createJSONStorage(() => {
     getItem: async (name: string): Promise<string | null> => {
       const result = await browser.storage.local.get(name);
       const value: unknown = result[name];
-      return (value !== null && value !== undefined) ? JSON.stringify(value) : null;
+      return value !== null && value !== undefined ? JSON.stringify(value) : null;
     },
     setItem: async (name: string, value: string): Promise<void> => {
       // Use debounced setter to reduce write frequency
@@ -103,9 +114,8 @@ const chromeStorage = createJSONStorage(() => {
         let parsed: unknown;
         try {
           parsed = JSON.parse(value);
-        }
-        catch (parseError) {
-          console.error('[PopupStore] Failed to parse value for storage:', parseError);
+        } catch (parseError) {
+          getLogger().error('PopupStore', 'Failed to parse value for storage', parseError);
           throw new Error('Failed to parse state for storage');
         }
 
@@ -118,14 +128,13 @@ const chromeStorage = createJSONStorage(() => {
         // Validate with Valibot schema
         const result = safeParse(PopupStateSchema, dataToValidate);
         if (!result.success) {
-          console.error('[PopupStore] Validation failed:', result.issues);
+          getLogger().error('PopupStore', 'Validation failed', result.issues);
           throw new Error('Invalid state structure for storage');
         }
 
         await debouncedStorageSet({ [name]: result.output });
-      }
-      catch (error) {
-        console.error('[PopupStore] Failed to save storage:', error);
+      } catch (error) {
+        getLogger().error('PopupStore', 'Failed to save storage', error);
         throw error;
       }
     },
@@ -134,7 +143,6 @@ const chromeStorage = createJSONStorage(() => {
     },
   };
 });
-
 
 /**
  * Unified Popup Store
@@ -172,18 +180,18 @@ export const usePopupStore = create<PopupStore>()(
       storage: chromeStorage,
       skipHydration: false,
       // Selective persistence - only persist PersistedSlice fields
-      partialize: state => ({
+      partialize: (state) => ({
         cvMetadata: state.cvMetadata,
         importedFile: state.importedFile,
       }),
       merge: (persistedState, currentState) => ({
         ...currentState,
-        ...persistedState as Partial<PopupStore>,
+        ...(persistedState as Partial<PopupStore>),
       }),
       onRehydrateStorage: () => {
         return (state, error) => {
           if (error !== null && error !== undefined) {
-            console.error('[PopupStore] Hydration error:', error);
+            getLogger().error('PopupStore', 'Hydration error', error);
             state?.setHydrationError(error instanceof Error ? error : new Error(String(error)));
           }
           // Always mark as hydrated (even on error, we use default state)
@@ -193,4 +201,3 @@ export const usePopupStore = create<PopupStore>()(
     },
   ),
 );
-

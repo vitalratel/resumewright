@@ -3,12 +3,16 @@
  * Provides mock factories and utilities to reduce test verbosity
  */
 
+import { vi } from 'vitest';
 import type { Browser } from 'wxt/browser';
 import type { AppState } from '../integration/useAppState';
-import { vi } from 'vitest';
 
 // Mock Download Item Factory
-export function mockDownloadItem(id: number, filename: string, startTime = '2025-01-01T00:00:00Z'): Browser.downloads.DownloadItem {
+export function mockDownloadItem(
+  id: number,
+  filename: string,
+  startTime = '2025-01-01T00:00:00Z',
+): Browser.downloads.DownloadItem {
   return {
     id,
     filename,
@@ -44,28 +48,33 @@ export function createMockAppState(overrides?: Partial<AppState>): AppState {
 }
 
 // Helper to temporarily remove API
-export function withoutAPI<T>(getter: () => T, setter: (val: T | undefined) => void, testFn: () => void | Promise<void>) {
+export function withoutAPI<T>(
+  getter: () => T,
+  setter: (val: T | undefined) => void,
+  testFn: () => void | Promise<void>,
+) {
   return async () => {
     const orig = getter();
     setter(undefined);
     try {
       await testFn();
-    }
-    finally {
+    } finally {
       setter(orig);
     }
   };
 }
 
 // Console spy helper
-export function withSuppressedConsole(method: 'error' | 'warn' | 'info', testFn: () => void | Promise<void>) {
+export function withSuppressedConsole(
+  method: 'error' | 'warn' | 'info',
+  testFn: () => void | Promise<void>,
+) {
   return async () => {
     const spy = vi.spyOn(console, method).mockImplementation(() => {});
     try {
       await testFn();
       return spy;
-    }
-    finally {
+    } finally {
       spy.mockRestore();
     }
   };

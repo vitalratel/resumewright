@@ -1,10 +1,10 @@
 /**
  * Modal Base Component
- * Unified modal pattern
+ * Uses native <dialog> element for proper accessibility
  *
  * Provides consistent modal behavior across the application:
- * - Focus trapping for accessibility
- * - Escape key handling
+ * - Native focus trapping (via showModal)
+ * - Native Escape key handling (via cancel event)
  * - Backdrop click to close
  * - Proper ARIA attributes
  * - Consistent styling and animations
@@ -25,8 +25,7 @@
  */
 
 import type { ReactNode } from 'react';
-import { useCallback, useEffect } from 'react';
-import { useFocusTrap } from '../../hooks/ui/useFocusManagement';
+import { useEffect, useRef } from 'react';
 import { tokens } from '../../styles/tokens';
 
 export interface ModalProps {
@@ -62,12 +61,6 @@ export interface ModalProps {
   /** Custom max width class (default: max-w-md) */
   maxWidth?: string;
 
-  /** Whether to show backdrop (default: true) */
-  showBackdrop?: boolean;
-
-  /** Custom backdrop opacity class (default: bg-opacity-50) */
-  backdropOpacity?: string;
-
   /** Whether backdrop click closes modal (default: true) */
   closeOnBackdropClick?: boolean;
 
@@ -76,12 +69,6 @@ export interface ModalProps {
 
   /** Additional CSS classes for modal container */
   className?: string;
-
-  /** Custom z-index for backdrop (default: tokens.zIndex.backdrop) */
-  backdropZIndex?: string;
-
-  /** Custom z-index for modal (default: tokens.zIndex.modal) */
-  modalZIndex?: string;
 }
 
 /**
@@ -97,73 +84,61 @@ export function Modal({
   ariaDescribedBy,
   children,
   maxWidth = 'max-w-md',
-  showBackdrop = true,
-  backdropOpacity = 'bg-opacity-50 dark:bg-opacity-70',
   closeOnBackdropClick = true,
   closeOnEscape = true,
   className = '',
-  backdropZIndex = `z-${tokens.zIndex.backdrop}`,
-  modalZIndex = `z-${tokens.zIndex.modal}`,
 }: ModalProps) {
-  // Focus trap for accessibility
-  const trapRef = useFocusTrap(isOpen);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
-  // Memoize backdrop click handler to prevent recreation on every render
-  // MUST be called before early return to satisfy rules-of-hooks
-  const handleBackdropClick = useCallback((e: React.MouseEvent) => {
-    if (closeOnBackdropClick && e.target === e.currentTarget) {
-      onClose();
-    }
-  }, [closeOnBackdropClick, onClose]);
-
-  // Handle Escape key
+  // Sync dialog open state with isOpen prop
   useEffect(() => {
-    if (!isOpen || !closeOnEscape)
-      return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
 
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+    if (isOpen && !dialog.open) {
+      dialog.showModal();
+    } else if (!isOpen && dialog.open) {
+      dialog.close();
+    }
+  }, [isOpen]);
+
+  // Handle native cancel event (Escape key)
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const handleCancel = (e: Event) => {
+      if (closeOnEscape) {
+        e.preventDefault();
         onClose();
+      } else {
+        e.preventDefault(); // Prevent close if disabled
       }
     };
 
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
-  }, [isOpen, closeOnEscape, onClose]);
+    dialog.addEventListener('cancel', handleCancel);
+    return () => dialog.removeEventListener('cancel', handleCancel);
+  }, [closeOnEscape, onClose]);
 
-  // Don't render if not open
-  if (!isOpen)
-    return null;
+  // Handle backdrop click (click on dialog element itself, not content)
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
+    if (closeOnBackdropClick && e.target === dialogRef.current) {
+      onClose();
+    }
+  };
 
   return (
-    <>
-      {/* Backdrop */}
-      {showBackdrop && (
-        <div
-          className={`fixed inset-0 bg-black ${backdropOpacity} ${backdropZIndex} ${tokens.animations.fadeIn}`}
-          onClick={handleBackdropClick}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Modal Container */}
-      <div
-        className={`fixed inset-0 flex items-center justify-center ${modalZIndex} p-4`}
-        onClick={handleBackdropClick}
-      >
-        {/* Modal Content */}
-        <div
-          ref={trapRef}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={ariaLabelledBy}
-          aria-describedby={ariaDescribedBy}
-          className={`${tokens.colors.neutral.bgWhite} ${tokens.borders.roundedLg} ${tokens.effects.shadowXl} ${maxWidth} w-full ${tokens.animations.fadeIn} animate-slide-down ${className}`.trim().replace(/\s+/g, ' ')}
-          onClick={e => e.stopPropagation()}
-        >
-          {children}
-        </div>
-      </div>
-    </>
+    // biome-ignore lint/a11y/useKeyWithClickEvents: <dialog> is interactive per HTML spec; keyboard handled via native cancel event. See https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/issues/1000
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={ariaLabelledBy}
+      aria-describedby={ariaDescribedBy}
+      onClick={handleBackdropClick}
+      className={`backdrop:bg-black/50 dark:backdrop:bg-black/60 ${tokens.colors.neutral.bgWhite} ${tokens.borders.roundedLg} ${tokens.effects.shadowXl} ${maxWidth} w-full p-0 ${tokens.animations.fadeIn} ${className}`
+        .trim()
+        .replace(/\s+/g, ' ')}
+    >
+      {children}
+    </dialog>
   );
 }

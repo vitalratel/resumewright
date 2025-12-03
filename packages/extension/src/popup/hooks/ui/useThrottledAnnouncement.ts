@@ -23,11 +23,21 @@ export function useThrottledAnnouncement(
   const [lastTime, setLastTime] = useState(() => Date.now());
   const [shouldAnnounce, setShouldAnnounce] = useState(true);
 
+  // Track previous config to detect changes
+  const prevConfigRef = useRef({ threshold, minInterval });
+
   // Reset when threshold or minInterval changes
   useEffect(() => {
-    lastValueRef.current = 0;
-    const timer = setTimeout(() => setLastTime(Date.now()), 0);
-    return () => clearTimeout(timer);
+    const prevConfig = prevConfigRef.current;
+    const configChanged =
+      prevConfig.threshold !== threshold || prevConfig.minInterval !== minInterval;
+
+    if (configChanged) {
+      lastValueRef.current = 0;
+      prevConfigRef.current = { threshold, minInterval };
+      const timer = setTimeout(() => setLastTime(Date.now()), 0);
+      return () => clearTimeout(timer);
+    }
   }, [threshold, minInterval]);
 
   useEffect(() => {
@@ -44,10 +54,9 @@ export function useThrottledAnnouncement(
         setLastTime(now);
         setShouldAnnounce(true);
       }, 0);
-    }
-    else {
+    } else {
       // Only update state if it changed to prevent unnecessary re-renders
-      timer = setTimeout(() => setShouldAnnounce(prev => prev ? false : prev), 0);
+      timer = setTimeout(() => setShouldAnnounce((prev) => (prev ? false : prev)), 0);
     }
 
     return () => clearTimeout(timer);

@@ -8,17 +8,7 @@
 import { render } from '@testing-library/react';
 import { describe, expect } from 'vitest';
 import { TECH_TERMS } from '../../../constants/techTerms';
-import {
-  ATS,
-  CV,
-  DPI,
-  KB,
-  MB,
-  PDF,
-  TechTerm,
-  TSX,
-  WASM,
-} from '../TechTerm';
+import { ATS, CV, DPI, KB, MB, PDF, TechTerm, TSX, WASM } from '../TechTerm';
 
 describe('TechTerm', () => {
   describe('Basic Rendering', () => {
@@ -56,9 +46,7 @@ describe('TechTerm', () => {
 
   describe('Children Prop', () => {
     it('displays term when no children provided', () => {
-      const { getByText } = render(
-        <TechTerm term="PDF" explanation="Portable Document Format" />,
-      );
+      const { getByText } = render(<TechTerm term="PDF" explanation="Portable Document Format" />);
       expect(getByText('PDF')).toBeInTheDocument();
     });
 
@@ -74,9 +62,7 @@ describe('TechTerm', () => {
     it('supports complex children', () => {
       const { getByText } = render(
         <TechTerm term="WASM" explanation="WebAssembly">
-          <strong>WASM</strong>
-          {' '}
-          module
+          <strong>WASM</strong> module
         </TechTerm>,
       );
       expect(getByText('WASM')).toBeInTheDocument();
@@ -96,9 +82,7 @@ describe('TechTerm', () => {
 
   describe('Underline Styling', () => {
     it('shows underline by default', () => {
-      const { container } = render(
-        <TechTerm term="TSX" explanation="TypeScript XML" />,
-      );
+      const { container } = render(<TechTerm term="TSX" explanation="TypeScript XML" />);
       const abbr = container.querySelector('abbr');
       expect(abbr).toHaveClass('border-b', 'border-dotted');
     });
@@ -123,33 +107,25 @@ describe('TechTerm', () => {
 
   describe('CSS Classes', () => {
     it('applies cursor-help class', () => {
-      const { container } = render(
-        <TechTerm term="CV" explanation="Curriculum Vitae" />,
-      );
+      const { container } = render(<TechTerm term="CV" explanation="Curriculum Vitae" />);
       const abbr = container.querySelector('abbr');
       expect(abbr).toHaveClass('cursor-help');
     });
 
     it('applies no-underline class', () => {
-      const { container } = render(
-        <TechTerm term="CV" explanation="Curriculum Vitae" />,
-      );
+      const { container } = render(<TechTerm term="CV" explanation="Curriculum Vitae" />);
       const abbr = container.querySelector('abbr');
       expect(abbr).toHaveClass('no-underline');
     });
 
     it('applies transition classes', () => {
-      const { container } = render(
-        <TechTerm term="CV" explanation="Curriculum Vitae" />,
-      );
+      const { container } = render(<TechTerm term="CV" explanation="Curriculum Vitae" />);
       const abbr = container.querySelector('abbr');
       expect(abbr).toHaveClass('transition-all', 'duration-300');
     });
 
     it('applies rounded class', () => {
-      const { container } = render(
-        <TechTerm term="CV" explanation="Curriculum Vitae" />,
-      );
+      const { container } = render(<TechTerm term="CV" explanation="Curriculum Vitae" />);
       const abbr = container.querySelector('abbr');
       expect(abbr).toHaveClass('rounded-md');
     });
@@ -157,18 +133,14 @@ describe('TechTerm', () => {
 
   describe('Accessibility', () => {
     it('provides both title and aria-label', () => {
-      const { container } = render(
-        <TechTerm term="ATS" explanation="Applicant Tracking System" />,
-      );
+      const { container } = render(<TechTerm term="ATS" explanation="Applicant Tracking System" />);
       const abbr = container.querySelector('abbr');
       expect(abbr).toHaveAttribute('title', 'Applicant Tracking System');
       expect(abbr).toHaveAttribute('aria-label', 'ATS: Applicant Tracking System');
     });
 
     it('aria-label includes both term and explanation', () => {
-      const { container } = render(
-        <TechTerm term="DPI" explanation="Dots Per Inch" />,
-      );
+      const { container } = render(<TechTerm term="DPI" explanation="Dots Per Inch" />);
       const abbr = container.querySelector('abbr');
       const ariaLabel = abbr?.getAttribute('aria-label');
       expect(ariaLabel).toContain('DPI');
@@ -192,16 +164,12 @@ describe('TechTerm', () => {
 
   describe('Edge Cases', () => {
     it('handles empty term', () => {
-      const { container } = render(
-        <TechTerm term="" explanation="Test explanation" />,
-      );
+      const { container } = render(<TechTerm term="" explanation="Test explanation" />);
       expect(container.querySelector('abbr')).toBeInTheDocument();
     });
 
     it('handles empty explanation', () => {
-      const { container } = render(
-        <TechTerm term="TEST" explanation="" />,
-      );
+      const { container } = render(<TechTerm term="TEST" explanation="" />);
       const abbr = container.querySelector('abbr');
       expect(abbr).toHaveAttribute('title', '');
       expect(abbr).toHaveAttribute('aria-label', 'TEST: ');
@@ -209,24 +177,18 @@ describe('TechTerm', () => {
 
     it('handles long explanations', () => {
       const longExplanation = 'A'.repeat(500);
-      const { container } = render(
-        <TechTerm term="TEST" explanation={longExplanation} />,
-      );
+      const { container } = render(<TechTerm term="TEST" explanation={longExplanation} />);
       const abbr = container.querySelector('abbr');
       expect(abbr).toHaveAttribute('title', longExplanation);
     });
 
     it('handles special characters in term', () => {
-      const { getByText } = render(
-        <TechTerm term="C++" explanation="Programming language" />,
-      );
+      const { getByText } = render(<TechTerm term="C++" explanation="Programming language" />);
       expect(getByText('C++')).toBeInTheDocument();
     });
 
     it('handles HTML entities in explanation', () => {
-      const { container } = render(
-        <TechTerm term="TEST" explanation="Uses &lt;brackets&gt;" />,
-      );
+      const { container } = render(<TechTerm term="TEST" explanation="Uses &lt;brackets&gt;" />);
       const abbr = container.querySelector('abbr');
       expect(abbr).toHaveAttribute('title', 'Uses <brackets>');
     });

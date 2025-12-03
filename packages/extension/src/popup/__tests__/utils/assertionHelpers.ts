@@ -1,16 +1,18 @@
 // ABOUTME: Custom assertion functions for popup tests.
 // ABOUTME: Provides clear error messages and reduces test boilerplate.
 
-import type { CVMetadata, UIState } from '../../store';
-import type { ConversionError, ConversionProgress } from '@/shared/types/models';
 import { expect } from 'vitest';
+import type { ConversionError, ConversionProgress } from '@/shared/types/models';
+import type { CVMetadata, UIState } from '../../store';
 import { usePopupStore } from '../../store';
 import { useProgressStore } from '../../store/progressStore';
 
 /**
  * Assert popup store state matches expected values
  */
-export function assertPopupStoreState(expected: Partial<ReturnType<typeof usePopupStore.getState>>) {
+export function assertPopupStoreState(
+  expected: Partial<ReturnType<typeof usePopupStore.getState>>,
+) {
   const actual = usePopupStore.getState();
 
   Object.entries(expected).forEach(([key, value]) => {
@@ -29,11 +31,7 @@ export function assertUIState(expectedState: UIState) {
 /**
  * Assert imported file exists and matches expected data
  */
-export function assertImportedFile(expected: {
-  name?: string;
-  size?: number;
-  content?: string;
-}) {
+export function assertImportedFile(expected: { name?: string; size?: number; content?: string }) {
   const actual = usePopupStore.getState().importedFile;
 
   expect(actual).toBeTruthy();
@@ -144,7 +142,10 @@ export function assertStoresClean() {
 /**
  * Assert conversion is in progress
  */
-export function assertConversionInProgress(jobId: string, expectedStage?: ConversionProgress['stage']) {
+export function assertConversionInProgress(
+  jobId: string,
+  expectedStage?: ConversionProgress['stage'],
+) {
   assertUIState('converting');
 
   const progress = useProgressStore.getState().getProgress(jobId);

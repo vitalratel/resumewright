@@ -47,13 +47,7 @@ export interface CreateErrorOptions {
  * ```
  */
 export function createConversionError(options: CreateErrorOptions): ConversionError {
-  const {
-    code,
-    stage,
-    message,
-    technicalDetails,
-    metadata,
-  } = options;
+  const { code, stage, message, technicalDetails, metadata } = options;
 
   const errorMessage = ERROR_MESSAGES[code];
 

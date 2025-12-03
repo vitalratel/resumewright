@@ -1,11 +1,11 @@
 // ABOUTME: Settings view with tabbed navigation for Page and General settings.
 // ABOUTME: Uses tabs to eliminate scrolling and improve keyboard accessibility.
 
-import type { Tab } from '../common';
-import type { UserSettings } from '@/shared/types/settings';
 import { ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/outline';
 import React, { useCallback, useState } from 'react';
+import type { UserSettings } from '@/shared/types/settings';
 import { tokens } from '../../styles/tokens';
+import type { Tab } from '../common';
 import { Alert, PDF, SkeletonSettings, TabGroup } from '../common';
 import { RangeSlider } from '../common/RangeSlider';
 import { MarginPreview } from '../MarginPreview';
@@ -58,19 +58,19 @@ export const SettingsView = React.memo(
     // Memoize margin handlers to prevent recreation
     const handleMarginTop = useCallback(
       (value: number) => onMarginChange('top', value),
-      [onMarginChange]
+      [onMarginChange],
     );
     const handleMarginBottom = useCallback(
       (value: number) => onMarginChange('bottom', value),
-      [onMarginChange]
+      [onMarginChange],
     );
     const handleMarginLeft = useCallback(
       (value: number) => onMarginChange('left', value),
-      [onMarginChange]
+      [onMarginChange],
     );
     const handleMarginRight = useCallback(
       (value: number) => onMarginChange('right', value),
-      [onMarginChange]
+      [onMarginChange],
     );
 
     const marginHandlers = {
@@ -130,11 +130,12 @@ export const SettingsView = React.memo(
               <>
                 <span
                   className={`absolute -top-1 -right-1 w-2 h-2 ${tokens.colors.warning.icon} rounded-full`}
-                  aria-label="Unsaved changes"
+                  aria-hidden="true"
                   title="You have unsaved changes"
                 />
-                <span className="sr-only">Unsaved changes</span>
-                <span className="sr-only">- Your changes have not been saved yet</span>
+                <span className="sr-only">
+                  Unsaved changes - Your changes have not been saved yet
+                </span>
               </>
             )}
           </button>
@@ -148,9 +149,8 @@ export const SettingsView = React.memo(
 
         {/* Visual dirty indicator banner */}
         {isDirty && !saving && (
-          <div
+          <output
             className={`flex items-center ${tokens.spacing.gapSmall} ${tokens.colors.info.text} ${tokens.typography.small} px-4 py-2 ${tokens.colors.info.bg} border ${tokens.colors.info.border} ${tokens.borders.roundedLg} ${tokens.spacing.marginMedium}`}
-            role="status"
             aria-live="polite"
           >
             <svg
@@ -174,7 +174,7 @@ export const SettingsView = React.memo(
               />
             </svg>
             <span>Unsaved changes (saving automatically...)</span>
-          </div>
+          </output>
         )}
 
         {/* Tab Navigation */}
@@ -194,10 +194,9 @@ export const SettingsView = React.memo(
 
         {/* Auto-save status indicator - visible from all tabs */}
         {(saving || showSuccess) && (
-          <div
-            role="status"
+          <output
             aria-live="polite"
-            className={`${tokens.spacing.marginMedium} px-4 py-3 ${tokens.borders.roundedLg} border-2 ${
+            className={`block ${tokens.spacing.marginMedium} px-4 py-3 ${tokens.borders.roundedLg} border-2 ${
               showSuccess && !saving
                 ? `${tokens.colors.success.bg} ${tokens.colors.success.borderStrong}`
                 : `${tokens.colors.info.bg} ${tokens.colors.info.border}`
@@ -241,24 +240,20 @@ export const SettingsView = React.memo(
                 {saving ? 'Saving changes...' : 'Settings saved!'}
               </span>
             </div>
-          </div>
+          </output>
         )}
 
         {/* Page Tab Content */}
         {activeTab === 'page' && (
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: tabIndex={0} is required per WAI-ARIA tabpanel pattern for keyboard navigation
           <div role="tabpanel" id="tabpanel-page" aria-labelledby="tab-page" tabIndex={0}>
             {/* Page Size Selection */}
-            <div
-              className={tokens.spacing.marginMedium}
-              role="group"
-              aria-labelledby="page-size-label"
-            >
-              <label
-                id="page-size-label"
+            <fieldset className={`${tokens.spacing.marginMedium} border-0 p-0 m-0`}>
+              <legend
                 className={`block ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
               >
                 Page Size
-              </label>
+              </legend>
               <p
                 className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}
               >
@@ -266,58 +261,62 @@ export const SettingsView = React.memo(
               </p>
               <div className={tokens.spacing.gapSmall}>
                 {(['Letter', 'A4', 'Legal'] as const).map((size) => (
-                  <button
-                    type="button"
+                  <label
                     key={size}
-                    onClick={pageSizeHandlers[size]}
-                    role="radio"
-                    aria-checked={settings.defaultConfig.pageSize === size}
-                    aria-label={`Select ${size} page size`}
-                    className={`w-full text-left ${tokens.colors.neutral.text} p-3 rounded-md border-2 ${tokens.transitions.default} ${
+                    className={`w-full text-left ${tokens.colors.neutral.text} p-3 rounded-md border-2 ${tokens.transitions.default} cursor-pointer block ${
                       settings.defaultConfig.pageSize === size
                         ? `${tokens.colors.borders.success} ${tokens.colors.success.bg} ${tokens.effects.shadow}`
                         : `${tokens.borders.default} ${tokens.colors.neutral.hover} ${tokens.effects.hoverBorder} ${tokens.effects.shadowInteractive} ${tokens.effects.hoverScale}`
-                    } ${tokens.effects.focusRing}`}
+                    } has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-blue-500 has-[:focus-visible]:ring-offset-2`}
                   >
                     <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="pageSize"
+                        value={size}
+                        checked={settings.defaultConfig.pageSize === size}
+                        onChange={() => pageSizeHandlers[size]()}
+                        className="sr-only"
+                      />
                       <div
-                        className={`w-4 h-4 ${tokens.borders.full} border-2 ${tokens.spacing.marginSmall} ${
+                        className={`w-4 h-4 ${tokens.borders.full} border-2 ${tokens.spacing.marginSmall} flex items-center justify-center ${
                           settings.defaultConfig.pageSize === size
                             ? `${tokens.colors.borders.success} ${tokens.colors.success.bg}`
                             : tokens.colors.borders.default
                         }`}
-                      />
+                        aria-hidden="true"
+                      >
+                        {settings.defaultConfig.pageSize === size && (
+                          <div
+                            className={`w-2 h-2 ${tokens.borders.full} ${tokens.colors.success.bg}`}
+                          />
+                        )}
+                      </div>
                       <span>
                         {size === 'Letter' && 'Letter (8.5" x 11")'}
                         {size === 'A4' && 'A4 (210mm x 297mm)'}
                         {size === 'Legal' && 'Legal (8.5" x 14")'}
                       </span>
                     </div>
-                  </button>
+                  </label>
                 ))}
               </div>
-            </div>
+            </fieldset>
 
             {/* Margin Controls */}
-            <div className={tokens.spacing.marginMedium}>
-              <label
+            <fieldset className={`${tokens.spacing.marginMedium} border-0 p-0 m-0`}>
+              <legend
                 className={`block ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
-                id="margins-label"
               >
                 Margins
-              </label>
+              </legend>
               <p
                 className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}
                 id="margins-help"
               >
                 In inches (0.25 - 1.5). Use arrow keys to adjust.
               </p>
-              <div
-                className={tokens.spacing.sectionGapCompact}
-                role="group"
-                aria-labelledby="margins-label"
-                aria-describedby="margins-help"
-              >
+              <div className={tokens.spacing.sectionGapCompact} aria-describedby="margins-help">
                 {(['top', 'bottom', 'left', 'right'] as const).map((side) => (
                   <RangeSlider
                     key={side}
@@ -340,12 +339,13 @@ export const SettingsView = React.memo(
                   margins={settings.defaultConfig.margin}
                 />
               </div>
-            </div>
+            </fieldset>
           </div>
         )}
 
         {/* General Tab Content */}
         {activeTab === 'general' && (
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: tabIndex={0} is required per WAI-ARIA tabpanel pattern for keyboard navigation
           <div role="tabpanel" id="tabpanel-general" aria-labelledby="tab-general" tabIndex={0}>
             {/* Appearance Section */}
             <div className={tokens.spacing.marginMedium}>
@@ -365,5 +365,5 @@ export const SettingsView = React.memo(
         )}
       </div>
     );
-  }
+  },
 );

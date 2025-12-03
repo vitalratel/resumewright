@@ -31,12 +31,21 @@ export interface IFontRepository {
   /**
    * Get cached font if available
    */
-  getCachedFont: (family: string, weight: FontWeight, style: FontStyle) => Promise<Uint8Array | null>;
+  getCachedFont: (
+    family: string,
+    weight: FontWeight,
+    style: FontStyle,
+  ) => Promise<Uint8Array | null>;
 
   /**
    * Cache font binary data
    */
-  cacheFont: (family: string, weight: FontWeight, style: FontStyle, data: Uint8Array) => Promise<void>;
+  cacheFont: (
+    family: string,
+    weight: FontWeight,
+    style: FontStyle,
+    data: Uint8Array,
+  ) => Promise<void>;
 
   /**
    * Get cache statistics

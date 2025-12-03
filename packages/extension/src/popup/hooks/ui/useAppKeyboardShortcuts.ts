@@ -7,9 +7,9 @@
  * to ensure shortcuts array only recreates when actual handler functions change.
  */
 
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { UIState } from '../../store';
 import type { ShortcutConfig } from './useKeyboardShortcuts';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 export interface UseAppKeyboardShortcutsOptions {
   uiState: UIState;
@@ -89,70 +89,71 @@ export function useAppKeyboardShortcuts({
   const handleEscapeShortcut = useCallback(() => {
     if (showShortcutsModalRef.current) {
       onHideShortcutsModal();
-    }
-    else if (currentViewRef.current === 'settings') {
+    } else if (currentViewRef.current === 'settings') {
       void onCloseSettings();
-    }
-    else if (currentViewRef.current === 'help') {
+    } else if (currentViewRef.current === 'help') {
       onCloseHelp();
     }
   }, [onHideShortcutsModal, onCloseSettings, onCloseHelp]);
 
   // Return stable shortcuts array
   // Only recreates when handler functions change, not when state changes
-  return useMemo(() => [
-    // Primary Actions
-    {
-      key: 'e',
-      ctrl: true,
-      meta: true,
-      handler: handleExportShortcut,
-      description: 'Export to PDF',
-      // Note: enabled check uses refs inside handler, not here
-      enabled: true,
-    },
-    {
-      key: ',',
-      ctrl: true,
-      meta: true,
-      handler: onOpenSettings,
-      description: 'Open Settings',
-      enabled: true,
-    },
-    {
-      key: 'F1',
-      handler: onOpenHelp,
-      description: 'Open Help',
-      enabled: true,
-    },
-    {
-      key: 'Escape',
-      handler: handleEscapeShortcut,
-      description: 'Close or Go Back',
-      enabled: true,
-    },
-    {
-      key: 'r',
-      ctrl: true,
-      meta: true,
-      handler: handleRetryShortcut,
-      description: 'Retry Conversion',
-      enabled: true,
-    },
-    {
-      key: '/',
-      ctrl: true,
-      meta: true,
-      handler: onShowShortcutsModal,
-      description: 'Show Keyboard Shortcuts',
-      enabled: true,
-    },
-  ], [
-    handleExportShortcut,
-    handleRetryShortcut,
-    handleEscapeShortcut,
-    onOpenSettings,
-    onOpenHelp,
-    onShowShortcutsModal,
-  ]);
+  return useMemo(
+    () => [
+      // Primary Actions
+      {
+        key: 'e',
+        ctrl: true,
+        meta: true,
+        handler: handleExportShortcut,
+        description: 'Export to PDF',
+        // Note: enabled check uses refs inside handler, not here
+        enabled: true,
+      },
+      {
+        key: ',',
+        ctrl: true,
+        meta: true,
+        handler: onOpenSettings,
+        description: 'Open Settings',
+        enabled: true,
+      },
+      {
+        key: 'F1',
+        handler: onOpenHelp,
+        description: 'Open Help',
+        enabled: true,
+      },
+      {
+        key: 'Escape',
+        handler: handleEscapeShortcut,
+        description: 'Close or Go Back',
+        enabled: true,
+      },
+      {
+        key: 'r',
+        ctrl: true,
+        meta: true,
+        handler: handleRetryShortcut,
+        description: 'Retry Conversion',
+        enabled: true,
+      },
+      {
+        key: '/',
+        ctrl: true,
+        meta: true,
+        handler: onShowShortcutsModal,
+        description: 'Show Keyboard Shortcuts',
+        enabled: true,
+      },
+    ],
+    [
+      handleExportShortcut,
+      handleRetryShortcut,
+      handleEscapeShortcut,
+      onOpenSettings,
+      onOpenHelp,
+      onShowShortcutsModal,
+    ],
+  );
 }

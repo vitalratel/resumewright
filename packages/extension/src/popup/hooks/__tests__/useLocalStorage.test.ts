@@ -8,7 +8,8 @@ import { vi } from 'vitest';
 import { useLocalStorage } from '../integration/useLocalStorage';
 
 const getStored = (key: string): unknown => JSON.parse(window.localStorage.getItem(key)!);
-const setStored = (key: string, value: unknown) => window.localStorage.setItem(key, JSON.stringify(value));
+const setStored = (key: string, value: unknown) =>
+  window.localStorage.setItem(key, JSON.stringify(value));
 
 describe('useLocalStorage', () => {
   beforeEach(() => window.localStorage.clear());
@@ -43,7 +44,7 @@ describe('useLocalStorage', () => {
     act(() => result.current[1]((prev: number) => prev + 1));
     expect(result.current[0]).toBe(1);
 
-    act(() => result.current[1](prev => prev + 1));
+    act(() => result.current[1]((prev) => prev + 1));
     expect(result.current[0]).toBe(2);
   });
 

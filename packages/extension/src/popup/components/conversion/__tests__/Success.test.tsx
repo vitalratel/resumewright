@@ -133,7 +133,7 @@ describe('Success', () => {
       const convertButton = buttons.find((b) => b.textContent?.includes('Convert another CV'));
       expect(convertButton).toHaveAttribute(
         'aria-label',
-        'Start a new conversion and convert another CV file to PDF'
+        'Start a new conversion and convert another CV file to PDF',
       );
       expect(convertButton).toHaveTextContent('Convert another CV');
     });
@@ -264,7 +264,7 @@ describe('Success', () => {
           fileSize="1.5 MB"
           autoCloseSeconds={3}
           onExportAnother={vi.fn()}
-        />
+        />,
       );
 
       expect(screen.getByText('complete-test.pdf')).toBeInTheDocument();
@@ -273,7 +273,7 @@ describe('Success', () => {
       expect(
         screen.getByRole('button', {
           name: 'Start a new conversion and convert another CV file to PDF',
-        })
+        }),
       ).toHaveTextContent('Convert another CV');
     });
   });

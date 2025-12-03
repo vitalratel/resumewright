@@ -3,9 +3,9 @@
  * Tests for background error logging utility functions
  */
 
-import type { Logger } from '@/shared/infrastructure/logging/logger';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetLogger, setLogger } from '@/shared/infrastructure/logging/instance';
+import type { Logger } from '@/shared/infrastructure/logging/logger';
 import { logBackgroundError, logBackgroundWarning } from '../errorLogging';
 
 describe('errorLogging', () => {
@@ -176,11 +176,7 @@ describe('errorLogging', () => {
     it('should handle empty message', () => {
       logBackgroundWarning('testOperation', '');
 
-      expect(mockWarn).toHaveBeenCalledWith(
-        'ErrorLogging',
-        'testOperation: ',
-        expect.any(Object),
-      );
+      expect(mockWarn).toHaveBeenCalledWith('ErrorLogging', 'testOperation: ', expect.any(Object));
     });
 
     it('should handle special characters in message', () => {

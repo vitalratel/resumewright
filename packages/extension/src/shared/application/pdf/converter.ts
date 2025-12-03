@@ -5,19 +5,19 @@
  * Refactored to use dependency injection following Clean Architecture.
  */
 
-import type { IFontRepository } from '../../domain/fonts/IFontRepository';
-import type { FontData, FontRequirement } from '../../domain/fonts/types';
-import type { ILogger } from '../../infrastructure/logging';
-import type { ConversionConfig } from '../../types/models';
 import { FontCollection, FontData as WasmFontData } from '@pkg/wasm_bridge';
 import { FontFetchOrchestrator } from '../../application/fonts/FontFetchOrchestrator';
+import type { IFontRepository } from '../../domain/fonts/IFontRepository';
+import type { FontData, FontRequirement } from '../../domain/fonts/types';
 import { convertConfigToRust } from '../../domain/pdf/config';
 import { parseWasmError } from '../../domain/pdf/errors';
 import { validatePdfBytes, validateProgressParams } from '../../domain/pdf/wasmSchemas';
 import { GoogleFontsRepository } from '../../infrastructure/fonts/GoogleFontsRepository';
+import type { ILogger } from '../../infrastructure/logging';
 import { getLogger } from '../../infrastructure/logging';
 import { detectFonts } from '../../infrastructure/pdf/fonts';
-import { createConverterInstance } from '../../infrastructure/wasm';
+import { createConverterInstance } from '../../infrastructure/wasm/instance';
+import type { ConversionConfig } from '../../types/models';
 
 /**
  * Dependency injection options for convertTsxToPdfWithFonts
@@ -51,7 +51,7 @@ export async function convertTsxToPdfWithFonts(
   config: ConversionConfig,
   onProgress?: (stage: string, percentage: number) => void,
   onFontFetch?: (current: number, total: number, fontFamily: string) => void,
-  dependencies?: ConversionDependencies
+  dependencies?: ConversionDependencies,
 ): Promise<Uint8Array> {
   // Resolve dependencies with defaults (composition root)
   const logger = dependencies?.logger ?? getLogger();
@@ -90,7 +90,7 @@ function buildFontCollection(fontData: FontData[]): FontCollection {
       font.family,
       font.weight,
       font.style === 'italic',
-      font.bytes
+      font.bytes,
     );
     fontCollection.add(wasmFont);
   }
@@ -106,7 +106,7 @@ function buildFontCollection(fontData: FontData[]): FontCollection {
  */
 function createProgressWrapper(
   onProgress: ((stage: string, percentage: number) => void) | undefined,
-  logger: ILogger
+  logger: ILogger,
 ): ((stage: string, percentage: number) => void) | undefined {
   if (!onProgress) {
     return undefined;
@@ -117,7 +117,8 @@ function createProgressWrapper(
     validateProgressParams(stage, percentage);
 
     // Map WASM progress (0-100) to overall progress (15-100)
-    const mappedPercentage = PROGRESS_STAGES.WASM_START_OFFSET + percentage * PROGRESS_STAGES.WASM_SCALE;
+    const mappedPercentage =
+      PROGRESS_STAGES.WASM_START_OFFSET + percentage * PROGRESS_STAGES.WASM_SCALE;
     logger.debug('PdfConverter', 'Conversion progress', {
       stage,
       percentage: mappedPercentage.toFixed(0),
@@ -151,7 +152,7 @@ function validateTsxInput(tsx: string): void {
 class PdfConverterService {
   constructor(
     private readonly fontOrchestrator: FontFetchOrchestrator,
-    private readonly logger: ILogger
+    private readonly logger: ILogger,
   ) {}
 
   /**
@@ -168,7 +169,7 @@ class PdfConverterService {
     tsx: string,
     config: ConversionConfig,
     onProgress?: (stage: string, percentage: number) => void,
-    onFontFetch?: (current: number, total: number, fontFamily: string) => void
+    onFontFetch?: (current: number, total: number, fontFamily: string) => void,
   ): Promise<Uint8Array> {
     validateTsxInput(tsx);
 
@@ -204,7 +205,7 @@ class PdfConverterService {
    */
   private async detectFontsStep(
     tsx: string,
-    onProgress?: (stage: string, percentage: number) => void
+    onProgress?: (stage: string, percentage: number) => void,
   ): Promise<FontRequirement[]> {
     onProgress?.(PROGRESS_STAGES.DETECTING_FONTS.stage, PROGRESS_STAGES.DETECTING_FONTS.percentage);
 
@@ -223,13 +224,13 @@ class PdfConverterService {
   private async fetchFontsStep(
     fontRequirements: FontRequirement[],
     onProgress?: (stage: string, percentage: number) => void,
-    onFontFetch?: (current: number, total: number, fontFamily: string) => void
+    onFontFetch?: (current: number, total: number, fontFamily: string) => void,
   ): Promise<FontData[]> {
     onProgress?.(PROGRESS_STAGES.FETCHING_FONTS.stage, PROGRESS_STAGES.FETCHING_FONTS.percentage);
 
     const fontData = await this.fontOrchestrator.fetchFontsFromRequirements(
       fontRequirements,
-      onFontFetch
+      onFontFetch,
     );
 
     this.logger.debug('PdfConverter', 'Step 2: Fetched fonts', { count: fontData.length });
@@ -244,7 +245,7 @@ class PdfConverterService {
     tsx: string,
     config: ConversionConfig,
     fontData: FontData[],
-    onProgress?: (stage: string, percentage: number) => void
+    onProgress?: (stage: string, percentage: number) => void,
   ): Promise<Uint8Array> {
     onProgress?.(PROGRESS_STAGES.PARSING.stage, PROGRESS_STAGES.PARSING.percentage);
 
@@ -264,7 +265,7 @@ class PdfConverterService {
         tsx,
         wasmConfig,
         fontCollection,
-        progressCallback
+        progressCallback,
       );
 
       // Validate PDF output

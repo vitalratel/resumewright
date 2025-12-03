@@ -33,8 +33,7 @@ export function useFileReader() {
         const content = e.target?.result;
         if (typeof content === 'string') {
           resolve(content);
-        }
-        else {
+        } else {
           reject(new Error('Failed to read file as text'));
         }
       };
@@ -59,8 +58,7 @@ export function useFileReader() {
         const content = e.target?.result;
         if (typeof content === 'string') {
           resolve(content);
-        }
-        else {
+        } else {
           reject(new Error('Failed to read file as data URL'));
         }
       };

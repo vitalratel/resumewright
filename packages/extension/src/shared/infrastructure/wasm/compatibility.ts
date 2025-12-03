@@ -66,21 +66,21 @@ function parseBrowserInfo(userAgent: string): {
   browserVersion: string;
 } {
   // Edge (must check before Chrome - Edge UA contains "Chrome")
-  if (/Edg\/\d+/.test(userAgent)) {
-    const match = userAgent.match(/Edg\/(\d+)/);
-    return { browserName: 'Edge', browserVersion: match![1] };
+  const edgeMatch = userAgent.match(/Edg\/(\d+)/);
+  if (edgeMatch) {
+    return { browserName: 'Edge', browserVersion: edgeMatch[1] };
   }
 
   // Chrome/Chromium
-  if (/Chrome\/\d+/.test(userAgent)) {
-    const match = userAgent.match(/Chrome\/(\d+)/);
-    return { browserName: 'Chrome', browserVersion: match![1] };
+  const chromeMatch = userAgent.match(/Chrome\/(\d+)/);
+  if (chromeMatch) {
+    return { browserName: 'Chrome', browserVersion: chromeMatch[1] };
   }
 
   // Firefox
-  if (/Firefox\/\d+/.test(userAgent)) {
-    const match = userAgent.match(/Firefox\/(\d+)/);
-    return { browserName: 'Firefox', browserVersion: match![1] };
+  const firefoxMatch = userAgent.match(/Firefox\/(\d+)/);
+  if (firefoxMatch) {
+    return { browserName: 'Firefox', browserVersion: firefoxMatch[1] };
   }
 
   // Safari (must check after Chrome - Safari UA doesn't contain "Chrome")
@@ -141,7 +141,7 @@ function getMemoryInfo(): WasmCompatibilityReport['memoryInfo'] {
 function detectIssues(
   browserInfo: WasmCompatibilityReport['browserInfo'],
   wasmInfo: WasmCompatibilityReport['wasmInfo'],
-  memoryInfo?: WasmCompatibilityReport['memoryInfo']
+  memoryInfo?: WasmCompatibilityReport['memoryInfo'],
 ): CompatibilityIssue[] {
   const issues: CompatibilityIssue[] = [];
 
@@ -219,7 +219,7 @@ async function testWasmInstantiation(): Promise<boolean> {
       0x00,
       0x61,
       0x73,
-      0x6D, // magic number '\0asm'
+      0x6d, // magic number '\0asm'
       0x01,
       0x00,
       0x00,
@@ -234,76 +234,81 @@ async function testWasmInstantiation(): Promise<boolean> {
 }
 
 /**
+ * Perform comprehensive compatibility check
+ *
+ * @returns Compatibility report with issues and recommendations
+ */
+export async function checkWasmCompatibility(): Promise<WasmCompatibilityReport> {
+  const userAgent = navigator.userAgent;
+  const { browserName, browserVersion } = parseBrowserInfo(userAgent);
+
+  const browserInfo = {
+    userAgent,
+    browserName,
+    browserVersion,
+  };
+
+  const wasmInfo = checkWasmSupport();
+  const memoryInfo = getMemoryInfo();
+
+  // Detect issues
+  const issues = detectIssues(browserInfo, wasmInfo, memoryInfo);
+
+  // Test WASM instantiation if supported
+  if (wasmInfo.supported) {
+    const instantiationWorks = await testWasmInstantiation();
+    if (!instantiationWorks) {
+      issues.push({
+        severity: 'error',
+        category: 'wasm',
+        message: 'WASM instantiation test failed',
+        recommendation: 'Check browser security settings or try restarting the browser',
+      });
+    }
+  }
+
+  // Determine overall compatibility
+  const hasErrors = issues.some((issue) => issue.severity === 'error');
+  const compatible = !hasErrors;
+
+  return {
+    compatible,
+    issues,
+    browserInfo,
+    wasmInfo,
+    memoryInfo,
+  };
+}
+
+/**
+ * Quick check if WASM is supported (synchronous)
+ *
+ * @returns true if basic WASM support is present
+ */
+export function isWasmSupported(): boolean {
+  return typeof WebAssembly !== 'undefined';
+}
+
+/**
+ * Get human-readable summary of compatibility issues
+ *
+ * @param report - Compatibility report
+ * @returns Array of issue messages
+ */
+export function getCompatibilitySummary(report: WasmCompatibilityReport): string[] {
+  return report.issues.map(
+    (issue) => `[${issue.severity.toUpperCase()}] ${issue.message}: ${issue.recommendation}`,
+  );
+}
+
+/**
  * WasmCompatibilityChecker
  *
- * Checks browser compatibility for WASM and provides detailed diagnostics.
+ * Namespace for WASM compatibility checking functions.
+ * Maintained for backward compatibility with existing call sites.
  */
-export class WasmCompatibilityChecker {
-  /**
-   * Perform comprehensive compatibility check
-   *
-   * @returns Compatibility report with issues and recommendations
-   */
-  static async check(): Promise<WasmCompatibilityReport> {
-    const userAgent = navigator.userAgent;
-    const { browserName, browserVersion } = parseBrowserInfo(userAgent);
-
-    const browserInfo = {
-      userAgent,
-      browserName,
-      browserVersion,
-    };
-
-    const wasmInfo = checkWasmSupport();
-    const memoryInfo = getMemoryInfo();
-
-    // Detect issues
-    const issues = detectIssues(browserInfo, wasmInfo, memoryInfo);
-
-    // Test WASM instantiation if supported
-    if (wasmInfo.supported) {
-      const instantiationWorks = await testWasmInstantiation();
-      if (!instantiationWorks) {
-        issues.push({
-          severity: 'error',
-          category: 'wasm',
-          message: 'WASM instantiation test failed',
-          recommendation: 'Check browser security settings or try restarting the browser',
-        });
-      }
-    }
-
-    // Determine overall compatibility
-    const hasErrors = issues.some((issue) => issue.severity === 'error');
-    const compatible = !hasErrors;
-
-    return {
-      compatible,
-      issues,
-      browserInfo,
-      wasmInfo,
-      memoryInfo,
-    };
-  }
-
-  /**
-   * Quick check if WASM is supported (synchronous)
-   *
-   * @returns true if basic WASM support is present
-   */
-  static isSupported(): boolean {
-    return typeof WebAssembly !== 'undefined';
-  }
-
-  /**
-   * Get human-readable summary of compatibility issues
-   *
-   * @param report - Compatibility report
-   * @returns Array of issue messages
-   */
-  static getSummary(report: WasmCompatibilityReport): string[] {
-    return report.issues.map(
-      (issue) => `[${issue.severity.toUpperCase()}] ${issue.message}: ${issue.recommendation}`
-    );
-  }
-}
+export const WasmCompatibilityChecker = {
+  check: checkWasmCompatibility,
+  isSupported: isWasmSupported,
+  getSummary: getCompatibilitySummary,
+};

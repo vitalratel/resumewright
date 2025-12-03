@@ -1,26 +1,17 @@
 /**
- * jest-axe Vitest compatibility types
- * Proper type definitions for jest-axe with Vitest
- *
- * jest-axe provides accessibility testing matchers that work with Vitest
- * even though the official types are for Jest
+ * ABOUTME: jest-axe type definitions for Vitest compatibility
+ * ABOUTME: Extends Vitest matchers with toHaveNoViolations for a11y testing
  */
 
 import 'vitest';
 
-// Extend Vitest's expect interface
-declare module 'vitest' {
-   
-  interface Assertion<T = any> {
-    /**
-     * Custom matcher from jest-axe to assert no accessibility violations
-     * Works with Vitest despite being designed for Jest
-     */
-    toHaveNoViolations: () => T;
-  }
+interface JestAxeMatchers<R = unknown> {
+  /**
+   * Assert no accessibility violations found by axe-core
+   */
+  toHaveNoViolations: () => R;
+}
 
-  interface AsymmetricMatchersContaining {
-     
-    toHaveNoViolations: () => any;
-  }
+declare module 'vitest' {
+  interface Matchers<T> extends JestAxeMatchers<T> {}
 }

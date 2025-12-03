@@ -11,7 +11,7 @@ export function formatCodeContext(
   lines: Array<{ lineNumber: number; content: string; isError: boolean }>,
 ): string {
   // Find max line number width for alignment
-  const maxLineNumber = Math.max(...lines.map(l => l.lineNumber));
+  const maxLineNumber = Math.max(...lines.map((l) => l.lineNumber));
   const lineNumberWidth = String(maxLineNumber).length;
 
   return lines
@@ -22,7 +22,8 @@ export function formatCodeContext(
 
       // Add error indicator below the line
       if (isError) {
-        const indicatorLine = ' '.repeat(lineNumberWidth + 4) + '^'.repeat(Math.min(content.length, 50));
+        const indicatorLine =
+          ' '.repeat(lineNumberWidth + 4) + '^'.repeat(Math.min(content.length, 50));
         return `${line}\n${indicatorLine}`;
       }
 
@@ -38,7 +39,7 @@ export function formatCodeContextWithColumn(
   lines: Array<{ lineNumber: number; content: string; isError: boolean }>,
   errorColumn: number,
 ): string {
-  const maxLineNumber = Math.max(...lines.map(l => l.lineNumber));
+  const maxLineNumber = Math.max(...lines.map((l) => l.lineNumber));
   const lineNumberWidth = String(maxLineNumber).length;
 
   return lines
@@ -58,4 +59,3 @@ export function formatCodeContextWithColumn(
     })
     .join('\n');
 }
-

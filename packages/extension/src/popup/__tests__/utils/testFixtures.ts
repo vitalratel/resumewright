@@ -1,9 +1,9 @@
 // ABOUTME: Reusable test data for popup tests.
 // ABOUTME: Provides consistent fixtures for common scenarios.
 
-import type { CVMetadata } from '../../store';
-import type { ConversionError } from '@/shared/types/models';
 import { ErrorCategory, ErrorCode } from '@/shared/errors';
+import type { ConversionError } from '@/shared/types/models';
+import type { CVMetadata } from '../../store';
 
 /**
  * Sample TSX content (valid)
@@ -191,7 +191,11 @@ export const MOCK_PROGRESS_OPERATIONS = {
 /**
  * Helper: Create mock File object
  */
-export function createMockFile(filename: string, content: string, type: string = 'text/plain'): File {
+export function createMockFile(
+  filename: string,
+  content: string,
+  type: string = 'text/plain',
+): File {
   const blob = new Blob([content], { type });
   return new File([blob], filename, { type });
 }
@@ -213,7 +217,10 @@ export function createMockCVMetadata(name: string, overrides?: Partial<CVMetadat
 /**
  * Helper: Create mock error with custom message
  */
-export function createMockError(message: string, overrides?: Partial<ConversionError>): ConversionError {
+export function createMockError(
+  message: string,
+  overrides?: Partial<ConversionError>,
+): ConversionError {
   return {
     message,
     code: ErrorCode.UNKNOWN_ERROR,

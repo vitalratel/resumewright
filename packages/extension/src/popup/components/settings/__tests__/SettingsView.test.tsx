@@ -111,15 +111,19 @@ describe('SettingsView', () => {
     it('shows dirty indicator dot when isDirty is true', () => {
       render(<SettingsView {...defaultProps} isDirty={true} />);
 
-      const dirtyDot = screen.getByLabelText('Unsaved changes');
+      // The dot has title attribute and sr-only text for accessibility
+      const backButton = screen.getByLabelText('Back to main screen');
+      const dirtyDot = backButton.querySelector('[title="You have unsaved changes"]');
       expect(dirtyDot).toBeInTheDocument();
-      expect(dirtyDot).toHaveAttribute('title', 'You have unsaved changes');
     });
 
-    it('shows dirty indicator text in title when isDirty is true', () => {
+    it('shows dirty indicator sr-only text when isDirty is true', () => {
       render(<SettingsView {...defaultProps} isDirty={true} />);
 
-      expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+      // sr-only text is combined in one span
+      expect(
+        screen.getByText('Unsaved changes - Your changes have not been saved yet'),
+      ).toBeInTheDocument();
     });
 
     it('shows dirty indicator banner when isDirty is true and not saving', () => {
@@ -131,7 +135,9 @@ describe('SettingsView', () => {
     it('hides dirty banner when saving', () => {
       render(<SettingsView {...defaultProps} isDirty={true} saving={true} />);
 
-      expect(screen.queryByText('Unsaved changes (saving automatically...)')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Unsaved changes (saving automatically...)'),
+      ).not.toBeInTheDocument();
     });
 
     it('shows saving indicator when saving is true', () => {
@@ -145,18 +151,19 @@ describe('SettingsView', () => {
     it('highlights selected page size', () => {
       render(<SettingsView {...defaultProps} />);
 
-      const letterButton = screen.getByRole('radio', { name: 'Select Letter page size' });
-      expect(letterButton).toHaveAttribute('aria-checked', 'true');
+      // Native radio inputs get their accessible name from the wrapping label
+      const letterRadio = screen.getByRole('radio', { name: /Letter/ });
+      expect(letterRadio).toBeChecked();
 
-      const a4Button = screen.getByRole('radio', { name: 'Select A4 page size' });
-      expect(a4Button).toHaveAttribute('aria-checked', 'false');
+      const a4Radio = screen.getByRole('radio', { name: /A4/ });
+      expect(a4Radio).not.toBeChecked();
     });
 
     it('calls onPageSizeChange when selecting different size', () => {
       render(<SettingsView {...defaultProps} />);
 
-      const a4Button = screen.getByRole('radio', { name: 'Select A4 page size' });
-      fireEvent.click(a4Button);
+      const a4Radio = screen.getByRole('radio', { name: /A4/ });
+      fireEvent.click(a4Radio);
 
       expect(mockOnPageSizeChange).toHaveBeenCalledWith('A4');
     });
@@ -164,17 +171,20 @@ describe('SettingsView', () => {
     it('calls onPageSizeChange for each page size option', () => {
       render(<SettingsView {...defaultProps} />);
 
-      const letterButton = screen.getByRole('radio', { name: 'Select Letter page size' });
-      fireEvent.click(letterButton);
-      expect(mockOnPageSizeChange).toHaveBeenCalledWith('Letter');
-
-      const a4Button = screen.getByRole('radio', { name: 'Select A4 page size' });
-      fireEvent.click(a4Button);
+      // Note: Letter is already selected, so clicking it won't fire onChange
+      // Test A4 and Legal which will trigger onChange
+      const a4Radio = screen.getByRole('radio', { name: /A4.*210mm/ });
+      fireEvent.click(a4Radio);
       expect(mockOnPageSizeChange).toHaveBeenCalledWith('A4');
 
-      const legalButton = screen.getByRole('radio', { name: 'Select Legal page size' });
-      fireEvent.click(legalButton);
+      const legalRadio = screen.getByRole('radio', { name: /Legal.*14/ });
+      fireEvent.click(legalRadio);
       expect(mockOnPageSizeChange).toHaveBeenCalledWith('Legal');
+
+      // Letter can be tested by clicking it after another option is visually selected
+      // But the component state won't change since props control it
+      // This test verifies A4 and Legal options work
+      expect(mockOnPageSizeChange).toHaveBeenCalledTimes(2);
     });
 
     it('displays all page size options with dimensions', () => {
@@ -277,30 +287,40 @@ describe('SettingsView', () => {
     it('has proper ARIA labels for page size radio group', () => {
       render(<SettingsView {...defaultProps} />);
 
-      const letterButton = screen.getByRole('radio', { name: 'Select Letter page size' });
-      expect(letterButton).toHaveAttribute('aria-checked');
+      // Radio inputs get accessible name from their wrapping label text
+      const letterRadio = screen.getByRole('radio', { name: /Letter/ });
+      expect(letterRadio).toBeChecked();
     });
 
     it('has proper ARIA labels for margin controls group', () => {
       render(<SettingsView {...defaultProps} />);
 
-      const marginsGroup = screen.getByRole('group', { name: /margins/i });
-      expect(marginsGroup).toHaveAttribute('aria-labelledby', 'margins-label');
-      expect(marginsGroup).toHaveAttribute('aria-describedby', 'margins-help');
+      // Margins fieldset uses legend for accessible name and has help text via aria-describedby
+      const marginsFieldset = screen.getByRole('group', { name: /margins/i });
+      expect(marginsFieldset).toBeInTheDocument();
+
+      // Help text exists with proper id
+      const helpText = screen.getByText(/In inches \(0\.25 - 1\.5\)/);
+      expect(helpText).toHaveAttribute('id', 'margins-help');
     });
 
     it('has screen reader text for dirty indicator', () => {
       render(<SettingsView {...defaultProps} isDirty={true} />);
 
-      expect(screen.getByText('- Your changes have not been saved yet')).toBeInTheDocument();
-      expect(screen.getByText('- Your changes have not been saved yet')).toHaveClass('sr-only');
+      // sr-only text is combined: "Unsaved changes - Your changes have not been saved yet"
+      const srText = screen.getByText('Unsaved changes - Your changes have not been saved yet');
+      expect(srText).toBeInTheDocument();
+      expect(srText).toHaveClass('sr-only');
     });
 
-    it('dirty indicator banner has role="status" and aria-live="polite"', () => {
+    it('dirty indicator banner has aria-live="polite"', () => {
       render(<SettingsView {...defaultProps} isDirty={true} saving={false} />);
 
-      const banner = screen.getByText('Unsaved changes (saving automatically...)').closest('div');
-      expect(banner).toHaveAttribute('role', 'status');
+      // <output> element has implicit role="status" and we add aria-live="polite"
+      const banner = screen
+        .getByText('Unsaved changes (saving automatically...)')
+        .closest('output');
+      expect(banner).toBeInTheDocument();
       expect(banner).toHaveAttribute('aria-live', 'polite');
     });
   });
@@ -309,8 +329,9 @@ describe('SettingsView', () => {
     it('renders with different page sizes', () => {
       const { rerender } = render(<SettingsView {...defaultProps} />);
 
-      const letterButton = screen.getByRole('radio', { name: 'Select Letter page size' });
-      expect(letterButton).toHaveAttribute('aria-checked', 'true');
+      // Radio inputs get accessible name from label text
+      const letterRadio = screen.getByRole('radio', { name: /Letter/ });
+      expect(letterRadio).toBeChecked();
 
       rerender(
         <SettingsView
@@ -322,8 +343,8 @@ describe('SettingsView', () => {
         />,
       );
 
-      const a4Button = screen.getByRole('radio', { name: 'Select A4 page size' });
-      expect(a4Button).toHaveAttribute('aria-checked', 'true');
+      const a4Radio = screen.getByRole('radio', { name: /A4/ });
+      expect(a4Radio).toBeChecked();
     });
 
     it('renders with different margin values', () => {

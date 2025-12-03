@@ -27,31 +27,25 @@ interface UseUnsavedChangesReturn {
  */
 function deepEqual(a: unknown, b: unknown): boolean {
   // Same reference or both null/undefined
-  if (a === b)
-    return true;
+  if (a === b) return true;
 
   // One is null/undefined but not the other
-  if (a == null || b == null)
-    return false;
+  if (a == null || b == null) return false;
 
   // Different types
-  if (typeof a !== typeof b)
-    return false;
+  if (typeof a !== typeof b) return false;
 
   // Primitive types (already checked by ===)
-  if (typeof a !== 'object')
-    return false;
+  if (typeof a !== 'object') return false;
 
   // Arrays
   if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length)
-      return false;
+    if (a.length !== b.length) return false;
     return a.every((item, index) => deepEqual(item, b[index]));
   }
 
   // One is array, other is not
-  if (Array.isArray(a) !== Array.isArray(b))
-    return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
 
   // Objects
   const aObj = a as Record<string, unknown>;
@@ -60,13 +54,9 @@ function deepEqual(a: unknown, b: unknown): boolean {
   const aKeys = Object.keys(aObj);
   const bKeys = Object.keys(bObj);
 
-  if (aKeys.length !== bKeys.length)
-    return false;
+  if (aKeys.length !== bKeys.length) return false;
 
-  return aKeys.every(key =>
-    Object.prototype.hasOwnProperty.call(bObj, key)
-    && deepEqual(aObj[key], bObj[key]),
-  );
+  return aKeys.every((key) => Object.hasOwn(bObj, key) && deepEqual(aObj[key], bObj[key]));
 }
 
 export function useUnsavedChanges<T>(
@@ -77,7 +67,7 @@ export function useUnsavedChanges<T>(
   // This prevents unnecessary state updates and re-renders
   // Use deep equality check instead of JSON.stringify
   const isDirty = useMemo(() => {
-    if ((current === null || current === undefined) || (original === null || original === undefined)) {
+    if (current === null || current === undefined || original === null || original === undefined) {
       return false;
     }
     // Deep equality check for reliable dirty detection

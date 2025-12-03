@@ -41,7 +41,7 @@ describe('Settings - Auto-Save ', () => {
     vi.useRealTimers();
     // Wait for any pending saves/flushes from unmounting components to complete
     // The Settings component flushes debounced saves on unmount if dirty
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   });
 
   describe('Auto-Save Behavior', () => {
@@ -53,7 +53,7 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // Wait beyond debounce time
-      await new Promise(resolve => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
       // Should not save on initial load
       expect(settingsStore.saveSettings).not.toHaveBeenCalled();
@@ -68,7 +68,7 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // Change page size from Letter to A4
-      const a4Button = screen.getByRole('radio', { name: /select a4/i });
+      const a4Button = screen.getByRole('radio', { name: /A4/i });
       await user.click(a4Button);
 
       // Should NOT save immediately
@@ -116,7 +116,7 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // Wait for component to fully stabilize
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Clear any calls from initial render/load
       vi.mocked(settingsStore.saveSettings).mockClear();
@@ -142,7 +142,7 @@ describe('Settings - Auto-Save ', () => {
       );
 
       // Verify no additional saves occur after the debounced save
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
       expect(settingsStore.saveSettings).toHaveBeenCalledTimes(1);
     }, 15000); // Increase test timeout to 15s
   });
@@ -157,7 +157,7 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // Make a change
-      const a4Button = screen.getByRole('radio', { name: /select a4/i });
+      const a4Button = screen.getByRole('radio', { name: /A4/i });
       await user.click(a4Button);
 
       // Click back button immediately (before debounce)
@@ -180,7 +180,7 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // Make a change
-      const a4Button = screen.getByRole('radio', { name: /select a4/i });
+      const a4Button = screen.getByRole('radio', { name: /A4/i });
       await user.click(a4Button);
 
       // Switch to General tab and reset settings
@@ -230,7 +230,7 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // Make a change
-      const a4Button = screen.getByRole('radio', { name: /select a4/i });
+      const a4Button = screen.getByRole('radio', { name: /A4/i });
       await user.click(a4Button);
 
       // Wait for auto-save
@@ -257,7 +257,7 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // Make a change and wait for auto-save
-      const a4Button = screen.getByRole('radio', { name: /select a4/i });
+      const a4Button = screen.getByRole('radio', { name: /A4/i });
       await user.click(a4Button);
 
       await waitFor(
@@ -286,9 +286,7 @@ describe('Settings - Auto-Save ', () => {
       const user = userEvent.setup();
 
       // Make saveSettings fail
-      vi.mocked(settingsStore.saveSettings).mockRejectedValueOnce(
-        new Error('Network error'),
-      );
+      vi.mocked(settingsStore.saveSettings).mockRejectedValueOnce(new Error('Network error'));
 
       render(<Settings onBack={mockOnBack} />);
 
@@ -297,7 +295,7 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // Make a change
-      const a4Button = screen.getByRole('radio', { name: /select a4/i });
+      const a4Button = screen.getByRole('radio', { name: /A4/i });
       await user.click(a4Button);
 
       // Wait for auto-save attempt
@@ -329,7 +327,7 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // First change
-      const a4Button = screen.getByRole('radio', { name: /select a4/i });
+      const a4Button = screen.getByRole('radio', { name: /A4/i });
       await user.click(a4Button);
 
       await waitFor(
@@ -345,7 +343,7 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // Make another change
-      const legalButton = screen.getByRole('radio', { name: /select legal/i });
+      const legalButton = screen.getByRole('radio', { name: /Legal/i });
       await user.click(legalButton);
 
       // Should save successfully
@@ -361,9 +359,7 @@ describe('Settings - Auto-Save ', () => {
       const user = userEvent.setup();
 
       // Make saveSettings fail
-      vi.mocked(settingsStore.saveSettings).mockRejectedValueOnce(
-        new Error('Save failed'),
-      );
+      vi.mocked(settingsStore.saveSettings).mockRejectedValueOnce(new Error('Save failed'));
 
       render(<Settings onBack={mockOnBack} />);
 
@@ -372,7 +368,7 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // Make a change
-      const a4Button = screen.getByRole('radio', { name: /select a4/i });
+      const a4Button = screen.getByRole('radio', { name: /A4/i });
       await user.click(a4Button);
 
       // Try to navigate back
@@ -404,7 +400,7 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // Make a change and wait for auto-save
-      const a4Button = screen.getByRole('radio', { name: /select a4/i });
+      const a4Button = screen.getByRole('radio', { name: /A4/i });
       await user.click(a4Button);
 
       // Wait for debounce (500ms) + save to complete + success state to show
@@ -423,9 +419,7 @@ describe('Settings - Auto-Save ', () => {
     it('should announce save errors to screen readers', async () => {
       const user = userEvent.setup();
 
-      vi.mocked(settingsStore.saveSettings).mockRejectedValueOnce(
-        new Error('Save failed'),
-      );
+      vi.mocked(settingsStore.saveSettings).mockRejectedValueOnce(new Error('Save failed'));
 
       render(<Settings onBack={mockOnBack} />);
 
@@ -434,7 +428,7 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // Make a change
-      const a4Button = screen.getByRole('radio', { name: /select a4/i });
+      const a4Button = screen.getByRole('radio', { name: /A4/i });
       await user.click(a4Button);
 
       await waitFor(
@@ -462,7 +456,7 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // Change to A4
-      const a4Button = screen.getByRole('radio', { name: /select a4/i });
+      const a4Button = screen.getByRole('radio', { name: /A4/i });
       await user.click(a4Button);
 
       await waitFor(
@@ -473,7 +467,7 @@ describe('Settings - Auto-Save ', () => {
       );
 
       // Change back to Letter (original)
-      const letterButton = screen.getByRole('radio', { name: /select letter/i });
+      const letterButton = screen.getByRole('radio', { name: /Letter/i });
       await user.click(letterButton);
 
       // Should save again (settings changed, even if back to original)
@@ -494,13 +488,13 @@ describe('Settings - Auto-Save ', () => {
       });
 
       // Rapid changes (debounce should batch them)
-      const a4Button = screen.getByRole('radio', { name: /select a4/i });
+      const a4Button = screen.getByRole('radio', { name: /A4/i });
       await user.click(a4Button);
 
-      const legalButton = screen.getByRole('radio', { name: /select legal/i });
+      const legalButton = screen.getByRole('radio', { name: /Legal/i });
       await user.click(legalButton);
 
-      const letterButton = screen.getByRole('radio', { name: /select letter/i });
+      const letterButton = screen.getByRole('radio', { name: /Letter/i });
       await user.click(letterButton);
 
       // Wait for debounce - should save only once (final state)

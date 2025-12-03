@@ -3,12 +3,19 @@
  * Extracted from ErrorState component for reusability
  */
 
-import type { PrioritizedSuggestion } from '@/shared/errors/presentation/suggestions';
-import type { ConversionError } from '@/shared/types/models';
 import { useMemo } from 'react';
 import { ErrorCode } from '@/shared/errors/';
-import { getSizeReductionTips, prioritizeSuggestions } from '@/shared/errors/presentation/suggestions';
-import { isLocationErrorMetadata, isRetryErrorMetadata, isSizeErrorMetadata } from '@/shared/types/models';
+import type { PrioritizedSuggestion } from '@/shared/errors/presentation/suggestions';
+import {
+  getSizeReductionTips,
+  prioritizeSuggestions,
+} from '@/shared/errors/presentation/suggestions';
+import type { ConversionError } from '@/shared/types/models';
+import {
+  isLocationErrorMetadata,
+  isRetryErrorMetadata,
+  isSizeErrorMetadata,
+} from '@/shared/types/models';
 
 interface ErrorSuggestionsData {
   prioritizedSuggestions: PrioritizedSuggestion[];
@@ -35,26 +42,19 @@ export function useErrorSuggestions(error: ConversionError): ErrorSuggestionsDat
 
   // Memoize expensive prioritization calculation
   const prioritizedSuggestions = useMemo(
-    () => prioritizeSuggestions(
-      error.code,
-      error.suggestions,
-      retryAttempt,
-    ),
+    () => prioritizeSuggestions(error.code, error.suggestions, retryAttempt),
     [error.code, error.suggestions, retryAttempt],
   );
 
   // Memoize size reduction tips calculation
-  const sizeReductionTips = useMemo(
-    () => {
-      if (!isSizeError)
-        return [];
-      const metadata = isSizeErrorMetadata(error.metadata) || isLocationErrorMetadata(error.metadata)
+  const sizeReductionTips = useMemo(() => {
+    if (!isSizeError) return [];
+    const metadata =
+      isSizeErrorMetadata(error.metadata) || isLocationErrorMetadata(error.metadata)
         ? error.metadata
         : undefined;
-      return getSizeReductionTips(metadata?.fileSize, metadata?.maxSize);
-    },
-    [isSizeError, error.metadata],
-  );
+    return getSizeReductionTips(metadata?.fileSize, metadata?.maxSize);
+  }, [isSizeError, error.metadata]);
 
   return {
     prioritizedSuggestions,

@@ -3,8 +3,6 @@
  * Structured logging with configurable levels
  */
 
-/* eslint-disable no-console */
-
 /**
  * Log levels in order of severity
  */

@@ -1,11 +1,11 @@
-import type {BrowserContext} from '@playwright/test';
-import type { BrowserType } from './fixtures/types';
 import fs from 'node:fs';
 import { rm } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { test as base,  chromium } from '@playwright/test';
+import type { BrowserContext } from '@playwright/test';
+import { test as base, chromium } from '@playwright/test';
 import { browserConfigs } from './fixtures/browser-config';
+import type { BrowserType } from './fixtures/types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -60,7 +60,7 @@ export const test = base.extend<{
     const timestamp = Date.now();
     const userDataDir = path.join(
       __dirname,
-      `../.test-profile-${browserType}-${testInfo.workerIndex}-${timestamp}`
+      `../.test-profile-${browserType}-${testInfo.workerIndex}-${timestamp}`,
     );
 
     // Chrome: Use persistent context with extension loading arguments
@@ -103,7 +103,7 @@ export const test = base.extend<{
     if (!fs.existsSync(manifestPath)) {
       throw new Error(
         `Extension manifest not found at ${manifestPath}. ` +
-          `Please build the extension first (run: pnpm build)`
+          `Please build the extension first (run: pnpm build)`,
       );
     }
 
@@ -129,7 +129,7 @@ export const test = base.extend<{
       extensionId: string;
       browserType: BrowserType;
     },
-    use: (value: ServiceWorkerMock) => Promise<void>
+    use: (value: ServiceWorkerMock) => Promise<void>,
   ) => {
     // WORKAROUND: Service workers in Manifest V3 may not be accessible via
     // Playwright's context.serviceWorkers() in persistent contexts.
@@ -148,7 +148,7 @@ export const test = base.extend<{
       console.warn(
         '[Fixture] Service worker not accessible via Playwright API. ' +
           'This is a known limitation with Manifest V3 extensions. ' +
-          'Tests should verify extension functionality via popup/content script instead.'
+          'Tests should verify extension functionality via popup/content script instead.',
       );
 
       // Provide a placeholder object with the expected interface
@@ -157,7 +157,7 @@ export const test = base.extend<{
         evaluate: async () => {
           throw new Error(
             'Cannot evaluate in service worker context. ' +
-              'Use popup page or content script for testing.'
+              'Use popup page or content script for testing.',
           );
         },
       };
@@ -168,7 +168,7 @@ export const test = base.extend<{
         evaluate: async () => {
           throw new Error(
             'Cannot evaluate in service worker context. ' +
-              'Use popup page or content script for testing.'
+              'Use popup page or content script for testing.',
           );
         },
       };
@@ -190,7 +190,7 @@ export const test = base.extend<{
 async function verifyExtensionReady(
   context: BrowserContext,
   protocol: string,
-  extensionId: string
+  extensionId: string,
 ): Promise<void> {
   let testPage;
 
@@ -211,7 +211,7 @@ async function verifyExtensionReady(
     const errorMsg = e instanceof Error ? e.message : String(e);
     throw new Error(
       `Extension loaded but converter page failed to load: ${errorMsg}. ` +
-        'This might indicate a problem with the extension build.'
+        'This might indicate a problem with the extension build.',
     );
   } finally {
     if (testPage) {

@@ -43,7 +43,7 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background: #F9FAFB; /* Light gray background for contrast */
+  background: #f9fafb; /* Light gray background for contrast */
 }
 
 #root {

@@ -14,10 +14,10 @@
  * Uses fakeBrowser for real storage behavior.
  */
 
-import type { ErrorDetails, ErrorEvent } from '../telemetry';
 import { fakeBrowser } from '@webext-core/fake-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { localExtStorage } from '@/shared/infrastructure/storage';
+import type { ErrorDetails, ErrorEvent } from '../telemetry';
 import {
   clearStoredErrors,
   copyToClipboard,
@@ -195,7 +195,14 @@ describe('Error Telemetry', () => {
     it('should clear stored errors', async () => {
       // Setup - add some errors
       await localExtStorage.setItem('errorTelemetry', [
-        { errorId: 'ERR-1', timestamp: Date.now(), code: 'TEST', message: 'Test', category: 'SYSTEM', context: {} },
+        {
+          errorId: 'ERR-1',
+          timestamp: Date.now(),
+          code: 'TEST',
+          message: 'Test',
+          category: 'SYSTEM',
+          context: {},
+        },
       ]);
 
       await clearStoredErrors();

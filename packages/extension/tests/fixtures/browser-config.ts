@@ -1,5 +1,5 @@
-import type { BrowserConfig, BrowserType } from './types';
 import { discoverChromeExtensionId } from './chrome-id-discovery';
+import type { BrowserConfig, BrowserType } from './types';
 
 /**
  * Browser configuration for extension testing.

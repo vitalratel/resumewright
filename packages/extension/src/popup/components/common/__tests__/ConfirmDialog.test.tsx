@@ -78,13 +78,11 @@ describe('ConfirmDialog', () => {
         <ConfirmDialog
           isOpen={true}
           title="Test"
-          message={(
+          message={
             <div>
-              <strong>Warning:</strong>
-              {' '}
-              This action cannot be undone
+              <strong>Warning:</strong> This action cannot be undone
             </div>
-          )}
+          }
           onConfirm={vi.fn()}
           onCancel={vi.fn()}
         />,
@@ -287,7 +285,9 @@ describe('ConfirmDialog', () => {
         />,
       );
 
-      fireEvent.keyDown(window, { key: 'Escape' });
+      // Native <dialog> handles Escape via 'cancel' event
+      const dialog = screen.getByRole('dialog');
+      fireEvent(dialog, new Event('cancel', { bubbles: true }));
 
       expect(onCancel).toHaveBeenCalledOnce();
       expect(onConfirm).not.toHaveBeenCalled();
@@ -332,7 +332,7 @@ describe('ConfirmDialog', () => {
       expect(dialog).toBeInTheDocument();
     });
 
-    it('should have aria-modal="true"', () => {
+    it('should be modal via native dialog showModal()', () => {
       render(
         <ConfirmDialog
           isOpen={true}
@@ -343,8 +343,9 @@ describe('ConfirmDialog', () => {
         />,
       );
 
+      // Native <dialog> has implicit aria-modal="true" when opened with showModal()
       const dialog = screen.getByRole('dialog');
-      expect(dialog).toHaveAttribute('aria-modal', 'true');
+      expect(dialog.tagName).toBe('DIALOG');
     });
 
     it('should have aria-labelledby pointing to title', () => {
@@ -361,8 +362,9 @@ describe('ConfirmDialog', () => {
       const dialog = screen.getByRole('dialog');
       const titleId = dialog.getAttribute('aria-labelledby');
       expect(titleId).toBe('dialog-title');
+      if (!titleId) throw new Error('aria-labelledby not found');
 
-      const title = document.getElementById(titleId!);
+      const title = document.getElementById(titleId);
       expect(title).toHaveTextContent('Test Title');
     });
 

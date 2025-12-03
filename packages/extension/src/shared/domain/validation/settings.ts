@@ -1,8 +1,19 @@
 // ABOUTME: Valibot schema for UserSettings type.
 // ABOUTME: Provides validation and parsing for user preferences.
 
+import {
+  boolean,
+  integer,
+  maxValue,
+  minValue,
+  number,
+  parse,
+  picklist,
+  pipe,
+  safeParse,
+  strictObject,
+} from 'valibot';
 import type { UserSettings } from '@/shared/types/settings';
-import { boolean, integer, maxValue, minValue, number, parse, picklist, pipe, safeParse, strictObject } from 'valibot';
 import { ConversionConfigSchema } from './conversion';
 
 /**

@@ -22,7 +22,6 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '../fixtures';
 
 test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
-
   test('Popup UI - No accessibility violations', async ({ context, extensionId }) => {
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/converter.html`);
@@ -77,7 +76,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
       return {
         role: el.getAttribute('role'),
         ariaLive: el.getAttribute('aria-live'),
-        ariaAtomic: el.getAttribute('aria-atomic')
+        ariaAtomic: el.getAttribute('aria-atomic'),
       };
     });
 
@@ -109,7 +108,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
         type: el.getAttribute('type'),
         tabIndex: el.getAttribute('tabindex'),
         ariaLabel: el.getAttribute('aria-label'),
-        text: el.textContent?.trim()
+        text: el.textContent?.trim(),
       }));
     });
 
@@ -118,7 +117,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
 
     // Verify no positive tabindex (anti-pattern)
     const hasPositiveTabIndex = focusableElements.some((el) => {
-      const tabIndex = Number.parseInt(el.tabIndex || '0');
+      const tabIndex = Number.parseInt(el.tabIndex || '0', 10);
       return tabIndex > 0;
     });
 
@@ -142,7 +141,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
     // Find file input
     const fileInput = page.locator('input[type="file"]');
 
-    if (await fileInput.count() > 0) {
+    if ((await fileInput.count()) > 0) {
       // Verify file input has label or aria-label
       const hasLabel = await fileInput.evaluate((el) => {
         const ariaLabel = el.getAttribute('aria-label');
@@ -180,15 +179,10 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
     await page.waitForTimeout(1000);
 
     // Run aXe scan specifically for color contrast
-    const results = await new AxeBuilder({ page })
-      .withTags(['wcag2aa'])
-      .include('body')
-      .analyze();
+    const results = await new AxeBuilder({ page }).withTags(['wcag2aa']).include('body').analyze();
 
     // Filter for color contrast violations
-    const contrastViolations = results.violations.filter(
-      (v) => v.id.includes('color-contrast')
-    );
+    const contrastViolations = results.violations.filter((v) => v.id.includes('color-contrast'));
 
     expect(contrastViolations).toEqual([]);
 
@@ -238,10 +232,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
         const role = await img.getAttribute('role');
 
         // Decorative images can have role="presentation" or alt=""
-        const isAccessible =
-          alt !== null ||
-          ariaLabel ||
-          role === 'presentation';
+        const isAccessible = alt !== null || ariaLabel || role === 'presentation';
 
         expect(isAccessible).toBeTruthy();
       }
@@ -276,7 +267,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
         tag: el.tagName.toLowerCase(),
         outline: styles.outline,
         outlineWidth: styles.outlineWidth,
-        boxShadow: styles.boxShadow
+        boxShadow: styles.boxShadow,
       };
     });
 
@@ -329,13 +320,11 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
 
     // Get all headings
     const headings = await page.evaluate(() => {
-      const headingElements = Array.from(
-        document.querySelectorAll('h1, h2, h3, h4, h5, h6')
-      );
+      const headingElements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
 
       return headingElements.map((el) => ({
-        level: Number.parseInt(el.tagName.substring(1)),
-        text: el.textContent?.trim()
+        level: Number.parseInt(el.tagName.substring(1), 10),
+        text: el.textContent?.trim(),
       }));
     });
 

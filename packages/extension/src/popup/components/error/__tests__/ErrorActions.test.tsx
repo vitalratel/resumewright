@@ -5,11 +5,11 @@
  * action prioritization, retry logic, and dev mode features.
  */
 
-import type { ConversionError } from '@/shared/types/models';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, vi } from 'vitest';
 import { ErrorCode } from '@/shared/errors/';
+import type { ConversionError } from '@/shared/types/models';
 import { ErrorActions } from '../ErrorActions';
 
 // Mock clipboard functions
@@ -70,12 +70,12 @@ describe('ErrorActions', () => {
     it('shows loading state during retry', async () => {
       const user = userEvent.setup();
       const error = createError({ recoverable: true });
-      
-      let resolveRetry: () => void;
+
+      let resolveRetry: (() => void) | undefined;
       const retryPromise = new Promise<void>((resolve) => {
         resolveRetry = resolve;
       });
-      
+
       // Mock returns a promise - using async to satisfy ESLint ts/promise-function-async
       const onRetry = vi.fn().mockImplementation(async () => retryPromise);
 
@@ -88,7 +88,8 @@ describe('ErrorActions', () => {
       expect(screen.getByText('Retrying...')).toBeInTheDocument();
 
       // Resolve the retry
-      resolveRetry!();
+      expect(resolveRetry).toBeDefined();
+      resolveRetry?.();
       await waitFor(() => {
         expect(screen.queryByText('Retrying...')).not.toBeInTheDocument();
       });
@@ -97,12 +98,12 @@ describe('ErrorActions', () => {
     it('prevents double-clicks during retry', async () => {
       const user = userEvent.setup();
       const error = createError({ recoverable: true });
-      
-      let resolveRetry: () => void;
+
+      let resolveRetry: (() => void) | undefined;
       const retryPromise = new Promise<void>((resolve) => {
         resolveRetry = resolve;
       });
-      
+
       const onRetry = vi.fn().mockImplementation(async () => retryPromise);
 
       render(<ErrorActions error={error} onRetry={onRetry} retryAttempt={0} />);
@@ -111,7 +112,7 @@ describe('ErrorActions', () => {
 
       // First click - should trigger onRetry
       await user.click(retryButton);
-      
+
       // Wait for button to be disabled
       await waitFor(() => {
         expect(retryButton).toBeDisabled();
@@ -123,9 +124,10 @@ describe('ErrorActions', () => {
 
       // Should only call once (first click before disabled)
       expect(onRetry).toHaveBeenCalledTimes(1);
-      
+
       // Resolve the retry to cleanup
-      resolveRetry!();
+      expect(resolveRetry).toBeDefined();
+      resolveRetry?.();
       await waitFor(() => {
         expect(retryButton).not.toBeDisabled();
       });
@@ -151,13 +153,7 @@ describe('ErrorActions', () => {
       const error = createError();
       const onImportDifferent = vi.fn();
 
-      render(
-        <ErrorActions
-          error={error}
-          onImportDifferent={onImportDifferent}
-          retryAttempt={0}
-        />,
-      );
+      render(<ErrorActions error={error} onImportDifferent={onImportDifferent} retryAttempt={0} />);
 
       expect(screen.getByText('Import Different File')).toBeInTheDocument();
     });
@@ -175,13 +171,7 @@ describe('ErrorActions', () => {
       const error = createError();
       const onImportDifferent = vi.fn();
 
-      render(
-        <ErrorActions
-          error={error}
-          onImportDifferent={onImportDifferent}
-          retryAttempt={0}
-        />,
-      );
+      render(<ErrorActions error={error} onImportDifferent={onImportDifferent} retryAttempt={0} />);
 
       const importButton = screen.getByText('Import Different File');
       await user.click(importButton);
@@ -205,7 +195,7 @@ describe('ErrorActions', () => {
 
       // Import button should be primary (first button)
       const buttons = container.querySelectorAll('button');
-      const importButton = Array.from(buttons).find(btn =>
+      const importButton = Array.from(buttons).find((btn) =>
         btn.textContent?.includes('Import Different File'),
       );
 
@@ -228,7 +218,7 @@ describe('ErrorActions', () => {
 
       // Import button should be primary
       const buttons = container.querySelectorAll('button');
-      const importButton = Array.from(buttons).find(btn =>
+      const importButton = Array.from(buttons).find((btn) =>
         btn.textContent?.includes('Import Different File'),
       );
 
@@ -251,7 +241,7 @@ describe('ErrorActions', () => {
 
       // Import button should be secondary
       const buttons = container.querySelectorAll('button');
-      const importButton = Array.from(buttons).find(btn =>
+      const importButton = Array.from(buttons).find((btn) =>
         btn.textContent?.includes('Import Different File'),
       );
 
@@ -359,9 +349,7 @@ describe('ErrorActions', () => {
       const onReportIssue = vi.fn();
       const error = createError();
 
-      render(
-        <ErrorActions error={error} onReportIssue={onReportIssue} retryAttempt={0} />,
-      );
+      render(<ErrorActions error={error} onReportIssue={onReportIssue} retryAttempt={0} />);
 
       const copyButton = screen.getByText('Copy Error Details');
       await user.click(copyButton);
@@ -397,13 +385,7 @@ describe('ErrorActions', () => {
       const error = createError();
       const onImportDifferent = vi.fn();
 
-      render(
-        <ErrorActions
-          error={error}
-          onImportDifferent={onImportDifferent}
-          retryAttempt={0}
-        />,
-      );
+      render(<ErrorActions error={error} onImportDifferent={onImportDifferent} retryAttempt={0} />);
 
       const importButton = screen.getByLabelText(
         'Dismiss error and import a different CV file to convert',
@@ -429,9 +411,7 @@ describe('ErrorActions', () => {
 
       render(<ErrorActions error={error} retryAttempt={0} />);
 
-      const copyButton = screen.getByLabelText(
-        'Copy error details and open GitHub issue template',
-      );
+      const copyButton = screen.getByLabelText('Copy error details and open GitHub issue template');
       expect(copyButton).toBeInTheDocument();
 
       import.meta.env.DEV = false;
@@ -514,9 +494,12 @@ describe('ErrorActions', () => {
       expect(onRetry).toHaveBeenCalled();
 
       // Should eventually clear loading state (handled by component)
-      await waitFor(() => {
-        expect(screen.queryByText('Retrying...')).not.toBeInTheDocument();
-      }, { timeout: 200 });
+      await waitFor(
+        () => {
+          expect(screen.queryByText('Retrying...')).not.toBeInTheDocument();
+        },
+        { timeout: 200 },
+      );
     });
   });
 });

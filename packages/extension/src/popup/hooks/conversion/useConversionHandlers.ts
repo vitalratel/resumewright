@@ -10,9 +10,9 @@
  * Refactored for single responsibility principle
  */
 
-import type { AppState } from '../integration/useAppState';
 import { useMemo } from 'react';
 import { useFileImport } from '../form/useFileImport';
+import type { AppState } from '../integration/useAppState';
 import { useConversionCleanup } from './useConversionCleanup';
 import { useConversionExecution } from './useConversionExecution';
 

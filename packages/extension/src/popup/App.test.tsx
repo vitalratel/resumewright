@@ -273,7 +273,7 @@ describe('App Integration Tests', () => {
         .setImportedFile(
           'test-resume.tsx',
           2048,
-          'export default function Resume() { return <div>Test</div>; }'
+          'export default function Resume() { return <div>Test</div>; }',
         );
       usePopupStore.getState().setUIState('file_validated');
 
@@ -339,7 +339,7 @@ describe('App Integration Tests', () => {
           // Settings page should show (look for heading, not button)
           expect(screen.getByRole('heading', { name: /Settings/i })).toBeInTheDocument();
         },
-        { timeout: 5000 }
+        { timeout: 5000 },
       );
 
       // Click back button - Settings back button has different label
@@ -354,7 +354,7 @@ describe('App Integration Tests', () => {
           // Settings page heading should be gone (not button, which stays in header)
           expect(screen.queryByRole('heading', { name: /Settings/i })).not.toBeInTheDocument();
         },
-        { timeout: 5000 }
+        { timeout: 5000 },
       );
     }, 15000);
   });
@@ -369,7 +369,7 @@ describe('App Integration Tests', () => {
         .setImportedFile(
           'test-resume.tsx',
           2048,
-          'export default function Resume() { return <div>Test</div>; }'
+          'export default function Resume() { return <div>Test</div>; }',
         );
       usePopupStore.getState().setUIState('file_validated');
 
@@ -394,7 +394,7 @@ describe('App Integration Tests', () => {
         .setImportedFile(
           'test-resume.tsx',
           2048,
-          'export default function Resume() { return <div>Test</div>; }'
+          'export default function Resume() { return <div>Test</div>; }',
         );
       usePopupStore.getState().startConversion();
 
@@ -422,7 +422,7 @@ describe('App Integration Tests', () => {
         .setImportedFile(
           'test-resume.tsx',
           2048,
-          'export default function Resume() { return <div>Test</div>; }'
+          'export default function Resume() { return <div>Test</div>; }',
         );
       usePopupStore.getState().startConversion();
 
@@ -444,7 +444,7 @@ describe('App Integration Tests', () => {
         .setImportedFile(
           'test-resume.tsx',
           2048,
-          'export default function Resume() { return <div>Test</div>; }'
+          'export default function Resume() { return <div>Test</div>; }',
         );
       usePopupStore.getState().startConversion();
 
@@ -476,7 +476,7 @@ describe('App Integration Tests', () => {
         .setImportedFile(
           'test-resume.tsx',
           2048,
-          'export default function Resume() { return <div>Test</div>; }'
+          'export default function Resume() { return <div>Test</div>; }',
         );
       usePopupStore.getState().setSuccess('resume.pdf');
 

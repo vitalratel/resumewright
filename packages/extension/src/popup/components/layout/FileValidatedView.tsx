@@ -34,7 +34,7 @@ export const FileValidatedView = React.memo(() => {
     const { pageSize, margin } = settings.defaultConfig;
     const preset = getMarginPreset(margin);
     const presetName = preset.charAt(0).toUpperCase() + preset.slice(1);
-    
+
     return `${pageSize}, ${presetName} margins`;
   }, [settings]);
 
@@ -56,7 +56,9 @@ export const FileValidatedView = React.memo(() => {
         <div className={`${tokens.spacing.containerPadding} pb-6 ${tokens.spacing.stack}`}>
           <Button
             variant="primary"
-            onClick={() => { void handleExportClick(); }}
+            onClick={() => {
+              void handleExportClick();
+            }}
             className={`w-full flex items-center justify-center ${tokens.spacing.gapSmall}`}
             aria-label="Export to PDF using current settings (Ctrl+E shortcut)"
             data-testid="export-button"
@@ -73,7 +75,9 @@ export const FileValidatedView = React.memo(() => {
           </Button>
 
           {/* Current settings display with link to Settings */}
-          <div className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} text-center flex items-center justify-center ${tokens.spacing.gapSmall}`}>
+          <div
+            className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} text-center flex items-center justify-center ${tokens.spacing.gapSmall}`}
+          >
             <span>Current settings: {settingsSummary}</span>
             <button
               type="button"

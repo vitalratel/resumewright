@@ -83,26 +83,25 @@ export function debounceAsync<TArgs extends unknown[], TReturn>(
 
     timeoutId = setTimeout(() => {
       void (async () => {
-      try {
-        const result = await fn(...args);
+        try {
+          const result = await fn(...args);
 
-        // Resolve all waiting promises
-        for (const resolve of resolveQueue) {
-          resolve(result);
+          // Resolve all waiting promises
+          for (const resolve of resolveQueue) {
+            resolve(result);
+          }
+          resolveQueue = [];
+          rejectQueue = [];
+          pendingArgs = undefined;
+        } catch (error) {
+          // Reject all waiting promises
+          for (const reject of rejectQueue) {
+            reject(error as Error);
+          }
+          resolveQueue = [];
+          rejectQueue = [];
+          pendingArgs = undefined;
         }
-        resolveQueue = [];
-        rejectQueue = [];
-        pendingArgs = undefined;
-      }
-      catch (error) {
-        // Reject all waiting promises
-        for (const reject of rejectQueue) {
-          reject(error as Error);
-        }
-        resolveQueue = [];
-        rejectQueue = [];
-        pendingArgs = undefined;
-      }
       })();
     }, delayMs);
 
@@ -144,8 +143,7 @@ export function debounceAsync<TArgs extends unknown[], TReturn>(
         }
         resolveQueue = [];
         rejectQueue = [];
-      }
-      catch (error) {
+      } catch (error) {
         // Reject all waiting promises
         for (const reject of rejectQueue) {
           reject(error as Error);

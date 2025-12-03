@@ -11,25 +11,25 @@
 export interface DeviceProfile {
   /** Profile name for logging */
   name: string;
-  
+
   /** CPU throttling rate (1 = no throttling, 4 = 4x slowdown) */
   cpuThrottling: number;
-  
+
   /** Network throttling configuration (optional) */
   network?: {
     downloadThroughput: number; // bytes/sec
-    uploadThroughput: number;   // bytes/sec
-    latency: number;             // ms
+    uploadThroughput: number; // bytes/sec
+    latency: number; // ms
   };
-  
+
   /** Performance target expectations */
   targets: {
     /** Single-page conversion time (ms) */
     singlePage: number;
-    
+
     /** Multi-page (2-3 pages) conversion time (ms) */
     multiPage: number;
-    
+
     /** Large (6+ pages) conversion time (ms) */
     largePage: number;
   };
@@ -45,9 +45,9 @@ export const HIGH_END_DEVICE: DeviceProfile = {
   name: 'High-End Device',
   cpuThrottling: 1, // No throttling
   targets: {
-    singlePage: 5000,   // 5s
-    multiPage: 10000,   // 10s
-    largePage: 15000,   // 15s
+    singlePage: 5000, // 5s
+    multiPage: 10000, // 10s
+    largePage: 15000, // 15s
   },
 };
 
@@ -64,13 +64,13 @@ export const LOW_END_DEVICE: DeviceProfile = {
   network: {
     // Slow 3G network throttling
     downloadThroughput: (500 * 1024) / 8, // 500kbps
-    uploadThroughput: (500 * 1024) / 8,   // 500kbps
-    latency: 400,                          // 400ms
+    uploadThroughput: (500 * 1024) / 8, // 500kbps
+    latency: 400, // 400ms
   },
   targets: {
-    singlePage: 8000,   // 8s
-    multiPage: 15000,   // 15s
-    largePage: 25000,   // 25s
+    singlePage: 8000, // 8s
+    multiPage: 15000, // 15s
+    largePage: 25000, // 25s
   },
 };
 
@@ -84,18 +84,18 @@ export const MID_RANGE_DEVICE: DeviceProfile = {
   name: 'Mid-Range Device',
   cpuThrottling: 2, // 2x slowdown
   targets: {
-    singlePage: 6500,   // 6.5s
-    multiPage: 12500,   // 12.5s
-    largePage: 20000,   // 20s
+    singlePage: 6500, // 6.5s
+    multiPage: 12500, // 12.5s
+    largePage: 20000, // 20s
   },
 };
 
 /**
  * Helper to apply device profile throttling via CDP
- * 
+ *
  * @param client - Playwright CDPSession
  * @param profile - Device profile to apply
- * 
+ *
  * @example
  * ```ts
  * const client = await context.newCDPSession(page);
@@ -106,11 +106,11 @@ export const MID_RANGE_DEVICE: DeviceProfile = {
  */
 export async function applyDeviceProfile(
   client: any, // CDPSession from Playwright
-  profile: DeviceProfile
+  profile: DeviceProfile,
 ): Promise<void> {
   // Apply CPU throttling
-  await client.send('Emulation.setCPUThrottlingRate', { 
-    rate: profile.cpuThrottling 
+  await client.send('Emulation.setCPUThrottlingRate', {
+    rate: profile.cpuThrottling,
   });
 
   // Apply network throttling if specified
@@ -126,7 +126,7 @@ export async function applyDeviceProfile(
 
 /**
  * Reset device profile throttling to normal
- * 
+ *
  * @param client - Playwright CDPSession
  */
 export async function resetDeviceProfile(client: any): Promise<void> {

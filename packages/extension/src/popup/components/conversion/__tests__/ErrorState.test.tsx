@@ -3,12 +3,12 @@
  * Error Handling and User Guidance
  */
 
-import type { ConversionError } from '@/shared/types/models';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as errorsModule from '@/shared/errors';
 import { ErrorCategory, ErrorCode } from '@/shared/errors/codes';
+import type { ConversionError } from '@/shared/types/models';
 import { ErrorState } from '../ErrorState';
 
 // Mock browser API for issueReporter
@@ -55,7 +55,7 @@ describe('ErrorState', () => {
       const message = container.querySelector('p.text-base');
       // Updated to simplified error message
       expect(message).toHaveTextContent(
-        'This file has invalid CV code. Try regenerating it in Claude or importing a different file.'
+        'This file has invalid CV code. Try regenerating it in Claude or importing a different file.',
       );
     });
 
@@ -270,12 +270,12 @@ describe('ErrorState', () => {
       // Verify first focused element is one of our interactive elements
       const allButtons = [copyButton, helpLink, retryButton, dismissButton];
       expect(allButtons.includes(firstFocused as HTMLElement)).toBe(true);
+      expect(firstFocused).toBeDefined();
 
       // Continue tabbing to verify all elements are in tab order
-      const focusedElements: Element[] = [firstFocused!];
+      const focusedElements: Element[] = [firstFocused as Element];
       for (let i = 0; i < 10; i++) {
         // Tab enough times to reach all elements
-        // eslint-disable-next-line no-await-in-loop -- Sequential tab navigation is required for testing keyboard accessibility
         await user.tab();
         const currentFocus = document.activeElement;
         if (currentFocus && !focusedElements.includes(currentFocus)) {

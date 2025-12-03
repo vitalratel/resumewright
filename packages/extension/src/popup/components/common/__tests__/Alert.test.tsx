@@ -17,7 +17,11 @@ describe('Alert', () => {
       { variant: 'success' as const, expectedRole: 'status', expectedAriaLive: 'polite' },
       { variant: 'info' as const, expectedRole: 'status', expectedAriaLive: 'polite' },
       { variant: 'warning' as const, expectedRole: 'status', expectedAriaLive: 'polite' },
-    ])('renders $variant variant with correct ARIA attributes', ({ variant, expectedRole, expectedAriaLive }) => {
+    ])('renders $variant variant with correct ARIA attributes', ({
+      variant,
+      expectedRole,
+      expectedAriaLive,
+    }) => {
       render(
         <Alert variant={variant}>
           <p>Test message</p>
@@ -348,11 +352,7 @@ describe('Alert', () => {
 
   describe('Edge Cases', () => {
     it('handles empty children gracefully', () => {
-      render(
-        <Alert variant="info">
-          {''}
-        </Alert>,
-      );
+      render(<Alert variant="info">{''}</Alert>);
 
       const alert = screen.getByRole('status');
       expect(alert).toBeInTheDocument();

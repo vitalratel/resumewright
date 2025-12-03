@@ -1,8 +1,8 @@
 // ABOUTME: Tests for background message handler setup.
 // ABOUTME: Verifies handler registration and error handling paths.
 
-import type { LifecycleManager } from '../lifecycleManager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { LifecycleManager } from '../lifecycleManager';
 
 // Track registered handlers for testing
 const registeredHandlers = new Map<string, (args: { data: unknown }) => unknown>();
@@ -40,12 +40,15 @@ vi.mock('@pkg/wasm_bridge', () => ({
   extract_cv_metadata: vi.fn(),
 }));
 
-vi.mock('@/shared/infrastructure/wasm', () => ({
+vi.mock('@/shared/infrastructure/wasm/instance', () => ({
   createConverterInstance: vi.fn(() => ({
     validateTsx: vi.fn().mockResolvedValue(true),
     convert: vi.fn().mockResolvedValue(new Uint8Array()),
     free: vi.fn(),
   })),
+}));
+
+vi.mock('@/shared/infrastructure/wasm/loader', () => ({
   isWASMInitialized: vi.fn().mockReturnValue(true),
 }));
 
@@ -124,9 +127,9 @@ describe('messageHandler', () => {
   describe('ping handler', () => {
     it('should respond with pong', () => {
       const pingHandler = registeredHandlers.get('ping');
-      expect(pingHandler).toBeDefined();
+      if (!pingHandler) throw new Error('Handler not registered');
 
-      const result = pingHandler!({ data: {} });
+      const result = pingHandler({ data: {} });
       expect(result).toEqual({ pong: true });
     });
   });
@@ -134,9 +137,9 @@ describe('messageHandler', () => {
   describe('getSettings handler', () => {
     it('should return settings successfully', async () => {
       const handler = registeredHandlers.get('getSettings');
-      expect(handler).toBeDefined();
+      if (!handler) throw new Error('Handler not registered');
 
-      const result = await handler!({ data: {} });
+      const result = await handler({ data: {} });
 
       expect(result).toHaveProperty('success', true);
       expect(result).toHaveProperty('settings');
@@ -144,15 +147,14 @@ describe('messageHandler', () => {
 
     it('should handle settings load failure', async () => {
       // Force settingsStore to throw
-      const { settingsStore } = await import(
-        '@/shared/infrastructure/settings/SettingsStore'
-      );
+      const { settingsStore } = await import('@/shared/infrastructure/settings/SettingsStore');
       vi.spyOn(settingsStore, 'loadSettings').mockRejectedValueOnce(
-        new Error('Storage unavailable')
+        new Error('Storage unavailable'),
       );
 
       const handler = registeredHandlers.get('getSettings');
-      const result = await handler!({ data: {} });
+      if (!handler) throw new Error('Handler not registered');
+      const result = await handler({ data: {} });
 
       expect(result).toHaveProperty('success', false);
       expect(result).toHaveProperty('error');
@@ -162,9 +164,9 @@ describe('messageHandler', () => {
   describe('popupOpened handler', () => {
     it('should return success', async () => {
       const handler = registeredHandlers.get('popupOpened');
-      expect(handler).toBeDefined();
+      if (!handler) throw new Error('Handler not registered');
 
-      const result = await handler!({ data: { requestProgressUpdate: false } });
+      const result = await handler({ data: { requestProgressUpdate: false } });
       expect(result).toEqual({ success: true });
     });
   });
@@ -172,9 +174,9 @@ describe('messageHandler', () => {
   describe('validateTsx handler', () => {
     it('should validate tsx content', async () => {
       const handler = registeredHandlers.get('validateTsx');
-      expect(handler).toBeDefined();
+      if (!handler) throw new Error('Handler not registered');
 
-      const result = await handler!({ data: { tsx: '<div>Test</div>' } });
+      const result = await handler({ data: { tsx: '<div>Test</div>' } });
       expect(result).toEqual({ valid: true });
     });
   });
@@ -182,9 +184,9 @@ describe('messageHandler', () => {
   describe('getWasmStatus handler', () => {
     it('should return WASM status from storage', async () => {
       const handler = registeredHandlers.get('getWasmStatus');
-      expect(handler).toBeDefined();
+      if (!handler) throw new Error('Handler not registered');
 
-      const result = await handler!({ data: {} });
+      const result = await handler({ data: {} });
 
       // With mocked storage returning 'success'
       expect(result).toHaveProperty('initialized', true);

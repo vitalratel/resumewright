@@ -13,7 +13,7 @@ import { Button } from '../Button';
 // Mock icon component for testing
 function MockIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg data-testid="mock-icon" {...props}>
+    <svg data-testid="mock-icon" aria-hidden="true" {...props}>
       <path d="M0 0h24v24H0z" />
     </svg>
   );
@@ -80,7 +80,11 @@ describe('Button', () => {
       const user = userEvent.setup();
       const onClick = vi.fn();
 
-      render(<Button onClick={onClick} disabled>Click</Button>);
+      render(
+        <Button onClick={onClick} disabled>
+          Click
+        </Button>,
+      );
 
       const button = screen.getByRole('button');
       await user.click(button);
@@ -92,7 +96,11 @@ describe('Button', () => {
       const user = userEvent.setup();
       const onClick = vi.fn();
 
-      render(<Button onClick={onClick} loading>Click</Button>);
+      render(
+        <Button onClick={onClick} loading>
+          Click
+        </Button>,
+      );
 
       const button = screen.getByRole('button');
       await user.click(button);
@@ -131,7 +139,7 @@ describe('Button', () => {
       expect(onClick).toHaveBeenCalledTimes(1);
 
       // Wait for pending state to clear (100ms + buffer)
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Second click should work
       await user.click(button);
@@ -163,7 +171,11 @@ describe('Button', () => {
     });
 
     it('hides custom icon when loading', () => {
-      render(<Button icon={MockIcon} loading>Loading</Button>);
+      render(
+        <Button icon={MockIcon} loading>
+          Loading
+        </Button>,
+      );
 
       expect(screen.queryByTestId('mock-icon')).not.toBeInTheDocument();
     });
@@ -185,7 +197,11 @@ describe('Button', () => {
     });
 
     it('hides custom icon when success', () => {
-      render(<Button icon={MockIcon} success>Success</Button>);
+      render(
+        <Button icon={MockIcon} success>
+          Success
+        </Button>,
+      );
 
       expect(screen.queryByTestId('mock-icon')).not.toBeInTheDocument();
     });
@@ -206,13 +222,21 @@ describe('Button', () => {
     });
 
     it('does not render icon when loading', () => {
-      render(<Button icon={MockIcon} loading>Loading</Button>);
+      render(
+        <Button icon={MockIcon} loading>
+          Loading
+        </Button>,
+      );
 
       expect(screen.queryByTestId('mock-icon')).not.toBeInTheDocument();
     });
 
     it('does not render icon when success', () => {
-      render(<Button icon={MockIcon} success>Success</Button>);
+      render(
+        <Button icon={MockIcon} success>
+          Success
+        </Button>,
+      );
 
       expect(screen.queryByTestId('mock-icon')).not.toBeInTheDocument();
     });
@@ -236,7 +260,11 @@ describe('Button', () => {
       const user = userEvent.setup();
       const onClick = vi.fn();
 
-      render(<Button onClick={onClick} disabled>Disabled</Button>);
+      render(
+        <Button onClick={onClick} disabled>
+          Disabled
+        </Button>,
+      );
 
       const button = screen.getByRole('button');
       await user.click(button);
@@ -325,7 +353,11 @@ describe('Button', () => {
     });
 
     it('handles loading and disabled simultaneously', () => {
-      render(<Button loading disabled>Both</Button>);
+      render(
+        <Button loading disabled>
+          Both
+        </Button>,
+      );
       const button = screen.getByRole('button');
 
       expect(button).toBeDisabled();
@@ -333,7 +365,11 @@ describe('Button', () => {
     });
 
     it('handles success and loading simultaneously (loading takes precedence)', async () => {
-      const { container } = render(<Button loading success>Both</Button>);
+      const { container } = render(
+        <Button loading success>
+          Both
+        </Button>,
+      );
 
       // Wait for 300ms delay before spinner appears
       await waitFor(() => {

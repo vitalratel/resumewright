@@ -6,7 +6,11 @@
 
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useFocusOnMount, useFocusTrap, useScreenReaderAnnouncement } from '../ui/useFocusManagement';
+import {
+  useFocusOnMount,
+  useFocusTrap,
+  useScreenReaderAnnouncement,
+} from '../ui/useFocusManagement';
 
 describe('Focus Management Hooks', () => {
   beforeEach(() => {
@@ -18,29 +22,36 @@ describe('Focus Management Hooks', () => {
   });
 
   describe('useFocusOnMount', () => {
-    it('should focus element on mount', async () => {
-      const { result } = renderHook(() => useFocusOnMount());
+    it('should return ref when shouldFocus is true', async () => {
+      const { result } = renderHook(() => useFocusOnMount(true));
 
       // Hook returns a ref
       expect(result.current).toBeDefined();
       expect(typeof result.current).toBe('object');
     });
 
-    it('should handle dependency changes', async () => {
-      const { rerender } = renderHook(
-        ({ dep }) => useFocusOnMount(dep),
-        { initialProps: { dep: 'initial' } },
-      );
+    it('should not focus when shouldFocus is false', async () => {
+      const { result } = renderHook(() => useFocusOnMount(false));
 
-      // Change dependency to trigger re-focus
-      rerender({ dep: 'changed' });
+      // Hook returns a ref but won't trigger focus
+      expect(result.current).toBeDefined();
+      expect(typeof result.current).toBe('object');
+    });
 
-      await new Promise(resolve => setTimeout(resolve, 150));
+    it('should handle shouldFocus changes', async () => {
+      const { rerender } = renderHook(({ shouldFocus }) => useFocusOnMount(shouldFocus), {
+        initialProps: { shouldFocus: false },
+      });
+
+      // Change to true to trigger focus
+      rerender({ shouldFocus: true });
+
+      await new Promise((resolve) => setTimeout(resolve, 150));
       expect(true).toBe(true); // Hook doesn't throw
     });
 
     it('should cleanup timeout on unmount', () => {
-      const { unmount } = renderHook(() => useFocusOnMount());
+      const { unmount } = renderHook(() => useFocusOnMount(true));
 
       // Should not throw when unmounting before timeout completes
       expect(() => unmount()).not.toThrow();
@@ -61,10 +72,9 @@ describe('Focus Management Hooks', () => {
     });
 
     it('should toggle trap state', () => {
-      const { rerender } = renderHook(
-        ({ active }) => useFocusTrap(active),
-        { initialProps: { active: true } },
-      );
+      const { rerender } = renderHook(({ active }) => useFocusTrap(active), {
+        initialProps: { active: true },
+      });
 
       // Toggle to inactive
       expect(() => rerender({ active: false })).not.toThrow();
@@ -83,16 +93,15 @@ describe('Focus Management Hooks', () => {
         throw new Error('Focus failed');
       });
 
-      const { rerender } = renderHook(
-        ({ active }) => useFocusTrap(active),
-        { initialProps: { active: true } },
-      );
+      const { rerender } = renderHook(({ active }) => useFocusTrap(active), {
+        initialProps: { active: true },
+      });
 
       // Deactivate to trigger restoration (which will fail and be caught)
       expect(() => rerender({ active: false })).not.toThrow();
 
       // Wait for restoration timeout
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       document.body.removeChild(mockElement);
     });
@@ -113,10 +122,9 @@ describe('Focus Management Hooks', () => {
     });
 
     it('should update message content', () => {
-      const { rerender } = renderHook(
-        ({ msg }) => useScreenReaderAnnouncement(msg),
-        { initialProps: { msg: 'First message' } },
-      );
+      const { rerender } = renderHook(({ msg }) => useScreenReaderAnnouncement(msg), {
+        initialProps: { msg: 'First message' },
+      });
 
       const announcement = document.querySelector('[role="status"]');
       expect(announcement?.textContent).toBe('First message');

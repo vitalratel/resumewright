@@ -5,11 +5,11 @@
  * All storage keys are defined in a central schema for type safety.
  */
 
+import { defineExtensionStorage } from '@webext-core/storage';
+import { browser } from 'wxt/browser';
 import type { ErrorEvent } from '@/shared/errors/tracking/telemetry';
 import type { ConversionStatus } from '@/shared/types/models';
 import type { UserSettings } from '@/shared/types/settings';
-import { defineExtensionStorage } from '@webext-core/storage';
-import { browser } from 'wxt/browser';
 
 /**
  * Job state for lifecycle management persistence
@@ -69,13 +69,9 @@ export interface SyncStorageSchema {
 /**
  * Type-safe local storage instance
  */
-export const localExtStorage = defineExtensionStorage<LocalStorageSchema>(
-  browser.storage.local
-);
+export const localExtStorage = defineExtensionStorage<LocalStorageSchema>(browser.storage.local);
 
 /**
  * Type-safe sync storage instance
  */
-export const syncExtStorage = defineExtensionStorage<SyncStorageSchema>(
-  browser.storage.sync
-);
+export const syncExtStorage = defineExtensionStorage<SyncStorageSchema>(browser.storage.sync);

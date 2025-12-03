@@ -125,7 +125,8 @@ describe('sanitizeTechnicalDetails', () => {
   });
 
   it('keeps relative paths while removing absolute paths', () => {
-    const details = 'Error at /home/user/projects/resumewright/packages/extension/src/popup/App.tsx:42';
+    const details =
+      'Error at /home/user/projects/resumewright/packages/extension/src/popup/App.tsx:42';
     const sanitized = sanitizeTechnicalDetails(details);
     expect(sanitized).toBe('Error at packages/extension/src/popup/App.tsx:42');
     expect(sanitized).not.toContain('/home/user');
@@ -141,7 +142,9 @@ describe('sanitizeTechnicalDetails', () => {
   it('removes user home directories', () => {
     expect(sanitizeTechnicalDetails('/home/alice/project')).toBe('/home/[user]/project');
     expect(sanitizeTechnicalDetails('/Users/bob/project')).toBe('/Users/[user]/project');
-    expect(sanitizeTechnicalDetails('C:\\Users\\charlie\\project')).toBe('C:\\Users\\[user]\\project');
+    expect(sanitizeTechnicalDetails('C:\\Users\\charlie\\project')).toBe(
+      'C:\\Users\\[user]\\project',
+    );
   });
 
   it('removes extension IDs from stack traces', () => {
@@ -193,7 +196,8 @@ describe('sanitizeErrorForLogging', () => {
 
 describe('Integration Scenarios', () => {
   it('sanitizes real WASM loading error', () => {
-    const message = 'Failed to load /Users/dev/resumewright/pkg/wasm_bridge_bg.wasm: WASM module not initialized';
+    const message =
+      'Failed to load /Users/dev/resumewright/pkg/wasm_bridge_bg.wasm: WASM module not initialized';
     const sanitized = sanitizeErrorMessage(message);
 
     expect(sanitized).toContain('PDF generator is still loading');
@@ -202,7 +206,8 @@ describe('Integration Scenarios', () => {
   });
 
   it('sanitizes real parse error with file path', () => {
-    const message = 'Parse error at /home/dev/resumewright/packages/extension/src/content/parser.ts:142';
+    const message =
+      'Parse error at /home/dev/resumewright/packages/extension/src/content/parser.ts:142';
     const sanitized = sanitizeErrorMessage(message);
 
     expect(sanitized).toContain('error reading your CV file');
@@ -210,7 +215,8 @@ describe('Integration Scenarios', () => {
   });
 
   it('sanitizes extension error with ID', () => {
-    const message = 'Failed at chrome-extension://abcdefghijklmnopqrstuvwxyz123456/background.js: Out of memory';
+    const message =
+      'Failed at chrome-extension://abcdefghijklmnopqrstuvwxyz123456/background.js: Out of memory';
     const sanitized = sanitizeErrorMessage(message);
 
     expect(sanitized).toContain('CV is too large');

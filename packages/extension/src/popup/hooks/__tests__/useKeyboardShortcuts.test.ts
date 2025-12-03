@@ -3,9 +3,9 @@
  * Keyboard shortcuts for power users and accessibility
  */
 
-import type { ShortcutConfig } from '../ui/useKeyboardShortcuts';
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
+import type { ShortcutConfig } from '../ui/useKeyboardShortcuts';
 import {
   formatShortcut,
   getAvailableShortcuts,
@@ -16,7 +16,7 @@ import {
 
 function dispatchKey(
   key: string,
-  mods: { ctrl?: boolean; shift?: boolean; alt?: boolean; meta?: boolean } = {}
+  mods: { ctrl?: boolean; shift?: boolean; alt?: boolean; meta?: boolean } = {},
 ) {
   const event = new KeyboardEvent('keydown', {
     key,
@@ -35,7 +35,7 @@ function createShortcut(
   key: string,
   desc: string,
   handler = vi.fn(),
-  opts?: Partial<ShortcutConfig>
+  opts?: Partial<ShortcutConfig>,
 ): ShortcutConfig {
   return {
     key,
@@ -82,7 +82,7 @@ describe('useKeyboardShortcuts', () => {
   it('does not call handler when shortcut disabled', () => {
     const handler = vi.fn();
     renderHook(() =>
-      useKeyboardShortcuts([createShortcut('e', 'Test', handler, { enabled: false })])
+      useKeyboardShortcuts([createShortcut('e', 'Test', handler, { enabled: false })]),
     );
 
     dispatchKey('e', { ctrl: true });
@@ -100,7 +100,7 @@ describe('useKeyboardShortcuts', () => {
 
   it('does not prevent default when preventDefault is false', () => {
     renderHook(() =>
-      useKeyboardShortcuts([createShortcut('e', 'Test', vi.fn(), { preventDefault: false })])
+      useKeyboardShortcuts([createShortcut('e', 'Test', vi.fn(), { preventDefault: false })]),
     );
 
     const preventSpy = dispatchKey('e', { ctrl: true });
@@ -158,7 +158,7 @@ describe('useKeyboardShortcuts', () => {
   it('only triggers first matching shortcut', () => {
     const [h1, h2] = [vi.fn(), vi.fn()];
     renderHook(() =>
-      useKeyboardShortcuts([createShortcut('e', 'Test 1', h1), createShortcut('e', 'Test 2', h2)])
+      useKeyboardShortcuts([createShortcut('e', 'Test 1', h1), createShortcut('e', 'Test 2', h2)]),
     );
 
     dispatchKey('e', { ctrl: true });

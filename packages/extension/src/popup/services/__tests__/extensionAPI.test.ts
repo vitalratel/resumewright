@@ -36,7 +36,9 @@ describe('ExtensionAPI', () => {
     it('should validate valid TSX', async () => {
       mocks.sendMessage.mockResolvedValue({ valid: true });
 
-      const result = await extensionAPI.validateTsx('export default function CV() { return <div>Test</div>; }');
+      const result = await extensionAPI.validateTsx(
+        'export default function CV() { return <div>Test</div>; }',
+      );
 
       expect(result).toBe(true);
       expect(mocks.sendMessage).toHaveBeenCalledWith('validateTsx', {
@@ -55,7 +57,9 @@ describe('ExtensionAPI', () => {
     it('should handle validation errors', async () => {
       mocks.sendMessage.mockRejectedValue(new Error('Service worker not responding'));
 
-      const result = await extensionAPI.validateTsx('export default function CV() { return <div>Test</div>; }');
+      const result = await extensionAPI.validateTsx(
+        'export default function CV() { return <div>Test</div>; }',
+      );
 
       expect(result).toBe(false);
     });
@@ -102,7 +106,10 @@ describe('ExtensionAPI', () => {
         .mockRejectedValueOnce(new Error('Conversion failed')); // startConversion fails
 
       await expect(
-        extensionAPI.startConversion('export default function CV() { return <div>Test</div>; }', 'test.tsx'),
+        extensionAPI.startConversion(
+          'export default function CV() { return <div>Test</div>; }',
+          'test.tsx',
+        ),
       ).rejects.toThrow('Conversion failed');
     });
 
@@ -125,9 +132,9 @@ describe('ExtensionAPI', () => {
         .mockResolvedValueOnce({ pong: true }) // ping succeeds
         .mockRejectedValueOnce('String error message'); // Non-Error exception
 
-      await expect(
-        extensionAPI.startConversion('content', 'file.tsx'),
-      ).rejects.toBe('String error message');
+      await expect(extensionAPI.startConversion('content', 'file.tsx')).rejects.toBe(
+        'String error message',
+      );
 
       expect(mocks.sendMessage).toHaveBeenCalledTimes(2);
     });

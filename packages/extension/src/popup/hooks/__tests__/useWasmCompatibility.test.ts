@@ -168,9 +168,12 @@ describe('useWasmCompatibility', () => {
 
     const { result } = renderHook(() => useWasmCompatibility());
 
-    await waitFor(() => {
-      expect(result.current.wasmInitialized).toBe(true);
-    }, { timeout: 2000 });
+    await waitFor(
+      () => {
+        expect(result.current.wasmInitialized).toBe(true);
+      },
+      { timeout: 2000 },
+    );
 
     expect(sendMessage).toHaveBeenCalledTimes(2);
   });
@@ -194,14 +197,17 @@ describe('useWasmCompatibility', () => {
 
     (WasmCompatibilityChecker.check as ReturnType<typeof vi.fn>).mockResolvedValue(mockReport);
     (sendMessage as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error('Receiving end does not exist')
+      new Error('Receiving end does not exist'),
     );
 
     const { result } = renderHook(() => useWasmCompatibility());
 
-    await waitFor(() => {
-      expect(result.current.wasmInitialized).toBe(false);
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(result.current.wasmInitialized).toBe(false);
+      },
+      { timeout: 10000 },
+    );
 
     expect(result.current.wasmReport?.compatible).toBe(false);
     expect(sendMessage).toHaveBeenCalledTimes(5); // max retries

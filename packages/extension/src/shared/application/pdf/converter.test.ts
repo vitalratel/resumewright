@@ -15,14 +15,14 @@
  * Coverage target: >85%
  */
 
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FontWeight } from '../../domain/fonts/types';
 import type { WasmPdfConfig } from '../../domain/pdf/types';
 import type { ConversionConfig } from '../../types/models';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { convertTsxToPdfWithFonts } from './converter';
 
 // Mock dependencies
-vi.mock('../../infrastructure/wasm', () => ({
+vi.mock('../../infrastructure/wasm/instance', () => ({
   createConverterInstance: vi.fn(),
 }));
 
@@ -87,7 +87,7 @@ vi.mock('@pkg/wasm_bridge', () => ({
     family: string,
     weight: number,
     italic: boolean,
-    bytes: Uint8Array
+    bytes: Uint8Array,
   ) {
     this.family = family;
     this.weight = weight;
@@ -122,7 +122,7 @@ describe('PDF Converter', () => {
     vi.clearAllMocks();
 
     // Import mocked modules
-    const wasm = await import('../../infrastructure/wasm');
+    const wasm = await import('../../infrastructure/wasm/instance');
     const config = await import('../../domain/pdf/config');
     const fonts = await import('../../infrastructure/pdf/fonts');
     const errors = await import('../../domain/pdf/errors');
@@ -192,7 +192,7 @@ describe('PDF Converter', () => {
 
       expect(mockFetchFontsFromRequirements).toHaveBeenCalledWith(
         [{ family: 'Roboto', weight: 400 as FontWeight, style: 'normal', source: 'google' }],
-        undefined
+        undefined,
       );
     });
 
@@ -221,7 +221,7 @@ describe('PDF Converter', () => {
 
     it('should throw error for whitespace-only TSX', async () => {
       await expect(convertTsxToPdfWithFonts('   ', validConfig)).rejects.toThrow(
-        'TSX input is empty'
+        'TSX input is empty',
       );
     });
 
@@ -306,7 +306,7 @@ describe('PDF Converter', () => {
       mockParseWasmError.mockReturnValue({ message: 'Font detection failed' });
 
       await expect(convertTsxToPdfWithFonts(validTsx, validConfig)).rejects.toThrow(
-        'Font detection failed'
+        'Font detection failed',
       );
     });
 
@@ -315,7 +315,7 @@ describe('PDF Converter', () => {
       mockParseWasmError.mockReturnValue({ message: 'Font fetch failed' });
 
       await expect(convertTsxToPdfWithFonts(validTsx, validConfig)).rejects.toThrow(
-        'Font fetch failed'
+        'Font fetch failed',
       );
     });
 
@@ -330,7 +330,7 @@ describe('PDF Converter', () => {
       mockParseWasmError.mockReturnValue({ message: 'WASM conversion failed' });
 
       await expect(convertTsxToPdfWithFonts(validTsx, validConfig)).rejects.toThrow(
-        'WASM conversion failed'
+        'WASM conversion failed',
       );
     });
 
@@ -425,7 +425,7 @@ describe('PDF Converter', () => {
       mockParseWasmError.mockReturnValue({ message: 'Font detection failed' });
 
       await expect(convertTsxToPdfWithFonts(validTsx, validConfig)).rejects.toThrow(
-        'Font detection failed'
+        'Font detection failed',
       );
 
       // Should not proceed to fetching if detection fails
@@ -437,7 +437,7 @@ describe('PDF Converter', () => {
       mockParseWasmError.mockReturnValue({ message: 'Font fetch failed' });
 
       await expect(convertTsxToPdfWithFonts(validTsx, validConfig)).rejects.toThrow(
-        'Font fetch failed'
+        'Font fetch failed',
       );
 
       // Should detect fonts but fail before conversion
@@ -473,7 +473,7 @@ describe('PDF Converter', () => {
       });
 
       await expect(convertTsxToPdfWithFonts(validTsx, validConfig)).rejects.toThrow(
-        'Layout calculation failed'
+        'Layout calculation failed',
       );
 
       // Should complete all steps up to conversion

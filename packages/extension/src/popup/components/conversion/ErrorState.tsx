@@ -39,10 +39,10 @@
  * @see {@link ErrorLocationInfo} for line/column or size info
  */
 
-import type { ConversionError } from '@/shared/types/models';
 import { memo, useEffect } from 'react';
 import { useErrorLogging, useErrorPresentation, useErrorSuggestions } from '@/popup/hooks/ui';
 import { ERROR_CATEGORIES, ERROR_MESSAGES, ErrorCategory } from '@/shared/errors/';
+import type { ConversionError } from '@/shared/types/models';
 import {
   isLocationErrorMetadata,
   isParseErrorMetadata,
@@ -253,5 +253,5 @@ export const ErrorState = memo(
           )}
       </div>
     );
-  }
+  },
 );

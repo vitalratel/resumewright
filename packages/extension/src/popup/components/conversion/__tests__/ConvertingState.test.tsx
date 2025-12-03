@@ -187,7 +187,7 @@ describe('ConvertingStateWrapper', () => {
       act(() => {
         progressStore.update(
           testJobId,
-          createProgress({ stage: 'parsing', percentage: 25, currentOperation: 'Parsing...' })
+          createProgress({ stage: 'parsing', percentage: 25, currentOperation: 'Parsing...' }),
         );
       });
 
@@ -200,7 +200,7 @@ describe('ConvertingStateWrapper', () => {
       act(() => {
         progressStore.update(
           testJobId,
-          createProgress({ percentage: 50, currentOperation: 'Processing...' })
+          createProgress({ percentage: 50, currentOperation: 'Processing...' }),
         );
       });
 
@@ -225,7 +225,7 @@ describe('ConvertingStateWrapper', () => {
             currentOperation: 'Laying out pages...',
             pagesProcessed: 2,
             totalPages: 3,
-          })
+          }),
         );
       });
 
@@ -245,7 +245,7 @@ describe('ConvertingStateWrapper', () => {
             stage: 'generating-pdf',
             percentage: 100,
             currentOperation: 'Finalizing PDF...',
-          })
+          }),
         );
       });
 
@@ -268,7 +268,7 @@ describe('ConvertingStateWrapper', () => {
       act(() => {
         progressStore.update(
           testJobId,
-          createProgress({ stage: 'parsing', percentage: 25, currentOperation: 'Parsing...' })
+          createProgress({ stage: 'parsing', percentage: 25, currentOperation: 'Parsing...' }),
         );
       });
 
@@ -281,7 +281,7 @@ describe('ConvertingStateWrapper', () => {
       act(() => {
         progressStore.update(
           testJobId,
-          createProgress({ percentage: 50, currentOperation: 'Rendering...' })
+          createProgress({ percentage: 50, currentOperation: 'Rendering...' }),
         );
       });
 
@@ -298,7 +298,7 @@ describe('ConvertingStateWrapper', () => {
             stage: 'generating-pdf',
             percentage: 90,
             currentOperation: 'Generating...',
-          })
+          }),
         );
       });
 
@@ -326,7 +326,7 @@ describe('ConvertingStateWrapper', () => {
       // Should show ConfirmDialog
       expect(screen.getByText('Cancel Conversion?')).toBeInTheDocument();
       expect(
-        screen.getByText(/Are you sure you want to cancel the PDF conversion/)
+        screen.getByText(/Are you sure you want to cancel the PDF conversion/),
       ).toBeInTheDocument();
     });
 
@@ -448,7 +448,7 @@ describe('ConvertingStateWrapper', () => {
         progressStore.start(testJobId);
         progressStore.update(
           testJobId,
-          createProgress({ percentage: 25, currentOperation: 'Rendering...' })
+          createProgress({ percentage: 25, currentOperation: 'Rendering...' }),
         );
       });
 
@@ -469,7 +469,7 @@ describe('ConvertingStateWrapper', () => {
         progressStore.start(testJobId);
         progressStore.update(
           testJobId,
-          createProgress({ percentage: 30, currentOperation: 'Rendering...' })
+          createProgress({ percentage: 30, currentOperation: 'Rendering...' }),
         );
       });
 
@@ -505,7 +505,7 @@ describe('ConvertingStateWrapper', () => {
       act(() => {
         progressStore.update(
           testJobId,
-          createProgress({ stage: 'parsing', percentage: 25, currentOperation: 'Parsing TSX...' })
+          createProgress({ stage: 'parsing', percentage: 25, currentOperation: 'Parsing TSX...' }),
         );
       });
 
@@ -550,7 +550,7 @@ describe('ConvertingStateWrapper', () => {
         for (let i = 10; i <= 90; i += 10) {
           progressStore.update(
             testJobId,
-            createProgress({ percentage: i, currentOperation: `Processing ${i}%...` })
+            createProgress({ percentage: i, currentOperation: `Processing ${i}%...` }),
           );
         }
       });
@@ -589,7 +589,7 @@ describe('ConvertingStateWrapper', () => {
       act(() => {
         progressStore.update(
           testJobId,
-          createProgress({ percentage: 50, currentOperation: 'Test' })
+          createProgress({ percentage: 50, currentOperation: 'Test' }),
         );
       });
 
@@ -601,7 +601,7 @@ describe('ConvertingStateWrapper', () => {
         act(() => {
           progressStore.update(
             testJobId,
-            createProgress({ stage: 'generating-pdf', percentage: 75, currentOperation: 'Test 2' })
+            createProgress({ stage: 'generating-pdf', percentage: 75, currentOperation: 'Test 2' }),
           );
         });
       }).not.toThrow();
@@ -614,7 +614,7 @@ describe('ConvertingStateWrapper', () => {
         progressStore.start('job-1');
         progressStore.update(
           'job-1',
-          createProgress({ percentage: 50, currentOperation: 'Job 1' })
+          createProgress({ percentage: 50, currentOperation: 'Job 1' }),
         );
       });
 
@@ -628,7 +628,7 @@ describe('ConvertingStateWrapper', () => {
         progressStore.start('job-2');
         progressStore.update(
           'job-2',
-          createProgress({ stage: 'laying-out', percentage: 75, currentOperation: 'Job 2' })
+          createProgress({ stage: 'laying-out', percentage: 75, currentOperation: 'Job 2' }),
         );
       });
 

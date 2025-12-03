@@ -43,10 +43,7 @@ export interface IRetryPolicy {
    * @returns Promise resolving to operation result
    * @throws Last error if all retries exhausted
    */
-  execute: <T>(
-    operation: () => Promise<T>,
-    onRetry?: RetryCallback
-  ) => Promise<T>;
+  execute: <T>(operation: () => Promise<T>, onRetry?: RetryCallback) => Promise<T>;
 
   /**
    * Get current retry configuration
@@ -88,10 +85,7 @@ export class ExponentialBackoffRetryPolicy implements IRetryPolicy {
   /**
    * Execute operation with exponential backoff retry logic
    */
-  async execute<T>(
-    operation: () => Promise<T>,
-    onRetry?: RetryCallback
-  ): Promise<T> {
+  async execute<T>(operation: () => Promise<T>, onRetry?: RetryCallback): Promise<T> {
     const startTime = Date.now();
     let lastError: Error | undefined;
 
@@ -114,13 +108,13 @@ export class ExponentialBackoffRetryPolicy implements IRetryPolicy {
     attempt: number,
     startTime: number,
     lastError: Error | undefined,
-    onRetry?: RetryCallback
+    onRetry?: RetryCallback,
   ): Promise<T> {
     // Check if total timeout exceeded
     const elapsed = Date.now() - startTime;
     if (this.config.timeoutMs && elapsed > this.config.timeoutMs) {
       throw new Error(
-        `Retry timeout exceeded (${this.config.timeoutMs}ms after ${attempt - 1} attempts). Last error: ${lastError?.message}`
+        `Retry timeout exceeded (${this.config.timeoutMs}ms after ${attempt - 1} attempts). Last error: ${lastError?.message}`,
       );
     }
 
@@ -153,11 +147,11 @@ export class ExponentialBackoffRetryPolicy implements IRetryPolicy {
       getLogger().debug(
         'RetryPolicy',
         `Retry attempt ${attempt}/${this.config.maxAttempts} after ${delay}ms:`,
-        currentError.message
+        currentError.message,
       );
 
       // Wait before next retry
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
 
       // Retry with next attempt (pass current error for next iteration)
       return this.attemptOperation(operation, attempt + 1, startTime, currentError, onRetry);
@@ -197,8 +191,10 @@ export class ExponentialBackoffRetryPolicy implements IRetryPolicy {
       timeoutMs: 60000,
       shouldRetry: (error) => {
         // Retry on network errors and timeouts
-        return error instanceof TypeError ||
-               (error instanceof DOMException && error.name === 'TimeoutError');
+        return (
+          error instanceof TypeError ||
+          (error instanceof DOMException && error.name === 'TimeoutError')
+        );
       },
     }),
 

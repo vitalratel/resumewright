@@ -30,7 +30,8 @@ const footerBytes = Buffer.byteLength(footer);
 const contentBytes = targetBytes - headerBytes - footerBytes;
 
 // Generate repetitive content
-const repeatUnit = '    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>\n';
+const repeatUnit =
+  '    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>\n';
 const repeatUnitBytes = Buffer.byteLength(repeatUnit);
 const repeatCount = Math.floor(contentBytes / repeatUnitBytes);
 

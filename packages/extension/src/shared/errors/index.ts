@@ -30,9 +30,9 @@ export { ErrorCategory, ErrorCode } from './codes';
 
 // Factory exports (Now from index)
 export {
+  type CreateErrorOptions,
   createConversionError,
   createDownloadFailedError,
-  type CreateErrorOptions,
   createFontLoadError,
   createInvalidStructureError,
   createMemoryLimitError,
@@ -45,6 +45,7 @@ export {
   createWasmInitError,
   errorToConversionError,
 } from './factory/';
+export type { CodeContext } from './factory/enrichment';
 // Enrichment exports
 export {
   addCodeContextToError,
@@ -52,16 +53,13 @@ export {
   extractCodeContextWithColumn,
   extractTruncatedCodeContext,
 } from './factory/enrichment';
-
-export type { CodeContext } from './factory/enrichment';
+export type { HelpLink } from './helpResources';
 export {
   ERROR_HELP_RESOURCES,
   getHelpLinkForSuggestion,
   getHelpResourcesForError,
   SUGGESTION_HELP_LINKS,
 } from './helpResources';
-
-export type { HelpLink } from './helpResources';
 
 export { ERROR_MESSAGES, ERROR_RECOVERABLE, ERROR_SUGGESTIONS } from './messages';
 export { ERROR_CATEGORIES } from './metadata';
@@ -70,6 +68,7 @@ export {
   formatCodeContext,
   formatCodeContextWithColumn,
 } from './presentation/formatting';
+export type { PrioritizedSuggestion } from './presentation/suggestions';
 // Presentation exports
 export {
   getPriorityColors,
@@ -78,7 +77,7 @@ export {
   prioritizeSuggestions,
   SUGGESTION_PRIORITIES,
 } from './presentation/suggestions';
-export type { PrioritizedSuggestion } from './presentation/suggestions';
+export type { ErrorDetails, ErrorEvent } from './tracking/telemetry';
 // Tracking exports (Added telemetry functions)
 export {
   clearStoredErrors,
@@ -91,4 +90,3 @@ export {
   getTelemetryStats,
   trackError,
 } from './tracking/telemetry';
-export type { ErrorDetails, ErrorEvent } from './tracking/telemetry';

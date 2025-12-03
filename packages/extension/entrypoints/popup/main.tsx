@@ -35,8 +35,7 @@ void (async () => {
     setTimeout(() => {
       window.close();
     }, 2000);
-  } catch (error) {
-    console.error('[Popup] Failed to open converter:', error);
+  } catch {
     // If we can't open the tab, show error
     // CSP-FIX: Use CSS class instead of inline styles
     document.body.innerHTML = `

@@ -29,11 +29,12 @@ export const ImportInfoCard = React.memo(() => {
   // Namespaced localStorage keys to prevent conflicts
   const [infoCardMinimized, setInfoCardMinimized] = useLocalStorage(
     LocalStorageKeys.INFO_CARD_MINIMIZED,
-    false
+    false,
   );
   const [launchCount, setLaunchCount] = useLocalStorage(LocalStorageKeys.LAUNCH_COUNT, 0);
 
-  // Track if auto-minimize has already run this session
+  // Capture initial values in refs to satisfy exhaustive-deps while running once
+  const initialValuesRef = useRef({ launchCount, infoCardMinimized });
   const hasAutoMinimized = useRef(false);
 
   // Increment launch count and auto-minimize on mount only
@@ -41,13 +42,14 @@ export const ImportInfoCard = React.memo(() => {
     if (hasAutoMinimized.current) return;
     hasAutoMinimized.current = true;
 
-    const newCount = launchCount + 1;
+    const { launchCount: initialCount, infoCardMinimized: wasMinimized } = initialValuesRef.current;
+    const newCount = initialCount + 1;
     setLaunchCount(newCount);
 
-    if (newCount >= AUTO_MINIMIZE_AFTER_LAUNCHES && !infoCardMinimized) {
+    if (newCount >= AUTO_MINIMIZE_AFTER_LAUNCHES && !wasMinimized) {
       setInfoCardMinimized(true);
     }
-  }, []);
+  }, [setLaunchCount, setInfoCardMinimized]);
 
   if (infoCardMinimized) {
     return (

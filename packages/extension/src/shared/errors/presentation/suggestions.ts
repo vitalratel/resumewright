@@ -69,12 +69,8 @@ const SUGGESTION_RATIONALES: Partial<Record<ErrorCode, string[]>> = {
     'More margin space gives content room to fit',
     'Larger pages have more space for content',
   ],
-  [ErrorCode.WASM_INIT_FAILED]: [
-    'The converter just needs a moment to load',
-  ],
-  [ErrorCode.FONT_LOAD_ERROR]: [
-    'Standard fonts don\'t require network access',
-  ],
+  [ErrorCode.WASM_INIT_FAILED]: ['The converter just needs a moment to load'],
+  [ErrorCode.FONT_LOAD_ERROR]: ["Standard fonts don't require network access"],
 };
 
 /**
@@ -84,7 +80,16 @@ const SUGGESTION_RATIONALES: Partial<Record<ErrorCode, string[]>> = {
 export function getSizeReductionTips(fileSize?: number, maxSize?: number): string[] {
   const tips: string[] = [];
 
-  if ((fileSize !== null && fileSize !== undefined && fileSize !== 0 && !Number.isNaN(fileSize)) && (maxSize !== null && maxSize !== undefined && maxSize !== 0 && !Number.isNaN(maxSize))) {
+  if (
+    fileSize !== null &&
+    fileSize !== undefined &&
+    fileSize !== 0 &&
+    !Number.isNaN(fileSize) &&
+    maxSize !== null &&
+    maxSize !== undefined &&
+    maxSize !== 0 &&
+    !Number.isNaN(maxSize)
+  ) {
     const overage = fileSize - maxSize;
     const percentOver = Math.round((overage / maxSize) * 100);
 
@@ -94,23 +99,20 @@ export function getSizeReductionTips(fileSize?: number, maxSize?: number): strin
       tips.push('Remove all images and graphics');
       tips.push('Keep only the most recent 2-3 work experiences');
       tips.push('Split your CV into separate documents (CV + detailed portfolio)');
-    }
-    else if (percentOver > 50) {
+    } else if (percentOver > 50) {
       // Significantly oversized (1.5x+ limit)
       tips.push(`Your CV is ${percentOver}% over the size limit. Moderate reductions needed.`);
       tips.push('Remove or compress images');
       tips.push('Shorten bullet points to 1-2 lines each');
       tips.push('Remove older or less relevant experiences');
-    }
-    else {
+    } else {
       // Slightly oversized (just over limit)
       tips.push(`Your CV is ${percentOver}% over the size limit. Small reductions should work.`);
       tips.push('Remove any images or logos');
       tips.push('Trim a few bullet points');
       tips.push('Use shorter section descriptions');
     }
-  }
-  else {
+  } else {
     // Generic tips when size metadata not available
     tips.push('Remove images, graphics, or logos');
     tips.push('Shorten work experience descriptions');
@@ -134,8 +136,14 @@ export function prioritizeSuggestions(
   suggestions: string[],
   retryAttempt: number = 0,
 ): PrioritizedSuggestion[] {
-  const priorities = (SUGGESTION_PRIORITIES[errorCode] !== null && SUGGESTION_PRIORITIES[errorCode] !== undefined) ? SUGGESTION_PRIORITIES[errorCode] : suggestions.map(() => 2);
-  const rationales = (SUGGESTION_RATIONALES[errorCode] !== null && SUGGESTION_RATIONALES[errorCode] !== undefined) ? SUGGESTION_RATIONALES[errorCode] : [];
+  const priorities =
+    SUGGESTION_PRIORITIES[errorCode] !== null && SUGGESTION_PRIORITIES[errorCode] !== undefined
+      ? SUGGESTION_PRIORITIES[errorCode]
+      : suggestions.map(() => 2);
+  const rationales =
+    SUGGESTION_RATIONALES[errorCode] !== null && SUGGESTION_RATIONALES[errorCode] !== undefined
+      ? SUGGESTION_RATIONALES[errorCode]
+      : [];
 
   // Create prioritized suggestions
   const prioritized: PrioritizedSuggestion[] = suggestions.map((text, index) => ({

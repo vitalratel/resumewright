@@ -76,7 +76,7 @@ export const ERROR_MESSAGES = {
   fileReadFailed: 'Unable to read this file. Please try exporting your CV from Claude again.',
   noFileImported: 'No file imported',
   wasmNotReady: 'PDF converter is not ready. Please try reloading the extension.',
-  conversionStartFailed: 'We couldn\'t start converting your CV. This might be a temporary issue.',
+  conversionStartFailed: "We couldn't start converting your CV. This might be a temporary issue.",
 } as const;
 
 /**

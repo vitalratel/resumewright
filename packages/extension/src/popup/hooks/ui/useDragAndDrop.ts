@@ -25,36 +25,39 @@ import { useMemo, useState } from 'react';
 export function useDragAndDrop(onFileDrop: (file: File) => void | Promise<void>) {
   const [isDragging, setIsDragging] = useState(false);
 
-  const dragHandlers = useMemo(() => ({
-    onDragEnter: (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(true);
-    },
+  const dragHandlers = useMemo(
+    () => ({
+      onDragEnter: (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+      },
 
-    onDragLeave: (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-    },
+      onDragLeave: (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+      },
 
-    onDragOver: (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-    },
+      onDragOver: (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+      },
 
-    onDrop: (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
+      onDrop: (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
 
-      const files = e.dataTransfer.files;
-      if (files?.[0] != null) {
-        // Handle both sync and async onFileDrop
-        void onFileDrop(files[0]);
-      }
-    },
-  }), [onFileDrop]);
+        const files = e.dataTransfer.files;
+        if (files?.[0] != null) {
+          // Handle both sync and async onFileDrop
+          void onFileDrop(files[0]);
+        }
+      },
+    }),
+    [onFileDrop],
+  );
 
   return { isDragging, dragHandlers };
 }

@@ -406,18 +406,14 @@ describe('debounceAsync', () => {
       });
       const debouncedFn = debounceAsync(mockFn, 100);
 
-      const promises = [
-        debouncedFn('call1'),
-        debouncedFn('call2'),
-        debouncedFn('call3'),
-      ];
+      const promises = [debouncedFn('call1'), debouncedFn('call2'), debouncedFn('call3')];
 
       vi.advanceTimersByTime(100);
       await Promise.resolve();
 
       // Verify all promises reject with the same error using Promise.all()
       await Promise.all(
-        promises.map(async promise => expect(promise).rejects.toThrow('Test error')),
+        promises.map(async (promise) => expect(promise).rejects.toThrow('Test error')),
       );
     });
   });
@@ -440,7 +436,7 @@ describe('debounceAsync', () => {
 
       // All promises should resolve to same result
       const results = await Promise.all(promises);
-      expect(results.every(r => r === 'call49')).toBe(true);
+      expect(results.every((r) => r === 'call49')).toBe(true);
     });
 
     it('should handle zero delay', async () => {

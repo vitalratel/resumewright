@@ -219,10 +219,9 @@ export const SuccessView = React.memo(
                 aria-hidden="true"
               />
               {/* Screen reader friendly file size pronunciation */}
-              <span
-                aria-label={`File size: ${fileSize.replace('MB', 'megabytes').replace('KB', 'kilobytes')}`}
-              >
-                File size: {fileSize}
+              <span aria-hidden="true">File size: {fileSize}</span>
+              <span className="sr-only">
+                File size: {fileSize.replace('MB', 'megabytes').replace('KB', 'kilobytes')}
               </span>
             </p>
             <p className={`flex items-center ${tokens.spacing.gapSmall}`}>
@@ -294,5 +293,5 @@ export const SuccessView = React.memo(
         )}
       </div>
     );
-  }
+  },
 );

@@ -1,14 +1,14 @@
 // ABOUTME: PDF conversion business logic service.
 // ABOUTME: Handles metadata extraction, config loading, and PDF generation.
 
-import type { ConversionRequestPayload } from '../../shared/types/messages';
-import type { ConversionConfig } from '../../shared/types/models';
 import { extract_cv_metadata } from '@pkg/wasm_bridge';
 import { DEFAULT_CONVERSION_CONFIG } from '@/shared/domain/settings/defaults';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import { convertTsxToPdfWithFonts } from '../../shared/application/pdf/converter';
 import { ExponentialBackoffRetryPolicy } from '../../shared/infrastructure/retry/ExponentialBackoffRetryPolicy';
+import type { ConversionRequestPayload } from '../../shared/types/messages';
+import type { ConversionConfig } from '../../shared/types/models';
 import { generateFilename } from '../../shared/utils/filenameSanitization';
 
 /**
@@ -157,7 +157,7 @@ export class ConversionService {
     tsxContent: string,
     config: ConversionConfig,
     onProgress?: (stage: string, percentage: number) => void,
-    onRetry?: RetryCallback
+    onRetry?: RetryCallback,
   ): Promise<Uint8Array> {
     const startTime = performance.now();
 
@@ -173,7 +173,7 @@ export class ConversionService {
 
     const pdfBytes = await ExponentialBackoffRetryPolicy.presets.default.execute(
       async () => convertTsxToPdfWithFonts(tsxContent, config, onProgress, onFontFetch),
-      onRetry
+      onRetry,
     );
 
     const duration = performance.now() - startTime;
@@ -225,7 +225,7 @@ export class ConversionService {
   async convert(
     payload: ConversionRequestPayload,
     onProgress?: (stage: string, percentage: number) => void,
-    onRetry?: RetryCallback
+    onRetry?: RetryCallback,
   ): Promise<ConversionResult> {
     const startTime = performance.now();
 

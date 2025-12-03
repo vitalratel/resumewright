@@ -11,14 +11,18 @@ import { fakeBrowser } from '@webext-core/fake-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger, LogLevel, resetLogger, setLogger } from '@/shared/infrastructure/logging';
 import { setValidatedStorage } from '@/shared/infrastructure/storage';
-import { initWASM } from '../../shared/infrastructure/wasm';
+import { initWASM } from '../../shared/infrastructure/wasm/loader';
 import { getWasmStatus, initializeWASM, retryWasmInit } from '../wasmInit';
 
 // Mock dependencies
 vi.mock('@/shared/infrastructure/storage', () => ({
   setValidatedStorage: vi.fn(),
 }));
-vi.mock('../../shared/infrastructure/wasm');
+vi.mock('../../shared/infrastructure/wasm/loader', () => ({
+  initWASM: vi.fn(),
+  isWASMInitialized: vi.fn(),
+  resetWASMForTesting: vi.fn(),
+}));
 vi.mock('../../shared/errors/factory', () => ({
   createWasmInitError: vi.fn((stage, technicalDetails) => ({
     code: 'WASM_INIT_FAILED',
@@ -66,7 +70,7 @@ describe('wasmInit - Integration Tests', () => {
       expect(setValidatedStorage).toHaveBeenCalledWith(
         'wasmStatus',
         'initializing',
-        expect.any(Object)
+        expect.any(Object),
       );
       expect(setValidatedStorage).toHaveBeenCalledWith('wasmStatus', 'success', expect.any(Object));
       expect(fakeBrowser.action.setBadgeText).toHaveBeenCalledWith({ text: '' });
@@ -82,7 +86,7 @@ describe('wasmInit - Integration Tests', () => {
         1,
         'wasmStatus',
         'initializing',
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -106,14 +110,14 @@ describe('wasmInit - Integration Tests', () => {
       expect(setValidatedStorage).toHaveBeenCalledWith(
         'wasmInitTime',
         expect.any(Number),
-        expect.any(Object)
+        expect.any(Object),
       );
 
       const call = vi
         .mocked(setValidatedStorage)
         .mock.calls.find((call) => call[0] === 'wasmInitTime');
-      expect(call).toBeDefined();
-      const timestamp = call![1] as number;
+      if (!call) throw new Error('wasmInitTime call not found');
+      const timestamp = call[1] as number;
       expect(timestamp).toBeGreaterThanOrEqual(beforeTime);
       expect(timestamp).toBeLessThanOrEqual(afterTime);
     });
@@ -194,7 +198,7 @@ describe('wasmInit - Integration Tests', () => {
       expect(setValidatedStorage).toHaveBeenCalledWith(
         'wasmInitError',
         'Unknown error',
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -214,7 +218,7 @@ describe('wasmInit - Integration Tests', () => {
       expect(createWasmInitError).toHaveBeenCalled();
       expect(createWasmInitError).toHaveBeenCalledWith(
         'failed',
-        expect.stringContaining('Init failed')
+        expect.stringContaining('Init failed'),
       );
     });
 
@@ -233,7 +237,7 @@ describe('wasmInit - Integration Tests', () => {
 
       expect(createWasmInitError).toHaveBeenCalledWith(
         'failed',
-        expect.stringContaining('Failed after')
+        expect.stringContaining('Failed after'),
       );
     });
   });
@@ -249,7 +253,7 @@ describe('wasmInit - Integration Tests', () => {
       expect(setValidatedStorage).toHaveBeenCalledWith(
         'wasmStatus',
         'initializing',
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -280,7 +284,9 @@ describe('wasmInit - Integration Tests', () => {
 
   describe('getWasmStatus - public API', () => {
     it('should handle browser.storage.local.get errors', async () => {
-      vi.mocked(fakeBrowser.storage.local.get).mockRejectedValueOnce(new Error('Storage read error'));
+      vi.mocked(fakeBrowser.storage.local.get).mockRejectedValueOnce(
+        new Error('Storage read error'),
+      );
 
       const status = await getWasmStatus();
 

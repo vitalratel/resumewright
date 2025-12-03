@@ -12,17 +12,17 @@
  * P1 Critical: WASM boundary validation prevents runtime crashes
  */
 
-import type { FontWeight } from "@/shared/domain/fonts/types";
 import { safeParse } from 'valibot';
 import { describe, expect, it } from 'vitest';
+import type { FontWeight } from '@/shared/domain/fonts/types';
 import {
   FontRequirementSchema,
   FontSourceSchema,
   FontStyleSchema,
   FontWeightSchema,
-  parseFontRequirements,
   PdfBytesSchema,
   ProgressCallbackParamsSchema,
+  parseFontRequirements,
   validatePdfBytes,
   validateProgressParams,
   validateWasmPdfConfig,
@@ -84,7 +84,7 @@ describe('WASM Schema Validation', () => {
     it('should handle all valid font weights', () => {
       const weights = [100, 200, 300, 400, 500, 600, 700, 800, 900];
       const json = JSON.stringify(
-        weights.map(weight => ({
+        weights.map((weight) => ({
           family: 'Test',
           weight,
           style: 'normal',
@@ -121,9 +121,7 @@ describe('WASM Schema Validation', () => {
         { weight: 400 as FontWeight, style: 'normal', source: 'google' },
       ]);
 
-      expect(() => parseFontRequirements(json)).toThrow(
-        'Invalid font requirements from WASM',
-      );
+      expect(() => parseFontRequirements(json)).toThrow('Invalid font requirements from WASM');
     });
 
     it('should throw error for empty family name', () => {
@@ -139,9 +137,7 @@ describe('WASM Schema Validation', () => {
         { family: 'Test', weight: 450 as FontWeight, style: 'normal', source: 'google' },
       ]);
 
-      expect(() => parseFontRequirements(json)).toThrow(
-        'Invalid font requirements from WASM',
-      );
+      expect(() => parseFontRequirements(json)).toThrow('Invalid font requirements from WASM');
     });
 
     it('should throw error for weight outside range', () => {
@@ -149,9 +145,7 @@ describe('WASM Schema Validation', () => {
         { family: 'Test', weight: 1000 as FontWeight, style: 'normal', source: 'google' },
       ]);
 
-      expect(() => parseFontRequirements(json)).toThrow(
-        'Invalid font requirements from WASM',
-      );
+      expect(() => parseFontRequirements(json)).toThrow('Invalid font requirements from WASM');
     });
 
     it('should throw error for invalid style', () => {
@@ -159,9 +153,7 @@ describe('WASM Schema Validation', () => {
         { family: 'Test', weight: 400 as FontWeight, style: 'oblique', source: 'google' },
       ]);
 
-      expect(() => parseFontRequirements(json)).toThrow(
-        'Invalid font requirements from WASM',
-      );
+      expect(() => parseFontRequirements(json)).toThrow('Invalid font requirements from WASM');
     });
 
     it('should throw error for invalid source', () => {
@@ -169,19 +161,13 @@ describe('WASM Schema Validation', () => {
         { family: 'Test', weight: 400 as FontWeight, style: 'normal', source: 'system' },
       ]);
 
-      expect(() => parseFontRequirements(json)).toThrow(
-        'Invalid font requirements from WASM',
-      );
+      expect(() => parseFontRequirements(json)).toThrow('Invalid font requirements from WASM');
     });
 
     it('should throw error for missing required fields', () => {
-      const json = JSON.stringify([
-        { family: 'Test', weight: 400 },
-      ]);
+      const json = JSON.stringify([{ family: 'Test', weight: 400 }]);
 
-      expect(() => parseFontRequirements(json)).toThrow(
-        'Invalid font requirements from WASM',
-      );
+      expect(() => parseFontRequirements(json)).toThrow('Invalid font requirements from WASM');
     });
   });
 
@@ -308,9 +294,9 @@ describe('WASM Schema Validation', () => {
       pdf[1] = 0x50; // P
       pdf[2] = 0x44; // D
       pdf[3] = 0x46; // F
-      pdf[4] = 0x2D; // -
+      pdf[4] = 0x2d; // -
       pdf[5] = 0x31; // 1
-      pdf[6] = 0x2E; // .
+      pdf[6] = 0x2e; // .
       pdf[7] = 0x37; // 7
       return pdf;
     };
@@ -390,15 +376,11 @@ describe('WASM Schema Validation', () => {
     });
 
     it('should throw error for non-array-like input', () => {
-      expect(() => validatePdfBytes('not an array')).toThrow(
-        'Invalid PDF bytes from WASM',
-      );
+      expect(() => validatePdfBytes('not an array')).toThrow('Invalid PDF bytes from WASM');
     });
 
     it('should throw error for object without length', () => {
-      expect(() => validatePdfBytes({ data: [1, 2, 3] })).toThrow(
-        'Invalid PDF bytes from WASM',
-      );
+      expect(() => validatePdfBytes({ data: [1, 2, 3] })).toThrow('Invalid PDF bytes from WASM');
     });
   });
 

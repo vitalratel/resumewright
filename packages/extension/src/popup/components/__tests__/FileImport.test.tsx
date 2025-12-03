@@ -10,11 +10,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FileImport } from '../FileImport';
 
 // Helper to create a File object with content
-function createFile(
-  content: string,
-  name: string,
-  options: { type?: string } = {}
-): File {
+function createFile(content: string, name: string, options: { type?: string } = {}): File {
   const blob = new Blob([content], { type: options.type ?? 'text/plain' });
   return new File([blob], name, { type: options.type ?? 'text/plain' });
 }
@@ -73,7 +69,7 @@ describe('FileImport', () => {
           onFileValidated={mockOnFileValidated}
           onClearFile={mockOnClearFile}
           importedFile={importedFile}
-        />
+        />,
       );
 
       expect(screen.getByText('resume.tsx')).toBeInTheDocument();
@@ -86,7 +82,7 @@ describe('FileImport', () => {
           onFileValidated={mockOnFileValidated}
           onClearFile={mockOnClearFile}
           importedFile={{ name: 'tiny.tsx', size: 512 }}
-        />
+        />,
       );
 
       expect(screen.getByText('512 B')).toBeInTheDocument();
@@ -98,7 +94,7 @@ describe('FileImport', () => {
           onFileValidated={mockOnFileValidated}
           onClearFile={mockOnClearFile}
           importedFile={{ name: 'large.tsx', size: 1048576 }}
-        />
+        />,
       );
 
       expect(screen.getByText('1.0 MB')).toBeInTheDocument();
@@ -130,7 +126,7 @@ describe('FileImport', () => {
         expect(mockOnFileValidated).toHaveBeenCalledWith(
           expect.stringContaining('import React'),
           'cv.tsx',
-          expect.any(Number)
+          expect.any(Number),
         );
       });
     });
@@ -172,7 +168,7 @@ describe('FileImport', () => {
 
       // Create file with actual content > 1MB (1MB = 1048576 bytes)
       // Generate content that's over 1MB
-      const largeContent = `${VALID_TSX_CONTENT  }\n// padding\n${  'x'.repeat(1024 * 1024 + 1000)}`;
+      const largeContent = `${VALID_TSX_CONTENT}\n// padding\n${'x'.repeat(1024 * 1024 + 1000)}`;
       const file = createFile(largeContent, 'large.tsx');
       const input = screen.getByLabelText(/File input for CV import/i);
 
@@ -236,7 +232,7 @@ describe('FileImport', () => {
   describe('File Clearing', () => {
     it('shows clear button only when file is imported', () => {
       const { rerender } = render(
-        <FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />
+        <FileImport onFileValidated={mockOnFileValidated} onClearFile={mockOnClearFile} />,
       );
 
       expect(screen.queryByLabelText(/Clear imported file/i)).not.toBeInTheDocument();
@@ -246,7 +242,7 @@ describe('FileImport', () => {
           onFileValidated={mockOnFileValidated}
           onClearFile={mockOnClearFile}
           importedFile={{ name: 'test.tsx', size: 1024 }}
-        />
+        />,
       );
 
       expect(screen.getByLabelText(/Clear imported file/i)).toBeInTheDocument();
@@ -258,7 +254,7 @@ describe('FileImport', () => {
           onFileValidated={mockOnFileValidated}
           onClearFile={mockOnClearFile}
           importedFile={{ name: 'resume.tsx', size: 1024 }}
-        />
+        />,
       );
 
       const clearButton = screen.getByLabelText(/Clear imported file/i);
@@ -275,7 +271,7 @@ describe('FileImport', () => {
           onFileValidated={mockOnFileValidated}
           onClearFile={mockOnClearFile}
           importedFile={{ name: 'resume.tsx', size: 1024 }}
-        />
+        />,
       );
 
       const clearButton = screen.getByLabelText(/Clear imported file/i);
@@ -293,7 +289,7 @@ describe('FileImport', () => {
           onFileValidated={mockOnFileValidated}
           onClearFile={mockOnClearFile}
           importedFile={{ name: 'resume.tsx', size: 1024 }}
-        />
+        />,
       );
 
       const clearButton = screen.getByLabelText(/Clear imported file/i);
@@ -339,7 +335,7 @@ describe('FileImport', () => {
           onFileValidated={mockOnFileValidated}
           onClearFile={mockOnClearFile}
           importedFile={{ name: 'resume.tsx', size: 1024 }}
-        />
+        />,
       );
 
       // In imported state, only clear button is shown (no file input)

@@ -23,11 +23,7 @@ function logger() {
  */
 export function getBrowserPolyfill() {
   // Check if running in Node.js
-  if (
-    typeof process !== 'undefined'
-    && process.versions != null
-    && process.versions.node != null
-  ) {
+  if (typeof process !== 'undefined' && process.versions != null && process.versions.node != null) {
     throw new Error('browser polyfill should not be accessed in Node.js environment');
   }
   // Return the statically imported browser polyfill
@@ -41,9 +37,7 @@ export function getBrowserPolyfill() {
  */
 export function isNodeEnvironment(): boolean {
   return (
-    typeof process !== 'undefined'
-    && process.versions != null
-    && process.versions.node != null
+    typeof process !== 'undefined' && process.versions != null && process.versions.node != null
   );
 }
 
@@ -56,10 +50,10 @@ export function isServiceWorkerEnvironment(): boolean {
   // Check using typeof to avoid ReferenceError
   // Firefox MV3 fix: Check for importScripts (unique to workers) instead of ServiceWorkerGlobalScope
   return (
-    typeof self !== 'undefined'
-    && 'importScripts' in self
-    && typeof (self as { importScripts?: unknown }).importScripts === 'function'
-    && typeof window === 'undefined'
+    typeof self !== 'undefined' &&
+    'importScripts' in self &&
+    typeof (self as { importScripts?: unknown }).importScripts === 'function' &&
+    typeof window === 'undefined'
   );
 }
 
@@ -79,10 +73,15 @@ async function initWASMFromExtension(environmentName: string): Promise<void> {
 
   logger().debug('WasmLoader', 'Fetching WASM...');
   const response = await fetch(resolvedWasmUrl);
-  logger().debug('WasmLoader', 'Fetch response', { status: response.status, statusText: response.statusText });
+  logger().debug('WasmLoader', 'Fetch response', {
+    status: response.status,
+    statusText: response.statusText,
+  });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch WASM: ${response.status} ${response.statusText}. Path: ${resolvedWasmUrl}`);
+    throw new Error(
+      `Failed to fetch WASM: ${response.status} ${response.statusText}. Path: ${resolvedWasmUrl}`,
+    );
   }
 
   const wasmBytes = await response.arrayBuffer();
@@ -117,21 +116,21 @@ export async function initWASM(wasmPath?: string): Promise<void> {
     if (isNode) {
       logger().debug('WasmLoader', 'Environment: Node.js');
       const { initWASMNode, getDefaultNodeWasmPath } = await import('./loader.node.js');
-      const effectiveWasmPath = (wasmPath !== null && wasmPath !== undefined && wasmPath !== '') ? wasmPath : getDefaultNodeWasmPath();
+      const effectiveWasmPath =
+        wasmPath !== null && wasmPath !== undefined && wasmPath !== ''
+          ? wasmPath
+          : getDefaultNodeWasmPath();
       logger().debug('WasmLoader', 'Using WASM path', { wasmPath: effectiveWasmPath });
       await initWASMNode(effectiveWasmPath);
-    }
-    else if (isServiceWorker) {
+    } else if (isServiceWorker) {
       await initWASMFromExtension('Service Worker');
-    }
-    else {
+    } else {
       await initWASMFromExtension('Browser (popup/TSX extractor)');
     }
 
     wasmInitialized = true;
     logger().info('WasmLoader', 'WASM initialization successful');
-  }
-  catch (error: unknown) {
+  } catch (error: unknown) {
     logger().error('WasmLoader', 'WASM initialization failed', error);
 
     if (error instanceof Error) {

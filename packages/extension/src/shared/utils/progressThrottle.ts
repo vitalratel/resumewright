@@ -30,7 +30,8 @@ export function throttleProgress(
     const isIncrementBoundary = percentage % 10 === 0;
     const isInitial = percentage === 0;
     const isFinal = percentage === 100;
-    const isDifferentIncrement = Math.floor(percentage / 10) !== Math.floor(lastEmittedPercentage / 10);
+    const isDifferentIncrement =
+      Math.floor(percentage / 10) !== Math.floor(lastEmittedPercentage / 10);
 
     // Always emit final update (100%) immediately
     if (isFinal) {
@@ -76,21 +77,23 @@ export function throttleProgress(
           timeoutId = null;
         }
       }
-    }
-    else {
+    } else {
       // Store pending update for next 10% increment
       if (isIncrementBoundary || isDifferentIncrement) {
         pendingUpdate = [stage, percentage];
         if (!timeoutId) {
-          timeoutId = setTimeout(() => {
-            if (pendingUpdate) {
-              callback(...pendingUpdate);
-              lastEmitTime = Date.now();
-              lastEmittedPercentage = pendingUpdate[1];
-              pendingUpdate = null;
-            }
-            timeoutId = null;
-          }, interval - (now - lastEmitTime));
+          timeoutId = setTimeout(
+            () => {
+              if (pendingUpdate) {
+                callback(...pendingUpdate);
+                lastEmitTime = Date.now();
+                lastEmittedPercentage = pendingUpdate[1];
+                pendingUpdate = null;
+              }
+              timeoutId = null;
+            },
+            interval - (now - lastEmitTime),
+          );
         }
       }
     }

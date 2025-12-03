@@ -35,7 +35,7 @@ import { useEffect } from 'react';
  */
 export function useBeforeUnload(
   shouldBlock: boolean,
-  message: string = 'Are you sure you want to leave?'
+  message: string = 'Are you sure you want to leave?',
 ): void {
   useEffect(() => {
     if (!shouldBlock) return;

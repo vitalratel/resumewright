@@ -2,10 +2,7 @@
 // ABOUTME: Provides type-safe narrowing for discriminated unions.
 
 import type { FontData } from '../domain/fonts/types';
-import type {
-  ConversionConfig,
-  ConversionError,
-} from '../types/models';
+import type { ConversionConfig, ConversionError } from '../types/models';
 
 /**
  * Type guard for Uint8Array.
@@ -26,12 +23,12 @@ export function isError(value: unknown): value is Error {
  */
 export function isConversionErrorObject(value: unknown): value is ConversionError {
   return (
-    typeof value === 'object'
-    && value !== null
-    && 'code' in value
-    && 'message' in value
-    && typeof (value as { code: unknown }).code === 'string'
-    && typeof (value as { message: unknown }).message === 'string'
+    typeof value === 'object' &&
+    value !== null &&
+    'code' in value &&
+    'message' in value &&
+    typeof (value as { code: unknown }).code === 'string' &&
+    typeof (value as { message: unknown }).message === 'string'
   );
 }
 
@@ -67,11 +64,14 @@ export function isFontData(value: unknown): value is FontData {
   const obj = value as Record<string, unknown>;
 
   return (
-    typeof obj.family === 'string'
-    && (typeof obj.weight === 'number' || typeof obj.weight === 'string')
-    && (obj.style === 'normal' || obj.style === 'italic')
-    && obj.bytes instanceof Uint8Array
-    && (obj.format === 'truetype' || obj.format === 'opentype' || obj.format === 'woff' || obj.format === 'woff2')
+    typeof obj.family === 'string' &&
+    (typeof obj.weight === 'number' || typeof obj.weight === 'string') &&
+    (obj.style === 'normal' || obj.style === 'italic') &&
+    obj.bytes instanceof Uint8Array &&
+    (obj.format === 'truetype' ||
+      obj.format === 'opentype' ||
+      obj.format === 'woff' ||
+      obj.format === 'woff2')
   );
 }
 
@@ -87,22 +87,22 @@ export function isConversionConfig(value: unknown): value is ConversionConfig {
 
   // Check required fields
   if (
-    (obj.pageSize !== 'Letter' && obj.pageSize !== 'A4' && obj.pageSize !== 'Legal')
-    || typeof obj.fontSize !== 'number'
-    || typeof obj.fontFamily !== 'string'
-    || typeof obj.compress !== 'boolean'
+    (obj.pageSize !== 'Letter' && obj.pageSize !== 'A4' && obj.pageSize !== 'Legal') ||
+    typeof obj.fontSize !== 'number' ||
+    typeof obj.fontFamily !== 'string' ||
+    typeof obj.compress !== 'boolean'
   ) {
     return false;
   }
 
   // Check margin object
   if (
-    typeof obj.margin !== 'object'
-    || obj.margin === null
-    || typeof (obj.margin as Record<string, unknown>).top !== 'number'
-    || typeof (obj.margin as Record<string, unknown>).right !== 'number'
-    || typeof (obj.margin as Record<string, unknown>).bottom !== 'number'
-    || typeof (obj.margin as Record<string, unknown>).left !== 'number'
+    typeof obj.margin !== 'object' ||
+    obj.margin === null ||
+    typeof (obj.margin as Record<string, unknown>).top !== 'number' ||
+    typeof (obj.margin as Record<string, unknown>).right !== 'number' ||
+    typeof (obj.margin as Record<string, unknown>).bottom !== 'number' ||
+    typeof (obj.margin as Record<string, unknown>).left !== 'number'
   ) {
     return false;
   }

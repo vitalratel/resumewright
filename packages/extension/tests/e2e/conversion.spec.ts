@@ -11,15 +11,15 @@
  *
  */
 
-import type { Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { Page } from '@playwright/test';
 import { browserConfigs, expect, test } from '../fixtures';
-import { waitForPdfDownload } from '../helpers/e2eHelpers';
+import { waitForPdfDownload } from '../helpers/pdfDownload';
 
 const FIXTURES_PATH = fileURLToPath(
-  new URL('../../../../test-fixtures/tsx-samples/single-page', import.meta.url)
+  new URL('../../../../test-fixtures/tsx-samples/single-page', import.meta.url),
 );
 const TIMEOUT_CONVERSION = 5000; // Performance target: <5 seconds
 
@@ -115,7 +115,7 @@ test('should convert single-column CV to PDF within performance targets', async 
   // Note: Log format is "[PdfDownloader] [INFO] Download started successfully"
   const downloadLog = logs.find(
     (log) =>
-      log.text.includes('[PdfDownloader]') && log.text.includes('Download started successfully')
+      log.text.includes('[PdfDownloader]') && log.text.includes('Download started successfully'),
   );
   let filename = 'Resume.pdf';
   if (downloadLog !== undefined) {

@@ -3,8 +3,8 @@
  * ABOUTME: Provides visual feedback during drag operations and a browse button fallback.
  */
 
-import type { ChangeEvent } from 'react';
 import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import type { ChangeEvent } from 'react';
 import React, { useRef } from 'react';
 import { useDragAndDrop } from '../../hooks';
 import { tokens } from '../../styles/tokens';
@@ -17,10 +17,7 @@ interface DragDropZoneProps {
   isValidating: boolean;
 }
 
-export const DragDropZone = React.memo(({
-  onFileDrop,
-  isValidating,
-}: DragDropZoneProps) => {
+export const DragDropZone = React.memo(({ onFileDrop, isValidating }: DragDropZoneProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isDragging, dragHandlers } = useDragAndDrop(onFileDrop);
 
@@ -37,14 +34,17 @@ export const DragDropZone = React.memo(({
 
   return (
     <>
-      <label htmlFor="file-input" className={`block ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} px-3`}>
+      <label
+        htmlFor="file-input"
+        className={`block ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} px-3`}
+      >
         Import Your CV File
       </label>
 
       {isDragging && (
-        <div role="status" aria-live="assertive" className="sr-only">
+        <output aria-live="assertive" className="sr-only">
           Drop zone active. Release to import file.
-        </div>
+        </output>
       )}
 
       {/* Drop zone - handles drag-and-drop only */}
@@ -54,27 +54,28 @@ export const DragDropZone = React.memo(({
           isDragging
             ? `${tokens.colors.borders.primary} ${tokens.colors.info.bg} scale-[1.05] ${tokens.effects.shadowMd}`
             : `${tokens.colors.borders.primary} hover:border-blue-400 ${tokens.colors.info.hover} hover:scale-[1.03]`
-        }`.trim().replace(/\s+/g, ' ')}
+        }`
+          .trim()
+          .replace(/\s+/g, ' ')}
       >
-        <ArrowUpTrayIcon className={`${tokens.icons.hero} mx-auto ${tokens.spacing.marginSmall} ${isDragging ? tokens.colors.primary.text : 'text-blue-400'} ${tokens.transitions.default}`.trim().replace(/\s+/g, ' ')} aria-hidden="true" />
+        <ArrowUpTrayIcon
+          className={`${tokens.icons.hero} mx-auto ${tokens.spacing.marginSmall} ${isDragging ? tokens.colors.primary.text : 'text-blue-400'} ${tokens.transitions.default}`
+            .trim()
+            .replace(/\s+/g, ' ')}
+          aria-hidden="true"
+        />
         <p className={`${tokens.typography.base} ${tokens.colors.neutral.textMuted} mb-1`}>
-          {isDragging
-            ? (
-                <>
-                  Release to import (
-                  <TSX />
-                  {' '}
-                  files only)
-                </>
-              )
-            : 'Drag & drop your CV file here'}
+          {isDragging ? (
+            <>
+              Release to import (
+              <TSX /> files only)
+            </>
+          ) : (
+            'Drag & drop your CV file here'
+          )}
         </p>
         <p className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} mt-3`}>
-          Supports:
-          {' '}
-          <TSX />
-          {' '}
-          files (up to 1MB)
+          Supports: <TSX /> files (up to 1MB)
         </p>
       </div>
 
@@ -87,7 +88,9 @@ export const DragDropZone = React.memo(({
             isValidating
               ? `${tokens.effects.disabledState}`
               : `${tokens.colors.primary.bg} ${tokens.colors.primary.hover} text-white`
-          } flex items-center justify-center ${tokens.spacing.gapSmall} mx-auto`.trim().replace(/\s+/g, ' ')}
+          } flex items-center justify-center ${tokens.spacing.gapSmall} mx-auto`
+            .trim()
+            .replace(/\s+/g, ' ')}
           type="button"
           data-testid="browse-files-button"
           aria-busy={isValidating}

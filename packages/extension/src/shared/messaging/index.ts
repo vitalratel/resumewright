@@ -1,6 +1,7 @@
 // ABOUTME: Type-safe extension messaging using @webext-core/messaging.
 // ABOUTME: Defines the protocol map for all popup ↔ background communication.
 
+import { defineExtensionMessaging } from '@webext-core/messaging';
 import type {
   ConversionCompletePayload,
   ConversionErrorPayload,
@@ -11,7 +12,6 @@ import type {
   WasmStatusPayload,
 } from '../types/messages';
 import type { UserSettings } from '../types/settings';
-import { defineExtensionMessaging } from '@webext-core/messaging';
 
 /**
  * Protocol map defining all message types with their request and response types.
@@ -35,7 +35,11 @@ interface ProtocolMap {
   conversionError: (data: ConversionErrorPayload) => void;
 
   // Settings
-  getSettings: (data: Record<string, never>) => { success: boolean; settings?: UserSettings; error?: string };
+  getSettings: (data: Record<string, never>) => {
+    success: boolean;
+    settings?: UserSettings;
+    error?: string;
+  };
   updateSettings: (data: UpdateSettingsPayload) => { success: boolean; error?: string };
 
   // Popup lifecycle
@@ -47,7 +51,6 @@ interface ProtocolMap {
 
 // Destructuring is the documented API pattern for @webext-core/messaging.
 // The returned functions are standalone and don't use `this`.
-// eslint-disable-next-line ts/unbound-method
 export const { sendMessage, onMessage } = defineExtensionMessaging<ProtocolMap>();
 
 // Re-export types for convenience

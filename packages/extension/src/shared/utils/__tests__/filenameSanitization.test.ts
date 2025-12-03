@@ -28,7 +28,7 @@ describe('sanitizeFilename', () => {
 
   describe('Special Characters', () => {
     it('name with apostrophe', () => {
-      expect(sanitizeFilename('John O\'Brien')).toBe('John_OBrien');
+      expect(sanitizeFilename("John O'Brien")).toBe('John_OBrien');
     });
 
     it('name with hyphen', () => {
@@ -48,7 +48,9 @@ describe('sanitizeFilename', () => {
     });
 
     it('name with multiple special chars', () => {
-      expect(sanitizeFilename('John O\'Brien & Associates, Inc.')).toBe('John_OBrien_Associates_Inc');
+      expect(sanitizeFilename("John O'Brien & Associates, Inc.")).toBe(
+        'John_OBrien_Associates_Inc',
+      );
     });
   });
 
@@ -134,7 +136,9 @@ describe('sanitizeFilename', () => {
     });
 
     it('removes all forbidden characters', () => {
-      expect(sanitizeFilename('Resume: <Final> "Draft" /V1\\ |Test| ?What? *')).toBe('Resume_Final_Draft_V1_Test_What');
+      expect(sanitizeFilename('Resume: <Final> "Draft" /V1\\ |Test| ?What? *')).toBe(
+        'Resume_Final_Draft_V1_Test_What',
+      );
     });
   });
 
@@ -280,7 +284,7 @@ describe('generateFilename', () => {
 
     it('generates filename with special chars removed', () => {
       const date = new Date('2025-10-17');
-      const result = generateFilename('John O\'Brien & Associates', date);
+      const result = generateFilename("John O'Brien & Associates", date);
       expect(result).toBe('John_OBrien_Associates_Resume_2025-10-17.pdf');
     });
   });

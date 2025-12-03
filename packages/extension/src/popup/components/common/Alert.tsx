@@ -67,7 +67,7 @@ export const Alert = React.memo(
     if (import.meta.env.MODE !== 'production' && dismissible && !onDismiss) {
       getLogger().warn(
         'Alert',
-        'dismissible=true but onDismiss is not provided. Button will not render.'
+        'dismissible=true but onDismiss is not provided. Button will not render.',
       );
     }
 
@@ -106,5 +106,5 @@ export const Alert = React.memo(
         )}
       </div>
     );
-  }
+  },
 );

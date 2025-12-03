@@ -31,7 +31,7 @@ describe('WASM Compatibility', () => {
         // If streaming not available, should have warning
         if (report.wasmInfo.supported && !report.wasmInfo.streaming) {
           const streamingWarning = report.issues.find(
-            (i) => i.category === 'wasm' && i.message.includes('streaming')
+            (i) => i.category === 'wasm' && i.message.includes('streaming'),
           );
           expect(streamingWarning).toBeDefined();
           expect(streamingWarning?.severity).toBe('warning');
@@ -177,7 +177,7 @@ describe('WASM Compatibility', () => {
 
         if (report.memoryInfo && report.memoryInfo.percentUsed > 90) {
           const memoryIssue = report.issues.find(
-            (i) => i.category === 'memory' && i.message.includes('critically low')
+            (i) => i.category === 'memory' && i.message.includes('critically low'),
           );
           expect(memoryIssue).toBeDefined();
           expect(memoryIssue?.severity).toBe('warning');
@@ -193,7 +193,7 @@ describe('WASM Compatibility', () => {
           report.memoryInfo.percentUsed <= 90
         ) {
           const memoryIssue = report.issues.find(
-            (i) => i.category === 'memory' && i.message.includes('memory is low')
+            (i) => i.category === 'memory' && i.message.includes('memory is low'),
           );
           expect(memoryIssue).toBeDefined();
           expect(memoryIssue?.severity).toBe('warning');
@@ -236,7 +236,7 @@ describe('WASM Compatibility', () => {
 
         if (report.wasmInfo.supported && !report.wasmInfo.streaming) {
           const streamingIssue = report.issues.find(
-            (i) => i.category === 'wasm' && i.message.includes('streaming')
+            (i) => i.category === 'wasm' && i.message.includes('streaming'),
           );
           expect(streamingIssue).toBeDefined();
           expect(streamingIssue?.severity).toBe('warning');

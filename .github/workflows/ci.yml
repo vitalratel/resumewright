@@ -10,8 +10,7 @@ on:
       - '.github/*.md'
       - 'LICENSE'
       - '.gitignore'
-      - '.prettierrc'
-      - '.prettierignore'
+      - 'biome.json'
   pull_request:
     branches: [main, develop]
     paths-ignore:
@@ -21,8 +20,7 @@ on:
       - '.github/*.md'
       - 'LICENSE'
       - '.gitignore'
-      - '.prettierrc'
-      - '.prettierignore'
+      - 'biome.json'
 
 # Cancel in-progress runs when a new workflow with the same group name is triggered
 concurrency:

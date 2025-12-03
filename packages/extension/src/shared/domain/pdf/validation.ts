@@ -1,10 +1,10 @@
 // ABOUTME: Unified TSX validation module for file and syntax validation.
 // ABOUTME: Provides comprehensive file validation and fast syntax-only validation.
 
-import type { ILogger } from '../../infrastructure/logging';
-import type { TsxToPdfConverter } from './types';
 import { sendMessage } from '@/shared/messaging';
+import type { ILogger } from '../../infrastructure/logging';
 import { FILE_SIZE_LIMITS as SIZE_LIMITS } from './constants';
+import type { TsxToPdfConverter } from './types';
 import { parseFontRequirements } from './wasmSchemas';
 
 export { SIZE_LIMITS as FILE_SIZE_LIMITS };
@@ -39,7 +39,7 @@ export async function validateTsxFile(
   content: string,
   fileSize: number,
   fileName: string,
-  logger: ILogger
+  logger: ILogger,
 ): Promise<TsxValidationResult> {
   const warnings: string[] = [];
 
@@ -179,7 +179,7 @@ export async function validateTsxFile(
 export async function validateTsxSyntax(
   tsx: string,
   logger: ILogger,
-  converter: TsxToPdfConverter
+  converter: TsxToPdfConverter,
 ): Promise<boolean> {
   if (!tsx || tsx.trim().length === 0) {
     return false;
@@ -229,4 +229,3 @@ export function validateFileExtension(fileName: string, acceptedExtensions: stri
   const extension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
   return acceptedExtensions.includes(extension);
 }
-

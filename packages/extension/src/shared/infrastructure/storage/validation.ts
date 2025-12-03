@@ -26,10 +26,7 @@ export interface ValidationResult<T> {
  */
 export async function getValidatedStorage<
   TSchema extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(
-  key: string,
-  schema: TSchema,
-): Promise<InferOutput<TSchema> | null> {
+>(key: string, schema: TSchema): Promise<InferOutput<TSchema> | null> {
   try {
     const result = await browser.storage.local.get(key);
     const value: unknown = result[key];
@@ -41,15 +38,14 @@ export async function getValidatedStorage<
     // Validate with shared helper
     const validationResult = validateWithSchema(schema, value, getLogger(), 'Storage');
 
-    if (!validationResult.success) {
+    if (!validationResult.success || validationResult.data === undefined) {
       // Remove invalid data
       await browser.storage.local.remove(key);
       return null;
     }
 
-    return validationResult.data!;
-  }
-  catch (error) {
+    return validationResult.data;
+  } catch (error) {
     getLogger().error('Storage', `Failed to get "${key}"`, error);
     return null;
   }
@@ -65,11 +61,7 @@ export async function getValidatedStorage<
  */
 export async function setValidatedStorage<
   TSchema extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(
-  key: string,
-  value: unknown,
-  schema: TSchema,
-): Promise<boolean> {
+>(key: string, value: unknown, schema: TSchema): Promise<boolean> {
   try {
     // Validate with shared helper before storing
     const validationResult = validateWithSchema(schema, value, getLogger(), 'Storage');
@@ -80,8 +72,7 @@ export async function setValidatedStorage<
 
     await browser.storage.local.set({ [key]: validationResult.data });
     return true;
-  }
-  catch (error) {
+  } catch (error) {
     getLogger().error('Storage', `Failed to set "${key}"`, error);
     return false;
   }
@@ -95,9 +86,7 @@ export async function setValidatedStorage<
  */
 export async function getMultipleValidatedStorage<
   T extends Record<string, BaseSchema<unknown, unknown, BaseIssue<unknown>>>,
->(
-  schemas: T,
-): Promise<{ [K in keyof T]?: InferOutput<T[K]> }> {
+>(schemas: T): Promise<{ [K in keyof T]?: InferOutput<T[K]> }> {
   try {
     const keys = Object.keys(schemas);
     const result = await browser.storage.local.get(keys);
@@ -125,8 +114,7 @@ export async function getMultipleValidatedStorage<
 
       if (validationResult.success) {
         validated[key as keyof T] = validationResult.data as InferOutput<T[keyof T]>;
-      }
-      else {
+      } else {
         // Remove invalid data
         await browser.storage.local.remove(key);
       }
@@ -137,8 +125,7 @@ export async function getMultipleValidatedStorage<
     await validateKey(0);
 
     return validated;
-  }
-  catch (error) {
+  } catch (error) {
     getLogger().error('Storage', 'Failed to get multiple keys', error);
     return {};
   }
@@ -152,8 +139,7 @@ export async function getMultipleValidatedStorage<
 export async function removeFromStorage(keys: string | string[]): Promise<void> {
   try {
     await browser.storage.local.remove(keys);
-  }
-  catch (error) {
+  } catch (error) {
     getLogger().error('Storage', 'Failed to remove keys', error);
   }
 }

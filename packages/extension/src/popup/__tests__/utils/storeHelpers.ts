@@ -5,24 +5,26 @@
  * Reduces boilerplate and ensures consistent test setup.
  */
 
-import type { CVMetadata, UIState  } from '../../store';
-import type { ConversionError, ConversionProgress } from '@/shared/types/models';
 import { ErrorCategory, ErrorCode } from '@/shared/errors';
+import type { ConversionError, ConversionProgress } from '@/shared/types/models';
 import { DEFAULT_JOB_ID } from '../../constants/app';
+import type { CVMetadata, UIState } from '../../store';
 import { usePopupStore } from '../../store';
 import { useProgressStore } from '../../store/progressStore';
 
 /**
  * Create mock UI state with optional overrides
  */
-export function createMockUIState(overrides?: Partial<{
-  uiState: UIState;
-  validationError: string | null;
-  isValidating: boolean;
-  lastError: ConversionError | null;
-  lastFilename: string | null;
-  lastConversionTime: number | null;
-}>) {
+export function createMockUIState(
+  overrides?: Partial<{
+    uiState: UIState;
+    validationError: string | null;
+    isValidating: boolean;
+    lastError: ConversionError | null;
+    lastFilename: string | null;
+    lastConversionTime: number | null;
+  }>,
+) {
   return {
     uiState: 'waiting_for_import' as UIState,
     validationError: null,
@@ -37,10 +39,12 @@ export function createMockUIState(overrides?: Partial<{
 /**
  * Create mock persisted state with optional overrides
  */
-export function createMockPersistedState(overrides?: Partial<{
-  importedFile: { filename: string; size: number; content: string } | null;
-  cvMetadata: CVMetadata | null;
-}>) {
+export function createMockPersistedState(
+  overrides?: Partial<{
+    importedFile: { filename: string; size: number; content: string } | null;
+    cvMetadata: CVMetadata | null;
+  }>,
+) {
   return {
     importedFile: null,
     cvMetadata: null,
@@ -51,7 +55,10 @@ export function createMockPersistedState(overrides?: Partial<{
 /**
  * Create mock progress state
  */
-export function createMockProgressState(_jobId: string = DEFAULT_JOB_ID, overrides?: Partial<ConversionProgress>) {
+export function createMockProgressState(
+  _jobId: string = DEFAULT_JOB_ID,
+  overrides?: Partial<ConversionProgress>,
+) {
   const defaults: ConversionProgress = {
     stage: 'queued',
     percentage: 0,
@@ -69,7 +76,10 @@ export function createMockProgressState(_jobId: string = DEFAULT_JOB_ID, overrid
  *
  * Convenience function to set up all stores for converting state
  */
-export function setupConvertingState(jobId: string = DEFAULT_JOB_ID, progress?: Partial<ConversionProgress>) {
+export function setupConvertingState(
+  jobId: string = DEFAULT_JOB_ID,
+  progress?: Partial<ConversionProgress>,
+) {
   usePopupStore.getState().setUIState('converting');
   useProgressStore.getState().startConversion(jobId);
 

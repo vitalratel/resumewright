@@ -80,8 +80,7 @@ export class WasmStateManager {
     try {
       const status = await localExtStorage.getItem('wasmStatus');
       return status === 'success';
-    }
-    catch (error) {
+    } catch (error) {
       getLogger().error('WasmStateManager', 'Failed to check WASM status', error);
       return false;
     }
@@ -100,8 +99,7 @@ export class WasmStateManager {
         status: status ?? 'unknown',
         error: error ?? undefined,
       };
-    }
-    catch (error) {
+    } catch (error) {
       getLogger().error('WasmStateManager', 'Failed to get WASM status', error);
       return { status: 'unknown', error: String(error) };
     }

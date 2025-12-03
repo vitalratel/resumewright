@@ -6,8 +6,8 @@
  * for per-conversion instances.
  */
 
-import type { TsxToPdfConverter } from '../../domain/pdf/types';
 import { TsxToPdfConverter as WasmTsxToPdfConverter } from '@pkg/wasm_bridge';
+import type { TsxToPdfConverter } from '../../domain/pdf/types';
 import { isWASMInitialized } from './loader';
 
 /**

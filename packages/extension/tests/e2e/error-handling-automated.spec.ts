@@ -14,8 +14,8 @@
  * - Error recovery and multiple error handling
  */
 
-import type { Page } from '@playwright/test';
 import { Buffer } from 'node:buffer';
+import type { Page } from '@playwright/test';
 import { browserConfigs, expect, test } from '../fixtures';
 
 /**
@@ -77,7 +77,7 @@ test.describe('Automated Error Handling', () => {
       `
       const CV = () => <div>Not a proper CV structure</div>;
       export default CV;
-    `
+    `,
     );
 
     // Wait for validation error
@@ -105,7 +105,7 @@ test.describe('Automated Error Handling', () => {
     await uploadFileContent(
       page,
       'large-file.tsx',
-      `const CV = () => <div>${largeContent}</div>; export default CV;`
+      `const CV = () => <div>${largeContent}</div>; export default CV;`,
     );
 
     // Wait for validation error
@@ -152,7 +152,7 @@ test.describe('Automated Error Handling', () => {
         log.type === 'error' ||
         log.text.includes('[ERROR]') ||
         log.text.toLowerCase().includes('error') ||
-        log.text.includes('Validation failed')
+        log.text.includes('Validation failed'),
     );
 
     expect(errorLogs.length).toBeGreaterThan(0);
@@ -171,7 +171,7 @@ test.describe('Automated Error Handling', () => {
     await uploadFileContent(
       page,
       'very-large-file.tsx',
-      `const CV = () => <div>${veryLargeContent}</div>;`
+      `const CV = () => <div>${veryLargeContent}</div>;`,
     );
 
     // Wait for validation error
@@ -204,7 +204,7 @@ test.describe('Automated Error Handling', () => {
       `
       const CV = () => <div><h1>Valid CV</h1></div>;
       export default CV;
-    `
+    `,
     );
 
     await page.waitForTimeout(2000);

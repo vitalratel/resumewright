@@ -56,20 +56,20 @@ describe('LoadingScreen', () => {
   });
 
   describe('Accessibility ', () => {
-    it('has role="status" on main container', () => {
+    it('has aria-live region for loading state', () => {
       const { container } = render(<LoadingScreen />);
 
-      // Main content container should have role="status"
-      const statusRegion = container.querySelector('[role="status"]');
-      expect(statusRegion).toBeInTheDocument();
+      // Root element uses aria-live="polite" for loading announcements
+      const root = container.firstChild as HTMLElement;
+      expect(root).toHaveAttribute('aria-live', 'polite');
     });
 
-    it('has aria-label on main container', () => {
-      const { container } = render(<LoadingScreen />);
+    it('has sr-only text describing loading state', () => {
+      render(<LoadingScreen />);
 
-      // Main content should have aria-label
-      const statusRegion = container.querySelector('[aria-label="Loading ResumeWright extension"]');
-      expect(statusRegion).toBeInTheDocument();
+      // Screen reader text provides context
+      const srOnly = screen.getByText('Loading extension, please wait...');
+      expect(srOnly).toHaveClass('sr-only');
     });
 
     it('has aria-busy on root element', () => {
@@ -199,8 +199,8 @@ describe('LoadingScreen', () => {
     it('applies fade-in animation to main content', () => {
       const { container } = render(<LoadingScreen />);
 
-      // Main content should fade in
-      const mainContent = container.querySelector('[role="status"]');
+      // Main content area (flex-1) should have fade-in animation
+      const mainContent = container.querySelector('.flex-1');
       expect(mainContent?.className).toContain('animate-fade-in');
     });
 

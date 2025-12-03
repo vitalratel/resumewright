@@ -6,12 +6,12 @@
  * Target: >85% coverage
  */
 
-import type { CreateErrorOptions } from '../';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ErrorCode } from '../../codes';
+import type { CreateErrorOptions } from '../';
 // Updated import to use factory index after refactoring
 import {
   createConversionError,
-
   createFontLoadError,
   createMemoryLimitError,
   createPdfGenerationError,
@@ -21,7 +21,6 @@ import {
   createWasmInitError,
   errorToConversionError,
 } from '../';
-import { ErrorCode } from '../../codes';
 
 // Mock error ID generation and telemetry
 vi.mock('../../tracking/telemetry', () => ({

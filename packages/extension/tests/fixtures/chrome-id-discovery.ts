@@ -16,7 +16,7 @@ import type { BrowserContext } from '@playwright/test';
  */
 export async function discoverChromeExtensionId(
   context: BrowserContext,
-  _manifestPath: string
+  _manifestPath: string,
 ): Promise<string> {
   console.warn('[Chrome] Waiting for extension service worker...');
 
@@ -40,7 +40,7 @@ export async function discoverChromeExtensionId(
     if (!extensionId || extensionId.length !== 32) {
       throw new Error(
         `Invalid extension ID extracted from service worker URL: "${extensionId}". ` +
-          `Expected 32-character ID. Service worker URL: ${serviceWorkerUrl}`
+          `Expected 32-character ID. Service worker URL: ${serviceWorkerUrl}`,
       );
     }
 
@@ -51,7 +51,7 @@ export async function discoverChromeExtensionId(
       throw new Error(
         'Timeout waiting for extension service worker. ' +
           'Extension may not have loaded properly. ' +
-          'Ensure extension is built (run: pnpm build) and manifest.json is valid.'
+          'Ensure extension is built (run: pnpm build) and manifest.json is valid.',
       );
     }
     throw error;

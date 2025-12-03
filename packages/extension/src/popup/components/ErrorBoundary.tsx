@@ -5,8 +5,8 @@
  * Provides fallback UI and error recovery options for both full-app and section-specific failures.
  */
 
-import type { ErrorInfo, ReactNode } from 'react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import type { ErrorInfo, ReactNode } from 'react';
 import { Component } from 'react';
 import { formatErrorTimestamp, logErrorToService } from '@/shared/errors/tracking/telemetry';
 import { getLogger } from '@/shared/infrastructure/logging';

@@ -6,8 +6,8 @@
 
 import type { ILogger } from '../../infrastructure/logging';
 import type { ConversionConfig } from '../../types/models';
-import type { WasmPdfConfig } from './types';
 import { DEFAULT_PDF_CONFIG, PDF_STANDARDS } from './constants';
+import type { WasmPdfConfig } from './types';
 import { validateWasmPdfConfig } from './wasmSchemas';
 
 /**
@@ -27,7 +27,9 @@ import { validateWasmPdfConfig } from './wasmSchemas';
  * ```
  */
 export function convertConfigToRust(config: ConversionConfig, logger: ILogger): WasmPdfConfig {
-  logger.debug('PdfConfig', 'Converting config to WASM format', { config: JSON.stringify(config, null, 2) });
+  logger.debug('PdfConfig', 'Converting config to WASM format', {
+    config: JSON.stringify(config, null, 2),
+  });
 
   // Build WASM config with strict types
   const wasmConfig: WasmPdfConfig = {
@@ -39,9 +41,10 @@ export function convertConfigToRust(config: ConversionConfig, logger: ILogger): 
       left: convertInchesToPoints(config.margin.left),
     },
     standard: PDF_STANDARDS.PDFA1B, // Use PDF/A-1b for maximum ATS compatibility
-    title: (config.filename !== null && config.filename !== undefined && config.filename !== '')
-      ? config.filename
-      : DEFAULT_PDF_CONFIG.filename,
+    title:
+      config.filename !== null && config.filename !== undefined && config.filename !== ''
+        ? config.filename
+        : DEFAULT_PDF_CONFIG.filename,
     author: null,
     subject: 'Curriculum Vitae',
     keywords: null,
@@ -51,8 +54,7 @@ export function convertConfigToRust(config: ConversionConfig, logger: ILogger): 
   // Validate config structure before sending to WASM
   try {
     validateWasmPdfConfig(wasmConfig);
-  }
-  catch (error) {
+  } catch (error) {
     logger.error('PdfConfig', 'Config validation failed', error);
     throw error;
   }
@@ -70,4 +72,3 @@ export function convertConfigToRust(config: ConversionConfig, logger: ILogger): 
 function convertInchesToPoints(inches: number): number {
   return inches * 72;
 }
-

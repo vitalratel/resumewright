@@ -144,6 +144,4 @@ export const GOOGLE_FONTS_LIST = [
 /**
  * Set of lowercase Google Fonts for fast lookup
  */
-export const GOOGLE_FONTS_SET = new Set(
-  GOOGLE_FONTS_LIST.map(font => font.toLowerCase()),
-);
+export const GOOGLE_FONTS_SET = new Set(GOOGLE_FONTS_LIST.map((font) => font.toLowerCase()));

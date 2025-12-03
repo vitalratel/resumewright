@@ -21,8 +21,7 @@ if (typeof process !== 'undefined' && process.versions?.node) {
     try {
       // Use top-level await with dynamic import (modern ES module approach)
       realWasmModule = await import(wasmPath);
-    }
-    catch {
+    } catch {
       // Real WASM not available, will use mock
     }
   }
@@ -31,9 +30,11 @@ if (typeof process !== 'undefined' && process.versions?.node) {
 /**
  * Init function - uses real WASM if available, otherwise returns mock
  */
-const init = realWasmModule?.default ?? (async (): Promise<void> => {
-  return Promise.resolve();
-});
+const init =
+  realWasmModule?.default ??
+  (async (): Promise<void> => {
+    return Promise.resolve();
+  });
 
 // Export real WASM types and functions if available, otherwise empty exports
 export default init;

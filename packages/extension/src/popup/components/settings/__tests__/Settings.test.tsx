@@ -1,11 +1,11 @@
 // ABOUTME: Tests for Settings component with tabbed navigation.
 // ABOUTME: Tests rendering, page size, margins, reset, and keyboard navigation.
 
-import type { UserSettings } from '@/shared/types/settings';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
+import type { UserSettings } from '@/shared/types/settings';
 import { Settings } from '../Settings';
 
 /**
@@ -94,8 +94,8 @@ describe('Settings', () => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
       });
 
-      const letterButton = screen.getByText('Letter (8.5" x 11")').closest('button');
-      expect(letterButton).toHaveClass('border-green-500', 'bg-green-50');
+      const letterLabel = screen.getByText('Letter (8.5" x 11")').closest('label');
+      expect(letterLabel).toHaveClass('border-green-500', 'bg-green-50');
     });
 
     it('updates selection when A4 is clicked', async () => {
@@ -105,10 +105,12 @@ describe('Settings', () => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
       });
 
-      const a4Button = screen.getByText('A4 (210mm x 297mm)').closest('button');
-      fireEvent.click(a4Button!);
+      const a4Label = screen.getByText('A4 (210mm x 297mm)').closest('label');
+      expect(a4Label).toBeDefined();
+      if (!a4Label) throw new Error('A4 label not found');
+      fireEvent.click(a4Label);
 
-      expect(a4Button).toHaveClass('border-green-500', 'bg-green-50');
+      expect(a4Label).toHaveClass('border-green-500', 'bg-green-50');
     });
 
     it('highlights A4 when loaded from storage', async () => {
@@ -124,8 +126,8 @@ describe('Settings', () => {
       render(<Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
-        const a4Button = screen.getByText('A4 (210mm x 297mm)').closest('button');
-        expect(a4Button).toHaveClass('border-green-500', 'bg-green-50');
+        const a4Label = screen.getByText('A4 (210mm x 297mm)').closest('label');
+        expect(a4Label).toHaveClass('border-green-500', 'bg-green-50');
       });
     });
   });
@@ -140,7 +142,9 @@ describe('Settings', () => {
 
       const sliders = screen.getAllByRole('slider');
       const topSlider = sliders.find((s) => s.getAttribute('aria-label')?.includes('top'));
-      fireEvent.change(topSlider!, { target: { value: '0.75' } });
+      expect(topSlider).toBeDefined();
+      if (!topSlider) throw new Error('Top slider not found');
+      fireEvent.change(topSlider, { target: { value: '0.75' } });
 
       await waitFor(() => {
         const displays = screen.getAllByText('0.75"');
@@ -157,8 +161,10 @@ describe('Settings', () => {
 
       const leftSlider = screen
         .getByText('left')
-        .parentElement!.querySelector('input[type="range"]');
-      fireEvent.change(leftSlider!, { target: { value: '1.0' } });
+        .parentElement?.querySelector('input[type="range"]');
+      expect(leftSlider).toBeDefined();
+      if (!leftSlider) throw new Error('Left slider not found');
+      fireEvent.change(leftSlider, { target: { value: '1.0' } });
 
       await waitFor(() => {
         expect(screen.getByText('1.00"')).toBeInTheDocument();
@@ -267,8 +273,9 @@ describe('Settings', () => {
       render(<Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
-        const a4Button = screen.getByText('A4 (210mm x 297mm)').closest('button');
-        expect(a4Button).toHaveClass('border-green-500');
+        // Page size options are <label> elements, not buttons
+        const a4Label = screen.getByText('A4 (210mm x 297mm)').closest('label');
+        expect(a4Label).toHaveClass('border-green-500');
       });
 
       switchToTab('General');
@@ -285,8 +292,9 @@ describe('Settings', () => {
       // Switch back to Page tab to check the page size
       switchToTab('Page');
       await waitFor(() => {
-        const letterButton = screen.getByText('Letter (8.5" x 11")').closest('button');
-        expect(letterButton).toHaveClass('border-green-500');
+        // Letter should be selected after reset (default)
+        const letterRadio = screen.getByRole('radio', { name: /Letter/ });
+        expect(letterRadio).toBeChecked();
       });
     });
   });

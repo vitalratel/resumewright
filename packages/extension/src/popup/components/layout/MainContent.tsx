@@ -11,7 +11,7 @@ import { generateFilename } from '../../../shared/utils/filenameSanitization';
 import { useAppContext } from '../../context/AppContext';
 import { useConversion } from '../../context/ConversionContext';
 import { tokens } from '../../styles/tokens';
-import { ConvertingState, ErrorState , Success  } from '../conversion';
+import { ConvertingState, ErrorState, Success } from '../conversion';
 import { ErrorBoundary, SectionErrorBoundary } from '../ErrorBoundary';
 import { FileImport } from '../FileImport';
 import { FileValidatedView } from './FileValidatedView';
@@ -19,7 +19,7 @@ import { FileValidatedView } from './FileValidatedView';
 export const MainContent = React.memo(() => {
   const { appState, successRef, errorRef } = useAppContext();
   const conversionHandlers = useConversion();
-  
+
   // React 19 pattern: useTransition for async state updates
   const [, startTransition] = useTransition();
 
@@ -33,7 +33,7 @@ export const MainContent = React.memo(() => {
   } = conversionHandlers;
 
   return (
-    <main id="main-content" role="main" className="flex-1 overflow-y-auto">
+    <main id="main-content" className="flex-1 overflow-y-auto">
       {uiState === 'waiting_for_import' && (
         <div className={tokens.animations.fadeIn}>
           {/* Isolate file import errors */}

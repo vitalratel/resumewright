@@ -5,10 +5,10 @@
  * Refactored for maintainability and separation of concerns.
  */
 
-import type { WasmStatusInfo } from './services';
 import { getLogger } from '@/shared/infrastructure/logging';
 import { createWasmInitError } from '../shared/errors/factory';
-import { initWASM } from '../shared/infrastructure/wasm';
+import { initWASM } from '../shared/infrastructure/wasm/loader';
+import type { WasmStatusInfo } from './services';
 import { BadgeManager, ExponentialBackoffRetryPolicy, WasmStateManager } from './services';
 
 // WASM initialization configuration
@@ -65,7 +65,7 @@ ${error.stack}`
             userAgent: navigator.userAgent,
           },
         });
-      }
+      },
     );
 
     // Success - update state and clear badge
@@ -78,7 +78,7 @@ ${error.stack}`
     // Use shared error factory for max retries error
     const maxRetriesError = createWasmInitError(
       'failed',
-      `Failed after ${MAX_INIT_RETRIES} initialization attempts`
+      `Failed after ${MAX_INIT_RETRIES} initialization attempts`,
     );
 
     getLogger().error('WasmInit', 'Max retries reached', {
