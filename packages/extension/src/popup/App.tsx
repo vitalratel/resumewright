@@ -14,17 +14,16 @@
 import { useCallback, useState } from 'react';
 import { AppRouter } from './components/AppRouter';
 import { AppShell } from './components/AppShell';
-import { Button, Spinner } from './components/common';
+import { Button } from './components/common/Button';
+import { Spinner } from './components/common/Spinner';
 import { DEFAULT_JOB_ID, getContainerClass } from './constants/app';
 import { useConversionHandlers } from './hooks/conversion/useConversionHandlers';
-import { useAppState, useAppSubscriptions } from './hooks/integration';
-import { useQuickSettings } from './hooks/settings';
-import {
-  useAppKeyboardShortcuts,
-  useFocusOnMount,
-  useKeyboardShortcuts,
-  useScreenReaderAnnouncement,
-} from './hooks/ui';
+import { useAppState } from './hooks/integration/useAppState';
+import { useAppSubscriptions } from './hooks/integration/useAppSubscriptions';
+import { useQuickSettings } from './hooks/settings/useQuickSettings';
+import { useAppKeyboardShortcuts } from './hooks/ui/useAppKeyboardShortcuts';
+import { useFocusOnMount, useScreenReaderAnnouncement } from './hooks/ui/useFocusManagement';
+import { useKeyboardShortcuts } from './hooks/ui/useKeyboardShortcuts';
 import { usePopupStore } from './store';
 import { useProgressStore } from './store/progressStore';
 

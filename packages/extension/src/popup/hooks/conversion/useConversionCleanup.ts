@@ -10,7 +10,7 @@ import {
   copyToClipboard,
   formatErrorDetailsForClipboard,
   formatErrorTimestamp,
-} from '@/shared/errors';
+} from '@/shared/errors/tracking/telemetry';
 import type { AppState } from '../integration/useAppState';
 
 export interface ConversionCleanupHandlers {

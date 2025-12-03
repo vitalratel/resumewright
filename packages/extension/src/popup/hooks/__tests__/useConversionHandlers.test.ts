@@ -7,7 +7,8 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { validateTsxFile } from '@/shared/domain/pdf/validation';
-import { copyToClipboard, ErrorCode } from '@/shared/errors';
+import { ErrorCode } from '@/shared/errors/codes';
+import { copyToClipboard } from '@/shared/errors/tracking/telemetry';
 import { extensionAPI } from '../../services/extensionAPI';
 import { useProgressStore } from '../../store/progressStore';
 import { useConversionHandlers } from '../conversion/useConversionHandlers';
@@ -26,8 +27,8 @@ vi.mock('@/shared/domain/pdf/validation', async () => {
   };
 });
 
-vi.mock('@/shared/errors', async () => {
-  const actual = await vi.importActual('@/shared/errors');
+vi.mock('@/shared/errors/tracking/telemetry', async () => {
+  const actual = await vi.importActual('@/shared/errors/tracking/telemetry');
   return {
     ...actual,
     copyToClipboard: vi.fn().mockResolvedValue(true),

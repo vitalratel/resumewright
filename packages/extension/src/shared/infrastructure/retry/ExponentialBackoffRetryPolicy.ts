@@ -4,7 +4,7 @@
  * Retry logic with exponential backoff strategy and jitter to prevent thundering herd.
  */
 
-import { getLogger } from '../logging';
+import { getLogger } from '../logging/instance';
 
 /**
  * Retry configuration options

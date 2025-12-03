@@ -17,7 +17,7 @@
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ErrorCode } from '../shared/errors';
+import { ErrorCode } from '../shared/errors/codes';
 import App from './App';
 import { usePopupStore } from './store';
 import { useProgressStore } from './store/progressStore';

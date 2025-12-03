@@ -8,10 +8,10 @@
 
 import { ChevronDownIcon, ChevronUpIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import React, { useEffect, useRef } from 'react';
-import { useLocalStorage } from '../../hooks';
+import { useLocalStorage } from '../../hooks/integration/useLocalStorage';
 import { tokens } from '../../styles/tokens';
 import { LocalStorageKeys } from '../../utils/localStorage';
-import { TSX } from '../common';
+import { TSX } from '../common/TechTerm';
 
 const AUTO_MINIMIZE_AFTER_LAUNCHES = 3;
 

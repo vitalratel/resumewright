@@ -16,7 +16,7 @@
 
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import React from 'react';
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { tokens } from '../../styles/tokens';
 
 export type AlertVariant = 'error' | 'success' | 'info' | 'warning';

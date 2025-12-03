@@ -5,9 +5,12 @@ import { ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/outline';
 import React, { useCallback, useState } from 'react';
 import type { UserSettings } from '@/shared/types/settings';
 import { tokens } from '../../styles/tokens';
-import type { Tab } from '../common';
-import { Alert, PDF, SkeletonSettings, TabGroup } from '../common';
+import { Alert } from '../common/Alert';
 import { RangeSlider } from '../common/RangeSlider';
+import { SkeletonSettings } from '../common/Skeleton';
+import type { Tab } from '../common/TabGroup';
+import { TabGroup } from '../common/TabGroup';
+import { PDF } from '../common/TechTerm';
 import { MarginPreview } from '../MarginPreview';
 import { ThemeSelector } from './ThemeSelector';
 
@@ -267,7 +270,7 @@ export const SettingsView = React.memo(
                       settings.defaultConfig.pageSize === size
                         ? `${tokens.colors.borders.success} ${tokens.colors.success.bg} ${tokens.effects.shadow}`
                         : `${tokens.borders.default} ${tokens.colors.neutral.hover} ${tokens.effects.hoverBorder} ${tokens.effects.shadowInteractive} ${tokens.effects.hoverScale}`
-                    } has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-blue-500 has-[:focus-visible]:ring-offset-2`}
+                    } has-focus-visible:ring-2 has-focus-visible:ring-blue-500 has-focus-visible:ring-offset-2`}
                   >
                     <div className="flex items-center">
                       <input

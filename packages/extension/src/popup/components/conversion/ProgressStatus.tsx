@@ -12,7 +12,7 @@ import {
   getStageDisplayName,
   getStageIcon,
 } from '../../../shared/utils/progressCalculations';
-import { useDebounce } from '../../hooks/core';
+import { useDebounce } from '../../hooks/core/useDebounce';
 import { tokens } from '../../styles/tokens';
 
 interface ProgressStatusProps {

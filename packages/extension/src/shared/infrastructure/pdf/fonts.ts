@@ -7,7 +7,7 @@
 
 import type { FontRequirement } from '../../domain/fonts/types';
 import { parseFontRequirements } from '../../domain/pdf/wasmSchemas';
-import { getLogger } from '../../infrastructure/logging';
+import { getLogger } from '../../infrastructure/logging/instance';
 import { createConverterInstance } from '../wasm/instance';
 
 /**

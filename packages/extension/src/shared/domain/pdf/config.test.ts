@@ -4,7 +4,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ILogger } from '../../infrastructure/logging';
+import type { ILogger } from '../../infrastructure/logging/logger';
 import type { ConversionConfig } from '../../types/models';
 import { convertConfigToRust } from './config';
 
@@ -20,7 +20,7 @@ const mockLogger: ILogger = {
 };
 
 // Mock logger
-vi.mock('../../infrastructure/logging', () => ({
+vi.mock('../../infrastructure/logging/instance', () => ({
   getLogger: vi.fn(),
 }));
 
@@ -39,7 +39,7 @@ describe('PDF Config', () => {
     );
 
     // Setup default mock implementation for getLogger
-    const { getLogger } = await import('../../infrastructure/logging');
+    const { getLogger } = await import('../../infrastructure/logging/instance');
     vi.mocked(getLogger).mockReturnValue({
       debug: vi.fn(),
       error: vi.fn(),
@@ -116,7 +116,7 @@ describe('PDF Config', () => {
 
     it('should log error when validation fails', async () => {
       // Verify error logging
-      const { getLogger } = await import('../../infrastructure/logging');
+      const { getLogger } = await import('../../infrastructure/logging/instance');
       const localMockLogger: ILogger = {
         setLevel: vi.fn(),
         getLevel: vi.fn(() => 0),

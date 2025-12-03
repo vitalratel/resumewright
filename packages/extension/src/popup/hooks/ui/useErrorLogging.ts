@@ -4,8 +4,9 @@
  */
 
 import { useEffect, useRef } from 'react';
-import type { ERROR_MESSAGES, ErrorCategory } from '@/shared/errors/';
-import { getLogger } from '@/shared/infrastructure/logging';
+import type { ErrorCategory } from '@/shared/errors/codes';
+import type { ERROR_MESSAGES } from '@/shared/errors/messages';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 import type { ConversionError } from '@/shared/types/models';
 
 type ErrorMessage = (typeof ERROR_MESSAGES)[keyof typeof ERROR_MESSAGES];

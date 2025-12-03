@@ -9,7 +9,7 @@
  */
 
 import { useEffect } from 'react';
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { ErrorCode } from '../../../shared/errors/codes';
 import { downloadPDF } from '../../../shared/infrastructure/pdf/downloader';
 import { extensionAPI } from '../../services/extensionAPI';

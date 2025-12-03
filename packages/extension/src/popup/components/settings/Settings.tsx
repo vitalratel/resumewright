@@ -36,8 +36,8 @@ import { useDebouncedCallback } from 'use-debounce';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import type { UserSettings } from '@/shared/types/settings';
 import { DEBOUNCE_DELAYS, UI_DELAYS } from '../../constants/timings';
-import { useUnsavedChanges } from '../../hooks';
-import { useBeforeUnload } from '../../hooks/core';
+import { useBeforeUnload } from '../../hooks/core/useBeforeUnload';
+import { useUnsavedChanges } from '../../hooks/settings/useUnsavedChanges';
 import { ResetConfirmationModal } from '../ResetConfirmationModal';
 import { SettingsView } from './SettingsView';
 

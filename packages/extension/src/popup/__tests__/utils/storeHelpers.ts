@@ -5,7 +5,7 @@
  * Reduces boilerplate and ensures consistent test setup.
  */
 
-import { ErrorCategory, ErrorCode } from '@/shared/errors';
+import { ErrorCategory, ErrorCode } from '@/shared/errors/codes';
 import type { ConversionError, ConversionProgress } from '@/shared/types/models';
 import { DEFAULT_JOB_ID } from '../../constants/app';
 import type { CVMetadata, UIState } from '../../store';

@@ -8,6 +8,10 @@ pkg/
 target/
 *.tsbuildinfo
 packages/extension/.output/
+packages/extension/.wxt/
+
+# Transpiled test fixtures (generated from TSX)
+test-fixtures/transpiled/
 
 # Binary dependencies
 lib/

@@ -16,7 +16,7 @@
 
 import { fakeBrowser } from '@webext-core/fake-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { localExtStorage } from '@/shared/infrastructure/storage';
+import { localExtStorage } from '@/shared/infrastructure/storage/typedStorage';
 import type { ErrorDetails, ErrorEvent } from '../telemetry';
 import {
   clearStoredErrors,

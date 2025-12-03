@@ -27,10 +27,10 @@
 // React 19: No longer need useState/useEffect for hydration - using Zustand store directly
 import { getContainerClass } from '../constants/app';
 import { useWasmCompatibility } from '../hooks/integration/useWasmCompatibility';
-import { useDarkMode } from '../hooks/ui';
+import { useDarkMode } from '../hooks/ui/useDarkMode';
 import { usePopupStore } from '../store';
 import { WasmFallback } from './conversion/WasmFallback';
-import { LoadingScreen } from './layout';
+import { LoadingScreen } from './layout/LoadingScreen';
 
 interface AppShellProps {
   /** Child components to render when initialization complete */

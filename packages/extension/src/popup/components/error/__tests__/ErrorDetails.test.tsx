@@ -8,7 +8,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
-import { ErrorCategory, ErrorCode } from '@/shared/errors/';
+import { ErrorCategory, ErrorCode } from '@/shared/errors/codes';
 // Import mocked functions for assertions
 import {
   copyToClipboard,

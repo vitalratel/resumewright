@@ -8,13 +8,13 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, vi } from 'vitest';
-import { ErrorCode } from '@/shared/errors/';
+import { ErrorCode } from '@/shared/errors/codes';
 import type { ConversionError } from '@/shared/types/models';
 import { ErrorActions } from '../ErrorActions';
 
 // Mock clipboard functions
-vi.mock('@/shared/errors', async () => {
-  const actual = await vi.importActual('@/shared/errors');
+vi.mock('@/shared/errors/tracking/telemetry', async () => {
+  const actual = await vi.importActual('@/shared/errors/tracking/telemetry');
   return {
     ...actual,
     copyToClipboard: vi.fn().mockResolvedValue(true),
@@ -329,7 +329,7 @@ describe('ErrorActions', () => {
       const user = userEvent.setup();
       import.meta.env.DEV = true;
 
-      const { copyToClipboard } = await import('@/shared/errors');
+      const { copyToClipboard } = await import('@/shared/errors/tracking/telemetry');
       const error = createError();
 
       render(<ErrorActions error={error} retryAttempt={0} />);

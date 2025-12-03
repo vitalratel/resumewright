@@ -4,7 +4,7 @@
  */
 
 import { useMemo } from 'react';
-import { ErrorCode } from '@/shared/errors/';
+import { ErrorCode } from '@/shared/errors/codes';
 import type { PrioritizedSuggestion } from '@/shared/errors/presentation/suggestions';
 import {
   getSizeReductionTips,

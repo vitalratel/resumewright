@@ -1,7 +1,7 @@
 // ABOUTME: Wraps messaging for popup use cases.
 // ABOUTME: Handles TSX validation, conversion requests, and message subscriptions.
 
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { onMessage, sendMessage } from '@/shared/messaging';
 import type {
   ConversionCompletePayload,

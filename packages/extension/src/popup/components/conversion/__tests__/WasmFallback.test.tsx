@@ -28,8 +28,8 @@ import {
 // We spy on fakeBrowser methods to control behavior
 
 // Mock clipboard functions
-vi.mock('@/shared/errors', async () => {
-  const actual = await vi.importActual('@/shared/errors');
+vi.mock('@/shared/errors/tracking/telemetry', async () => {
+  const actual = await vi.importActual('@/shared/errors/tracking/telemetry');
   return {
     ...actual,
     copyToClipboard: vi.fn().mockResolvedValue(true),
@@ -224,7 +224,7 @@ describe('WasmFallback', () => {
     });
 
     it('should copy error details to clipboard when Copy Error Details clicked', async () => {
-      const { copyToClipboard } = await import('@/shared/errors');
+      const { copyToClipboard } = await import('@/shared/errors/tracking/telemetry');
       vi.stubEnv('DEV', true);
 
       render(<WasmFallback report={compatibleReport} />);

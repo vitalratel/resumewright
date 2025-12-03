@@ -6,7 +6,7 @@
 
 import type { BaseIssue, BaseSchema } from 'valibot';
 import { safeParse } from 'valibot';
-import type { ILogger } from '@/shared/infrastructure/logging';
+import type { ILogger } from '@/shared/infrastructure/logging/logger';
 
 /**
  * Validation result with success flag

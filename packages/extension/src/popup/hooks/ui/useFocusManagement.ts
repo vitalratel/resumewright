@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 
 /**
  * Hook to manage focus on component mount or state changes

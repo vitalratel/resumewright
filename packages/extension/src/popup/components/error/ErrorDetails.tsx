@@ -9,7 +9,7 @@
 
 import { CheckIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { memo, useMemo, useState } from 'react';
-import type { ErrorCategory } from '@/shared/errors/';
+import type { ErrorCategory } from '@/shared/errors/codes';
 import type { ErrorDetails as ErrorDetailsType } from '@/shared/errors/tracking/telemetry';
 import {
   copyToClipboard,

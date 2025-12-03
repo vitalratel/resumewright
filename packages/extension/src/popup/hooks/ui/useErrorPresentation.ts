@@ -5,8 +5,8 @@
 
 import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { useMemo } from 'react';
-import type { ErrorCategory } from '@/shared/errors/';
-import { ErrorCategory as ErrorCategoryEnum } from '@/shared/errors/';
+import type { ErrorCategory } from '@/shared/errors/codes';
+import { ErrorCategory as ErrorCategoryEnum } from '@/shared/errors/codes';
 import { tokens } from '../../styles/tokens';
 
 interface ErrorPresentation {

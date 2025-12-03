@@ -25,7 +25,7 @@ import {
 } from 'valibot';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { getLogger } from '../../shared/infrastructure/logging';
+import { getLogger } from '../../shared/infrastructure/logging/instance';
 import { debounceAsync } from '../../shared/utils/debounce';
 import type { CVMetadata, PersistedSlice } from './slices/persistedSlice';
 import { createPersistedSlice } from './slices/persistedSlice';

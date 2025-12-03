@@ -7,7 +7,8 @@
 
 import { fakeBrowser } from '@webext-core/fake-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Logger, LogLevel, resetLogger, setLogger } from '@/shared/infrastructure/logging';
+import { resetLogger, setLogger } from '@/shared/infrastructure/logging/instance';
+import { Logger, LogLevel } from '@/shared/infrastructure/logging/logger';
 import { BadgeManager } from '../badgeManager';
 
 // Mock dependencies

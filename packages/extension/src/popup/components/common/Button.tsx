@@ -9,7 +9,7 @@
 
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import React from 'react';
-import { useDelayedSpinner } from '../../hooks/ui';
+import { useDelayedSpinner } from '../../hooks/ui/useDelayedSpinner';
 import { tokens } from '../../styles/tokens';
 
 // Extract magic numbers for pending state timeout and spinner delay

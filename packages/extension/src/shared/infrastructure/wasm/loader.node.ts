@@ -7,7 +7,7 @@ import { accessSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import process from 'node:process';
 import init from '@pkg/wasm_bridge';
-import { getLogger } from '../../infrastructure/logging';
+import { getLogger } from '../../infrastructure/logging/instance';
 
 /**
  * Get default WASM path for Node.js environment

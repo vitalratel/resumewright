@@ -13,21 +13,21 @@ import {
 } from '@heroicons/react/24/outline';
 import React, { useState } from 'react';
 import { WEBASSEMBLY_URLS } from '@/shared/config/externalUrls';
+import { ErrorCategory, ErrorCode } from '@/shared/errors/codes';
 import {
   copyToClipboard,
   formatErrorDetailsForClipboard,
   formatErrorTimestamp,
   generateErrorId,
-} from '@/shared/errors';
-import { ErrorCategory, ErrorCode } from '@/shared/errors/';
-import { getLogger } from '@/shared/infrastructure/logging';
+} from '@/shared/errors/tracking/telemetry';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 import type { WasmCompatibilityReport } from '@/shared/infrastructure/wasm/compatibility';
 import type { ConversionError } from '@/shared/types/models';
 import { useLoadingState } from '../../hooks/ui/useLoadingState';
 import { tokens } from '../../styles/tokens';
-import { WASM } from '../common';
 import { Alert } from '../common/Alert';
 import { Button } from '../common/Button';
+import { WASM } from '../common/TechTerm';
 
 // Extract cache clear delay constant
 const CACHE_CLEAR_DELAY_MS = 500;

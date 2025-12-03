@@ -7,14 +7,14 @@
 
 import { fakeBrowser } from '@webext-core/fake-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { localExtStorage } from '@/shared/infrastructure/storage';
+import { localExtStorage } from '@/shared/infrastructure/storage/typedStorage';
 import type { ConversionStatus } from '../../shared/types/models';
 import type { UserSettings } from '../../shared/types/settings';
 
 const STORAGE_KEY = 'resumewright_job_states';
 
 // Mock logger
-vi.mock('../../shared/infrastructure/logging', () => ({
+vi.mock('../../shared/infrastructure/logging/instance', () => ({
   getLogger: vi.fn(() => ({
     info: vi.fn(),
     debug: vi.fn(),
@@ -109,7 +109,7 @@ describe('LifecycleManager', () => {
     });
 
     it('should handle settings initialization failure gracefully', async () => {
-      const { getLogger } = await import('../../shared/infrastructure/logging');
+      const { getLogger } = await import('../../shared/infrastructure/logging/instance');
       const mockLogger = {
         info: vi.fn(),
         debug: vi.fn(),
@@ -137,7 +137,7 @@ describe('LifecycleManager', () => {
     });
 
     it('should log success when settings initialization succeeds', async () => {
-      const { getLogger } = await import('../../shared/infrastructure/logging');
+      const { getLogger } = await import('../../shared/infrastructure/logging/instance');
       const mockLogger = {
         info: vi.fn(),
         debug: vi.fn(),
@@ -233,7 +233,7 @@ describe('LifecycleManager', () => {
 
   describe('orphaned job detection', () => {
     it('should detect abandoned jobs after service worker restart', async () => {
-      const { getLogger } = await import('../../shared/infrastructure/logging');
+      const { getLogger } = await import('../../shared/infrastructure/logging/instance');
       const mockLogger = {
         info: vi.fn(),
         debug: vi.fn(),
@@ -265,7 +265,7 @@ describe('LifecycleManager', () => {
     });
 
     it('should not flag old jobs as orphaned (>5 minutes)', async () => {
-      const { getLogger } = await import('../../shared/infrastructure/logging');
+      const { getLogger } = await import('../../shared/infrastructure/logging/instance');
       const mockLogger = {
         info: vi.fn(),
         debug: vi.fn(),

@@ -9,13 +9,14 @@
 
 import { fakeBrowser } from '@webext-core/fake-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Logger, LogLevel, resetLogger, setLogger } from '@/shared/infrastructure/logging';
-import { setValidatedStorage } from '@/shared/infrastructure/storage';
+import { resetLogger, setLogger } from '@/shared/infrastructure/logging/instance';
+import { Logger, LogLevel } from '@/shared/infrastructure/logging/logger';
+import { setValidatedStorage } from '@/shared/infrastructure/storage/validation';
 import { initWASM } from '../../shared/infrastructure/wasm/loader';
 import { getWasmStatus, initializeWASM, retryWasmInit } from '../wasmInit';
 
 // Mock dependencies
-vi.mock('@/shared/infrastructure/storage', () => ({
+vi.mock('@/shared/infrastructure/storage/validation', () => ({
   setValidatedStorage: vi.fn(),
 }));
 vi.mock('../../shared/infrastructure/wasm/loader', () => ({
@@ -23,7 +24,7 @@ vi.mock('../../shared/infrastructure/wasm/loader', () => ({
   isWASMInitialized: vi.fn(),
   resetWASMForTesting: vi.fn(),
 }));
-vi.mock('../../shared/errors/factory', () => ({
+vi.mock('../../shared/errors/factory/wasmErrors', () => ({
   createWasmInitError: vi.fn((stage, technicalDetails) => ({
     code: 'WASM_INIT_FAILED',
     stage,
@@ -203,7 +204,7 @@ describe('wasmInit - Integration Tests', () => {
     });
 
     it('should create structured errors using error factory', async () => {
-      const { createWasmInitError } = await import('../../shared/errors/factory');
+      const { createWasmInitError } = await import('../../shared/errors/factory/wasmErrors');
       vi.mocked(initWASM).mockRejectedValue(new Error('Init failed'));
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
@@ -223,7 +224,7 @@ describe('wasmInit - Integration Tests', () => {
     });
 
     it('should create error for max retries reached', async () => {
-      const { createWasmInitError } = await import('../../shared/errors/factory');
+      const { createWasmInitError } = await import('../../shared/errors/factory/wasmErrors');
       vi.mocked(initWASM).mockRejectedValue(new Error('Fail'));
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 

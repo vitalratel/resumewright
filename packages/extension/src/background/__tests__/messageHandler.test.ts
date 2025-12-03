@@ -67,7 +67,7 @@ vi.mock('../../shared/application/pdf/converter', () => ({
 }));
 
 // Silence logging
-vi.mock('@/shared/infrastructure/logging', () => ({
+vi.mock('@/shared/infrastructure/logging/instance', () => ({
   getLogger: () => ({
     debug: vi.fn(),
     info: vi.fn(),
@@ -77,7 +77,7 @@ vi.mock('@/shared/infrastructure/logging', () => ({
 }));
 
 // Mock storage for settings
-vi.mock('@/shared/infrastructure/storage', () => ({
+vi.mock('@/shared/infrastructure/storage/typedStorage', () => ({
   localExtStorage: {
     getItem: vi.fn().mockResolvedValue('success'),
     setItem: vi.fn().mockResolvedValue(undefined),

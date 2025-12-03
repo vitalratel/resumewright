@@ -7,7 +7,7 @@
 
 import process from 'node:process';
 import init from '@pkg/wasm_bridge';
-import { getLogger } from '../../infrastructure/logging';
+import { getLogger } from '../../infrastructure/logging/instance';
 
 let wasmInitialized = false;
 

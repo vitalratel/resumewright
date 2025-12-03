@@ -6,7 +6,7 @@
  */
 
 import { CheckIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
-import type { ErrorCategory } from '@/shared/errors/';
+import type { ErrorCategory } from '@/shared/errors/codes';
 import type { ErrorDetails } from '@/shared/errors/tracking/telemetry';
 import {
   copyToClipboard,

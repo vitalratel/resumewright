@@ -1,9 +1,9 @@
 // ABOUTME: Central message routing for background script using @webext-core/messaging.
 // ABOUTME: Registers typed message handlers for all popup ↔ background communication.
 
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
-import { localExtStorage } from '@/shared/infrastructure/storage';
+import { localExtStorage } from '@/shared/infrastructure/storage/typedStorage';
 import { createConverterInstance } from '@/shared/infrastructure/wasm/instance';
 import { isWASMInitialized } from '@/shared/infrastructure/wasm/loader';
 import { onMessage, sendMessage } from '@/shared/messaging';

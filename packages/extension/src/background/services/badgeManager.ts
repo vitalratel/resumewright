@@ -5,8 +5,8 @@
  * Uses Manifest V3 badge API (browser.action).
  */
 
-import { getLogger } from '@/shared/infrastructure/logging';
-import { localExtStorage } from '@/shared/infrastructure/storage';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
+import { localExtStorage } from '@/shared/infrastructure/storage/typedStorage';
 
 /**
  * Badge Manager for Extension Toolbar Icon

@@ -2,7 +2,7 @@
 // ABOUTME: Verifies file checks, WASM status polling, and syntax validation.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ILogger } from '../../infrastructure/logging';
+import type { ILogger } from '../../infrastructure/logging/logger';
 import type { TsxToPdfConverter } from './types';
 import { validateTsxFile, validateTsxSyntax } from './validation';
 

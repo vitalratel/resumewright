@@ -4,7 +4,9 @@
  */
 
 import React from 'react';
-import { AppProvider, ConversionProvider, QuickSettingsProvider } from '../../../context';
+import { AppProvider } from '../../../context/AppContext';
+import { ConversionProvider } from '../../../context/ConversionContext';
+import { QuickSettingsProvider } from '../../../context/QuickSettingsContext';
 import type { ConversionHandlers } from '../../../hooks/conversion/useConversionHandlers';
 import type { AppState } from '../../../hooks/integration/useAppState';
 import { ConvertingState } from '../ConvertingState';

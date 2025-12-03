@@ -60,7 +60,6 @@ jobs:
   wasm-build:
     name: Build WASM
     runs-on: ubuntu-latest
-    needs: rust-checks
 
     steps:
       - name: Checkout code
@@ -128,39 +127,6 @@ jobs:
             !packages/rust-core/wasm-bridge/pkg/.gitignore
           retention-days: 1
 
-  typescript-checks:
-    name: TypeScript Lint & Typecheck
-    runs-on: ubuntu-latest
-    needs: wasm-build
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Download WASM artifacts
-        uses: actions/download-artifact@v6
-        with:
-          name: wasm-build
-          path: packages/rust-core/wasm-bridge/pkg/
-
-      - name: TypeScript lint
-        run: pnpm lint
-
-      - name: TypeScript type check
-        run: pnpm typecheck
-
   typescript-tests:
     name: TypeScript Tests (Shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
@@ -192,6 +158,12 @@ jobs:
         with:
           name: wasm-build
           path: packages/rust-core/wasm-bridge/pkg/
+
+      - name: TypeScript lint & typecheck (shard 1 only)
+        if: matrix.shard == '1/3'
+        run: |
+          pnpm lint
+          pnpm typecheck
 
       - name: Run unit tests (shard ${{ matrix.shard }})
         run: pnpm test:ts --shard=${{ matrix.shard }}
@@ -396,7 +368,7 @@ jobs:
   all-checks:
     name: All Checks Passed
     runs-on: ubuntu-latest
-    needs: [rust-checks, typescript-checks, typescript-tests, playwright-tests, rust-benchmarks, build]
+    needs: [rust-checks, typescript-tests, playwright-tests, rust-benchmarks, build]
     if: always()
 
     steps:
@@ -406,12 +378,8 @@ jobs:
             echo "❌ Rust checks failed"
             exit 1
           fi
-          if [ "${{ needs.typescript-checks.result }}" != "success" ]; then
-            echo "❌ TypeScript lint/typecheck failed"
-            exit 1
-          fi
           if [ "${{ needs.typescript-tests.result }}" != "success" ]; then
-            echo "❌ TypeScript tests failed"
+            echo "❌ TypeScript tests failed (includes lint/typecheck in shard 1)"
             exit 1
           fi
           if [ "${{ needs.playwright-tests.result }}" != "success" ]; then

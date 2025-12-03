@@ -1,7 +1,7 @@
 // ABOUTME: Manages conversion progress state and UI updates.
 // ABOUTME: Handles throttled progress messaging and popup synchronization.
 
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { sendMessage } from '@/shared/messaging';
 import type { ConversionProgress, ConversionStatus } from '../../shared/types/models';
 import { throttleProgress } from '../../shared/utils/progressThrottle';

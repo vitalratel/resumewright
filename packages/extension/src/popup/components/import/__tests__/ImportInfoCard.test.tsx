@@ -12,7 +12,7 @@ import { describe, expect, vi } from 'vitest';
 import { ImportInfoCard } from '../ImportInfoCard';
 
 // Mock useLocalStorage hook
-vi.mock('../../../hooks', () => ({
+vi.mock('../../../hooks/integration/useLocalStorage', () => ({
   useLocalStorage: vi.fn((key: string) => {
     if (key === 'resumewright_info_card_minimized') {
       return [false, vi.fn()];

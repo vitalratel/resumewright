@@ -4,7 +4,7 @@
  * Handles PDF file downloads using browser API.
  */
 
-import { getLogger } from '../../infrastructure/logging';
+import { getLogger } from '../../infrastructure/logging/instance';
 import { generateFilename } from '../../utils/filenameSanitization';
 
 /**

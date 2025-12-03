@@ -3,7 +3,7 @@
 
 import { extract_cv_metadata } from '@pkg/wasm_bridge';
 import { DEFAULT_CONVERSION_CONFIG } from '@/shared/domain/settings/defaults';
-import { getLogger } from '@/shared/infrastructure/logging';
+import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import { convertTsxToPdfWithFonts } from '../../shared/application/pdf/converter';
 import { ExponentialBackoffRetryPolicy } from '../../shared/infrastructure/retry/ExponentialBackoffRetryPolicy';

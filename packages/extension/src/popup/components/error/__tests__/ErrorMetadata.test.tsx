@@ -13,8 +13,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, vi } from 'vitest';
-import type { ErrorCategory } from '@/shared/errors/';
-import { ErrorCode } from '@/shared/errors/';
+import type { ErrorCategory } from '@/shared/errors/codes';
+import { ErrorCode } from '@/shared/errors/codes';
 import { ErrorMetadata } from '../ErrorMetadata';
 
 // Mock error tracking utilities

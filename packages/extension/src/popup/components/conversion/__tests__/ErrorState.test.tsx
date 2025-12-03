@@ -6,8 +6,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import * as errorsModule from '@/shared/errors';
 import { ErrorCategory, ErrorCode } from '@/shared/errors/codes';
+import * as telemetryModule from '@/shared/errors/tracking/telemetry';
 import type { ConversionError } from '@/shared/types/models';
 import { ErrorState } from '../ErrorState';
 
@@ -200,7 +200,9 @@ describe('ErrorState', () => {
       const user = userEvent.setup();
 
       // Spy on the copyToClipboard function
-      const copyToClipboardSpy = vi.spyOn(errorsModule, 'copyToClipboard').mockResolvedValue(true);
+      const copyToClipboardSpy = vi
+        .spyOn(telemetryModule, 'copyToClipboard')
+        .mockResolvedValue(true);
 
       render(<ErrorState error={baseError} />);
 

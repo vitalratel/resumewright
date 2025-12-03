@@ -8,19 +8,18 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ErrorCode } from '../../codes';
-import type { CreateErrorOptions } from '../';
-// Updated import to use factory index after refactoring
+import type { CreateErrorOptions } from '../errorFactory';
+import { createConversionError } from '../errorFactory';
+import { createFontLoadError } from '../networkErrors';
+import { createPdfGenerationError } from '../pdfErrors';
 import {
-  createConversionError,
-  createFontLoadError,
   createMemoryLimitError,
-  createPdfGenerationError,
   createTimeoutError,
-  createTsxParseError,
   createUnknownError,
-  createWasmInitError,
   errorToConversionError,
-} from '../';
+} from '../systemErrors';
+import { createTsxParseError } from '../validationErrors';
+import { createWasmInitError } from '../wasmErrors';
 
 // Mock error ID generation and telemetry
 vi.mock('../../tracking/telemetry', () => ({
