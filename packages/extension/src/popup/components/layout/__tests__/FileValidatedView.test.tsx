@@ -214,7 +214,7 @@ describe('FileValidatedView', () => {
       expect(button).toHaveTextContent(/CtrlE|⌘E/);
     });
 
-    it('export button has accessible aria-label', () => {
+    it('export button has accessible aria-label and aria-keyshortcuts', () => {
       mockUseAppContext.mockReturnValue({
         ...mockAppContext,
         appState: {
@@ -231,10 +231,8 @@ describe('FileValidatedView', () => {
       render(<FileValidatedView />);
 
       const button = screen.getByTestId('export-button');
-      expect(button).toHaveAttribute(
-        'aria-label',
-        'Export to PDF using current settings (Ctrl+E shortcut)',
-      );
+      expect(button).toHaveAttribute('aria-label', 'Export to PDF');
+      expect(button).toHaveAttribute('aria-keyshortcuts', 'Control+e');
     });
 
     it('calls handleExportClick when export button clicked', async () => {

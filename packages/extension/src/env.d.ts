@@ -12,7 +12,7 @@
 interface ImportMetaEnv {
   /**
    * Help/Documentation URL
-   * @default 'https://github.com/vitalratel/resumewright#readme'
+   * @default 'https://resumewright.com/#faq'
    */
   readonly HELP_URL?: string;
 

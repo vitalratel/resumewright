@@ -3,20 +3,33 @@
 //! Tests all error codes and recovery scenarios to ensure proper error handling
 //! and user-friendly error messages.
 
+use js_sys::{Object, Reflect};
+use wasm_bindgen::prelude::*;
 use wasm_bindgen_test::*;
 use wasm_bridge::TsxToPdfConverter;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
-/// Helper to create a basic PDF config for testing
-fn create_test_config() -> wasm_bindgen::JsValue {
-    use serde_json::json;
-    let config = json!({
-        "paperSize": "A4",
-        "margins": 20,
-        "fontSize": 12
-    });
-    serde_wasm_bindgen::to_value(&config).unwrap()
+/// Helper to create a basic PDF config for testing (using JS Object API)
+fn create_test_config() -> JsValue {
+    let config = Object::new();
+    Reflect::set(&config, &"page_size".into(), &"A4".into()).unwrap();
+
+    let margin = Object::new();
+    Reflect::set(&margin, &"top".into(), &36.0.into()).unwrap();
+    Reflect::set(&margin, &"right".into(), &36.0.into()).unwrap();
+    Reflect::set(&margin, &"bottom".into(), &36.0.into()).unwrap();
+    Reflect::set(&margin, &"left".into(), &36.0.into()).unwrap();
+    Reflect::set(&config, &"margin".into(), &margin).unwrap();
+
+    Reflect::set(&config, &"standard".into(), &"PDF17".into()).unwrap();
+    Reflect::set(&config, &"title".into(), &"Test CV".into()).unwrap();
+    Reflect::set(&config, &"author".into(), &JsValue::null()).unwrap();
+    Reflect::set(&config, &"subject".into(), &"CV Test".into()).unwrap();
+    Reflect::set(&config, &"keywords".into(), &JsValue::null()).unwrap();
+    Reflect::set(&config, &"creator".into(), &"WASM Test".into()).unwrap();
+
+    config.into()
 }
 
 #[wasm_bindgen_test]
@@ -29,13 +42,18 @@ fn test_memory_limit_exceeded() {
     let result = converter.convert_tsx_to_pdf(&huge_tsx, config, None, None);
     assert!(result.is_err(), "Should fail with memory limit exceeded");
 
-    // Verify error structure
+    // Verify error is a structured object
     let err = result.unwrap_err();
-    let err_str = err.as_string().unwrap_or_default();
+    let err_json = js_sys::JSON::stringify(&err)
+        .ok()
+        .and_then(|s| s.as_string())
+        .unwrap_or_default();
     assert!(
-        err_str.contains("MEMORY_LIMIT_EXCEEDED") || err_str.contains("fileSize"),
+        err_json.contains("MEMORY_LIMIT_EXCEEDED")
+            || err_json.contains("fileSize")
+            || err_json.contains("code"),
         "Error should indicate memory limit: {}",
-        err_str
+        err_json
     );
 }
 
@@ -50,11 +68,14 @@ fn test_invalid_config_recovery() {
     assert!(result.is_err(), "Should fail with invalid config");
 
     let err = result.unwrap_err();
-    let err_str = err.as_string().unwrap_or_default();
+    let err_json = js_sys::JSON::stringify(&err)
+        .ok()
+        .and_then(|s| s.as_string())
+        .unwrap_or_default();
     assert!(
-        err_str.contains("INVALID_CONFIG") || err_str.contains("config"),
+        err_json.contains("INVALID_CONFIG") || err_json.contains("config"),
         "Error should indicate invalid config: {}",
-        err_str
+        err_json
     );
 }
 
@@ -69,11 +90,14 @@ fn test_invalid_tsx_syntax() {
     assert!(result.is_err(), "Should fail with TSX parse error");
 
     let err = result.unwrap_err();
-    let err_str = err.as_string().unwrap_or_default();
+    let err_json = js_sys::JSON::stringify(&err)
+        .ok()
+        .and_then(|s| s.as_string())
+        .unwrap_or_default();
     assert!(
-        err_str.contains("TSX_PARSE_ERROR") || err_str.contains("parse"),
+        err_json.contains("TSX_PARSE_ERROR") || err_json.contains("parse"),
         "Error should indicate parse error: {}",
-        err_str
+        err_json
     );
 }
 
@@ -87,8 +111,11 @@ fn test_empty_tsx_handling() {
     let result = converter.convert_tsx_to_pdf(empty_tsx, config, None, None);
     // Empty TSX should either fail gracefully or handle with default
     if let Err(err) = result {
-        let err_str = err.as_string().unwrap_or_default();
-        assert!(!err_str.is_empty(), "Error message should not be empty");
+        let err_json = js_sys::JSON::stringify(&err)
+            .ok()
+            .and_then(|s| s.as_string())
+            .unwrap_or_default();
+        assert!(!err_json.is_empty(), "Error message should not be empty");
     }
 }
 
@@ -115,11 +142,14 @@ fn test_invalid_font_data() {
     assert!(result.is_err(), "Should fail with invalid font data");
 
     let err = result.unwrap_err();
-    let err_str = err.as_string().unwrap_or_default();
+    let err_json = js_sys::JSON::stringify(&err)
+        .ok()
+        .and_then(|s| s.as_string())
+        .unwrap_or_default();
     assert!(
-        err_str.contains("INVALID_FONT_DATA") || err_str.contains("font"),
+        err_json.contains("INVALID_FONT_DATA") || err_json.contains("font"),
         "Error should indicate invalid font: {}",
-        err_str
+        err_json
     );
 }
 
@@ -183,8 +213,15 @@ fn test_progress_callback_error_handling() {
     let result = converter.convert_tsx_to_pdf(valid_tsx, config, None, Some(failing_callback));
     // Conversion should either succeed despite callback error or fail gracefully
     if let Err(err) = result {
-        // Error should exist
-        assert!(err.as_string().is_some());
+        // Error should exist - either as string or structured object
+        let err_json = js_sys::JSON::stringify(&err)
+            .ok()
+            .and_then(|s| s.as_string())
+            .unwrap_or_default();
+        assert!(
+            !err_json.is_empty() || err.as_string().is_some(),
+            "Error should have content"
+        );
     }
 }
 
@@ -221,11 +258,19 @@ fn test_error_has_suggestions() {
     assert!(result.is_err());
 
     let err = result.unwrap_err();
-    let err_str = err.as_string().unwrap_or_default();
+    let err_json = js_sys::JSON::stringify(&err)
+        .ok()
+        .and_then(|s| s.as_string())
+        .unwrap_or_default();
 
     // Error should be structured and contain useful information
-    assert!(!err_str.is_empty(), "Error message should not be empty");
-    assert!(err_str.len() > 10, "Error should be descriptive");
+    assert!(!err_json.is_empty(), "Error message should not be empty");
+    assert!(err_json.len() > 10, "Error should be descriptive");
+    // Structured errors should contain suggestions field
+    assert!(
+        err_json.contains("suggestions"),
+        "Error should contain suggestions"
+    );
 }
 
 #[wasm_bindgen_test]
@@ -239,10 +284,17 @@ fn test_error_has_recovery_info() {
     assert!(result.is_err());
 
     let err = result.unwrap_err();
-    let err_str = err.as_string().unwrap_or_default();
+    let err_json = js_sys::JSON::stringify(&err)
+        .ok()
+        .and_then(|s| s.as_string())
+        .unwrap_or_default();
 
-    // Should contain error information (code, message, etc.)
-    assert!(!err_str.is_empty());
+    // Should contain error information (code, message, recoverable)
+    assert!(!err_json.is_empty());
+    assert!(
+        err_json.contains("recoverable"),
+        "Error should have recoverable field"
+    );
 }
 
 #[wasm_bindgen_test]

@@ -1,9 +1,6 @@
 /**
  * External Links Configuration
  * Centralized configuration for all external URLs used in the extension.
- *
- * URLs point to the official ResumeWright repository.
- * If you fork this project, update these URLs to point to your repository.
  */
 
 export const EXTERNAL_LINKS = {
@@ -11,17 +8,17 @@ export const EXTERNAL_LINKS = {
    * Help/Documentation URL
    * Used in: AppFooter "Help & FAQ" button
    */
-  HELP_URL: 'https://github.com/vitalratel/resumewright#readme',
+  HELP_URL: 'https://resumewright.com/#faq',
 
   /**
    * GitHub Repository URL
-   * Reserved for future use (e.g., "View Source" button)
+   * Used in: Help modal "Report Bug" link
    */
   GITHUB_REPO: 'https://github.com/vitalratel/resumewright',
 
   /**
    * Issues/Bug Report URL
-   * Reserved for future use (e.g., "Report Bug" button)
+   * Used in: Help modal for bug reporting
    */
   ISSUES_URL: 'https://github.com/vitalratel/resumewright/issues',
 } as const;

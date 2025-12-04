@@ -23,7 +23,7 @@ export const FileValidatedView = React.memo(() => {
   const { handleFileValidated, handleExportClick } = useConversion();
   const { settings } = useQuickSettings();
 
-  // React 19 pattern: useTransition for async state updates
+  // useTransition for async state updates
   const [, startTransition] = useTransition();
 
   const { importedFile } = appState;
@@ -59,19 +59,20 @@ export const FileValidatedView = React.memo(() => {
             onClick={() => {
               void handleExportClick();
             }}
-            className={`w-full flex items-center justify-center ${tokens.spacing.gapSmall}`}
-            aria-label="Export to PDF using current settings (Ctrl+E shortcut)"
+            className="w-full"
+            aria-label="Export to PDF"
+            aria-keyshortcuts="Control+e"
             data-testid="export-button"
           >
-            <DocumentArrowDownIcon className={tokens.icons.md} aria-hidden="true" />
-            <span>Export to PDF</span>
-            <kbd
-              className={`ml-auto px-2 py-0.5 ${tokens.typography.xs} ${tokens.colors.neutral.bg} ${tokens.borders.default} ${tokens.borders.rounded} font-mono ${tokens.typography.semibold} ${tokens.effects.shadow}`
-                .trim()
-                .replace(/\s+/g, ' ')}
-            >
-              {getShortcutDisplay('E')}
-            </kbd>
+            <span className={`flex items-center justify-center ${tokens.spacing.gapSmall}`}>
+              <DocumentArrowDownIcon className={tokens.icons.sm} aria-hidden="true" />
+              <span>Export to PDF</span>
+              <kbd
+                className={`ml-1 px-2 py-0.5 ${tokens.typography.xs} ${tokens.colors.neutral.bg} ${tokens.colors.neutral.text} ${tokens.borders.default} ${tokens.borders.rounded} font-mono ${tokens.typography.semibold} ${tokens.effects.shadow}`}
+              >
+                {getShortcutDisplay('E')}
+              </kbd>
+            </span>
           </Button>
 
           {/* Current settings display with link to Settings */}

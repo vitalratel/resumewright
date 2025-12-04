@@ -282,7 +282,7 @@ export const SettingsView = React.memo(
                         className="sr-only"
                       />
                       <div
-                        className={`w-4 h-4 ${tokens.borders.full} border-2 ${tokens.spacing.marginSmall} flex items-center justify-center ${
+                        className={`w-4 h-4 ${tokens.borders.full} border-2 mr-3 flex items-center justify-center shrink-0 ${
                           settings.defaultConfig.pageSize === size
                             ? `${tokens.colors.borders.success} ${tokens.colors.success.bg}`
                             : tokens.colors.borders.default

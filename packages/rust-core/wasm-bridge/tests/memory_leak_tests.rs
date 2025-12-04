@@ -31,6 +31,7 @@ fn create_minimal_config() -> JsValue {
     Reflect::set(&margin, &"left".into(), &36.0.into()).unwrap();
     Reflect::set(&config, &"margin".into(), &margin).unwrap();
 
+    Reflect::set(&config, &"standard".into(), &"PDF17".into()).unwrap();
     Reflect::set(&config, &"title".into(), &"Test CV".into()).unwrap();
     Reflect::set(&config, &"author".into(), &JsValue::null()).unwrap();
     Reflect::set(&config, &"subject".into(), &"Memory Test".into()).unwrap();
