@@ -49,6 +49,9 @@ pdf-test-utils = { path = "../pdf-test-utils", optional = true }
 
 [dev-dependencies]
 wasm-bindgen-test = { workspace = true }
+
+# Criterion only for native targets (not WASM) - requires clang for alloca crate
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 criterion = { workspace = true }
 
 [[bench]]

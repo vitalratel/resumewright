@@ -24,12 +24,26 @@
 /// # Returns
 ///
 /// First URL-like pattern found, or `None` if no valid pattern detected.
+/// Skips domain matches that are part of email addresses.
 pub fn extract_website_from_text(text: &str) -> Option<String> {
-    regex_utils::URL.find(text).map(|m| {
-        m.as_str()
+    for m in regex_utils::URL.find_iter(text) {
+        let start = m.start();
+        let url = m
+            .as_str()
             .trim_end_matches(|c: char| !c.is_alphanumeric() && c != '/')
-            .to_string()
-    })
+            .to_string();
+
+        // Skip if this match is preceded by @ (part of email address)
+        if start > 0 {
+            let prev_char = text[..start].chars().last();
+            if prev_char == Some('@') {
+                continue;
+            }
+        }
+
+        return Some(url);
+    }
+    None
 }
 
 #[cfg(test)]
@@ -84,6 +98,22 @@ mod tests {
     #[test]
     fn test_extract_website_empty_string() {
         let result = extract_website_from_text("");
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_extract_website_skips_email_domain() {
+        // Should skip example.com because it's part of email, and find johndoe.com
+        let text = "Contact: john@example.com Website: johndoe.com";
+        let result = extract_website_from_text(text);
+        assert_eq!(result, Some("johndoe.com".to_string()));
+    }
+
+    #[test]
+    fn test_extract_website_email_only() {
+        // Should return None when only email domain exists
+        let text = "Email me at john@example.com";
+        let result = extract_website_from_text(text);
         assert_eq!(result, None);
     }
 }

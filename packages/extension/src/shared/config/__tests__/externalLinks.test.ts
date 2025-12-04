@@ -10,7 +10,7 @@ import { EXTERNAL_LINKS } from '../externalLinks';
 describe('EXTERNAL_LINKS', () => {
   describe('URLs', () => {
     it('should have correct HELP_URL', () => {
-      expect(EXTERNAL_LINKS.HELP_URL).toBe('https://github.com/vitalratel/resumewright#readme');
+      expect(EXTERNAL_LINKS.HELP_URL).toBe('https://resumewright.com/#faq');
     });
 
     it('should have correct GITHUB_REPO', () => {

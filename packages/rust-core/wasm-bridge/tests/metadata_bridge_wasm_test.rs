@@ -31,7 +31,7 @@ fn test_extract_cv_metadata_complete_cv() {
                 <h1>John Doe</h1>
                 <p>Senior Software Engineer</p>
                 <a href="mailto:john@example.com">john@example.com</a>
-                <p>+1-555-0123</p>
+                <p>+1-555-012-3456</p>
                 <p>San Francisco, CA</p>
                 <a href="https://johndoe.com">johndoe.com</a>
 
@@ -87,7 +87,7 @@ fn test_extract_cv_metadata_complete_cv() {
     let phone = metadata.phone();
     assert!(phone.is_some(), "Should extract phone");
     assert!(
-        phone.unwrap().contains("555-0123"),
+        phone.unwrap().contains("555-012-3456"),
         "Phone should contain number"
     );
 

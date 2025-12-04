@@ -11,7 +11,8 @@ use crate::analysis::{
 };
 use crate::extractors::{
     collect_all_text, extract_email_from_text, extract_location_from_text,
-    extract_name_from_elements, extract_phone_from_text, extract_website_from_text,
+    extract_name_from_elements, extract_phone_from_text, extract_title_from_elements,
+    extract_website_from_text,
 };
 
 /// Metadata extracted from a CV/resume TSX document.
@@ -39,7 +40,7 @@ pub struct CVMetadata {
     pub name: Option<String>,
 
     /// Professional title or headline (e.g., "Software Engineer").
-    /// Currently not implemented - always `None`.
+    /// Extracted from the first paragraph or span after the name heading.
     pub title: Option<String>,
 
     /// Email address extracted via regex pattern matching.
@@ -341,6 +342,9 @@ pub fn extract_metadata(document: &TsxDocument) -> Result<CVMetadata, Extraction
 
     // Extract name from first <h1> or large heading
     metadata.name = extract_name_from_elements(&elements);
+
+    // Extract title from first paragraph after the name
+    metadata.title = extract_title_from_elements(&elements, metadata.name.as_deref());
 
     // Extract contact information (email, phone patterns)
     let all_text = collect_all_text(&elements);

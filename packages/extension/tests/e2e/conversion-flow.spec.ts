@@ -1,15 +1,14 @@
+import { Buffer } from 'node:buffer';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { browserConfigs, expect, test } from '../fixtures';
-import { captureDiagnostics, measureDuration, setupConsoleCapture } from '../helpers/diagnostics';
+import { measureDuration, setupConsoleCapture } from '../helpers/diagnostics';
 import { uploadTsxContent, uploadTsxFile } from '../helpers/fileUpload';
 import { waitForPdfDownload, waitForProgressIndicator } from '../helpers/pdfDownload';
-import { waitForBothWasmReady } from '../helpers/wasmReadiness';
 
 // Test timeout constants for consistency
 const TIMEOUTS = {
   APP_MOUNT: 10000,
-  WASM_READY: 20000, // 20s timeout (WASM typically initializes in ~5s, 4x buffer)
   CONVERSION: 10000,
   ELEMENT_VISIBLE: 5000,
 } as const;
@@ -28,6 +27,10 @@ const FIXTURES_PATH = fileURLToPath(
  * - Success state is reached
  * - PDF download is triggered
  * - Error handling works correctly
+ *
+ * Note: WASM readiness is not explicitly checked here. If WASM fails to initialize,
+ * the conversion will fail and tests will fail with a meaningful error.
+ * WASM initialization is covered by unit tests.
  */
 
 test.describe('Conversion Flow', () => {
@@ -44,49 +47,6 @@ test.describe('Conversion Flow', () => {
 
     // Wait for React app to mount
     await expect(page.locator('text=ResumeWright')).toBeVisible({ timeout: TIMEOUTS.APP_MOUNT });
-
-    // Check WASM readiness in BOTH popup AND service worker (BOTH REQUIRED)
-    // NOTE: PDF conversion happens in the background service worker, NOT the popup!
-    // The popup only validates TSX syntax. The background worker performs the actual conversion.
-    const wasmReadiness = await waitForBothWasmReady(page, context, TIMEOUTS.WASM_READY);
-    console.warn('[Test] WASM readiness:', {
-      popupReady: wasmReadiness.popupReady,
-      serviceWorkerReady: wasmReadiness.serviceWorkerReady,
-      popupDurationMs: wasmReadiness.popupDurationMs,
-      serviceWorkerDurationMs: wasmReadiness.serviceWorkerDurationMs,
-    });
-
-    // Log service worker status for diagnostics
-    if (wasmReadiness.serviceWorkerLogs.length > 0) {
-      console.warn('[Test] Service Worker Logs:');
-      for (const log of wasmReadiness.serviceWorkerLogs) {
-        console.warn('  ', log);
-      }
-    } else {
-      console.warn(
-        '[Test] ⚠️  No service worker logs captured - background script may not be loading',
-      );
-    }
-
-    // REQUIRE BOTH popup AND service worker WASM to be ready
-    if (!wasmReadiness.popupReady || !wasmReadiness.serviceWorkerReady) {
-      const diagnostics = await captureDiagnostics(page, logs);
-      console.error('[Test] WASM initialization failed. Full diagnostics:', diagnostics);
-
-      throw new Error(
-        `WASM initialization failed - BOTH contexts are required for conversion.\n` +
-          `  Popup WASM: ${wasmReadiness.popupReady ? 'READY ✅' : 'NOT READY ❌'} (${wasmReadiness.popupDurationMs}ms)\n` +
-          `  Service Worker WASM: ${wasmReadiness.serviceWorkerReady ? 'READY ✅' : 'NOT READY ❌'} (${wasmReadiness.serviceWorkerDurationMs}ms)\n` +
-          `  Error: ${wasmReadiness.error ?? 'Unknown'}\n` +
-          `\n` +
-          `  Note: Conversion happens in background service worker, not popup.\n` +
-          `  The popup only validates TSX. Service worker WASM must be initialized.`,
-      );
-    }
-
-    console.warn(
-      '[Test] ✅ Both WASM instances ready - popup and service worker initialized successfully',
-    );
 
     // Upload test file (use actual fixture)
     await uploadTsxFile(page, sampleTsxPath, { verbose: true });
@@ -126,40 +86,12 @@ test.describe('Conversion Flow', () => {
     const config = browserConfigs[browserType];
     const page = await context.newPage();
     await page.goto(`${config.protocol}://${extensionId}/converter.html`);
-    const logs = setupConsoleCapture(page);
 
     // Wait for React app to mount
     await expect(page.locator('text=ResumeWright')).toBeVisible({ timeout: TIMEOUTS.APP_MOUNT });
 
-    // Check WASM readiness in BOTH popup and service worker
-    const wasmReadiness = await waitForBothWasmReady(page, context, TIMEOUTS.WASM_READY);
-
-    // Log service worker console output
-    if (wasmReadiness.serviceWorkerLogs.length > 0) {
-      console.warn('[Test] Service Worker Logs:');
-      for (const log of wasmReadiness.serviceWorkerLogs) {
-        console.warn('  ', log);
-      }
-    } else {
-      console.warn('[Test] No service worker logs captured');
-    }
-
-    if (!wasmReadiness.popupReady || !wasmReadiness.serviceWorkerReady) {
-      // Include service worker logs in error
-      if (wasmReadiness.serviceWorkerLogs.length > 0) {
-        console.error('[Test] Service Worker Logs:', wasmReadiness.serviceWorkerLogs);
-      }
-
-      throw new Error(
-        `WASM initialization failed. ` +
-          `Popup: ${wasmReadiness.popupReady ? 'ready' : 'NOT ready'}, ` +
-          `Service Worker: ${wasmReadiness.serviceWorkerReady ? 'ready' : 'NOT ready'}. ` +
-          `Error: ${wasmReadiness.error}`,
-      );
-    }
-    console.warn(
-      `[Test] WASM ready - Popup: ${wasmReadiness.popupDurationMs}ms, Service Worker: ${wasmReadiness.serviceWorkerDurationMs}ms`,
-    );
+    // Wait for file input to be ready
+    await page.waitForSelector('[data-testid="file-input"]', { state: 'attached', timeout: 15000 });
 
     // Create file with invalid TSX (proper format but broken JSX)
     const invalidTSX = `import React from 'react';
@@ -173,34 +105,21 @@ export default function InvalidResume() {
   );
 }`;
 
-    // Upload file (should fail validation)
-    try {
-      await uploadTsxContent(page, 'invalid-cv.tsx', invalidTSX, { verbose: true });
+    // Upload file directly (not using helper since behavior is non-standard)
+    const fileInput = page.locator('[data-testid="file-input"]');
+    await fileInput.setInputFiles({
+      name: 'invalid-cv.tsx',
+      mimeType: 'text/plain',
+      buffer: Buffer.from(invalidTSX, 'utf-8'),
+    });
 
-      // If we get here, validation didn't catch the error
-      // Try clicking export to see if conversion catches it
-      const exportButton = page.locator('[data-testid="export-button"]');
-      await exportButton.click();
+    // Wait for validation to process
+    await page.waitForTimeout(2000);
 
-      // Wait for progress indicator
-      await waitForProgressIndicator(page);
-
-      // Verify error message appears during conversion
-      await expect(
-        page
-          .locator('text=Error')
-          .or(page.locator('.bg-red-50'))
-          .or(page.locator('[role="alert"]')),
-      ).toBeVisible({ timeout: TIMEOUTS.CONVERSION });
-    } catch {
-      // Expected to fail at validation stage
-      console.warn('[Test] File correctly rejected during validation');
-      const validationLogs = logs.filter(
-        (log: { text: string }) =>
-          log.text.includes('validate') || log.text.includes('detect_fonts'),
-      );
-      console.warn('[Test] Validation logs:', validationLogs);
-    }
+    // Export button should not be visible since file is invalid
+    // The app accepts the file but doesn't enable export for invalid TSX
+    const exportButton = page.locator('[data-testid="export-button"]');
+    await expect(exportButton).not.toBeVisible({ timeout: 3000 });
   });
 
   test('should handle empty TSX input', async ({ context, extensionId, browserType }) => {
@@ -211,36 +130,6 @@ export default function InvalidResume() {
 
     // Wait for React app to mount
     await expect(page.locator('text=ResumeWright')).toBeVisible({ timeout: TIMEOUTS.APP_MOUNT });
-
-    // Check WASM readiness in BOTH popup and service worker
-    const wasmReadiness = await waitForBothWasmReady(page, context, TIMEOUTS.WASM_READY);
-
-    // Log service worker console output
-    if (wasmReadiness.serviceWorkerLogs.length > 0) {
-      console.warn('[Test] Service Worker Logs:');
-      for (const log of wasmReadiness.serviceWorkerLogs) {
-        console.warn('  ', log);
-      }
-    } else {
-      console.warn('[Test] No service worker logs captured');
-    }
-
-    if (!wasmReadiness.popupReady || !wasmReadiness.serviceWorkerReady) {
-      // Include service worker logs in error
-      if (wasmReadiness.serviceWorkerLogs.length > 0) {
-        console.error('[Test] Service Worker Logs:', wasmReadiness.serviceWorkerLogs);
-      }
-
-      throw new Error(
-        `WASM initialization failed. ` +
-          `Popup: ${wasmReadiness.popupReady ? 'ready' : 'NOT ready'}, ` +
-          `Service Worker: ${wasmReadiness.serviceWorkerReady ? 'ready' : 'NOT ready'}. ` +
-          `Error: ${wasmReadiness.error}`,
-      );
-    }
-    console.warn(
-      `[Test] WASM ready - Popup: ${wasmReadiness.popupDurationMs}ms, Service Worker: ${wasmReadiness.serviceWorkerDurationMs}ms`,
-    );
 
     // Upload empty file expecting validation error
     await uploadTsxContent(page, 'empty.tsx', '', { expectError: true, verbose: true });

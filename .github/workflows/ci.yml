@@ -127,6 +127,45 @@ jobs:
             !packages/rust-core/wasm-bridge/pkg/.gitignore
           retention-days: 1
 
+  wasm-tests:
+    name: WASM Tests (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [firefox, chrome]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Firefox
+        if: matrix.browser == 'firefox'
+        uses: browser-actions/setup-firefox@v1
+
+      - name: Install Chrome
+        if: matrix.browser == 'chrome'
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Run WASM tests
+        run: |
+          cd packages/rust-core/wasm-bridge
+          wasm-pack test --headless --${{ matrix.browser }}
+
   typescript-tests:
     name: TypeScript Tests (Shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
@@ -353,7 +392,7 @@ jobs:
   all-checks:
     name: All Checks Passed
     runs-on: ubuntu-latest
-    needs: [rust-checks, typescript-tests, playwright-tests, rust-benchmarks, build]
+    needs: [rust-checks, wasm-tests, typescript-tests, playwright-tests, rust-benchmarks, build]
     if: always()
 
     steps:
@@ -361,6 +400,10 @@ jobs:
         run: |
           if [ "${{ needs.rust-checks.result }}" != "success" ]; then
             echo "❌ Rust checks failed"
+            exit 1
+          fi
+          if [ "${{ needs.wasm-tests.result }}" != "success" ]; then
+            echo "❌ WASM tests failed"
             exit 1
           fi
           if [ "${{ needs.typescript-tests.result }}" != "success" ]; then
