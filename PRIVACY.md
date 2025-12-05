@@ -2,7 +2,7 @@
 
 ## Overview
 
-ResumeWright is committed to protecting your privacy. This privacy policy explains how we handle data when you use our browser extension to convert Claude.ai-generated resume code into PDF files.
+ResumeWright is committed to protecting your privacy. This privacy policy explains how we handle data when you use our browser extension to convert TSX resume files into professional PDF documents.
 
 ## Data Collection
 
@@ -20,10 +20,9 @@ ResumeWright is committed to protecting your privacy. This privacy policy explai
 ### Local Storage Only
 
 The extension stores only user preferences locally on your device:
-- PDF page size settings (e.g., A4, Letter)
+- PDF page size settings (Letter, A4, Legal)
 - Margin preferences
-- Font choices
-- Compression settings
+- Theme preference (light/dark/auto)
 
 This data never leaves your device and is stored using the browser's local storage API.
 
@@ -32,8 +31,8 @@ This data never leaves your device and is stored using the browser's local stora
 ### Client-Side Processing
 
 All PDF generation happens **entirely in your browser**:
-1. The extension reads Claude.ai conversation content only when you click the export button
-2. Resume/CV code is processed locally using WebAssembly
+1. You import a TSX resume file via drag & drop or file browser
+2. The TSX code is processed locally using Rust/WebAssembly
 3. PDF is generated on your device
 4. The file is saved to your local downloads folder
 
@@ -47,34 +46,22 @@ ResumeWright operates **100% offline** after installation:
 
 ## Browser Permissions
 
-The extension requests the following permissions:
+The extension requests only two permissions:
 
 ### storage
-- **Purpose:** Save your preferences (page size, margins, fonts, compression)
+- **Purpose:** Save your preferences (page size, margins, theme)
 - **Scope:** Local storage only, never synchronized or transmitted
 
 ### downloads
 - **Purpose:** Save generated PDF files to your downloads folder
 - **Scope:** Write-only access to save PDFs you explicitly generate
 
-### activeTab
-- **Purpose:** Read Claude.ai conversation content when you click "Generate PDF"
-- **Scope:** Read-only access, only to claude.ai domain, only when activated
-- **Data Access:** Limited to the active tab content when you use the extension
-
 ## Third-Party Services
 
-### Claude.ai
-
-ResumeWright integrates with Claude.ai by reading conversation content from the Claude.ai website:
-- The extension only accesses content when you explicitly click the export button
-- No data is sent to Anthropic or any other third party
-- The extension complies with Anthropic's Terms of Service
-- Read-only access with no automated interactions
-
-### No Other Third Parties
+### None
 
 ResumeWright does not:
+- Access any websites or web content
 - Use analytics services (Google Analytics, etc.)
 - Integrate with advertising networks
 - Share data with any third-party services
