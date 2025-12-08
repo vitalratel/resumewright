@@ -4,15 +4,16 @@
 //! Supports px, pt, em, rem, %, and unitless values.
 
 use crate::css_parser::CSSParseError;
+use layout_types::DEFAULT_FONT_SIZE;
 
 /// Convert CSS length value to PDF points (72 points = 1 inch)
 ///
 /// Supports the following units:
 /// - px: pixels (1px = 0.75pt at 96 DPI)
 /// - pt: points (1:1 conversion)
-/// - em: relative to font size (1em = 10pt default)
-/// - rem: relative to root font size (1rem = 10pt default)
-/// - %: percentage (converted based on context, default 10pt base)
+/// - em: relative to font size (1em = 12pt default per W3C)
+/// - rem: relative to root font size (1rem = 12pt default per W3C)
+/// - %: percentage (converted based on context, default 12pt base)
 /// - unitless: treated as pixels
 pub fn css_to_points(value: &str) -> Result<f64, CSSParseError> {
     let trimmed = value.trim();
@@ -35,19 +36,19 @@ pub fn css_to_points(value: &str) -> Result<f64, CSSParseError> {
             .trim_end_matches("rem")
             .parse::<f64>()
             .map_err(|_| CSSParseError::InvalidValue(value.to_string()))?;
-        Ok(num * 10.0) // 1rem = 10pt (default font size)
+        Ok(num * DEFAULT_FONT_SIZE) // 1rem = 12pt (16px × 0.75 per W3C standard)
     } else if trimmed.ends_with("em") {
         let num = trimmed
             .trim_end_matches("em")
             .parse::<f64>()
             .map_err(|_| CSSParseError::InvalidValue(value.to_string()))?;
-        Ok(num * 10.0) // 1em = 10pt (default font size)
+        Ok(num * DEFAULT_FONT_SIZE) // 1em = 12pt (16px × 0.75 per W3C standard)
     } else if trimmed.ends_with('%') {
         let num = trimmed
             .trim_end_matches('%')
             .parse::<f64>()
             .map_err(|_| CSSParseError::InvalidValue(value.to_string()))?;
-        Ok(num * 10.0 / 100.0) // Assume 100% = 10pt base
+        Ok(num * DEFAULT_FONT_SIZE / 100.0) // 100% = DEFAULT_FONT_SIZE
     } else {
         // Assume pixels if no unit
         let num = trimmed
@@ -73,17 +74,17 @@ mod tests {
 
     #[test]
     fn test_css_to_points_em() {
-        assert_eq!(css_to_points("1.5em").unwrap(), 15.0);
+        assert_eq!(css_to_points("1.5em").unwrap(), 1.5 * DEFAULT_FONT_SIZE);
     }
 
     #[test]
     fn test_css_to_points_rem() {
-        assert_eq!(css_to_points("2rem").unwrap(), 20.0);
+        assert_eq!(css_to_points("2rem").unwrap(), 2.0 * DEFAULT_FONT_SIZE);
     }
 
     #[test]
     fn test_css_to_points_percentage() {
-        assert_eq!(css_to_points("50%").unwrap(), 5.0);
+        assert_eq!(css_to_points("50%").unwrap(), 0.5 * DEFAULT_FONT_SIZE);
     }
 
     #[test]

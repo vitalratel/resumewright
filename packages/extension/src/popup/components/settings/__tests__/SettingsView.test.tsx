@@ -220,7 +220,7 @@ describe('SettingsView', () => {
     it('displays margin range limits in help text', () => {
       render(<SettingsView {...defaultProps} />);
 
-      expect(screen.getByText(/In inches \(0\.25 - 1\.5\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/In inches \(0 - 1\.5\)/i)).toBeInTheDocument();
     });
 
     it('shows margin preview', () => {
@@ -300,7 +300,7 @@ describe('SettingsView', () => {
       expect(marginsFieldset).toBeInTheDocument();
 
       // Help text exists with proper id
-      const helpText = screen.getByText(/In inches \(0\.25 - 1\.5\)/);
+      const helpText = screen.getByText(/In inches \(0 - 1\.5\)/);
       expect(helpText).toHaveAttribute('id', 'margins-help');
     });
 

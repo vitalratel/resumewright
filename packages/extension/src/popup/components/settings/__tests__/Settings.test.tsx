@@ -80,8 +80,8 @@ describe('Settings', () => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
       });
 
-      // Default margins are 0.5"
-      const marginDisplays = screen.getAllByText('0.50"');
+      // Default margins are 0"
+      const marginDisplays = screen.getAllByText('0.00"');
       expect(marginDisplays).toHaveLength(4); // top, bottom, left, right
     });
   });

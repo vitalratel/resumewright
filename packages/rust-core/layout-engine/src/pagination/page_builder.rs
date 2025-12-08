@@ -80,18 +80,23 @@ pub fn paginate_boxes(
                     // Check if next content would fit
                     let next_overflows = next_bottom > page_bottom;
 
-                    // Also check if next content is a heading that would trigger
-                    // threshold-based orphan prevention (< 120pt remaining after it).
+                    // Also check if next content is a MAJOR heading (H1/H2) that would trigger
+                    // threshold-based orphan prevention (< 30pt remaining after it).
                     // If so, the next content will move to page 2, orphaning this H2.
                     //
+                    // NOTE: Only cascade for H1/H2, not H3+. Sub-headings (H3+) can be
+                    // moved independently - if H3 triggers orphan prevention, it's better
+                    // to have H2+H3 on page 1 with H3 content on page 2 than moving the
+                    // entire section and creating large whitespace.
+                    //
                     // BUT: Don't trigger threshold if the content AFTER the next box is
-                    // a new major section (H1/H2). The 120pt threshold protects content
+                    // a new major section (H1/H2). The threshold protects content
                     // within a section, not across section boundaries.
                     let next_would_trigger_threshold = if !next_overflows {
-                        let next_needs_orphan = next_box
+                        let next_is_major_heading = next_box
                             .element_type
-                            .is_some_and(|et| et.needs_orphan_prevention());
-                        if next_needs_orphan {
+                            .is_some_and(|et| et.needs_lookahead_orphan_prevention());
+                        if next_is_major_heading {
                             let space_after_next = page_bottom - next_bottom;
                             let below_threshold =
                                 space_after_next <= super::page_breaker::MIN_SPACE_AFTER_HEADING;
@@ -441,24 +446,24 @@ mod tests {
     #[test]
     fn test_h3_heading_orphan_prevention() {
         // Simulates the resume scenario where an h3 job title ends up at the
-        // bottom of a page with its bullet points on the next page.
+        // bottom of a page with very little space for content.
         //
         // Page layout:
         // - content_top = 72, content_height = 648, page_bottom = 720
-        // - Content fills most of the page (y=72, height=580, ends at y=652)
-        // - H3 heading at y=652, height=30, ends at y=682
-        // - Remaining space after heading: 720 - 682 = 38pt (not enough for content)
-        // - Following content at y=682, height=200 would overflow
+        // - Content fills most of the page (y=72, height=600, ends at y=672)
+        // - H3 heading at y=672, height=30, ends at y=702
+        // - Remaining space after heading: 720 - 702 = 18pt (< 30pt threshold)
+        // - Following content at y=702, height=200 would overflow
         //
-        // The h3 heading should move to page 2 with its content.
+        // The h3 heading should move to page 2 because < 30pt remaining.
         let content_top = 72.0;
         let content_height = 648.0;
         // page_bottom = 720
 
         let boxes = vec![
-            create_test_box_at(72.0, 580.0, None), // Main content
-            create_test_box_at(652.0, 30.0, Some(ElementType::Heading3)), // Job title (h3)
-            create_test_box_at(682.0, 200.0, None), // Bullet points
+            create_test_box_at(72.0, 600.0, None), // Main content
+            create_test_box_at(672.0, 30.0, Some(ElementType::Heading3)), // Job title (h3)
+            create_test_box_at(702.0, 200.0, None), // Bullet points
         ];
 
         let result = paginate_boxes(boxes, content_top, content_height).unwrap();
@@ -589,23 +594,24 @@ mod tests {
     }
 
     #[test]
-    fn test_h2_followed_by_small_h3_orphan_prevention() {
+    fn test_h2_followed_by_small_h3_no_cascade() {
         // Simulates the real resume scenario:
         // - H2 "RECENT PROJECTS" at bottom of page
         // - H3 "ResumeWright" (small title that fits)
         // - But paragraph content would overflow
         //
-        // The H2 should still move because even though the H3 fits,
-        // there isn't enough space for meaningful content (MIN_SPACE_AFTER_HEADING = 120pt).
+        // The H2 should STAY on page 1 because:
+        // - H2's look-ahead only cascades for H1/H2 (major sections), not H3
+        // - H3 is a sub-heading and doesn't trigger cascade
+        // - This reduces whitespace compared to moving entire H2 section
         //
         // Box sequence:
         // 1. Main content (y=72, h=580, ends at 652)
         // 2. H2 "RECENT PROJECTS" (y=652, h=25, ends at 677)
-        // 3. H3 "ResumeWright" (y=677, h=20, ends at 697) - fits! Only 23pt left (720-697)
+        // 3. H3 "ResumeWright" (y=677, h=20, ends at 697) - fits!
         // 4. Paragraph (y=697, h=100, ends at 797 > 720) - doesn't fit
         //
-        // Since only 43pt remains after H2 (720-677), which is < 120pt threshold,
-        // the H2 should move to page 2.
+        // H2 stays on page 1, H3+paragraph move to page 2
         let content_top = 72.0;
         let content_height = 648.0;
         // page_bottom = 720
@@ -619,33 +625,20 @@ mod tests {
 
         let result = paginate_boxes(boxes, content_top, content_height).unwrap();
 
-        // Debug output
-        eprintln!("Pages: {}", result.len());
-        for (i, page) in result.iter().enumerate() {
-            eprintln!("Page {}: {} boxes", i + 1, page.boxes.len());
-            for (j, b) in page.boxes.iter().enumerate() {
-                eprintln!(
-                    "  Box {}: y={}, h={}, type={:?}",
-                    j, b.y, b.height, b.element_type
-                );
-            }
-        }
-
-        // The H2 should move to page 2 because there's not enough space for meaningful content
         assert_eq!(result.len(), 2, "Should create 2 pages");
 
-        // Page 1 should only have the first content box
+        // Page 1 should have main content + H2 (H2 stays because H3 doesn't cascade)
         assert_eq!(
             result[0].boxes.len(),
-            1,
-            "Page 1 should have only the main content"
+            2,
+            "Page 1 should have main content + H2"
         );
 
-        // Page 2 should have H2 + H3 + paragraph
+        // Page 2 should have H3 + paragraph
         assert_eq!(
             result[1].boxes.len(),
-            3,
-            "Page 2 should have H2 + H3 + paragraph"
+            2,
+            "Page 2 should have H3 + paragraph"
         );
     }
 }

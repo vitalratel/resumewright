@@ -66,10 +66,10 @@ describe('SettingsStore', () => {
       const settings = await settingsStore.loadSettings();
 
       expect(settings.defaultConfig.pageSize).toBe('Letter');
-      expect(settings.defaultConfig.margin.top).toBe(0.5);
-      expect(settings.defaultConfig.margin.right).toBe(0.5);
-      expect(settings.defaultConfig.margin.bottom).toBe(0.5);
-      expect(settings.defaultConfig.margin.left).toBe(0.5);
+      expect(settings.defaultConfig.margin.top).toBe(0);
+      expect(settings.defaultConfig.margin.right).toBe(0);
+      expect(settings.defaultConfig.margin.bottom).toBe(0);
+      expect(settings.defaultConfig.margin.left).toBe(0);
       expect(settings.settingsVersion).toBe(1);
     });
 
@@ -151,10 +151,10 @@ describe('SettingsStore', () => {
           defaultConfig: expect.objectContaining({
             pageSize: 'Letter',
             margin: {
-              top: 0.5,
-              right: 0.5,
-              bottom: 0.5,
-              left: 0.5,
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0,
             },
           }),
         }),
@@ -192,10 +192,10 @@ describe('SettingsStore', () => {
           defaultConfig: expect.objectContaining({
             pageSize: 'Letter',
             margin: {
-              top: 0.5,
-              right: 0.5,
-              bottom: 0.5,
-              left: 0.5,
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0,
             },
           }),
         }),
@@ -251,11 +251,11 @@ describe('SettingsStore', () => {
       // Verify improved error messages include actual value
       expect(validation.errors).toContainEqual({
         field: 'margin.top',
-        message: 'Invalid top margin: -0.5" is outside the allowed range of 0.25" to 1.0"',
+        message: 'Invalid top margin: -0.5" is outside the allowed range of 0" to 1.5"',
       });
     });
 
-    it('rejects margins greater than 1.0', () => {
+    it('rejects margins greater than 1.5', () => {
       const invalidSettings: UserSettings = {
         ...DEFAULT_USER_SETTINGS,
         defaultConfig: {
@@ -264,7 +264,7 @@ describe('SettingsStore', () => {
             top: 0.5,
             right: 0.5,
             bottom: 0.5,
-            left: 1.5,
+            left: 2.0,
           },
         },
       };
@@ -275,31 +275,7 @@ describe('SettingsStore', () => {
       // Verify improved error messages include actual value
       expect(validation.errors).toContainEqual({
         field: 'margin.left',
-        message: 'Invalid left margin: 1.5" is outside the allowed range of 0.25" to 1.0"',
-      });
-    });
-
-    it('rejects margins less than 0.25', () => {
-      const invalidSettings: UserSettings = {
-        ...DEFAULT_USER_SETTINGS,
-        defaultConfig: {
-          ...DEFAULT_USER_SETTINGS.defaultConfig,
-          margin: {
-            top: 0.1,
-            right: 0.5,
-            bottom: 0.5,
-            left: 0.5,
-          },
-        },
-      };
-
-      const validation = settingsStore.validateSettings(invalidSettings);
-
-      expect(validation.valid).toBe(false);
-      // Verify improved error messages include actual value
-      expect(validation.errors).toContainEqual({
-        field: 'margin.top',
-        message: 'Invalid top margin: 0.1" is outside the allowed range of 0.25" to 1.0"',
+        message: 'Invalid left margin: 2" is outside the allowed range of 0" to 1.5"',
       });
     });
 

@@ -6,15 +6,12 @@
 use super::text_measurement::TextMeasureContext;
 use crate::error::LayoutError;
 use crate::text_layout::{wrap_text_with_config, TextLayoutConfig};
-use layout_types::{BoxContent, ElementType, LayoutBox, Rect, StyleDeclaration, TextMeasurer};
+use layout_types::{
+    BoxContent, ElementType, LayoutBox, Rect, StyleDeclaration, TextMeasurer, DEFAULT_FONT_FAMILY,
+    DEFAULT_FONT_SIZE,
+};
 use std::collections::HashMap;
 use taffy::prelude::*;
-
-/// Default font size for text layout (10pt)
-const DEFAULT_FONT_SIZE: f64 = 10.0;
-
-/// Default font family (PDF Standard 14 font)
-const DEFAULT_FONT_FAMILY: &str = "Helvetica";
 
 /// Stores information needed to create LayoutBox from Taffy layout
 ///

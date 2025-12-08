@@ -7,7 +7,7 @@
 use crate::content_builder::ContentBuilder;
 use crate::css_parser::{BorderLineStyle, BorderStyle, Color};
 use crate::error::PDFError;
-use layout_types::{LayoutBox, TextDecoration};
+use layout_types::{LayoutBox, TextDecoration, DEFAULT_FONT_SIZE, DEFAULT_LINE_HEIGHT_RATIO};
 
 // PDF Rendering Constants
 
@@ -93,8 +93,15 @@ pub fn render_border_bottom<C: ContentBuilder>(
         return Ok(());
     }
 
-    // Convert coordinates (border is at the bottom of the box)
-    let pdf_y = page_height - layout_box.y - layout_box.height;
+    // Convert coordinates for border positioning
+    // For Taffy-computed boxes (height > 0): border is included in height, adjust to content edge
+    // For synthetic border boxes (height = 0): border_box.y is already the correct position
+    let border_adjustment = if layout_box.height > 0.0 {
+        border.width // Adjust for Taffy including border in height
+    } else {
+        0.0 // Synthetic border box - y is already correct
+    };
+    let pdf_y = page_height - layout_box.y - layout_box.height + border_adjustment;
     let x_start = layout_box.x;
     let x_end = layout_box.x + layout_box.width;
 
@@ -209,8 +216,11 @@ pub fn render_list_bullet<C: ContentBuilder>(
     let style = &layout_box.style;
 
     // Get font size, line-height and color
-    let font_size = style.text.font_size.unwrap_or(10.0);
-    let line_height = style.text.line_height.unwrap_or(font_size * 1.2);
+    let font_size = style.text.font_size.unwrap_or(DEFAULT_FONT_SIZE);
+    let line_height = style
+        .text
+        .line_height
+        .unwrap_or(font_size * DEFAULT_LINE_HEIGHT_RATIO);
     let color = style.text.color.unwrap_or(Color {
         r: 0,
         g: 0,
@@ -389,8 +399,8 @@ mod tests {
         assert!(content.contains("3.34 w"));
         // Should contain solid dash pattern (empty array)
         assert!(content.contains("[] 0 d"));
-        // Should contain line from x_start to x_end
-        let pdf_y = page_height - layout_box.y - layout_box.height;
+        // Should contain line from x_start to x_end (at content edge, not border-box edge)
+        let pdf_y = page_height - layout_box.y - layout_box.height + border.width;
         assert!(content.contains(&format!("{} {} m", layout_box.x, pdf_y)));
         assert!(content.contains(&format!("{} {} l", layout_box.x + layout_box.width, pdf_y)));
         // Should stroke the line
