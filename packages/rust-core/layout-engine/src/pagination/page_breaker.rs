@@ -6,6 +6,17 @@
 
 use layout_types::ElementType;
 
+/// Reason for a page break decision
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PageBreakReason {
+    /// No break needed - box fits on current page
+    NoBreak,
+    /// Break needed because box would overflow the page
+    Overflow,
+    /// Break needed to prevent orphaned heading (heading fits but insufficient space for content)
+    OrphanPrevention,
+}
+
 /// Minimum space that should be available after a heading
 ///
 /// Set to allow enough content to justify keeping heading on current page:
@@ -14,7 +25,7 @@ use layout_types::ElementType;
 /// - At least 2 bullet points (~80pt)
 ///
 /// A value of 120pt ensures headings have substantial content following them.
-const MIN_SPACE_AFTER_HEADING: f64 = 120.0;
+pub const MIN_SPACE_AFTER_HEADING: f64 = 120.0;
 
 /// Determine if a page break should occur before placing this box
 ///
@@ -30,15 +41,16 @@ const MIN_SPACE_AFTER_HEADING: f64 = 120.0;
 /// * `element_type` - Type of element (for orphan detection)
 ///
 /// # Returns
-/// * `true` if a page break should occur before this box
-/// * `false` if the box can be placed on the current page
+/// * `PageBreakReason::NoBreak` if the box can be placed on the current page
+/// * `PageBreakReason::Overflow` if the box would exceed the page bottom
+/// * `PageBreakReason::OrphanPrevention` if this heading would be orphaned
 pub fn should_break_page_for_box(
     _current_y: f64,
     _box_height: f64,
     box_would_end_at: f64,
     page_bottom: f64,
     element_type: Option<ElementType>,
-) -> bool {
+) -> PageBreakReason {
     // Check if this is a heading that would be orphaned
     if let Some(et) = element_type {
         if et.is_heading() {
@@ -47,13 +59,17 @@ pub fn should_break_page_for_box(
 
             // If the heading fits but leaves insufficient space for content, break
             if box_would_end_at <= page_bottom && space_after_heading <= MIN_SPACE_AFTER_HEADING {
-                return true;
+                return PageBreakReason::OrphanPrevention;
             }
         }
     }
 
     // Break if box would overflow page
-    box_would_end_at > page_bottom
+    if box_would_end_at > page_bottom {
+        PageBreakReason::Overflow
+    } else {
+        PageBreakReason::NoBreak
+    }
 }
 
 #[cfg(test)]
@@ -69,7 +85,11 @@ mod tests {
             750.0, // page_bottom
             None,
         );
-        assert!(result, "Should break when box overflows page");
+        assert_eq!(
+            result,
+            PageBreakReason::Overflow,
+            "Should break when box overflows page"
+        );
     }
 
     #[test]
@@ -81,7 +101,11 @@ mod tests {
             750.0, // page_bottom
             None,
         );
-        assert!(!result, "Should not break when box fits");
+        assert_eq!(
+            result,
+            PageBreakReason::NoBreak,
+            "Should not break when box fits"
+        );
     }
 
     #[test]
@@ -94,8 +118,9 @@ mod tests {
             750.0, // page_bottom (100pt remaining < 120pt threshold)
             Some(ElementType::Heading2),
         );
-        assert!(
+        assert_eq!(
             result,
+            PageBreakReason::OrphanPrevention,
             "Should break to prevent heading orphan (100pt < 120pt threshold)"
         );
     }
@@ -110,8 +135,9 @@ mod tests {
             750.0, // page_bottom (150pt remaining > 120pt threshold)
             Some(ElementType::Heading2),
         );
-        assert!(
-            !result,
+        assert_eq!(
+            result,
+            PageBreakReason::NoBreak,
             "Should not break when heading has sufficient following space"
         );
     }
@@ -128,8 +154,9 @@ mod tests {
         ] {
             // 100pt remaining < 120pt threshold should trigger for all headings
             let result = should_break_page_for_box(610.0, 40.0, 650.0, 750.0, Some(*heading_type));
-            assert!(
+            assert_eq!(
                 result,
+                PageBreakReason::OrphanPrevention,
                 "{:?} should trigger orphan prevention",
                 heading_type
             );
