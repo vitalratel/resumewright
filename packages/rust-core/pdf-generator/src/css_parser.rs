@@ -45,6 +45,7 @@ pub enum CSSParseError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use layout_types::DEFAULT_FONT_SIZE;
 
     #[test]
     fn test_parse_inline_styles_empty() {
@@ -122,7 +123,7 @@ mod tests {
 
     #[test]
     fn test_css_to_points_em() {
-        assert_eq!(css_to_points("1.5em").unwrap(), 15.0);
+        assert_eq!(css_to_points("1.5em").unwrap(), 1.5 * DEFAULT_FONT_SIZE);
     }
 
     #[test]

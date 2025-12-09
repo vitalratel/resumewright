@@ -53,11 +53,15 @@ fn flatten_containers_recursively(
     for box_item in boxes {
         match &box_item.content {
             BoxContent::Container(children) => {
-                // Check if this is a flex container - preserve it to maintain horizontal layout
+                // Check if this is a flex-row container - preserve it to maintain horizontal layout
+                // Flex-column containers (like space-y-*) should be flattened to allow page breaking
+                use pdf_generator::css_parser::FlexDirection;
                 let is_flex = box_item.style.flex.display == Some(Display::Flex);
+                let is_flex_row =
+                    is_flex && box_item.style.flex.flex_direction != Some(FlexDirection::Column);
 
-                if is_flex {
-                    // Preserve flex container as-is (children maintain their x positions)
+                if is_flex_row {
+                    // Preserve flex-row container as-is (children maintain their x positions)
                     // But recursively process children in case they have nested structures
                     let processed_children = flatten_containers_recursively(children);
                     let mut preserved_box = box_item.clone();
@@ -94,13 +98,18 @@ fn flatten_containers_recursively(
                             .map(|b| b.y + b.height)
                             .fold(box_item.y, f64::max);
 
-                        // Add visual gap between text and border to match browser rendering
-                        // In browsers, line-height creates natural spacing below text baseline
-                        let text_to_border_gap = 4.0; // ~4pt gap matches typical browser rendering
+                        // CSS places border at the padding edge (content + padding)
+                        // Include padding-bottom in border position
+                        let padding_bottom = box_item
+                            .style
+                            .box_model
+                            .padding
+                            .map(|p| p.bottom)
+                            .unwrap_or(0.0);
 
-                        // Create a zero-height box below content with gap
+                        // Create a zero-height box at the padding edge
                         let mut border_box = box_item.clone();
-                        border_box.y = content_bottom + text_to_border_gap;
+                        border_box.y = content_bottom + padding_bottom;
                         border_box.height = 0.0;
                         border_box.content = BoxContent::Empty;
                         border_box.element_type = None; // Border boxes are not headings
@@ -323,10 +332,11 @@ mod tests {
             flattened[1].style.box_model.border_bottom.is_some(),
             "Border box should have border_bottom"
         );
-        // content_bottom (130.0) + text_to_border_gap (4.0) = 134.0
+        // content_bottom = child.y + child.height = 100.0 + 30.0 = 130.0
+        // No extra gap needed - CSS places border at line-box bottom
         assert_eq!(
-            flattened[1].y, 134.0,
-            "Border box should be at content bottom + 4pt gap"
+            flattened[1].y, 130.0,
+            "Border box should be at content bottom (no extra gap)"
         );
     }
 

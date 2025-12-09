@@ -2,6 +2,7 @@
 //!
 //! Converts Tailwind utility classes into StyleDeclaration objects.
 
+use layout_types::Spacing;
 use pdf_generator::css_parser::StyleDeclaration;
 use tailwind_css::TailwindBuilder;
 
@@ -30,7 +31,7 @@ use tailwind_css::TailwindBuilder;
 ///
 /// let style = resolve_tailwind_classes("text-lg font-bold text-blue-600 p-4");
 ///
-/// assert_eq!(style.text.font_size, Some(11.25));
+/// assert_eq!(style.text.font_size, Some(13.5)); // 1.125rem × 12pt
 /// assert_eq!(style.text.font_weight, Some(layout_types::FontWeight::Bold));
 /// // ... padding and color properties also set
 /// ```
@@ -63,10 +64,10 @@ pub fn resolve_tailwind_classes(class_name: &str) -> StyleDeclaration {
 
 /// Merge non-default properties from source into target
 fn merge_style_properties(target: &mut StyleDeclaration, source: &StyleDeclaration) {
-    use layout_types::FontWeight;
+    use layout_types::{FontWeight, DEFAULT_FONT_SIZE};
 
     // Text properties - only merge if different from default
-    if source.text.font_size.is_some() && source.text.font_size != Some(10.0) {
+    if source.text.font_size.is_some() && source.text.font_size != Some(DEFAULT_FONT_SIZE) {
         target.text.font_size = source.text.font_size;
     }
     // font_weight: merge if not the default Normal
@@ -129,16 +130,16 @@ mod tests {
     #[test]
     fn test_text_size_classes() {
         let style = resolve_tailwind_classes("text-sm");
-        assert_eq!(style.text.font_size, Some(8.75));
+        assert_eq!(style.text.font_size, Some(10.5)); // 0.875rem × 12pt
 
         let style = resolve_tailwind_classes("text-base");
-        assert_eq!(style.text.font_size, Some(10.0));
+        assert_eq!(style.text.font_size, Some(12.0)); // 1rem × 12pt
 
         let style = resolve_tailwind_classes("text-lg");
-        assert_eq!(style.text.font_size, Some(11.25));
+        assert_eq!(style.text.font_size, Some(13.5)); // 1.125rem × 12pt
 
         let style = resolve_tailwind_classes("text-xl");
-        assert_eq!(style.text.font_size, Some(12.5));
+        assert_eq!(style.text.font_size, Some(15.0)); // 1.25rem × 12pt
     }
 
     #[test]
@@ -156,15 +157,15 @@ mod tests {
     #[test]
     fn test_multiple_classes() {
         let style = resolve_tailwind_classes("text-lg font-bold");
-        assert_eq!(style.text.font_size, Some(11.25));
+        assert_eq!(style.text.font_size, Some(13.5)); // 1.125rem × 12pt
         assert_eq!(style.text.font_weight, Some(FontWeight::Bold));
     }
 
     #[test]
     fn test_empty_string() {
         let style = resolve_tailwind_classes("");
-        // Returns StyleDeclaration with defaults from pdf_generator
-        assert_eq!(style.text.font_size, Some(10.0));
+        // Returns StyleDeclaration with defaults from pdf_generator (1rem = 12pt)
+        assert_eq!(style.text.font_size, Some(12.0));
     }
 
     #[test]
@@ -275,7 +276,7 @@ mod tests {
         assert_eq!(style.flex.gap, Some(9.0), "space-y-3 should set gap to 9pt");
         assert_eq!(
             style.text.font_size,
-            Some(8.75),
+            Some(10.5), // 0.875rem × 12pt
             "text-sm should also be parsed"
         );
     }
@@ -306,6 +307,8 @@ mod tests {
         println!("  border_bottom: {:?}", style.box_model.border_bottom);
         println!("  font_weight: {:?}", style.text.font_weight);
         println!("  font_size: {:?}", style.text.font_size);
+        println!("  line_height: {:?}", style.text.line_height);
+        println!("  margin: {:?}", style.box_model.margin);
 
         assert!(
             style.box_model.border_bottom.is_some(),
@@ -326,8 +329,14 @@ mod test {
         use tailwind_css::TailwindBuilder;
         let mut tw = TailwindBuilder::default();
 
+        // Test text-sm
+        if let Ok((_rest, css)) = tw.inline("text-sm") {
+            println!("TEXT-SM CSS OUTPUT: '{}'", css);
+        }
+
         // Test space-y-3
-        if let Ok((_rest, css)) = tw.inline("space-y-3") {
+        let mut tw_space = TailwindBuilder::default();
+        if let Ok((_rest, css)) = tw_space.inline("space-y-3") {
             println!("SPACE-Y-3 CSS OUTPUT: '{}'", css);
         }
 
@@ -525,6 +534,95 @@ fn handle_special_tailwind_classes(class_name: &str, style: &mut StyleDeclaratio
                     let mut current = style.box_model.margin.unwrap_or_default();
                     current.bottom = margin;
                     style.box_model.margin = Some(current);
+                }
+            }
+        }
+
+        // Padding classes: p-{size}, px-{size}, py-{size}, pt-{size}, pb-{size}, etc.
+        // Standard Tailwind spacing scale: 1 = 0.25rem, 2 = 0.5rem, etc.
+        let padding_value = |size_str: &str| -> Option<f64> {
+            match size_str {
+                "0" => Some(0.0),
+                "1" => Some(3.0),   // 0.25rem * 12
+                "2" => Some(6.0),   // 0.5rem * 12
+                "3" => Some(9.0),   // 0.75rem * 12
+                "4" => Some(12.0),  // 1rem * 12
+                "5" => Some(15.0),  // 1.25rem * 12
+                "6" => Some(18.0),  // 1.5rem * 12
+                "8" => Some(24.0),  // 2rem * 12
+                "10" => Some(30.0), // 2.5rem * 12
+                "12" => Some(36.0), // 3rem * 12
+                _ => None,
+            }
+        };
+
+        if class.starts_with("p-")
+            && !class.starts_with("pb-")
+            && !class.starts_with("pt-")
+            && !class.starts_with("pl-")
+            && !class.starts_with("pr-")
+            && !class.starts_with("px-")
+            && !class.starts_with("py-")
+        {
+            if let Some(size_str) = class.strip_prefix("p-") {
+                if let Some(p) = padding_value(size_str) {
+                    style.box_model.padding = Some(Spacing::uniform(p));
+                }
+            }
+        }
+        if class.starts_with("px-") {
+            if let Some(size_str) = class.strip_prefix("px-") {
+                if let Some(p) = padding_value(size_str) {
+                    let mut current = style.box_model.padding.unwrap_or_default();
+                    current.left = p;
+                    current.right = p;
+                    style.box_model.padding = Some(current);
+                }
+            }
+        }
+        if class.starts_with("py-") {
+            if let Some(size_str) = class.strip_prefix("py-") {
+                if let Some(p) = padding_value(size_str) {
+                    let mut current = style.box_model.padding.unwrap_or_default();
+                    current.top = p;
+                    current.bottom = p;
+                    style.box_model.padding = Some(current);
+                }
+            }
+        }
+        if class.starts_with("pt-") {
+            if let Some(size_str) = class.strip_prefix("pt-") {
+                if let Some(p) = padding_value(size_str) {
+                    let mut current = style.box_model.padding.unwrap_or_default();
+                    current.top = p;
+                    style.box_model.padding = Some(current);
+                }
+            }
+        }
+        if class.starts_with("pb-") {
+            if let Some(size_str) = class.strip_prefix("pb-") {
+                if let Some(p) = padding_value(size_str) {
+                    let mut current = style.box_model.padding.unwrap_or_default();
+                    current.bottom = p;
+                    style.box_model.padding = Some(current);
+                }
+            }
+        }
+        if class.starts_with("pl-") {
+            if let Some(size_str) = class.strip_prefix("pl-") {
+                if let Some(p) = padding_value(size_str) {
+                    let mut current = style.box_model.padding.unwrap_or_default();
+                    current.left = p;
+                    style.box_model.padding = Some(current);
+                }
+            }
+        }
+        if class.starts_with("pr-") {
+            if let Some(size_str) = class.strip_prefix("pr-") {
+                if let Some(p) = padding_value(size_str) {
+                    let mut current = style.box_model.padding.unwrap_or_default();
+                    current.right = p;
+                    style.box_model.padding = Some(current);
                 }
             }
         }

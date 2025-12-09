@@ -74,22 +74,29 @@ impl ElementType {
         )
     }
 
-    /// Check if this is a section-level heading (h1-h2)
+    /// Check if this heading needs orphan prevention during pagination.
     ///
-    /// Section headings define major document sections and receive special
-    /// orphan prevention treatment to keep them with their content.
-    pub fn is_section_heading(&self) -> bool {
-        matches!(self, Self::Heading1 | Self::Heading2)
+    /// Returns true for H1-H3 headings which should stay with their following
+    /// content to avoid orphaned headers at page bottoms.
+    /// - H1/H2: Major section headings
+    /// - H3: Sub-section headings (e.g., job titles in resumes)
+    ///
+    /// H4-H6 are minor headings and don't trigger orphan prevention.
+    pub fn needs_orphan_prevention(&self) -> bool {
+        matches!(self, Self::Heading1 | Self::Heading2 | Self::Heading3)
     }
 
-    /// Check if this is a sub-heading (h3-h6)
+    /// Check if this heading needs look-ahead orphan prevention.
     ///
-    /// Sub-headings are within a section and don't trigger cascading page breaks.
-    pub fn is_sub_heading(&self) -> bool {
-        matches!(
-            self,
-            Self::Heading3 | Self::Heading4 | Self::Heading5 | Self::Heading6
-        )
+    /// Look-ahead prevention moves a heading to the next page if its immediate
+    /// following content doesn't fit. This is only for major section headings
+    /// (H1/H2) because they define logical sections that should stay together.
+    ///
+    /// H3+ headings don't use look-ahead because they're sub-headings within
+    /// a section - moving them based on NEXT section's content would orphan
+    /// their parent H2 section heading.
+    pub fn needs_lookahead_orphan_prevention(&self) -> bool {
+        matches!(self, Self::Heading1 | Self::Heading2)
     }
 }
 

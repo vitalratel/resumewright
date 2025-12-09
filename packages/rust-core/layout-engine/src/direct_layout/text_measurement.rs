@@ -5,17 +5,14 @@
 //! scenarios (definite width, min-content, max-content).
 
 use crate::text_layout::{calculate_text_width, wrap_text_with_config, TextLayoutConfig};
-use layout_types::{StyleDeclaration, TextMeasurer};
+use layout_types::{
+    StyleDeclaration, TextMeasurer, DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE,
+    DEFAULT_LINE_HEIGHT_RATIO,
+};
 use taffy::prelude::*;
 
-/// Default font size in points (10pt)
-pub const DEFAULT_FONT_SIZE: f64 = 10.0;
-
-/// Default line height multiplier (1.2x font size)
-pub const DEFAULT_LINE_HEIGHT_MULTIPLIER: f64 = 1.2;
-
-/// Default font family (PDF Standard 14 font)
-pub const DEFAULT_FONT_FAMILY: &str = "Helvetica";
+/// Default line height multiplier - alias for layout_types constant
+pub const DEFAULT_LINE_HEIGHT_MULTIPLIER: f64 = DEFAULT_LINE_HEIGHT_RATIO;
 
 /// Text measurement context for Taffy
 ///
@@ -249,10 +246,10 @@ mod tests {
         };
 
         let result = context.measure(known, available, &measurer);
+        let expected_line_height = (DEFAULT_FONT_SIZE * DEFAULT_LINE_HEIGHT_MULTIPLIER) as f32;
         // "Hello" = 5 chars * 6 pts = 30.0
         assert_eq!(result.width, 30.0);
-        // line_height = 10.0 * 1.2 = 12.0
-        assert_eq!(result.height, 12.0);
+        assert_eq!(result.height, expected_line_height);
     }
 
     #[test]
@@ -271,9 +268,10 @@ mod tests {
         };
 
         let result = context.measure(known, available, &measurer);
+        let expected_line_height = (DEFAULT_FONT_SIZE * DEFAULT_LINE_HEIGHT_MULTIPLIER) as f32;
         // Longest word is "Hello" = 5 chars * 6 pts = 30.0
         assert_eq!(result.width, 30.0);
-        assert_eq!(result.height, 12.0);
+        assert_eq!(result.height, expected_line_height);
     }
 
     #[test]
@@ -292,10 +290,10 @@ mod tests {
         };
 
         let result = context.measure(known, available, &measurer);
+        let expected_line_height = (DEFAULT_FONT_SIZE * DEFAULT_LINE_HEIGHT_MULTIPLIER) as f32;
         // "Hi" = 2 chars * 6 pts = 12.0 (fits in 100.0)
         assert_eq!(result.width, 12.0);
-        // Single line = 12.0 height
-        assert_eq!(result.height, 12.0);
+        assert_eq!(result.height, expected_line_height);
     }
 
     #[test]
@@ -314,7 +312,8 @@ mod tests {
         };
 
         let result = context.measure(known, available, &measurer);
+        let expected_line_height = (DEFAULT_FONT_SIZE * DEFAULT_LINE_HEIGHT_MULTIPLIER) as f32;
         assert_eq!(result.width, 0.0);
-        assert_eq!(result.height, 12.0); // Still has line height
+        assert_eq!(result.height, expected_line_height);
     }
 }

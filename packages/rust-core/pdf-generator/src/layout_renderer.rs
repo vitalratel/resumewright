@@ -18,6 +18,7 @@ use crate::text_utils::{apply_text_transform, calculate_text_alignment_offset};
 // Import shared layout types from layout-types crate
 use layout_types::TextDecoration;
 pub use layout_types::{BoxContent, ElementType, LayoutBox, LayoutStructure, Page};
+use layout_types::{DEFAULT_FONT_SIZE, DEFAULT_LINE_HEIGHT_RATIO};
 
 // Re-export extracted functions for backward compatibility
 pub use crate::layout_analyzer::extract_all_text_from_layout;
@@ -275,8 +276,11 @@ struct TextStyleParams {
 /// A `TextStyleParams` struct containing all computed values
 fn calculate_text_style_params(style: &StyleDeclaration) -> TextStyleParams {
     // Get font size and line-height
-    let font_size = style.text.font_size.unwrap_or(10.0);
-    let line_height = style.text.line_height.unwrap_or(font_size * 1.2);
+    let font_size = style.text.font_size.unwrap_or(DEFAULT_FONT_SIZE);
+    let line_height = style
+        .text
+        .line_height
+        .unwrap_or(font_size * DEFAULT_LINE_HEIGHT_RATIO);
 
     // Get color
     let color = style.text.color.unwrap_or(Color {
@@ -424,8 +428,11 @@ mod tests {
         let style = StyleDeclaration::default();
         let params = calculate_text_style_params(&style);
 
-        assert_eq!(params.font_size, 10.0);
-        assert_eq!(params.line_height, 12.0); // 10.0 * 1.2
+        assert_eq!(params.font_size, DEFAULT_FONT_SIZE);
+        assert_eq!(
+            params.line_height,
+            DEFAULT_FONT_SIZE * DEFAULT_LINE_HEIGHT_RATIO
+        );
         assert_eq!(params.leading, 0.0); // Ratio 1.2 < 1.3 threshold
         assert_eq!(params.color.r, 0);
         assert_eq!(params.color.g, 0);

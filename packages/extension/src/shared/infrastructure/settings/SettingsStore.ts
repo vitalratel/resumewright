@@ -133,15 +133,15 @@ class SettingsStore {
       });
     }
 
-    // Additional business logic validation (margins 0.25-1.0 inches)
+    // Additional business logic validation (margins 0-1.5 inches)
     // Improved validation error messages with context
     if (typeof settings.defaultConfig?.margin === 'object') {
       const validateMargin = (value: number, name: string) => {
         if (typeof value === 'number' && !Number.isNaN(value)) {
-          if (value < 0.25 || value > 1.0) {
+          if (value < 0 || value > 1.5) {
             errors.push({
               field: `margin.${name}`,
-              message: `Invalid ${name} margin: ${value}" is outside the allowed range of 0.25" to 1.0"`,
+              message: `Invalid ${name} margin: ${value}" is outside the allowed range of 0" to 1.5"`,
             });
           }
         } else {

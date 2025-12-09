@@ -9,7 +9,7 @@ use super::converter::css_to_points;
 use crate::css_parser::CSSParseError;
 use layout_types::{
     BorderLineStyle, BorderStyle, Display, FlexDirection, FontStyle, FontWeight, JustifyContent,
-    Spacing, StyleDeclaration, TextAlign, TextTransform,
+    Spacing, StyleDeclaration, TextAlign, TextTransform, DEFAULT_FONT_SIZE,
 };
 
 /// Parse inline style attribute to StyleDeclaration
@@ -386,7 +386,7 @@ fn parse_border_style(value: &str) -> BorderLineStyle {
 /// Supports: unitless (multiplier), px, pt, em, rem, %
 fn parse_line_height(value: &str, font_size: Option<f64>) -> Result<f64, CSSParseError> {
     let trimmed = value.trim();
-    let current_font_size = font_size.unwrap_or(10.0);
+    let current_font_size = font_size.unwrap_or(DEFAULT_FONT_SIZE);
 
     // Check if unitless (multiplier)
     if let Ok(multiplier) = trimmed.parse::<f64>() {

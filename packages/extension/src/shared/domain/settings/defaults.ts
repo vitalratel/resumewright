@@ -21,10 +21,10 @@ export const CURRENT_SETTINGS_VERSION = 1;
 export const DEFAULT_CONVERSION_CONFIG: ConversionConfig = {
   pageSize: 'Letter',
   margin: {
-    top: 0.5,
-    right: 0.5,
-    bottom: 0.5,
-    left: 0.5,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
   },
   fontSize: 11,
   fontFamily: 'Helvetica',

@@ -9,8 +9,8 @@ use crate::primitives::Color;
 
 /// Default font family for PDF rendering
 pub const DEFAULT_FONT_FAMILY: &str = "Helvetica";
-/// Default font size in PDF points
-pub const DEFAULT_FONT_SIZE: f64 = 10.0;
+/// Default font size in PDF points (1rem = 16px × 0.75 = 12pt per W3C standard)
+pub const DEFAULT_FONT_SIZE: f64 = 12.0;
 /// Default line height ratio (multiplier of font size)
 pub const DEFAULT_LINE_HEIGHT_RATIO: f64 = 1.2;
 

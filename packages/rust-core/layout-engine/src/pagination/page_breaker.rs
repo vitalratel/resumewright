@@ -6,15 +6,26 @@
 
 use layout_types::ElementType;
 
+/// Reason for a page break decision
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PageBreakReason {
+    /// No break needed - box fits on current page
+    NoBreak,
+    /// Break needed because box would overflow the page
+    Overflow,
+    /// Break needed to prevent orphaned heading (heading fits but insufficient space for content)
+    OrphanPrevention,
+}
+
 /// Minimum space that should be available after a heading
 ///
-/// Set to allow enough content to justify keeping heading on current page:
-/// - Company name/subtitle (~15pt)
-/// - Some margin spacing (~15pt)
-/// - At least 2 bullet points (~80pt)
+/// Set to allow at least one line of content after the heading:
+/// - At least 1 line of text (~15pt)
+/// - Some margin (~10pt)
 ///
-/// A value of 120pt ensures headings have substantial content following them.
-const MIN_SPACE_AFTER_HEADING: f64 = 120.0;
+/// A value of 30pt is aggressive but allows maximum space utilization
+/// while still preventing completely isolated headings.
+pub const MIN_SPACE_AFTER_HEADING: f64 = 30.0;
 
 /// Determine if a page break should occur before placing this box
 ///
@@ -30,15 +41,16 @@ const MIN_SPACE_AFTER_HEADING: f64 = 120.0;
 /// * `element_type` - Type of element (for orphan detection)
 ///
 /// # Returns
-/// * `true` if a page break should occur before this box
-/// * `false` if the box can be placed on the current page
+/// * `PageBreakReason::NoBreak` if the box can be placed on the current page
+/// * `PageBreakReason::Overflow` if the box would exceed the page bottom
+/// * `PageBreakReason::OrphanPrevention` if this heading would be orphaned
 pub fn should_break_page_for_box(
     _current_y: f64,
     _box_height: f64,
     box_would_end_at: f64,
     page_bottom: f64,
     element_type: Option<ElementType>,
-) -> bool {
+) -> PageBreakReason {
     // Check if this is a heading that would be orphaned
     if let Some(et) = element_type {
         if et.is_heading() {
@@ -47,13 +59,17 @@ pub fn should_break_page_for_box(
 
             // If the heading fits but leaves insufficient space for content, break
             if box_would_end_at <= page_bottom && space_after_heading <= MIN_SPACE_AFTER_HEADING {
-                return true;
+                return PageBreakReason::OrphanPrevention;
             }
         }
     }
 
     // Break if box would overflow page
-    box_would_end_at > page_bottom
+    if box_would_end_at > page_bottom {
+        PageBreakReason::Overflow
+    } else {
+        PageBreakReason::NoBreak
+    }
 }
 
 #[cfg(test)]
@@ -69,7 +85,11 @@ mod tests {
             750.0, // page_bottom
             None,
         );
-        assert!(result, "Should break when box overflows page");
+        assert_eq!(
+            result,
+            PageBreakReason::Overflow,
+            "Should break when box overflows page"
+        );
     }
 
     #[test]
@@ -81,37 +101,43 @@ mod tests {
             750.0, // page_bottom
             None,
         );
-        assert!(!result, "Should not break when box fits");
+        assert_eq!(
+            result,
+            PageBreakReason::NoBreak,
+            "Should not break when box fits"
+        );
     }
 
     #[test]
     fn test_heading_orphan_prevention() {
-        // With 120pt threshold, 100pt remaining should trigger orphan prevention
+        // With 30pt threshold, 25pt remaining should trigger orphan prevention
         let result = should_break_page_for_box(
-            610.0, // current_y
+            685.0, // current_y
             40.0,  // heading height
-            650.0, // box_would_end_at
-            750.0, // page_bottom (100pt remaining < 120pt threshold)
+            725.0, // box_would_end_at
+            750.0, // page_bottom (25pt remaining < 30pt threshold)
             Some(ElementType::Heading2),
         );
-        assert!(
+        assert_eq!(
             result,
-            "Should break to prevent heading orphan (100pt < 120pt threshold)"
+            PageBreakReason::OrphanPrevention,
+            "Should break to prevent heading orphan (25pt < 30pt threshold)"
         );
     }
 
     #[test]
     fn test_heading_with_sufficient_space() {
-        // With 120pt threshold, 150pt remaining should NOT trigger orphan prevention
+        // With 30pt threshold, 40pt remaining should NOT trigger orphan prevention
         let result = should_break_page_for_box(
-            560.0, // current_y
+            670.0, // current_y
             40.0,  // heading height
-            600.0, // box_would_end_at
-            750.0, // page_bottom (150pt remaining > 120pt threshold)
+            710.0, // box_would_end_at
+            750.0, // page_bottom (40pt remaining > 30pt threshold)
             Some(ElementType::Heading2),
         );
-        assert!(
-            !result,
+        assert_eq!(
+            result,
+            PageBreakReason::NoBreak,
             "Should not break when heading has sufficient following space"
         );
     }
@@ -126,10 +152,11 @@ mod tests {
             ElementType::Heading5,
             ElementType::Heading6,
         ] {
-            // 100pt remaining < 120pt threshold should trigger for all headings
-            let result = should_break_page_for_box(610.0, 40.0, 650.0, 750.0, Some(*heading_type));
-            assert!(
+            // 25pt remaining < 30pt threshold should trigger for all headings
+            let result = should_break_page_for_box(685.0, 40.0, 725.0, 750.0, Some(*heading_type));
+            assert_eq!(
                 result,
+                PageBreakReason::OrphanPrevention,
                 "{:?} should trigger orphan prevention",
                 heading_type
             );

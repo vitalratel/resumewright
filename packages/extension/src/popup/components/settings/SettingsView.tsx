@@ -317,7 +317,7 @@ export const SettingsView = React.memo(
                 className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}
                 id="margins-help"
               >
-                In inches (0.25 - 1.5). Use arrow keys to adjust.
+                In inches (0 - 1.5). Use arrow keys to adjust.
               </p>
               <div className={tokens.spacing.sectionGapCompact} aria-describedby="margins-help">
                 {(['top', 'bottom', 'left', 'right'] as const).map((side) => (
@@ -326,7 +326,7 @@ export const SettingsView = React.memo(
                     id={`margin-${side}`}
                     label={side}
                     value={settings.defaultConfig.margin[side]}
-                    min={0.25}
+                    min={0}
                     max={1.5}
                     step={0.05}
                     onChange={marginHandlers[side]}
