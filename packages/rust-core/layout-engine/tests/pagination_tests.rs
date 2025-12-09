@@ -235,9 +235,7 @@ fn test_ats_optimized_recent_projects_not_orphaned() {
     let recent_projects_page = layout.pages.iter().position(|page| {
         page.boxes.iter().any(|b| {
             if let layout_types::BoxContent::Text(lines) = &b.content {
-                lines
-                    .first()
-                    .map_or(false, |l| l.contains("RECENT PROJECTS"))
+                lines.first().is_some_and(|l| l.contains("RECENT PROJECTS"))
             } else {
                 false
             }
