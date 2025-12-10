@@ -11,7 +11,7 @@ interface AppHeaderProps {
 }
 
 const headerButtonClasses =
-  'flex items-center gap-2 px-3 py-2 rounded-md bg-primary-foreground/10 hover:bg-primary-foreground/25 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-primary transition-colors duration-200';
+  'flex items-center gap-2 px-3 py-2 rounded-md bg-black/10 hover:bg-black/20 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-primary transition-colors duration-200';
 
 export function AppHeader({ onOpenSettings, onShowKeyboardShortcuts, onShowHelp }: AppHeaderProps) {
   return (
