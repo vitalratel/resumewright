@@ -17,22 +17,10 @@ use layout_engine::{calculate_layout_direct, LayoutStructure};
 use pdf_generator::{PDFConfig, PDFGenerator};
 use tsx_parser::{parse_tsx, ParseError, TsxDocument};
 
+use crate::debug_log;
 use crate::error::{create_error, create_error_with_metadata};
 use crate::progress::{ProgressTracker, Stage};
 use crate::validation::enrich_pdf_config_with_metadata;
-
-/// Debug logging macro - only logs when debug-logging feature is enabled
-#[cfg(feature = "debug-logging")]
-macro_rules! debug_log {
-    ($($arg:tt)*) => {
-        web_sys::console::log_1(&format!($($arg)*).into());
-    };
-}
-
-#[cfg(not(feature = "debug-logging"))]
-macro_rules! debug_log {
-    ($($arg:tt)*) => {};
-}
 
 /// Pipeline orchestrator for managing the conversion pipeline
 pub struct PipelineOrchestrator {

@@ -115,7 +115,7 @@ describe('ErrorSuggestions', () => {
       const badge = screen.getByText('Most likely');
       expect(badge).toBeInTheDocument();
       // Badge is styled with success colors to indicate high likelihood
-      expect(badge).toHaveClass('bg-green-50');
+      expect(badge).toHaveClass('bg-success/10');
     });
 
     it('does not show badge for suggestions without mostLikely flag', () => {

@@ -88,7 +88,7 @@ describe('ConvertingStateWrapper', () => {
 
       const filenameElement = screen.getByText(filename);
       expect(filenameElement).toHaveClass('font-mono');
-      expect(filenameElement).toHaveClass('bg-gray-50');
+      expect(filenameElement).toHaveClass('bg-muted');
     });
 
     it('should truncate long filenames', () => {
@@ -385,9 +385,9 @@ describe('ConvertingStateWrapper', () => {
       render(<ConvertingStateWrapper jobId={testJobId} onCancel={mockOnCancel} />);
 
       const cancelButton = screen.getByRole('button', { name: /cancel conversion/i });
-      // Using design tokens: tokens.colors.neutral.textMuted + tokens.colors.link.hover
-      expect(cancelButton).toHaveClass('text-gray-600');
-      expect(cancelButton).toHaveClass('hover:text-blue-700');
+      // Using semantic tokens from @theme inline
+      expect(cancelButton).toHaveClass('text-muted-foreground');
+      expect(cancelButton).toHaveClass('hover:text-link');
       expect(cancelButton).toHaveClass('hover:underline');
     });
 
@@ -437,7 +437,7 @@ describe('ConvertingStateWrapper', () => {
 
       const cancelButton = screen.getByRole('button', { name: /cancel conversion/i });
       expect(cancelButton).toHaveClass('focus:ring-2');
-      expect(cancelButton).toHaveClass('focus:ring-blue-300');
+      expect(cancelButton).toHaveClass('focus:ring-ring');
     });
   });
 

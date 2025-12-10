@@ -1,22 +1,15 @@
-/**
- * ErrorActions Component
- *
- * Displays action buttons for error recovery:
- * - Try Again (if recoverable)
- * - Return to Import (dismiss)
- * - Import Different File
- * - Report Issue (dev mode only)
- */
+// ABOUTME: Action buttons for error recovery (Try Again, Import Different, etc.).
+// ABOUTME: Prioritizes actions based on error type and retry attempts.
 
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 import {
   copyToClipboard,
   formatErrorDetailsForClipboard,
   formatErrorTimestamp,
 } from '@/shared/errors/tracking/telemetry';
 import type { ConversionError } from '@/shared/types/models';
+import { useEvent } from '../../hooks/core/useEvent';
 import { useLoadingState } from '../../hooks/ui/useLoadingState';
-import { tokens } from '../../styles/tokens';
 import { Button } from '../common/Button';
 
 interface ErrorActionsProps {
@@ -56,17 +49,15 @@ export const ErrorActions = memo(
     // Use useLoadingState for consistent loading state management
     const { loading: retrying, execute: executeRetry } = useLoadingState();
 
-    // Handle retry with loading state (memoized)
-    const handleRetry = useCallback(async () => {
+    const handleRetry = useEvent(async () => {
       if (!onRetry) return;
 
       await executeRetry(async () => {
         await onRetry();
       });
-    }, [onRetry, executeRetry]);
+    });
 
-    // Handle issue reporting (memoized)
-    const handleReportIssue = useCallback(async () => {
+    const handleReportIssue = useEvent(async () => {
       if (onReportIssue) {
         await onReportIssue();
       } else {
@@ -82,7 +73,7 @@ export const ErrorActions = memo(
         });
         await copyToClipboard(details);
       }
-    }, [onReportIssue, error]);
+    });
 
     // Determine if "Import Different File" should be primary action
     // Make it primary for parse errors, file structure errors, or after multiple retries
@@ -92,10 +83,7 @@ export const ErrorActions = memo(
       retryAttempt >= 2;
 
     return (
-      <div
-        className={`w-full ${tokens.layout.maxWidthPopup} ${tokens.spacing.gapSmall} pt-2 flex flex-col`}
-      >
-        {/* Import Different File button (primary for file-related errors) */}
+      <div className="w-full max-w-md space-y-2 pt-2 flex flex-col">
         {onImportDifferent && shouldPrioritizeImport && (
           <Button
             onClick={onImportDifferent}
@@ -107,7 +95,6 @@ export const ErrorActions = memo(
           </Button>
         )}
 
-        {/* Try Again button (only if recoverable) */}
         {error.recoverable && onRetry && (
           <Button
             onClick={() => {
@@ -131,7 +118,6 @@ export const ErrorActions = memo(
           </Button>
         )}
 
-        {/* Import Different File button (secondary for other errors) */}
         {onImportDifferent && !shouldPrioritizeImport && (
           <Button
             onClick={onImportDifferent}
@@ -143,7 +129,6 @@ export const ErrorActions = memo(
           </Button>
         )}
 
-        {/* Dismiss button (tertiary action) */}
         {onDismiss && !onImportDifferent && (
           <Button
             onClick={onDismiss}
@@ -155,16 +140,13 @@ export const ErrorActions = memo(
           </Button>
         )}
 
-        {/* Copy Error Details button (dev mode only) */}
         {isDevMode && (
           <button
             type="button"
             onClick={() => {
               void handleReportIssue();
             }}
-            className={`w-full ${tokens.buttons.default.secondary} ${tokens.typography.small} ${tokens.colors.neutral.textMuted} ${tokens.colors.neutral.hover} ${tokens.borders.roundedLg} ${tokens.transitions.default} ${tokens.effects.focusRing}`
-              .trim()
-              .replace(/\s+/g, ' ')}
+            className="w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset"
             aria-label="Copy error details and open GitHub issue template"
             data-testid="report-issue-button"
           >

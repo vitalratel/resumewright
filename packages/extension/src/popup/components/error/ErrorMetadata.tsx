@@ -1,9 +1,5 @@
-/**
- * Error Metadata Component
- *
- * Displays error ID, timestamp, and copy-to-clipboard functionality.
- * Extracted from ErrorState for better component organization .
- */
+// ABOUTME: Displays error ID, timestamp, and copy-to-clipboard functionality.
+// ABOUTME: Provides tracking information for support purposes.
 
 import { CheckIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import type { ErrorCategory } from '@/shared/errors/codes';
@@ -15,7 +11,6 @@ import {
 } from '@/shared/errors/tracking/telemetry';
 import type { ErrorMetadata as ErrorMetadataType } from '@/shared/types/models';
 import { useLoadingState } from '../../hooks/ui/useLoadingState';
-import { tokens } from '../../styles/tokens';
 
 interface ErrorMetadataProps {
   /** Error ID for tracking */
@@ -87,30 +82,18 @@ export function ErrorMetadata({
   };
 
   return (
-    <div
-      className={`w-full max-w-md ${tokens.colors.neutral.bgWhite} ${tokens.borders.default} ${tokens.borders.roundedLg} ${tokens.spacing.cardSmall} ${tokens.effects.shadow}`}
-    >
-      <div className={`flex items-start justify-between ${tokens.spacing.gapMedium}`}>
-        <div className={`flex-1 ${tokens.spacing.gapSmall}`}>
-          <div className={`flex items-center ${tokens.spacing.gapSmall}`}>
-            <span
-              className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.textMuted}`}
-            >
-              Error ID:
-            </span>
-            <code
-              className={`${tokens.typography.small} font-mono ${tokens.colors.neutral.text} ${tokens.colors.neutral.bgWhite} px-2 py-0.5 ${tokens.borders.rounded} ${tokens.borders.default}`}
-            >
+    <div className="w-full max-w-md bg-card border border-border rounded-lg p-3 shadow-sm dark:shadow-none">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Error ID:</span>
+            <code className="text-sm font-mono text-foreground bg-card px-2 py-0.5 rounded-md border border-border">
               {errorId !== null && errorId !== undefined && errorId !== '' ? errorId : 'UNKNOWN'}
             </code>
           </div>
-          <div className={`flex items-center ${tokens.spacing.gapSmall}`}>
-            <span
-              className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.textMuted}`}
-            >
-              Time:
-            </span>
-            <span className={`${tokens.typography.small} ${tokens.colors.neutral.textMuted}`}>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Time:</span>
+            <span className="text-sm text-muted-foreground">
               {formatErrorTimestamp(new Date(timestamp))}
             </span>
           </div>
@@ -123,15 +106,13 @@ export function ErrorMetadata({
             void handleCopyError();
           }}
           disabled={copying}
-          className={`flex items-center gap-1.5 px-3 py-1.5 ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.bgWhite} ${tokens.borders.default} ${tokens.borders.rounded} ${copying ? 'opacity-50 cursor-not-allowed' : `${tokens.colors.neutral.hover} ${tokens.effects.hoverBorder} ${tokens.effects.shadowInteractive} ${tokens.buttons.variants.iconActive} active:scale-95`} ${tokens.effects.focusRing} ${tokens.transitions.default}`
-            .trim()
-            .replace(/\s+/g, ' ')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-card border border-border rounded-md ${copying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted hover:border-border shadow-sm hover:shadow-md active:bg-muted active:scale-95'} focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background transition-all duration-300`}
           aria-label={copying ? 'Copying error details...' : 'Copy error details to clipboard'}
         >
           {copying ? (
             <>
               <svg
-                className={`animate-spin ${tokens.icons.md} ${tokens.colors.neutral.textMuted}`}
+                className="animate-spin w-6 h-6 text-muted-foreground"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -151,32 +132,24 @@ export function ErrorMetadata({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              <span className={tokens.colors.neutral.textMuted}>Copying...</span>
+              <span className="text-muted-foreground">Copying...</span>
             </>
           ) : copySuccess ? (
             <>
-              <CheckIcon
-                className={`${tokens.icons.md} ${tokens.colors.success.icon} animate-pulse`}
-                aria-hidden="true"
-              />
-              <span className={tokens.colors.success.textStrong}>Copied!</span>
+              <CheckIcon className="w-6 h-6 text-success animate-pulse" aria-hidden="true" />
+              <span className="text-success">Copied!</span>
             </>
           ) : (
             <>
-              <ClipboardDocumentIcon
-                className={`${tokens.icons.md} ${tokens.colors.neutral.textMuted}`}
-                aria-hidden="true"
-              />
-              <span className={tokens.colors.neutral.text}>Copy Details</span>
+              <ClipboardDocumentIcon className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
+              <span className="text-foreground">Copy Details</span>
             </>
           )}
         </button>
       </div>
 
       {/* Suggestion to report with error ID */}
-      <p
-        className={`${tokens.spacing.marginSmall} ${tokens.typography.small} ${tokens.colors.neutral.textMuted} leading-relaxed`}
-      >
+      <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
         Use the error ID above when reporting this issue for faster resolution.
       </p>
     </div>

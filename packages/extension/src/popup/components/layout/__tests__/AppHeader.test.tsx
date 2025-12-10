@@ -298,13 +298,13 @@ describe('AppHeader', () => {
     it('applies primary background color', () => {
       const { container } = render(<AppHeader {...defaultProps} />);
       const header = container.querySelector('header');
-      expect(header).toHaveClass('bg-blue-600', 'dark:bg-blue-700');
+      expect(header).toHaveClass('bg-primary');
     });
 
-    it('applies white text color', () => {
+    it('applies primary-foreground text color', () => {
       const { container } = render(<AppHeader {...defaultProps} />);
       const header = container.querySelector('header');
-      expect(header).toHaveClass('text-white');
+      expect(header).toHaveClass('text-primary-foreground');
     });
 
     it('has border and shadow', () => {

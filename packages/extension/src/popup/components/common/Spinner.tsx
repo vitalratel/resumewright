@@ -1,22 +1,8 @@
-/**
- * Spinner Component
- * Standardized loading spinner with size variants
- *
- * Replaces duplicated spinner patterns across multiple files:
- * - FileImport.tsx (small spinner in button)
- * - ConvertingState.tsx (large blue spinner)
- * - Various other components with loading states
- *
- * Features:
- * - Three size variants (small, medium, large)
- * - Customizable color
- * - Accessible (aria-hidden, paired with loading text)
- * - Consistent animation via design tokens
- */
+// ABOUTME: Loading spinner with size variants and optional display delay.
+// ABOUTME: Accessible with aria-hidden or aria-label for screen readers.
 
 import React from 'react';
 import { useDelayedSpinner } from '../../hooks/ui/useDelayedSpinner';
-import { tokens } from '../../styles/tokens';
 
 export type SpinnerSize = 'small' | 'medium' | 'large';
 
@@ -33,37 +19,20 @@ interface SpinnerProps {
   delayMs?: number;
 }
 
-const sizeMap: Record<SpinnerSize, string> = {
-  small: tokens.icons.xs,
-  medium: tokens.icons.md,
-  large: tokens.icons.lg,
+const sizeClasses: Record<SpinnerSize, string> = {
+  small: 'w-4 h-4',
+  medium: 'w-6 h-6',
+  large: 'w-8 h-8',
 };
 
-/**
- * Loading spinner component
- *
- * @example
- * // Small spinner in button
- * <button disabled>
- *   <Spinner size="small" />
- *   <span>Loading...</span>
- * </button>
- *
- * @example
- * // Large centered spinner
- * <div className="flex justify-center">
- *   <Spinner size="large" color="text-blue-500" />
- * </div>
- */
 export const Spinner = React.memo(
   ({
     size = 'medium',
     className = '',
-    color = 'text-blue-500',
+    color = 'text-primary',
     ariaLabel,
     delayMs = 300,
   }: SpinnerProps) => {
-    // Delay spinner display to prevent janky flashing
     const shouldShow = useDelayedSpinner(true, delayMs);
 
     if (!shouldShow) {
@@ -72,15 +41,13 @@ export const Spinner = React.memo(
 
     return (
       <svg
-        className={`${tokens.animations.spin} ${sizeMap[size]} ${color} ${className}`.trim()}
+        className={`animate-spin ${sizeClasses[size]} ${color} ${className}`.trim()}
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
-        aria-hidden={
-          ariaLabel !== null && ariaLabel !== undefined && ariaLabel !== '' ? undefined : 'true'
-        }
+        aria-hidden={ariaLabel ? undefined : 'true'}
         aria-label={ariaLabel}
-        role={ariaLabel !== null && ariaLabel !== undefined && ariaLabel !== '' ? 'img' : undefined}
+        role={ariaLabel ? 'img' : undefined}
       >
         <circle
           className="opacity-25"

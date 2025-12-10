@@ -45,7 +45,8 @@
  * @see {@link useCountdown} - Auto-close countdown hook
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
+import { useEvent } from '../../hooks/core/useEvent';
 import { useBrowserDownloads } from '../../hooks/integration/useBrowserDownloads';
 import { useCountdown } from '../../hooks/ui/useCountdown';
 import { Alert } from '../common/Alert';
@@ -81,23 +82,23 @@ export const Success = React.memo(
     const { countdown, isPaused, pause, resume } = useCountdown(autoCloseSeconds);
 
     // Wrap download actions with error handling
-    const handleOpenDownload = useCallback(() => {
+    const handleOpenDownload = useEvent(() => {
       try {
         setDownloadError(null);
         openDownload();
       } catch (error) {
         setDownloadError(error instanceof Error ? error.message : 'Failed to open download');
       }
-    }, [openDownload]);
+    });
 
-    const handleShowInFolder = useCallback(() => {
+    const handleShowInFolder = useEvent(() => {
       try {
         setDownloadError(null);
         showInFolder();
       } catch (error) {
         setDownloadError(error instanceof Error ? error.message : 'Failed to show download folder');
       }
-    }, [showInFolder]);
+    });
 
     // Improve download error recovery with retry button
     if (downloadError !== null && downloadError !== undefined && downloadError !== '') {

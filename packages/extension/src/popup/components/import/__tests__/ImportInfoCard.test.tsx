@@ -124,7 +124,7 @@ describe('ImportInfoCard', () => {
     it('expanded card has correct background and border', () => {
       const { container } = render(<ImportInfoCard />);
 
-      const card = container.querySelector('.bg-gray-50.border-gray-200');
+      const card = container.querySelector('.bg-muted.border-border');
       expect(card).toBeInTheDocument();
     });
 
@@ -132,7 +132,7 @@ describe('ImportInfoCard', () => {
       const { container } = render(<ImportInfoCard />);
 
       const list = container.querySelector('ol');
-      expect(list).toHaveClass('text-xs', 'text-gray-600');
+      expect(list).toHaveClass('text-xs', 'text-muted-foreground');
     });
   });
 

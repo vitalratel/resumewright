@@ -1,40 +1,5 @@
-/**
- * SuccessView Component (Presentational)
- *
- * Pure presentational component for displaying the success state after PDF conversion.
- * Shows download confirmation with file information, copy-to-clipboard functionality,
- * and action buttons. Separated from business logic for better testability.
- *
- * @remarks
- * This component uses React 19's native ref handling (no forwardRef needed).
- * Refs are passed as regular props for focus management.
- *
- * Features:
- * - Conditional messaging based on browser download API availability
- * - Copy filename to clipboard with visual feedback
- * - Collapsible export details section
- * - Optional auto-close countdown with pause/resume
- * - Accessible keyboard navigation and screen reader support
- *
- * @example
- * ```tsx
- * <SuccessView
- *   displayFilename="John_Doe_Resume.pdf"
- *   fileSize="324 KB"
- *   apiAvailable={true}
- *   isAvailable={true}
- *   countdown={20}
- *   isPaused={false}
- *   onPause={handlePause}
- *   onResume={handleResume}
- *   onOpenDownload={handleOpenDownload}
- *   onShowInFolder={handleShowInFolder}
- *   onExportAnother={handleExportAnother}
- * />
- * ```
- *
- * @see {@link Success} - Container component with business logic
- */
+// ABOUTME: Presentational component for successful PDF conversion state.
+// ABOUTME: Shows download confirmation, file info, copy-to-clipboard, and auto-close countdown.
 
 import {
   ArrowDownTrayIcon,
@@ -44,9 +9,9 @@ import {
   DocumentIcon,
   FolderOpenIcon,
 } from '@heroicons/react/24/outline';
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
-import { tokens } from '../../styles/tokens';
+import { useEvent } from '../../hooks/core/useEvent';
 import { Alert } from '../common/Alert';
 import { PDF } from '../common/TechTerm';
 
@@ -102,8 +67,7 @@ export const SuccessView = React.memo(
     // Copy filename to clipboard feature
     const [copied, setCopied] = useState(false);
 
-    // Wrap in useCallback to prevent recreating on every render
-    const handleCopyFilename = useCallback(async () => {
+    const handleCopyFilename = useEvent(async () => {
       try {
         await navigator.clipboard.writeText(displayFilename);
         setCopied(true);
@@ -111,25 +75,22 @@ export const SuccessView = React.memo(
       } catch (err) {
         getLogger().error('SuccessView', 'Failed to copy filename', err);
       }
-    }, [displayFilename]);
+    });
 
     return (
       <div
         ref={ref}
         tabIndex={-1}
-        className={`success-card w-full h-full ${tokens.colors.neutral.bgWhite} ${tokens.spacing.cardFullPage} flex flex-col items-center justify-center relative animate-fade-in`}
+        className="success-card w-full h-full bg-elevated px-6 py-8 md:px-8 md:py-10 flex flex-col items-center justify-center relative animate-fade-in"
         data-testid="success-state"
       >
-        {/* PRIMARY SECTION: Success message + Main action */}
-        <div className={`success-primary text-center ${tokens.spacing.sectionGap} w-full max-w-md`}>
-          {/* Success icon with hero size */}
+        <div className="success-primary text-center space-y-4 w-full max-w-md">
           <CheckCircleIcon
-            className={`${tokens.icons.hero} ${tokens.colors.success.icon} mx-auto animate-bounce-once`}
+            className="w-16 h-16 text-icon-success mx-auto animate-bounce-once"
             aria-hidden="true"
           />
 
-          {/* Conditional success message based on download state */}
-          <h1 className={`${tokens.typography.heroHeading} ${tokens.colors.neutral.text}`}>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             {apiAvailable && isAvailable ? (
               <>
                 <PDF /> Downloaded Successfully
@@ -141,142 +102,106 @@ export const SuccessView = React.memo(
             )}
           </h1>
 
-          {/* Filename display with copy button  */}
-          <div className={`flex items-center justify-center ${tokens.spacing.gapSmall} max-w-full`}>
-            <p
-              className={`${tokens.typography.small} ${tokens.colors.neutral.textMuted} font-mono truncate`}
-            >
-              {displayFilename}
-            </p>
+          <div className="flex items-center justify-center gap-2 max-w-full">
+            <p className="text-sm text-muted-foreground font-mono truncate">{displayFilename}</p>
             <button
               type="button"
               onClick={() => {
                 void handleCopyFilename();
               }}
-              className={`shrink-0 p-1.5 ${tokens.borders.rounded} ${tokens.colors.neutral.hover} ${tokens.transitions.default} ${tokens.effects.focusRing}`}
+              className="shrink-0 p-1.5 rounded-md hover:bg-muted transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset"
               aria-label={copied ? 'Filename copied' : 'Copy filename to clipboard'}
               title={copied ? 'Copied!' : 'Copy filename'}
             >
               {copied ? (
                 <ClipboardDocumentCheckIcon
-                  className={`${tokens.icons.sm} ${tokens.colors.success.icon}`}
+                  className="w-4 h-4 text-icon-success"
                   aria-hidden="true"
                 />
               ) : (
                 <ClipboardDocumentIcon
-                  className={`${tokens.icons.sm} ${tokens.colors.neutral.icon}`}
+                  className="w-4 h-4 text-muted-foreground"
                   aria-hidden="true"
                 />
               )}
             </button>
           </div>
 
-          {/* Primary action button - text matches download state */}
           {apiAvailable && isAvailable ? (
             <button
               type="button"
               onClick={onOpenDownload}
-              className={`${tokens.spacing.marginMedium} ${tokens.spacing.marginSmall} w-full ${tokens.buttons.hero.primary} text-lg ${tokens.typography.semibold} text-white ${tokens.gradients.blueHeader} ${tokens.borders.roundedLg} ${tokens.effects.shadowInteractiveLg} hover:-translate-y-0.5 active:translate-y-0 ${tokens.transitions.default} flex items-center justify-center ${tokens.spacing.gapSmall} ${tokens.effects.focusRing}`}
+              className="mt-4 mb-2 w-full px-6 py-3 text-lg font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset"
               aria-label={`Open downloaded ${displayFilename}`}
             >
-              <ArrowDownTrayIcon className={tokens.icons.md} aria-hidden="true" />
+              <ArrowDownTrayIcon className="w-6 h-6" aria-hidden="true" />
               Open Downloaded <PDF />
             </button>
           ) : (
-            <Alert
-              variant="success"
-              className={`${tokens.spacing.marginMedium} ${tokens.spacing.marginSmall}`}
-            >
-              <div className={`flex items-center justify-center ${tokens.spacing.gapSmall}`}>
-                <ArrowDownTrayIcon
-                  className={`${tokens.icons.sm} ${tokens.colors.success.icon}`}
-                  aria-hidden="true"
-                />
-                <p
-                  className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.success.textStrong}`}
-                >
-                  Downloaded to your computer
-                </p>
+            <Alert variant="success" className="mt-4 mb-2">
+              <div className="flex items-center justify-center gap-2">
+                <ArrowDownTrayIcon className="w-4 h-4 text-icon-success" aria-hidden="true" />
+                <p className="text-sm font-medium text-success-text">Downloaded to your computer</p>
               </div>
             </Alert>
           )}
         </div>
 
-        {/* Collapsible export details */}
-        <details
-          className={`success-details ${tokens.spacing.marginMedium} ${tokens.spacing.marginSmall} w-full max-w-md text-left`}
-        >
-          <summary
-            className={`${tokens.typography.small} ${tokens.colors.neutral.textMuted} cursor-pointer hover:${tokens.colors.neutral.text} select-none text-center ${tokens.effects.focusRing} ${tokens.borders.rounded} ${tokens.transitions.default}`}
-          >
+        <details className="success-details mt-4 mb-2 w-full max-w-md text-left">
+          <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground select-none text-center focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset rounded-md transition-all duration-300">
             View export details
           </summary>
-          <div
-            className={`${tokens.spacing.gapMedium} ${tokens.typography.small} ${tokens.colors.neutral.textLight} ${tokens.spacing.gapSmall} ${tokens.colors.neutral.bg} ${tokens.borders.roundedLg} ${tokens.spacing.cardSmall}`}
-          >
-            <p className={`flex items-center ${tokens.spacing.gapSmall}`}>
-              <DocumentIcon
-                className={`${tokens.icons.xs} ${tokens.colors.neutral.icon}`}
-                aria-hidden="true"
-              />
-              {/* Screen reader friendly file size pronunciation */}
+          <div className="mt-3 text-sm text-light-foreground space-y-2 bg-muted rounded-lg p-3">
+            <p className="flex items-center gap-2">
+              <DocumentIcon className="w-3 h-3 text-muted-foreground" aria-hidden="true" />
               <span aria-hidden="true">File size: {fileSize}</span>
               <span className="sr-only">
                 File size: {fileSize.replace('MB', 'megabytes').replace('KB', 'kilobytes')}
               </span>
             </p>
-            <p className={`flex items-center ${tokens.spacing.gapSmall}`}>
-              <FolderOpenIcon
-                className={`${tokens.icons.xs} ${tokens.colors.neutral.icon}`}
-                aria-hidden="true"
-              />
+            <p className="flex items-center gap-2">
+              <FolderOpenIcon className="w-3 h-3 text-muted-foreground" aria-hidden="true" />
               <span>Location: Downloads folder</span>
             </p>
             {apiAvailable && isAvailable && (
               <button
                 type="button"
                 onClick={onShowInFolder}
-                className={`${tokens.spacing.marginSmall} ${tokens.typography.small} ${tokens.colors.link.text} ${tokens.colors.link.hover} ${tokens.colors.link.hoverUnderline} ${tokens.effects.focusRing} ${tokens.borders.rounded} ${tokens.transitions.default}`}
+                className="mt-2 text-sm text-link hover:text-link-hover hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset rounded-md transition-all duration-300"
                 aria-label={`Show ${displayFilename} in Downloads folder`}
               >
                 Show in folder →
               </button>
             )}
             {!apiAvailable && (
-              <p
-                className={`${tokens.typography.xs} ${tokens.colors.neutral.textLight} ${tokens.spacing.marginSmall}`}
-              >
+              <p className="text-xs text-light-foreground mt-2">
                 Check your browser&apos;s Downloads folder or download bar
               </p>
             )}
           </div>
         </details>
 
-        {/* Secondary actions */}
-        <div
-          className={`success-actions ${tokens.spacing.marginMedium} ${tokens.spacing.marginSmall} flex justify-center ${tokens.spacing.gapLarge} ${tokens.typography.small}`}
-        >
+        <div className="success-actions mt-4 mb-2 flex justify-center gap-4 text-sm">
           <button
             type="button"
             onClick={onExportAnother}
-            className={`${tokens.buttons.default.secondary} ${tokens.colors.link.text} ${tokens.colors.link.hover} ${tokens.colors.link.hoverUnderline} ${tokens.effects.focusRing} ${tokens.borders.rounded} ${tokens.transitions.default}`}
+            className="px-4 py-2 text-link hover:text-link-hover hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset rounded-md transition-all duration-300"
             aria-label="Start a new conversion and convert another CV file to PDF"
           >
             Convert another CV
           </button>
         </div>
 
-        {/* Auto-dismiss Timer - Added pause/resume */}
         {countdown !== undefined && countdown > 0 && (
-          <div className={`absolute bottom-4 flex items-center ${tokens.spacing.gapLarge}`}>
-            <p className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted}`}>
+          <div className="absolute bottom-4 flex items-center gap-4">
+            <p className="text-xs text-muted-foreground">
               Closing in {countdown}s {isPaused && '(paused)'}
             </p>
             {onPause && onResume && (
               <button
                 type="button"
                 onClick={isPaused ? onResume : onPause}
-                className={`min-h-11 px-2 py-1 ${tokens.typography.xs} ${tokens.colors.link.text} ${tokens.colors.link.hover} ${tokens.colors.link.hoverUnderline} ${tokens.effects.focusRing} ${tokens.borders.rounded} ${tokens.transitions.default}`}
+                className="min-h-11 px-2 py-1 text-xs text-link hover:text-link-hover hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset rounded-md transition-all duration-300"
                 aria-label={isPaused ? 'Resume auto-close countdown' : 'Pause auto-close countdown'}
               >
                 {isPaused ? 'Resume' : 'Pause'}
@@ -285,7 +210,7 @@ export const SuccessView = React.memo(
             <button
               type="button"
               onClick={onExportAnother}
-              className={`min-h-11 px-2 py-1 ${tokens.typography.xs} ${tokens.colors.link.text} ${tokens.colors.link.hover} ${tokens.colors.link.hoverUnderline} ${tokens.effects.focusRing} ${tokens.borders.rounded} ${tokens.transitions.default}`}
+              className="min-h-11 px-2 py-1 text-xs text-link hover:text-link-hover hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset rounded-md transition-all duration-300"
               aria-label="Close success message and start new conversion"
             >
               Close

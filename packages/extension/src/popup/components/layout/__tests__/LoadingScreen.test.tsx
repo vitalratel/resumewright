@@ -25,7 +25,7 @@ describe('LoadingScreen', () => {
       const { container } = render(<LoadingScreen />);
 
       // Should have spinner animation (dual ring with border animation)
-      const spinner = container.querySelector('.border-4.border-blue-100.border-t-blue-600');
+      const spinner = container.querySelector('.border-4.border-primary\\/20.border-t-primary');
       expect(spinner).toBeInTheDocument();
       expect(spinner).toHaveClass('animate-spin');
     });
@@ -188,10 +188,10 @@ describe('LoadingScreen', () => {
       // Outer ring
       const outerRing = container.querySelector('.h-12.w-12.border-4');
       expect(outerRing).toBeInTheDocument();
-      expect(outerRing).toHaveClass('rounded-full', 'border-blue-100', 'border-t-blue-600');
+      expect(outerRing).toHaveClass('rounded-full', 'border-primary/20', 'border-t-primary');
 
       // Inner pulse
-      const innerPulse = container.querySelector('.h-6.w-6.bg-blue-50');
+      const innerPulse = container.querySelector('.h-6.w-6.bg-primary\\/10');
       expect(innerPulse).toBeInTheDocument();
       expect(innerPulse).toHaveClass('rounded-full', 'animate-pulse');
     });

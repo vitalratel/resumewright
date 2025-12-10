@@ -1,15 +1,9 @@
-/**
- * ImportInfoCard Component
- * Extracted from FileImport for single responsibility
- *
- * Displays collapsible instructions for getting TSX file from Claude.ai.
- * Auto-minimizes after 3 launches using localStorage.
- */
+// ABOUTME: Collapsible instructions card for getting TSX files from Claude.ai.
+// ABOUTME: Auto-minimizes after 3 launches using localStorage tracking.
 
 import { ChevronDownIcon, ChevronUpIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import React, { useEffect, useRef } from 'react';
 import { useLocalStorage } from '../../hooks/integration/useLocalStorage';
-import { tokens } from '../../styles/tokens';
 import { LocalStorageKeys } from '../../utils/localStorage';
 import { TSX } from '../common/TechTerm';
 
@@ -53,43 +47,37 @@ export const ImportInfoCard = React.memo(() => {
 
   if (infoCardMinimized) {
     return (
-      <div className={tokens.spacing.paddingX}>
+      <div className="px-4">
         <button
           type="button"
           onClick={() => setInfoCardMinimized(false)}
-          className={`flex items-center ${tokens.spacing.gapSmall} ${tokens.typography.small} ${tokens.colors.primary.text} ${tokens.colors.primary.hover.replace('hover:bg-', 'hover:text-')} ${tokens.effects.focusRing} ${tokens.borders.rounded} ${tokens.transitions.default}`}
+          className="flex items-center gap-2 text-sm text-link hover:text-link-hover hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-md transition-all duration-300"
           aria-label="Show instructions for getting TSX file from Claude.ai"
         >
-          <InformationCircleIcon className={tokens.icons.sm} aria-hidden="true" />
+          <InformationCircleIcon className="w-4 h-4" aria-hidden="true" />
           <span>
             Get
             <TSX /> from Claude.ai
           </span>
-          <ChevronDownIcon className={tokens.icons.sm} aria-hidden="true" />
+          <ChevronDownIcon className="w-4 h-4" aria-hidden="true" />
         </button>
       </div>
     );
   }
 
   return (
-    <div
-      className={`${tokens.colors.neutral.bg} ${tokens.colors.neutral.borderLight} ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.spacing.alert}`}
-    >
+    <div className="bg-muted border border-border rounded-md px-3 py-1.5">
       <div className="flex items-start justify-between">
-        <div className={`flex items-start ${tokens.spacing.gapSmall} flex-1`}>
+        <div className="flex items-start gap-2 flex-1">
           <InformationCircleIcon
-            className={`${tokens.icons.sm} ${tokens.colors.neutral.textMuted} shrink-0`}
+            className="w-4 h-4 text-muted-foreground shrink-0"
             aria-hidden="true"
           />
           <div className="flex-1">
-            <h2
-              className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
-            >
+            <h2 className="text-sm font-medium text-foreground mb-2">
               Get <TSX /> from Claude.ai
             </h2>
-            <ol
-              className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} ${tokens.spacing.gapSmall} list-decimal list-inside`}
-            >
+            <ol className="text-xs text-muted-foreground space-y-2 list-decimal list-inside">
               <li>
                 Ask Claude to create your CV in
                 <TSX /> format
@@ -106,10 +94,10 @@ export const ImportInfoCard = React.memo(() => {
         <button
           type="button"
           onClick={() => setInfoCardMinimized(true)}
-          className={`${tokens.colors.primary.text} ${tokens.colors.primary.hover.replace('hover:bg-', 'hover:text-')} ${tokens.effects.focusRing} ${tokens.borders.rounded} ${tokens.spacing.marginSmall} shrink-0`}
+          className="text-link hover:text-link-hover hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-md mb-2 shrink-0"
           aria-label="Hide instructions for getting TSX file from Claude.ai"
         >
-          <ChevronUpIcon className={tokens.icons.sm} aria-hidden="true" />
+          <ChevronUpIcon className="w-4 h-4" aria-hidden="true" />
         </button>
       </div>
     </div>

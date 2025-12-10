@@ -123,7 +123,7 @@ describe('AppFooter', () => {
       render(<AppFooter />);
       const privacyDiv = screen.getByText(FOOTER_TEXT.PRIVACY_MESSAGE).closest('div');
       const icon = privacyDiv?.querySelector('svg');
-      expect(icon).toHaveClass('text-green-600', 'dark:text-green-400');
+      expect(icon).toHaveClass('text-success');
     });
 
     it('displays privacy message text', () => {
@@ -154,10 +154,10 @@ describe('AppFooter', () => {
       expect(screen.getByText(`v${FOOTER_TEXT.BETA_VERSION}`)).toBeInTheDocument();
     });
 
-    it('version has muted text color', () => {
+    it('version has light text color', () => {
       render(<AppFooter />);
       const versionText = screen.getByText(/^v\d+\.\d+\.\d+/);
-      expect(versionText).toHaveClass('text-gray-600', 'dark:text-gray-400');
+      expect(versionText).toHaveClass('text-muted-foreground');
     });
   });
 
@@ -174,10 +174,10 @@ describe('AppFooter', () => {
       expect(footer).toHaveClass('border-t');
     });
 
-    it('has white background', () => {
+    it('has elevated background', () => {
       const { container } = render(<AppFooter />);
       const footer = container.querySelector('footer');
-      expect(footer).toHaveClass('bg-white', 'dark:bg-gray-850');
+      expect(footer).toHaveClass('bg-card');
     });
 
     it('has padding', () => {
@@ -246,7 +246,7 @@ describe('AppFooter', () => {
     it('help button has hover effects', () => {
       render(<AppFooter />);
       const helpButton = screen.getByRole('button', { name: /open help center/i });
-      expect(helpButton).toHaveClass('hover:text-blue-700', 'dark:hover:text-blue-300');
+      expect(helpButton).toHaveClass('hover:text-primary');
     });
 
     it('help button has transition classes', () => {

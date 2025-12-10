@@ -1,17 +1,11 @@
-/**
- * FileValidatedView Component
- * Extracted from MainContent
- * Refactored to use Context API
- *
- * Simplified view: file import + export button + settings summary
- */
+// ABOUTME: Simplified view showing file import, export button, and settings summary.
+// ABOUTME: Uses Context API for state management.
 
 import { DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 import React, { useMemo, useTransition } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useConversion } from '../../context/ConversionContext';
 import { useQuickSettings } from '../../context/QuickSettingsContext';
-import { tokens } from '../../styles/tokens';
 import { getMarginPreset } from '../../utils/marginPresets';
 import { getShortcutDisplay } from '../../utils/shortcuts';
 import { Button } from '../common/Button';
@@ -39,10 +33,9 @@ export const FileValidatedView = React.memo(() => {
   }, [settings]);
 
   return (
-    <div className={tokens.animations.fadeIn}>
+    <div className="animate-fade-in">
       <FileImport
         onFileValidated={(content, fileName, fileSize) => {
-          // React 19 pattern: wrap async operations in startTransition
           startTransition(async () => {
             await handleFileValidated(content, fileName, fileSize);
           });
@@ -51,9 +44,8 @@ export const FileValidatedView = React.memo(() => {
         importedFile={importedFile}
       />
 
-      {/* Export button with current settings display */}
       {importedFile && settings && (
-        <div className={`${tokens.spacing.containerPadding} pb-6 ${tokens.spacing.stack}`}>
+        <div className="px-6 py-8 md:px-8 md:py-10 pb-6 space-y-4">
           <Button
             variant="primary"
             onClick={() => {
@@ -64,26 +56,21 @@ export const FileValidatedView = React.memo(() => {
             aria-keyshortcuts="Control+e"
             data-testid="export-button"
           >
-            <span className={`flex items-center justify-center ${tokens.spacing.gapSmall}`}>
-              <DocumentArrowDownIcon className={tokens.icons.sm} aria-hidden="true" />
+            <span className="flex items-center justify-center gap-2">
+              <DocumentArrowDownIcon className="w-5 h-5" aria-hidden="true" />
               <span>Export to PDF</span>
-              <kbd
-                className={`ml-1 px-2 py-0.5 ${tokens.typography.xs} ${tokens.colors.neutral.bg} ${tokens.colors.neutral.text} ${tokens.borders.default} ${tokens.borders.rounded} font-mono ${tokens.typography.semibold} ${tokens.effects.shadow}`}
-              >
+              <kbd className="ml-1 px-2 py-0.5 text-xs bg-primary/20 text-primary-foreground border border-primary/30 rounded-md font-mono font-semibold">
                 {getShortcutDisplay('E')}
               </kbd>
             </span>
           </Button>
 
-          {/* Current settings display with link to Settings */}
-          <div
-            className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} text-center flex items-center justify-center ${tokens.spacing.gapSmall}`}
-          >
+          <div className="text-xs text-muted-foreground text-center flex items-center justify-center gap-2">
             <span>Current settings: {settingsSummary}</span>
             <button
               type="button"
               onClick={onOpenSettings}
-              className={`${tokens.colors.link.text} ${tokens.colors.link.hover} ${tokens.colors.link.hoverUnderline} ${tokens.effects.focusRing}`}
+              className="text-primary hover:text-primary/80 hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background"
               aria-label="Open settings to change export configuration"
             >
               Change

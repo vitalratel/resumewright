@@ -95,7 +95,7 @@ describe('Settings', () => {
       });
 
       const letterLabel = screen.getByText('Letter (8.5" x 11")').closest('label');
-      expect(letterLabel).toHaveClass('border-green-500', 'bg-green-50');
+      expect(letterLabel).toHaveClass('border-success', 'bg-success/10');
     });
 
     it('updates selection when A4 is clicked', async () => {
@@ -110,7 +110,7 @@ describe('Settings', () => {
       if (!a4Label) throw new Error('A4 label not found');
       fireEvent.click(a4Label);
 
-      expect(a4Label).toHaveClass('border-green-500', 'bg-green-50');
+      expect(a4Label).toHaveClass('border-success', 'bg-success/10');
     });
 
     it('highlights A4 when loaded from storage', async () => {
@@ -127,7 +127,7 @@ describe('Settings', () => {
 
       await waitFor(() => {
         const a4Label = screen.getByText('A4 (210mm x 297mm)').closest('label');
-        expect(a4Label).toHaveClass('border-green-500', 'bg-green-50');
+        expect(a4Label).toHaveClass('border-success', 'bg-success/10');
       });
     });
   });
@@ -275,7 +275,7 @@ describe('Settings', () => {
       await waitFor(() => {
         // Page size options are <label> elements, not buttons
         const a4Label = screen.getByText('A4 (210mm x 297mm)').closest('label');
-        expect(a4Label).toHaveClass('border-green-500');
+        expect(a4Label).toHaveClass('border-success');
       });
 
       switchToTab('General');

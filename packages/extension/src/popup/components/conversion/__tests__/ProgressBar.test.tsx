@@ -1,6 +1,5 @@
-/**
- * ProgressBar Component Tests
- */
+// ABOUTME: Tests for ProgressBar component functionality and accessibility.
+// ABOUTME: Covers rendering, variants, animation, and ARIA attributes.
 
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
@@ -51,24 +50,22 @@ describe('ProgressBar', () => {
   });
 
   describe('Variants', () => {
-    it('should render default variant with blue color', () => {
+    it('should render default variant with primary background', () => {
       const { container } = render(<ProgressBar percentage={50} variant="default" />);
       const progressBar = container.querySelector('[role="progressbar"]');
-      expect(progressBar).toHaveClass('bg-blue-600');
+      expect(progressBar).toHaveClass('bg-primary');
     });
 
-    it('should render success variant with green color', () => {
+    it('should render success variant with success background', () => {
       const { container } = render(<ProgressBar percentage={100} variant="success" />);
       const progressBar = container.querySelector('[role="progressbar"]');
-      // Now uses semantic token instead of hardcoded color
-      expect(progressBar?.className).toMatch(/bg-green/);
+      expect(progressBar).toHaveClass('bg-success');
     });
 
-    it('should render error variant with red color', () => {
+    it('should render error variant with error background', () => {
       const { container } = render(<ProgressBar percentage={50} variant="error" />);
       const progressBar = container.querySelector('[role="progressbar"]');
-      // Now uses semantic token instead of hardcoded color
-      expect(progressBar?.className).toMatch(/bg-red/);
+      expect(progressBar).toHaveClass('bg-destructive');
     });
   });
 

@@ -7,7 +7,8 @@
       "entrypoints/**",
       "!tests/manual/test-data",
       "!tests/.tmp",
-      "!**/*.css"
+      "!**/*.css",
+      "!src/shared/wasm/pkg"
     ]
   },
   "formatter": {

@@ -1,19 +1,10 @@
-/**
- * ErrorSuggestions Component
- *
- * Displays prioritized suggestions for error recovery with:
- * - Success likelihood prioritization
- * - "Most likely" badges for top suggestions
- * - Rationales explaining why each suggestion helps
- * - Clickable help links to relevant resources
- * - Intelligent retry warnings after multiple attempts
- */
+// ABOUTME: Displays prioritized error recovery suggestions with help links.
+// ABOUTME: Shows success likelihood badges, rationales, and retry warnings.
 
 import { ArrowTopRightOnSquareIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { memo } from 'react';
 import { getHelpLinkForSuggestion, getHelpResourcesForError } from '@/shared/errors/helpResources';
 import type { ConversionError } from '@/shared/types/models';
-import { tokens } from '../../styles/tokens';
 
 interface ErrorSuggestionsProps {
   /** Conversion error with suggestions */
@@ -56,17 +47,15 @@ export const ErrorSuggestions = memo(
 
     return (
       <>
-        {/* Main Suggestions - HOW TO FIX (P0-FLOW-005, P1-ERROR-008) */}
+        {/* Main Suggestions */}
         {prioritizedSuggestions.length > 0 && (
           <div
-            className={`w-full max-w-md ${tokens.colors.info.bg} ${tokens.colors.info.border} ${tokens.borders.roundedLg} p-4`}
+            className="w-full max-w-md bg-info/10 border border-info/20 rounded-lg p-4"
             data-testid="error-suggestions"
           >
-            <h2
-              className={`${tokens.typography.small} ${tokens.typography.semibold} ${tokens.colors.info.textStrong} ${tokens.spacing.marginSmall} flex items-center`}
-            >
+            <h2 className="text-sm font-semibold text-info-foreground mb-3 flex items-center">
               <svg
-                className={`${tokens.icons.sm} mr-1.5 shrink-0`}
+                className="w-5 h-5 mr-1.5 shrink-0"
                 fill="currentColor"
                 viewBox="0 0 20 20"
                 aria-hidden="true"
@@ -79,26 +68,16 @@ export const ErrorSuggestions = memo(
               </svg>
               What you can try:
             </h2>
-            <ol className={`${tokens.spacing.sectionGapCompact} ${tokens.typography.small}`}>
+            <ol className="space-y-4 md:space-y-6 text-sm">
               {prioritizedSuggestions.map((suggestion, idx) => (
                 <li key={suggestion.text} className="flex items-start">
-                  <span
-                    className={`${tokens.colors.info.text} ${tokens.spacing.marginSmall} mt-0.5 shrink-0 ${tokens.typography.semibold}`}
-                  >
-                    {idx + 1}.
-                  </span>
+                  <span className="text-info mb-3 mt-0.5 shrink-0 font-semibold">{idx + 1}.</span>
                   <div className="flex-1">
-                    <div className={`flex items-start ${tokens.spacing.gapSmall}`}>
-                      <span className={`leading-snug ${tokens.colors.info.textStrong}`}>
-                        {suggestion.text}
-                      </span>
+                    <div className="flex items-start gap-2">
+                      <span className="leading-snug text-foreground">{suggestion.text}</span>
                       {/* Most likely badge */}
                       {suggestion.mostLikely && (
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 ${tokens.borders.rounded} ${tokens.typography.small} ${tokens.typography.semibold} ${tokens.colors.success.bg} ${tokens.colors.success.textStrong} ${tokens.colors.success.border} shrink-0`
-                            .trim()
-                            .replace(/\s+/g, ' ')}
-                        >
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-sm font-semibold bg-success/10 text-success border border-success/20 shrink-0">
                           Most likely
                         </span>
                       )}
@@ -112,15 +91,12 @@ export const ErrorSuggestions = memo(
                             href={helpLink.url}
                             target={helpLink.type === 'external' ? '_blank' : '_self'}
                             rel={helpLink.type === 'external' ? 'noopener noreferrer' : undefined}
-                            className={`inline-flex items-center gap-1 ${tokens.spacing.marginSmall} ${tokens.typography.small} ${tokens.colors.link.text} ${tokens.colors.link.hover} ${tokens.colors.link.underline} ${tokens.effects.focusRing} ${tokens.borders.rounded} px-1 ${tokens.transitions.default}`}
+                            className="inline-flex items-center gap-1 mb-3 text-sm text-primary hover:text-primary/80 underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background rounded-md px-1 transition-colors"
                             aria-label={`Learn more: ${helpLink.text}`}
                           >
                             {helpLink.text}
                             {helpLink.type === 'external' && (
-                              <ArrowTopRightOnSquareIcon
-                                className={tokens.icons.sm}
-                                aria-hidden="true"
-                              />
+                              <ArrowTopRightOnSquareIcon className="w-5 h-5" aria-hidden="true" />
                             )}
                             {helpLink.type === 'internal' && <span aria-hidden="true">→</span>}
                           </a>
@@ -132,9 +108,7 @@ export const ErrorSuggestions = memo(
                     {suggestion.rationale !== null &&
                       suggestion.rationale !== undefined &&
                       suggestion.rationale !== '' && (
-                        <div
-                          className={`${tokens.spacing.marginSmall} ${tokens.typography.small} ${tokens.colors.info.text} italic`}
-                        >
+                        <div className="mb-3 text-sm text-info italic">
                           Why: {suggestion.rationale}
                         </div>
                       )}
@@ -144,28 +118,20 @@ export const ErrorSuggestions = memo(
             </ol>
             {/* General help resources for this error */}
             {helpResources.length > 0 && (
-              <div
-                className={`${tokens.spacing.marginMedium} pt-3 border-t ${tokens.colors.info.border}`}
-              >
-                <p
-                  className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.info.textStrong} ${tokens.spacing.marginSmall}`}
-                >
-                  Additional resources:
-                </p>
-                <div className={`flex flex-wrap ${tokens.spacing.gapSmall}`}>
+              <div className="mt-4 pt-3 border-t border-info/20">
+                <p className="text-sm font-medium text-foreground mb-3">Additional resources:</p>
+                <div className="flex flex-wrap gap-2">
                   {helpResources.map((resource) => (
                     <a
                       key={resource.url}
                       href={resource.url}
                       target={resource.type === 'external' ? '_blank' : '_self'}
                       rel={resource.type === 'external' ? 'noopener noreferrer' : undefined}
-                      className={`inline-flex items-center ${tokens.spacing.gapSmall} px-2 py-1 ${tokens.typography.small} ${tokens.colors.neutral.bgWhite} ${tokens.colors.info.border} ${tokens.borders.rounded} ${tokens.colors.info.hover} ${tokens.effects.hoverBorder} ${tokens.effects.focusRing} ${tokens.transitions.default}`
-                        .trim()
-                        .replace(/\s+/g, ' ')}
+                      className="inline-flex items-center gap-2 px-2 py-1 text-sm bg-card border border-info/20 rounded-md hover:bg-muted hover:border-border focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background transition-colors"
                     >
                       {resource.text}
                       {resource.type === 'external' && (
-                        <ArrowTopRightOnSquareIcon className={tokens.icons.xs} aria-hidden="true" />
+                        <ArrowTopRightOnSquareIcon className="w-4 h-4" aria-hidden="true" />
                       )}
                     </a>
                   ))}
@@ -177,12 +143,10 @@ export const ErrorSuggestions = memo(
 
         {/* Size-specific reduction guidance */}
         {isSizeError && sizeReductionTips.length > 0 && (
-          <div
-            className={`w-full max-w-md ${tokens.colors.info.bg} ${tokens.colors.info.border} ${tokens.borders.roundedLg} p-4`}
-          >
-            <div className={`flex items-start ${tokens.spacing.gapSmall}`}>
+          <div className="w-full max-w-md bg-info/10 border border-info/20 rounded-lg p-4">
+            <div className="flex items-start gap-2">
               <svg
-                className={`${tokens.icons.md} ${tokens.colors.info.icon} shrink-0 mt-0.5`}
+                className="w-6 h-6 text-info shrink-0 mt-0.5"
                 fill="currentColor"
                 viewBox="0 0 20 20"
                 aria-hidden="true"
@@ -194,14 +158,10 @@ export const ErrorSuggestions = memo(
                 />
               </svg>
               <div className="flex-1">
-                <h3
-                  className={`${tokens.typography.small} ${tokens.typography.semibold} ${tokens.colors.info.textStrong} ${tokens.spacing.marginSmall}`}
-                >
+                <h3 className="text-sm font-semibold text-foreground mb-3">
                   How to reduce your CV size:
                 </h3>
-                <ul
-                  className={`${tokens.spacing.gapSmall} ${tokens.typography.small} ${tokens.colors.info.text} list-disc list-inside`}
-                >
+                <ul className="gap-2 text-sm text-info list-disc list-inside">
                   {sizeReductionTips.map((tip) => (
                     <li key={tip} className="leading-relaxed">
                       {tip}
@@ -215,29 +175,21 @@ export const ErrorSuggestions = memo(
 
         {/* Intelligent Retry Warning */}
         {retryAttempt >= 3 && error.recoverable && (
-          <div
-            className={`w-full max-w-md ${tokens.colors.warning.bg} ${tokens.colors.warning.border} ${tokens.borders.roundedLg} p-4`}
-          >
-            <div className={`flex items-start ${tokens.spacing.gapSmall}`}>
+          <div className="w-full max-w-md bg-warning/10 border border-warning/20 rounded-lg p-4">
+            <div className="flex items-start gap-2">
               <ExclamationTriangleIcon
-                className={`${tokens.icons.md} ${tokens.colors.warning.icon} shrink-0 mt-0.5`}
+                className="w-6 h-6 text-warning shrink-0 mt-0.5"
                 aria-hidden="true"
               />
               <div className="flex-1">
-                <h3
-                  className={`${tokens.typography.small} ${tokens.typography.semibold} ${tokens.colors.warning.textStrong} ${tokens.spacing.marginSmall}`}
-                >
+                <h3 className="text-sm font-semibold text-warning-foreground mb-3">
                   Multiple retry attempts detected
                 </h3>
-                <p
-                  className={`${tokens.typography.small} ${tokens.colors.warning.text} leading-relaxed`}
-                >
+                <p className="text-sm text-warning leading-relaxed">
                   You&apos;ve tried {retryAttempt} times with the same error. Before retrying again,
                   please:
                 </p>
-                <ul
-                  className={`${tokens.spacing.marginSmall} ${tokens.spacing.gapSmall} ${tokens.typography.small} ${tokens.colors.warning.text} list-disc list-inside`}
-                >
+                <ul className="mb-3 gap-2 text-sm text-warning list-disc list-inside">
                   <li>Make a change to your CV or settings</li>
                   <li>Try a different suggestion from the list above</li>
                   <li>Consider reporting this issue if suggestions don&apos;t help</li>
@@ -249,12 +201,10 @@ export const ErrorSuggestions = memo(
 
         {/* Previous Error Context */}
         {retryAttempt > 0 && lastError !== null && lastError !== undefined && lastError !== '' && (
-          <div
-            className={`w-full max-w-md ${tokens.colors.neutral.bg} ${tokens.borders.default} ${tokens.borders.roundedLg} p-3`}
-          >
-            <div className={`flex items-start ${tokens.spacing.gapSmall}`}>
+          <div className="w-full max-w-md bg-muted border border-border rounded-lg p-3">
+            <div className="flex items-start gap-2">
               <svg
-                className={`${tokens.icons.sm} ${tokens.colors.neutral.textMuted} shrink-0 mt-0.5`}
+                className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5"
                 fill="currentColor"
                 viewBox="0 0 20 20"
                 aria-hidden="true"
@@ -266,16 +216,12 @@ export const ErrorSuggestions = memo(
                 />
               </svg>
               <div className="flex-1">
-                <p
-                  className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}
-                >
+                <p className="text-sm font-medium text-muted-foreground mb-3">
                   Previous attempt (#
                   {retryAttempt}
                   ):
                 </p>
-                <p className={`${tokens.typography.small} ${tokens.colors.neutral.textMuted}`}>
-                  {lastError}
-                </p>
+                <p className="text-sm text-muted-foreground">{lastError}</p>
               </div>
             </div>
           </div>

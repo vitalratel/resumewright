@@ -3,25 +3,26 @@
 /* Tailwind v4: Explicitly specify source files for class scanning */
 @source "./";
 @source "../shared/";
+@source "../lib/";
 @source "../../entrypoints/";
 
 /* Enable class-based dark mode (toggled via .dark class on html element) */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Custom theme extensions */
+/* Custom theme extensions - non-semantic values */
 @theme {
   /* LinkedIn Professional Blue color scheme */
-  --color-primary-50: #e6f4fa;
-  --color-primary-100: #cce9f5;
-  --color-primary-200: #99d3eb;
-  --color-primary-300: #66bde1;
-  --color-primary-400: #33a7d7;
-  --color-primary-500: #0077b5;
-  --color-primary-600: #006599;
-  --color-primary-700: #005e93;
-  --color-primary-800: #00486d;
-  --color-primary-900: #003247;
-  --color-primary-950: #001e2b;
+  --color-linkedin-50: #e6f4fa;
+  --color-linkedin-100: #cce9f5;
+  --color-linkedin-200: #99d3eb;
+  --color-linkedin-300: #66bde1;
+  --color-linkedin-400: #33a7d7;
+  --color-linkedin-500: #0077b5;
+  --color-linkedin-600: #006599;
+  --color-linkedin-700: #005e93;
+  --color-linkedin-800: #00486d;
+  --color-linkedin-900: #003247;
+  --color-linkedin-950: #001e2b;
 
   /* Custom gray for dark mode */
   --color-gray-850: #262626;
@@ -47,6 +48,238 @@
   --animate-slide-up: slide-up 0.3s ease-out;
   --animate-bounce-once: bounce-once 0.6s ease-out;
   --animate-scale-in: scale-in 0.2s ease-out;
+}
+
+/*
+ * =============================================================================
+ * SEMANTIC DESIGN TOKENS (shadcn/ui pattern)
+ * =============================================================================
+ * Uses background/foreground convention:
+ * - --color: solid color for buttons, badges
+ * - --color-foreground: text color ON that solid background
+ *
+ * For light alert backgrounds, use opacity: bg-success/10, bg-destructive/10
+ * For hover states, use opacity: hover:bg-primary/90
+ * =============================================================================
+ */
+
+:root {
+  /* Base radius for rounded corners */
+  --radius: 0.5rem;
+
+  /* Core semantic colors */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+
+  /* Card/elevated surfaces */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+
+  /* Popover/dropdown surfaces */
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+
+  /* Primary - LinkedIn Blue brand color (blue-600) */
+  --primary: oklch(54.6% 0.245 262.881);
+  --primary-foreground: oklch(1 0 0);
+
+  /* Secondary - neutral gray */
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+
+  /* Muted - subtle backgrounds */
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+
+  /* Accent - hover states */
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+
+  /* Destructive - red-600 for WCAG AA (4.83:1 with white) */
+  --destructive: oklch(57.7% 0.245 27.325);
+  --destructive-foreground: oklch(1 0 0);
+  /* Destructive text on light bg - red-700 for contrast */
+  --destructive-text: oklch(50.5% 0.213 27.518);
+
+  /* Success - green-700 for WCAG AA (5.02:1 with white) */
+  --success: oklch(52.7% 0.154 150.069);
+  --success-foreground: oklch(1 0 0);
+  /* Success text on light bg - green-800 for contrast */
+  --success-text: oklch(44.8% 0.119 151.328);
+
+  /* Warning - yellow-600 for buttons, use /10 for alert backgrounds */
+  --warning: oklch(68.1% 0.162 75.834);
+  --warning-foreground: oklch(0.145 0 0);
+  /* Warning text on light bg - yellow-700 for contrast */
+  --warning-text: oklch(55.4% 0.135 66.442);
+
+  /* Info - blue-600 for accents, use /10 for alert backgrounds */
+  --info: oklch(54.6% 0.245 262.881);
+  --info-foreground: oklch(1 0 0);
+  /* Info text on light bg - blue-700 for contrast */
+  --info-text: oklch(48.8% 0.217 264.376);
+
+  /* Border and input */
+  --border: oklch(0.88 0 0);
+  --input: oklch(0.88 0 0);
+
+  /* Focus ring */
+  --ring: oklch(54.6% 0.245 262.881);
+
+  /* Ring offset (for focus:ring-offset) */
+  --ring-offset: oklch(1 0 0);
+}
+
+.dark {
+  /* Core semantic colors - gray-900 for page background */
+  --background: oklch(0.21 0.034 264.665);
+  --foreground: oklch(0.985 0 0);
+
+  /* Card/elevated surfaces - gray-850 (#262626) for cards */
+  --card: oklch(0.269 0.006 264);
+  --card-foreground: oklch(0.985 0 0);
+
+  /* Popover/dropdown surfaces - same as card */
+  --popover: oklch(0.269 0.006 264);
+  --popover-foreground: oklch(0.985 0 0);
+
+  /* Primary - LinkedIn Blue (blue-500 for better visibility in dark) */
+  --primary: oklch(62.3% 0.214 259.815);
+  --primary-foreground: oklch(1 0 0);
+
+  /* Secondary - gray-800 for secondary elements */
+  --secondary: oklch(0.278 0.033 256.848);
+  --secondary-foreground: oklch(0.985 0 0);
+
+  /* Muted - gray-800 for subtle backgrounds */
+  --muted: oklch(0.278 0.033 256.848);
+  --muted-foreground: oklch(0.708 0 0);
+
+  /* Accent - gray-800 for hover states */
+  --accent: oklch(0.278 0.033 256.848);
+  --accent-foreground: oklch(0.985 0 0);
+
+  /* Destructive - red-600 for WCAG AA consistency */
+  --destructive: oklch(57.7% 0.245 27.325);
+  --destructive-foreground: oklch(1 0 0);
+  /* Destructive text in dark - red-400 for contrast on dark bg */
+  --destructive-text: oklch(70.4% 0.191 22.216);
+
+  /* Success - green-700 for WCAG AA consistency */
+  --success: oklch(52.7% 0.154 150.069);
+  --success-foreground: oklch(1 0 0);
+  /* Success text in dark - green-400 for contrast on dark bg */
+  --success-text: oklch(79.2% 0.209 151.711);
+
+  /* Warning - yellow-500 in dark for better visibility */
+  --warning: oklch(79.5% 0.184 86.047);
+  --warning-foreground: oklch(0.145 0 0);
+  /* Warning text in dark - yellow-400 for contrast on dark bg */
+  --warning-text: oklch(85.2% 0.199 91.936);
+
+  /* Info - blue-400 in dark for better visibility */
+  --info: oklch(70.7% 0.165 254.624);
+  --info-foreground: oklch(1 0 0);
+  /* Info text in dark - blue-400 for contrast on dark bg */
+  --info-text: oklch(70.7% 0.165 254.624);
+
+  /* Border and input */
+  --border: oklch(0.35 0 0);
+  --input: oklch(0.35 0 0);
+
+  /* Focus ring */
+  --ring: oklch(62.3% 0.214 259.815);
+
+  /* Ring offset - matches background */
+  --ring-offset: oklch(0.21 0.034 264.665);
+}
+
+/*
+ * =============================================================================
+ * TAILWIND V4 THEME INLINE - Maps CSS variables to Tailwind utilities
+ * =============================================================================
+ * This enables standard Tailwind classes like `bg-primary`, `text-destructive`,
+ * `hover:bg-primary/90` that automatically respect dark mode.
+ * =============================================================================
+ */
+@theme inline {
+  /* Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Core semantic colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Card */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  /* Popover */
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  /* Primary */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  /* Secondary */
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  /* Muted */
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  /* Accent */
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  /* Destructive */
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-text: var(--destructive-text);
+
+  /* Success */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-text: var(--success-text);
+
+  /* Warning */
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-text: var(--warning-text);
+
+  /* Info */
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-text: var(--info-text);
+
+  /* Border and Input */
+  --color-border: var(--border);
+  --color-input: var(--input);
+
+  /* Ring */
+  --color-ring: var(--ring);
+  --color-ring-offset: var(--ring-offset);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+    padding: 0;
+    font-family:
+      -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
+      'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
 @keyframes fade-in {
@@ -114,16 +347,6 @@
 }
 .animate-check-in {
   animation: check-in 0.5s ease-out;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
-    'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {

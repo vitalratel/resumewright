@@ -11,13 +11,14 @@
  * Includes keyboard shortcuts, screen reader announcements, and focus management.
  */
 
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { AppRouter } from './components/AppRouter';
 import { AppShell } from './components/AppShell';
 import { Button } from './components/common/Button';
 import { Spinner } from './components/common/Spinner';
 import { DEFAULT_JOB_ID, getContainerClass } from './constants/app';
 import { useConversionHandlers } from './hooks/conversion/useConversionHandlers';
+import { useEvent } from './hooks/core/useEvent';
 import { useAppState } from './hooks/integration/useAppState';
 import { useAppSubscriptions } from './hooks/integration/useAppSubscriptions';
 import { useQuickSettings } from './hooks/settings/useQuickSettings';
@@ -110,30 +111,22 @@ function App() {
   }
   useScreenReaderAnnouncement(stateMessage, appState.uiState === 'error' ? 'assertive' : 'polite');
 
-  // Settings navigation handlers
-  // Memoize callbacks passed to children
-  const handleOpenSettings = useCallback(() => setCurrentView('settings'), []);
-  const handleCloseSettings = useCallback(async () => {
-    // Reload settings BEFORE changing view
-    // This prevents race condition between Settings unmount cleanup and reloadSettings() state update
-    // FIX: Use reloadSettings directly (stable function reference)
+  // Navigation handlers - useEvent provides stable references that read latest state
+  const handleOpenSettings = useEvent(() => setCurrentView('settings'));
+  const handleCloseSettings = useEvent(async () => {
     await reloadSettings();
     setCurrentView('main');
-  }, [reloadSettings]); // FIX: reloadSettings is stable (useCallback in hook)
+  });
+  const handleOpenHelp = useEvent(() => setCurrentView('help'));
+  const handleCloseHelp = useEvent(() => setCurrentView('main'));
 
-  // Help navigation handlers
-  const handleOpenHelp = useCallback(() => setCurrentView('help'), []);
-  const handleCloseHelp = useCallback(() => setCurrentView('main'), []);
-
-  // Keyboard shortcuts for accessibility and power users
-  // Extract to useAppKeyboardShortcuts hook to prevent memory leak
-  // Memoize callback handlers to prevent hook from recreating shortcuts
-  const handleRetry = useCallback(() => appState.reset(), [appState]);
-  const handleExport = useCallback(() => {
+  // Action handlers for keyboard shortcuts
+  const handleRetry = useEvent(() => appState.reset());
+  const handleExport = useEvent(() => {
     void conversionHandlers.handleExportClick();
-  }, [conversionHandlers]);
-  const handleShowShortcuts = useCallback(() => setShowShortcutsModal(true), []);
-  const handleHideShortcuts = useCallback(() => setShowShortcutsModal(false), []);
+  });
+  const handleShowShortcuts = useEvent(() => setShowShortcutsModal(true));
+  const handleHideShortcuts = useEvent(() => setShowShortcutsModal(false));
 
   const shortcuts = useAppKeyboardShortcuts({
     uiState: appState.uiState,
@@ -158,9 +151,9 @@ function App() {
       <AppShell>
         <div className={getContainerClass()}>
           <div className="flex flex-col items-center justify-center h-full gap-4 p-6 text-center">
-            <div className="text-red-600 text-4xl">⚠️</div>
-            <h2 className="text-lg font-semibold text-gray-900">Failed to Load Settings</h2>
-            <p className="text-sm text-gray-600 max-w-md">{hydrationError.message}</p>
+            <div className="text-destructive text-4xl">⚠️</div>
+            <h2 className="text-lg font-semibold text-foreground">Failed to Load Settings</h2>
+            <p className="text-sm text-muted-foreground max-w-md">{hydrationError.message}</p>
             <Button fullWidth={false} onClick={() => window.location.reload()}>
               Reload Extension
             </Button>
@@ -177,7 +170,7 @@ function App() {
         <div className={getContainerClass()}>
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <Spinner size="large" />
-            <p className="text-sm text-gray-600">Loading...</p>
+            <p className="text-sm text-muted-foreground">Loading...</p>
           </div>
         </div>
       </AppShell>

@@ -1,25 +1,20 @@
-/**
- * useConversionHandlers Hook
- * Consolidates all conversion-related handlers
- *
- * This is now a composition hook that combines:
- * - useFileImport: File validation and import
- * - useConversionExecution: PDF conversion execution
- * - useConversionCleanup: Error recovery and cleanup
- *
- * Refactored for single responsibility principle
- */
+// ABOUTME: Consolidates all conversion-related handlers into a single hook.
+// ABOUTME: Combines file import, conversion execution, and error recovery logic.
 
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
+import {
+  copyToClipboard,
+  formatErrorDetailsForClipboard,
+  formatErrorTimestamp,
+} from '@/shared/errors/tracking/telemetry';
 import { useFileImport } from '../form/useFileImport';
 import type { AppState } from '../integration/useAppState';
-import { useConversionCleanup } from './useConversionCleanup';
 import { useConversionExecution } from './useConversionExecution';
 
 export interface ConversionHandlers {
   handleFileValidated: (content: string, fileName: string, fileSize: number) => Promise<void>;
   handleExportClick: () => Promise<void>;
-  handleCancelConversion?: () => void; // Optional to support contexts where cancellation isn't available
+  handleCancelConversion?: () => void;
   handleRetry: () => void;
   handleDismissError: () => void;
   handleImportDifferent: () => void;
@@ -34,11 +29,10 @@ interface UseConversionHandlersOptions {
 
 /**
  * Hook for managing all conversion-related handlers
- *
- * Composed from three focused hooks for better maintainability
  */
 export function useConversionHandlers(options: UseConversionHandlersOptions): ConversionHandlers {
   const { appState, currentJobId, wasmInitialized } = options;
+  const { lastError, reset } = appState;
 
   // File import and validation
   const fileImportHandlers = useFileImport({ appState });
@@ -50,16 +44,39 @@ export function useConversionHandlers(options: UseConversionHandlersOptions): Co
     wasmInitialized,
   });
 
-  // Error recovery and cleanup
-  const cleanupHandlers = useConversionCleanup({ appState });
+  // Error recovery handlers (inlined from useConversionCleanup)
+  const handleRetry = useCallback(() => {
+    reset();
+  }, [reset]);
+
+  const handleDismissError = useCallback(() => {
+    reset();
+  }, [reset]);
+
+  const handleReportIssue = useCallback(async () => {
+    if (lastError) {
+      const details = formatErrorDetailsForClipboard({
+        errorId: lastError.errorId,
+        timestamp: formatErrorTimestamp(new Date(lastError.timestamp)),
+        code: lastError.code,
+        message: lastError.message,
+        category: lastError.category,
+        technicalDetails: lastError.technicalDetails,
+        metadata: lastError.metadata as Record<string, unknown> | undefined,
+      });
+      await copyToClipboard(details);
+    }
+  }, [lastError]);
 
   // Memoize combined handlers for stable reference
   return useMemo(
     () => ({
       ...fileImportHandlers,
       ...executionHandlers,
-      ...cleanupHandlers,
+      handleRetry,
+      handleDismissError,
+      handleReportIssue,
     }),
-    [fileImportHandlers, executionHandlers, cleanupHandlers],
+    [fileImportHandlers, executionHandlers, handleRetry, handleDismissError, handleReportIssue],
   );
 }

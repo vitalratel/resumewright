@@ -107,7 +107,7 @@ describe('ConfirmDialog', () => {
       );
 
       const confirmButton = screen.getByText('Confirm');
-      expect(confirmButton).toHaveClass('bg-red-500'); // Using tokens.buttons.variants.danger
+      expect(confirmButton).toHaveClass('bg-destructive');
     });
 
     it('should render warning variant with yellow background', () => {
@@ -123,7 +123,7 @@ describe('ConfirmDialog', () => {
       );
 
       const confirmButton = screen.getByText('Confirm');
-      expect(confirmButton).toHaveClass('bg-yellow-600');
+      expect(confirmButton).toHaveClass('bg-warning');
     });
 
     it('should render primary variant with blue background', () => {
@@ -139,7 +139,7 @@ describe('ConfirmDialog', () => {
       );
 
       const confirmButton = screen.getByText('Confirm');
-      expect(confirmButton).toHaveClass('bg-blue-600'); // Using tokens.colors.primary.bg
+      expect(confirmButton).toHaveClass('bg-primary');
     });
 
     it('should render primary variant by default', () => {
@@ -154,7 +154,7 @@ describe('ConfirmDialog', () => {
       );
 
       const confirmButton = screen.getByText('Confirm');
-      expect(confirmButton).toHaveClass('bg-blue-600'); // Using tokens.colors.primary.bg
+      expect(confirmButton).toHaveClass('bg-primary');
     });
   });
 

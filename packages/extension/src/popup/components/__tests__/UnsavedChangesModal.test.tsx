@@ -228,7 +228,7 @@ describe('UnsavedChangesModal', () => {
       render(<UnsavedChangesModal {...defaultProps} />);
 
       const saveButton = screen.getByRole('button', { name: 'Save changes and go back' });
-      expect(saveButton.className).toContain('bg-green-500');
+      expect(saveButton.className).toContain('bg-success');
     });
 
     it('should have Discard as secondary action (bordered)', () => {

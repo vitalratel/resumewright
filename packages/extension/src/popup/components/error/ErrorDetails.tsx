@@ -1,11 +1,5 @@
-/**
- * ErrorDetails Component
- *
- * Displays error metadata (ID, timestamp) with copy-to-clipboard functionality.
- * Extracted from ErrorState to maintain single responsibility.
- *
- * @see {@link ErrorState} for main error display component
- */
+// ABOUTME: Displays error metadata (ID, timestamp) with copy-to-clipboard functionality.
+// ABOUTME: Extracted from ErrorState to maintain single responsibility.
 
 import { CheckIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { memo, useMemo, useState } from 'react';
@@ -17,7 +11,6 @@ import {
   formatErrorTimestamp,
 } from '@/shared/errors/tracking/telemetry';
 import type { ConversionError } from '@/shared/types/models';
-import { tokens } from '../../styles/tokens';
 import { Button } from '../common/Button';
 
 interface ErrorDetailsProps {
@@ -60,32 +53,18 @@ export const ErrorDetails = memo(({ error, category }: ErrorDetailsProps) => {
   };
 
   return (
-    <div
-      className={`w-full max-w-md ${tokens.colors.neutral.bgWhite} ${tokens.borders.default} ${tokens.borders.roundedLg} ${tokens.spacing.alert} ${tokens.effects.shadow}`}
-    >
-      <div className={`flex items-start justify-between ${tokens.spacing.gapMedium}`}>
+    <div className="w-full max-w-md bg-card border border-border rounded-lg p-3 shadow-sm dark:shadow-none">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex-1 space-y-1">
-          <div className={`flex items-center ${tokens.spacing.gapSmall}`}>
-            <span
-              className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.textMuted}`}
-            >
-              Error ID:
-            </span>
-            <code
-              className={`${tokens.typography.small} font-mono ${tokens.colors.neutral.text} ${tokens.colors.neutral.bgWhite} px-2 py-0.5 ${tokens.borders.rounded} ${tokens.borders.default}`}
-            >
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Error ID:</span>
+            <code className="text-sm font-mono text-foreground bg-card px-2 py-0.5 rounded-md border border-border">
               {error.errorId || 'UNKNOWN'}
             </code>
           </div>
-          <div className={`flex items-center ${tokens.spacing.gapSmall}`}>
-            <span
-              className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.textMuted}`}
-            >
-              Time:
-            </span>
-            <span className={`${tokens.typography.small} ${tokens.colors.neutral.textMuted}`}>
-              {formattedTimestamp}
-            </span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Time:</span>
+            <span className="text-sm text-muted-foreground">{formattedTimestamp}</span>
           </div>
         </div>
 
@@ -104,9 +83,7 @@ export const ErrorDetails = memo(({ error, category }: ErrorDetailsProps) => {
       </div>
 
       {/* Suggestion to report with error ID */}
-      <p
-        className={`mt-2 ${tokens.typography.small} ${tokens.colors.neutral.textMuted} leading-relaxed`}
-      >
+      <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
         Use the error ID above when reporting this issue for faster resolution.
       </p>
     </div>

@@ -36,7 +36,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import type { UserSettings } from '@/shared/types/settings';
 import { DEBOUNCE_DELAYS, UI_DELAYS } from '../../constants/timings';
-import { useBeforeUnload } from '../../hooks/core/useBeforeUnload';
+import { useEvent } from '../../hooks/core/useEvent';
 import { useUnsavedChanges } from '../../hooks/settings/useUnsavedChanges';
 import { ResetConfirmationModal } from '../ResetConfirmationModal';
 import { SettingsView } from './SettingsView';
@@ -60,8 +60,18 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
   // Use extracted hook for unsaved changes tracking
   const { isDirty } = useUnsavedChanges(settings, originalSettings);
 
-  // Prevent window close/refresh when there are unsaved changes
-  useBeforeUnload(isDirty || saving, 'You have unsaved changes. Are you sure you want to leave?');
+  // Prevent window close/refresh when there are unsaved changes (inlined from useBeforeUnload)
+  useEffect(() => {
+    if (!isDirty && !saving) return;
+
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      return 'You have unsaved changes. Are you sure you want to leave?';
+    };
+
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty, saving]);
 
   useEffect(() => {
     // Load settings on mount
@@ -127,24 +137,20 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
     return () => window.removeEventListener('beforeunload', handleWindowUnload);
   }, [isDirty, settings, saveImmediate, debouncedAutoSave]);
 
-  // Memoize callbacks for stable references + auto-save
-  const handlePageSizeChange = useCallback(
-    (pageSize: 'Letter' | 'A4' | 'Legal') => {
-      setSettings((prev) => {
-        if (!prev) return prev;
-        const newSettings = {
-          ...prev,
-          defaultConfig: { ...prev.defaultConfig, pageSize },
-        };
-        // Trigger auto-save
-        void debouncedAutoSave(newSettings);
-        return newSettings;
-      });
-    },
-    [debouncedAutoSave],
-  );
+  const handlePageSizeChange = useEvent((pageSize: 'Letter' | 'A4' | 'Legal') => {
+    setSettings((prev) => {
+      if (!prev) return prev;
+      const newSettings = {
+        ...prev,
+        defaultConfig: { ...prev.defaultConfig, pageSize },
+      };
+      // Trigger auto-save
+      void debouncedAutoSave(newSettings);
+      return newSettings;
+    });
+  });
 
-  const handleMarginChange = useCallback(
+  const handleMarginChange = useEvent(
     (side: 'top' | 'right' | 'bottom' | 'left', value: number) => {
       setSettings((prev) => {
         if (!prev) return prev;
@@ -160,15 +166,14 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
         return newSettings;
       });
     },
-    [debouncedAutoSave],
   );
 
   // Show confirmation modal instead of native confirm
-  const handleResetClick = useCallback(() => {
+  const handleResetClick = useEvent(() => {
     setShowResetModal(true);
-  }, []);
+  });
 
-  const handleResetConfirm = useCallback(() => {
+  const handleResetConfirm = useEvent(() => {
     void (async () => {
       setShowResetModal(false);
       await settingsStore.resetSettings();
@@ -176,14 +181,14 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
       setSettings(defaults);
       await saveImmediate(defaults);
     })();
-  }, [saveImmediate]);
+  });
 
-  const handleResetCancel = useCallback(() => {
+  const handleResetCancel = useEvent(() => {
     setShowResetModal(false);
-  }, []);
+  });
 
   // Auto-save immediately on navigation if dirty
-  const handleBack = useCallback(() => {
+  const handleBack = useEvent(() => {
     void (async () => {
       if (isDirty && settings) {
         // Cancel debounced save and save immediately
@@ -199,7 +204,7 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
         onBack();
       }
     })();
-  }, [isDirty, settings, saveImmediate, onBack, debouncedAutoSave]);
+  });
 
   return (
     <>

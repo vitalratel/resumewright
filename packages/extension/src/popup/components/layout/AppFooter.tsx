@@ -1,56 +1,35 @@
-/**
- * AppFooter Component
- * Footer with privacy message and help link
- * Help center link for user support
- */
+// ABOUTME: Footer with privacy message, help link, and version info.
+// ABOUTME: Help center link opens in new tab for user support.
 
 import { CheckCircleIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 import { EXTERNAL_LINKS } from '../../../shared/config/externalLinks';
-import { tokens } from '../../styles/tokens';
 
 export function AppFooter() {
   const handleHelpClick = () => {
-    // Open help center in new tab
-    // Configurable help URL from central config
-    void browser.tabs.create({
-      url: EXTERNAL_LINKS.HELP_URL,
-    });
+    void browser.tabs.create({ url: EXTERNAL_LINKS.HELP_URL });
   };
 
-  // Get extension version for display
   const version = browser.runtime.getManifest().version;
 
   return (
-    <footer
-      className={`${tokens.colors.neutral.bgWhite} border-t ${tokens.borders.default} px-4 py-3`}
-    >
-      <div className={`flex items-center justify-between ${tokens.typography.xs}`}>
-        {/* Help & FAQ Link */}
+    <footer className="bg-card border-t border-border px-4 py-3">
+      <div className="flex items-center justify-between text-xs">
         <button
           type="button"
           onClick={handleHelpClick}
-          className={`flex items-center gap-1.5 ${tokens.colors.neutral.textMuted} ${tokens.colors.link.hover} ${tokens.transitions.default} ${tokens.effects.focusRing} ${tokens.borders.rounded} px-1 py-0.5`
-            .trim()
-            .replace(/\s+/g, ' ')}
+          className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background rounded-md px-1 py-0.5"
           aria-label="Open help center in new tab"
         >
-          <QuestionMarkCircleIcon className={tokens.icons.sm} aria-hidden="true" />
+          <QuestionMarkCircleIcon className="w-5 h-5" aria-hidden="true" />
           <span>Help & FAQ</span>
         </button>
 
-        {/* Privacy Message */}
-        <div
-          className={`flex items-center ${tokens.spacing.gapSmall} ${tokens.colors.neutral.textMuted}`}
-        >
-          <CheckCircleIcon
-            className={`${tokens.icons.sm} ${tokens.colors.success.icon}`}
-            aria-hidden="true"
-          />
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <CheckCircleIcon className="w-5 h-5 text-success" aria-hidden="true" />
           <span>Privacy-first</span>
         </div>
 
-        {/* Version Info */}
-        <span className={tokens.colors.neutral.textLight}>v{version}</span>
+        <span className="text-muted-foreground">v{version}</span>
       </div>
     </footer>
   );

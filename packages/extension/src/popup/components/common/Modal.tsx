@@ -1,32 +1,8 @@
-/**
- * Modal Base Component
- * Uses native <dialog> element for proper accessibility
- *
- * Provides consistent modal behavior across the application:
- * - Native focus trapping (via showModal)
- * - Native Escape key handling (via cancel event)
- * - Backdrop click to close
- * - Proper ARIA attributes
- * - Consistent styling and animations
- *
- * @example
- * ```tsx
- * <Modal
- *   isOpen={showModal}
- *   onClose={handleClose}
- *   ariaLabelledBy="modal-title"
- *   ariaDescribedBy="modal-description"
- * >
- *   <h2 id="modal-title">Confirm Action</h2>
- *   <p id="modal-description">Are you sure?</p>
- *   <button onClick={handleConfirm}>Confirm</button>
- * </Modal>
- * ```
- */
+// ABOUTME: Modal base component using native <dialog> for accessibility.
+// ABOUTME: Provides focus trapping, escape key handling, and backdrop click to close.
 
 import type { ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
-import { tokens } from '../../styles/tokens';
 
 interface ModalProps {
   /** Whether the modal is open */
@@ -71,12 +47,6 @@ interface ModalProps {
   className?: string;
 }
 
-/**
- * Modal Component
- *
- * Unified modal implementation with consistent accessibility,
- * keyboard handling, and styling.
- */
 export function Modal({
   isOpen,
   onClose,
@@ -134,9 +104,7 @@ export function Modal({
       aria-labelledby={ariaLabelledBy}
       aria-describedby={ariaDescribedBy}
       onClick={handleBackdropClick}
-      className={`backdrop:bg-black/50 dark:backdrop:bg-black/60 ${tokens.colors.neutral.bgWhite} ${tokens.borders.roundedLg} ${tokens.effects.shadowXl} ${maxWidth} w-full p-0 ${tokens.animations.fadeIn} ${className}`
-        .trim()
-        .replace(/\s+/g, ' ')}
+      className={`backdrop:bg-black/50 dark:backdrop:bg-black/60 bg-card rounded-lg shadow-xl dark:shadow-none border border-border ${maxWidth} w-full p-0 animate-fade-in ${className}`.trim()}
     >
       {children}
     </dialog>

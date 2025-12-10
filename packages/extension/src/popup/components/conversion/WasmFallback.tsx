@@ -1,10 +1,5 @@
-/**
- * WASM Fallback Component
- *
- * Displays WASM initialization failure with diagnostics and recovery actions.
- * Provides browser compatibility checks, troubleshooting steps, and cache clearing functionality.
-
- */
+// ABOUTME: WASM initialization failure display with diagnostics and recovery actions.
+// ABOUTME: Provides browser compatibility checks, troubleshooting steps, and cache clearing.
 
 import {
   ChevronDownIcon,
@@ -24,7 +19,6 @@ import { getLogger } from '@/shared/infrastructure/logging/instance';
 import type { WasmCompatibilityReport } from '@/shared/infrastructure/wasm/compatibility';
 import type { ConversionError } from '@/shared/types/models';
 import { useLoadingState } from '../../hooks/ui/useLoadingState';
-import { tokens } from '../../styles/tokens';
 import { Alert } from '../common/Alert';
 import { Button } from '../common/Button';
 import { WASM } from '../common/TechTerm';
@@ -111,31 +105,22 @@ export const WasmFallback = React.memo(
       <div
         ref={ref}
         tabIndex={-1}
-        className={`w-full h-full ${tokens.colors.neutral.bgWhite} ${tokens.spacing.card} flex flex-col items-center justify-start ${tokens.spacing.sectionGap} overflow-y-auto`}
+        className="w-full h-full bg-card p-4 flex flex-col items-center justify-start space-y-6 md:space-y-8 overflow-y-auto"
         role="alert"
         aria-live="assertive"
       >
         {/* Warning Icon */}
-        <div
-          className={`shrink-0 w-16 h-16 ${tokens.colors.error.bg} ${tokens.borders.full} flex items-center justify-center`}
-        >
-          <ExclamationTriangleIcon
-            className={`${tokens.icons.xl} ${tokens.colors.error.icon}`}
-            aria-label="Error"
-          />
+        <div className="shrink-0 w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
+          <ExclamationTriangleIcon className="w-10 h-10 text-destructive" aria-label="Error" />
         </div>
 
         {/* Error Title */}
-        <h1
-          className={`text-2xl ${tokens.typography.bold} tracking-tight ${tokens.colors.neutral.text} text-center`}
-        >
+        <h1 className="text-2xl font-bold tracking-tight text-foreground text-center">
           Converter Initialization Failed
         </h1>
 
         {/* Error Message */}
-        <p
-          className={`${tokens.typography.base} ${tokens.colors.neutral.text} text-center max-w-md`}
-        >
+        <p className="text-base text-foreground text-center max-w-md">
           {report.compatible
             ? 'The PDF converter failed to initialize. This may be a temporary issue.'
             : 'Your browser does not meet the requirements to run the PDF converter.'}
@@ -151,19 +136,13 @@ export const WasmFallback = React.memo(
         )}
 
         {/* Browser Info */}
-        <div
-          className={`w-full max-w-md ${tokens.typography.small} ${tokens.colors.neutral.bg} ${tokens.spacing.alert} ${tokens.borders.roundedLg}`}
-        >
-          <p
-            className={`${tokens.typography.semibold} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
-          >
-            Browser Information
-          </p>
-          <p className={tokens.colors.neutral.textMuted}>
+        <div className="w-full max-w-md text-sm bg-muted p-3 rounded-lg">
+          <p className="font-semibold text-foreground mb-3">Browser Information</p>
+          <p className="text-muted-foreground">
             {report.browserInfo.browserName} {report.browserInfo.browserVersion}
           </p>
           {report.memoryInfo && (
-            <p className={`${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}>
+            <p className="text-muted-foreground mb-3">
               Memory: {report.memoryInfo.usedMB}
               MB / {report.memoryInfo.totalMB}
               MB ({report.memoryInfo.percentUsed}
@@ -175,33 +154,23 @@ export const WasmFallback = React.memo(
         {/* Issues List */}
         {report.issues.length > 0 && (
           <div className="w-full max-w-md">
-            <h2
-              className={`${tokens.typography.small} ${tokens.typography.semibold} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
-            >
-              Detected Issues:
-            </h2>
-            <ul className={tokens.spacing.gapSmall}>
+            <h2 className="text-sm font-semibold text-foreground mb-3">Detected Issues:</h2>
+            <ul className="gap-2">
               {report.issues.map((issue) => (
-                <li key={`${issue.severity}-${issue.message}`} className={tokens.typography.small}>
-                  <div className={`flex items-start ${tokens.spacing.gapSmall}`}>
+                <li key={`${issue.severity}-${issue.message}`} className="text-sm">
+                  <div className="flex items-start gap-2">
                     <span
-                      className={`px-2 py-0.5 ${tokens.typography.xs} ${tokens.typography.semibold} ${tokens.borders.rounded} ${
+                      className={`px-2 py-0.5 text-xs font-semibold rounded-md ${
                         issue.severity === 'error'
-                          ? `${tokens.colors.error.bg} ${tokens.colors.error.textStrong}`
-                          : `${tokens.colors.warning.bg} ${tokens.colors.warning.textStrong}`
+                          ? 'bg-destructive/10 text-destructive'
+                          : 'bg-warning/10 text-warning'
                       }`}
                     >
                       {issue.severity.toUpperCase()}
                     </span>
                     <div className="flex-1">
-                      <p className={`${tokens.colors.neutral.text} ${tokens.typography.medium}`}>
-                        {issue.message}
-                      </p>
-                      <p
-                        className={`${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}
-                      >
-                        {issue.recommendation}
-                      </p>
+                      <p className="text-foreground font-medium">{issue.message}</p>
+                      <p className="text-muted-foreground mb-3">{issue.recommendation}</p>
                     </div>
                   </div>
                 </li>
@@ -210,19 +179,13 @@ export const WasmFallback = React.memo(
           </div>
         )}
 
-        {/* Troubleshooting Steps - */}
+        {/* Troubleshooting Steps */}
         <div className="w-full max-w-md">
-          <h2
-            className={`${tokens.typography.small} ${tokens.typography.semibold} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
-          >
-            Troubleshooting Steps:
-          </h2>
-          <ol
-            className={`list-decimal list-inside ${tokens.spacing.gapSmall} ${tokens.typography.small} ${tokens.colors.neutral.text} space-y-2`}
-          >
+          <h2 className="text-sm font-semibold text-foreground mb-3">Troubleshooting Steps:</h2>
+          <ol className="list-decimal list-inside gap-2 text-sm text-foreground space-y-2">
             <li>
               <strong>Update your browser</strong> - Ensure you&apos;re using the latest version:
-              <ul className={`list-disc list-inside ml-6 mt-1 ${tokens.colors.neutral.textMuted}`}>
+              <ul className="list-disc list-inside ml-6 mt-1 text-muted-foreground">
                 <li>Chrome/Edge: chrome://settings/help or edge://settings/help</li>
                 <li>Firefox: about:support → Check for updates</li>
               </ul>
@@ -237,7 +200,7 @@ export const WasmFallback = React.memo(
                 href={WEBASSEMBLY_URLS.ORG}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${tokens.colors.link.text} ${tokens.colors.link.hoverUnderline} ${tokens.effects.focusRing} ${tokens.borders.rounded}`}
+                className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background rounded-md"
               >
                 webassembly.org
               </a>{' '}
@@ -266,7 +229,7 @@ export const WasmFallback = React.memo(
         </div>
 
         {/* Action Buttons */}
-        <div className={`w-full max-w-md ${tokens.spacing.gapSmall} pt-2`}>
+        <div className="w-full max-w-md gap-2 pt-2">
           <Button
             onClick={() => {
               void handleClearCache();
@@ -284,9 +247,7 @@ export const WasmFallback = React.memo(
               onClick={() => {
                 void handleReportIssue();
               }}
-              className={`w-full px-4 py-2 ${tokens.typography.small} ${tokens.colors.neutral.textMuted} hover:${tokens.colors.neutral.text} ${tokens.colors.neutral.hover} ${tokens.borders.roundedLg} ${tokens.transitions.default} ${tokens.effects.focusRingLight}`
-                .trim()
-                .replace(/\s+/g, ' ')}
+              className="w-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
               aria-label="Copy error details and open GitHub issue template"
             >
               Copy Error Details
@@ -295,28 +256,26 @@ export const WasmFallback = React.memo(
         </div>
 
         {/* Technical Details (Collapsible) */}
-        <div className={`w-full max-w-md border-t ${tokens.colors.neutral.borderLight} pt-4`}>
+        <div className="w-full max-w-md border-t border-border pt-4">
           <button
             type="button"
             onClick={() => setShowTechnical(!showTechnical)}
-            className={`w-full flex items-center justify-between ${tokens.typography.small} ${tokens.colors.neutral.textMuted} hover:${tokens.colors.neutral.text} ${tokens.effects.focusRingLight} ${tokens.transitions.default}`
-              .trim()
-              .replace(/\s+/g, ' ')}
+            className="w-full flex items-center justify-between text-sm text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-colors"
             aria-expanded={showTechnical}
             aria-controls="technical-details"
           >
-            <span className={tokens.typography.semibold}>Technical Details</span>
+            <span className="font-semibold">Technical Details</span>
             {showTechnical ? (
-              <ChevronUpIcon className={tokens.icons.md} aria-hidden="true" />
+              <ChevronUpIcon className="w-6 h-6" aria-hidden="true" />
             ) : (
-              <ChevronDownIcon className={tokens.icons.md} aria-hidden="true" />
+              <ChevronDownIcon className="w-6 h-6" aria-hidden="true" />
             )}
           </button>
 
           {showTechnical && (
             <div
               id="technical-details"
-              className={`${tokens.spacing.marginMedium} ${tokens.spacing.alert} ${tokens.colors.neutral.bg} ${tokens.borders.roundedLg} ${tokens.typography.xs} font-mono overflow-x-auto`}
+              className="mt-4 p-3 bg-muted rounded-lg text-xs font-mono overflow-x-auto"
             >
               <pre className="whitespace-pre-wrap wrap-break-words">
                 {JSON.stringify(

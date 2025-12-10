@@ -1,27 +1,9 @@
-/**
- * ConfirmDialog Component
- *
- * Modal dialog for confirming destructive or important actions.
- * Uses native <dialog> element for proper accessibility.
- *
- * @example
- * ```tsx
- * <ConfirmDialog
- *   isOpen={showConfirm}
- *   title="Reset Settings?"
- *   message="This will restore all settings to defaults."
- *   confirmText="Reset"
- *   confirmVariant="danger"
- *   onConfirm={() => resetSettings()}
- *   onCancel={() => setShowConfirm(false)}
- * />
- * ```
- */
+// ABOUTME: Modal dialog for confirming destructive or important actions.
+// ABOUTME: Uses native <dialog> element for proper accessibility.
 
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { tokens } from '../../styles/tokens';
 
 interface ConfirmDialogProps {
   /** Controls dialog visibility */
@@ -99,63 +81,48 @@ export function ConfirmDialog({
     }
   };
 
-  // Render via portal to avoid z-index issues
   return createPortal(
-    // biome-ignore lint/a11y/useKeyWithClickEvents: <dialog> is interactive per HTML spec; keyboard handled via native cancel event. See https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/issues/1000
+    // biome-ignore lint/a11y/useKeyWithClickEvents: <dialog> is interactive per HTML spec; keyboard handled via native cancel event
     <dialog
       ref={dialogRef}
       aria-labelledby="dialog-title"
       onClick={handleBackdropClick}
-      className={`backdrop:bg-black/50 dark:backdrop:bg-black/60 ${tokens.colors.neutral.bgWhite} ${tokens.borders.roundedLg} ${tokens.effects.shadowXl} max-w-md w-full mx-4 p-6 open:flex open:flex-col`}
+      className="backdrop:bg-black/50 dark:backdrop:bg-black/60 bg-card rounded-lg shadow-xl dark:shadow-none border border-border max-w-md w-full mx-4 p-6 open:flex open:flex-col"
     >
-      {/* Header */}
-      <div className={`flex items-start justify-between ${tokens.spacing.marginSmall}`}>
-        <h2
-          id="dialog-title"
-          className={`${tokens.typography.large} ${tokens.typography.semibold} ${tokens.colors.neutral.text}`}
-        >
+      <div className="flex items-start justify-between mb-3">
+        <h2 id="dialog-title" className="text-lg font-semibold text-foreground">
           {title}
         </h2>
         <button
           type="button"
           onClick={onCancel}
-          className={`${tokens.buttons.iconOnly.default} ${tokens.colors.neutral.icon} hover:${tokens.colors.neutral.textMuted} ${tokens.effects.focusRing}`}
+          className="min-w-11 min-h-11 p-2 text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background"
           aria-label="Close dialog"
         >
-          <XMarkIcon className={tokens.icons.md} aria-hidden="true" />
+          <XMarkIcon className="w-6 h-6" aria-hidden="true" />
         </button>
       </div>
 
-      {/* Message */}
-      <div
-        className={`${tokens.spacing.marginMedium} ${tokens.typography.small} ${tokens.colors.neutral.textMuted}`}
-      >
-        {message}
-      </div>
+      <div className="mb-4 text-sm text-muted-foreground">{message}</div>
 
-      {/* Actions */}
-      <div className={`flex ${tokens.spacing.gapMedium} justify-end`}>
+      <div className="flex gap-3 justify-end">
         <button
           type="button"
           onClick={onCancel}
-          className={`px-4 py-2 ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.colors.neutral.bgWhite} border ${tokens.colors.neutral.border} ${tokens.borders.rounded} ${tokens.colors.neutral.hover} ${tokens.effects.focusRing} ${tokens.transitions.default}`
-            .trim()
-            .replace(/\s+/g, ' ')}
+          className="px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-md hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background transition-all duration-300"
         >
           {cancelText}
         </button>
         <button
           type="button"
           onClick={handleConfirm}
-          className={`px-4 py-2 ${tokens.typography.small} ${tokens.typography.medium} text-white ${tokens.borders.rounded} ${tokens.effects.focusRing} ${tokens.transitions.default} ${
+          className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background transition-all duration-300 ${
             confirmVariant === 'danger'
-              ? `${tokens.buttons.variants.danger}`
+              ? 'bg-destructive hover:bg-destructive/90 active:bg-destructive/80'
               : confirmVariant === 'warning'
-                ? `${tokens.buttons.variants.warning}`
-                : `${tokens.colors.primary.bg} ${tokens.colors.primary.hover} active:bg-blue-700 dark:active:bg-blue-700`
-          }`
-            .trim()
-            .replace(/\s+/g, ' ')}
+                ? 'bg-warning text-warning-foreground hover:bg-warning/90 active:bg-warning/80'
+                : 'bg-primary hover:bg-primary/90 active:bg-primary/80'
+          }`}
         >
           {confirmText}
         </button>

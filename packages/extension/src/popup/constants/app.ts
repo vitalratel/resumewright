@@ -1,9 +1,6 @@
-/**
- * App-level constants
- * Extracted from App.tsx for better maintainability
- */
+// ABOUTME: App-level constants extracted from App.tsx for maintainability.
+// ABOUTME: Contains popup dimensions, container classes, loading messages, and error messages.
 
-import { tokens } from '../styles/tokens';
 import { getViewContext } from '../utils/viewContext';
 
 /**
@@ -23,7 +20,7 @@ const POPUP_CONTAINER = `w-[${POPUP_DIMENSIONS.width}px] h-[${POPUP_DIMENSIONS.h
  * CSS class for full-page converter container
  * Uses flex centering and responsive max-width for better UX on large screens
  */
-const CONVERTER_CONTAINER = `min-h-screen flex flex-col items-center ${tokens.colors.neutral.bgPage}`;
+const CONVERTER_CONTAINER = 'min-h-screen flex flex-col items-center bg-background';
 
 /**
  * Get the appropriate container class based on view context
