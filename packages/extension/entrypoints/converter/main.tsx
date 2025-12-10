@@ -12,7 +12,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from '../../src/popup/App';
 import { ErrorBoundary } from '../../src/popup/components/ErrorBoundary';
-import '../../src/popup/styles/base.converter.css';
+import './base.converter.css';
 import '../../src/popup/index.css';
 
 const root = document.getElementById('root');

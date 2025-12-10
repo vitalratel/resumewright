@@ -9,7 +9,6 @@
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import React, { useEffect, useRef } from 'react';
 import type { UserSettings } from '@/shared/types/settings';
-import { tokens } from '../styles/tokens';
 import { Modal } from './common/Modal';
 
 interface ResetConfirmationModalProps {
@@ -47,82 +46,60 @@ export const ResetConfirmationModal = React.memo(
         ariaLabelledBy="reset-modal-title"
         ariaDescribedBy="reset-modal-description"
       >
-        <div className={`p-6 ${tokens.spacing.stack}`}>
+        <div className="p-6 space-y-4">
           {/* Header with warning icon */}
-          <div className={`flex items-start ${tokens.spacing.gapMedium}`}>
+          <div className="flex items-start gap-3">
             <ExclamationTriangleIcon
-              className={`${tokens.icons.md} ${tokens.colors.warning.icon} shrink-0 mt-1`}
+              className="w-6 h-6 text-icon-warning shrink-0 mt-1"
               aria-hidden="true"
             />
             <div className="flex-1">
-              <h2
-                id="reset-modal-title"
-                className={`${tokens.typography.large} ${tokens.typography.semibold} ${tokens.colors.neutral.text}`}
-              >
+              <h2 id="reset-modal-title" className="text-lg font-semibold text-foreground">
                 Reset Settings to Defaults?
               </h2>
-              <p
-                id="reset-modal-description"
-                className={`${tokens.typography.base} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}
-              >
+              <p id="reset-modal-description" className="text-base text-muted-foreground mb-3">
                 This will discard your current settings and restore defaults.
               </p>
             </div>
           </div>
 
           {/* Current values preview - Only show changed values */}
-          <div
-            className={`${tokens.colors.neutral.bg} border ${tokens.borders.default} ${tokens.borders.rounded} p-4 ${tokens.spacing.gapMedium} flex flex-col`
-              .trim()
-              .replace(/\s+/g, ' ')}
-          >
-            <p
-              className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text}`}
-            >
+          <div className="bg-muted border border-border rounded-md p-4 gap-3 flex flex-col">
+            <p className="text-sm font-medium text-foreground">
               {pageSizeChanged || anyMarginChanged
                 ? 'Settings that will change:'
                 : 'No custom settings to reset'}
             </p>
 
             {(pageSizeChanged || anyMarginChanged) && (
-              <div
-                className={`${tokens.spacing.gapSmall} ${tokens.typography.small} flex flex-col`}
-              >
+              <div className="gap-2 text-sm flex flex-col">
                 {pageSizeChanged && (
                   <div className="flex justify-between items-center">
-                    <span className={tokens.colors.neutral.textMuted}>Page Size:</span>
+                    <span className="text-muted-foreground">Page Size:</span>
                     <div className="flex items-center gap-2">
-                      <span
-                        className={`${tokens.typography.medium} ${tokens.colors.warning.text} ${tokens.typography.semibold}`}
-                      >
+                      <span className="font-medium text-warning-foreground font-semibold">
                         {pageSize}
                       </span>
-                      <span className={tokens.colors.neutral.textMuted}>→</span>
-                      <span className={`${tokens.typography.medium} ${tokens.colors.neutral.text}`}>
-                        {defaultPageSize}
-                      </span>
+                      <span className="text-muted-foreground">→</span>
+                      <span className="font-medium text-foreground">{defaultPageSize}</span>
                     </div>
                   </div>
                 )}
 
                 {anyMarginChanged && (
-                  <div className={tokens.spacing.gapSmall}>
-                    <span className={`${tokens.colors.neutral.textMuted} block`}>Margins:</span>
-                    <div className={`ml-4 ${tokens.spacing.gapSmall}`}>
+                  <div className="gap-2">
+                    <span className="text-muted-foreground block">Margins:</span>
+                    <div className="ml-4 gap-2">
                       {marginTopChanged && (
                         <div className="flex justify-between items-center">
-                          <span className={tokens.colors.neutral.textMuted}>Top:</span>
+                          <span className="text-muted-foreground">Top:</span>
                           <div className="flex items-center gap-2">
-                            <span
-                              className={`${tokens.typography.medium} ${tokens.colors.warning.text} ${tokens.typography.semibold} font-mono`}
-                            >
+                            <span className="font-medium text-warning-foreground font-semibold font-mono">
                               {margin.top}
                               &quot;
                             </span>
-                            <span className={tokens.colors.neutral.textMuted}>→</span>
-                            <span
-                              className={`${tokens.typography.medium} ${tokens.colors.neutral.text} font-mono`}
-                            >
+                            <span className="text-muted-foreground">→</span>
+                            <span className="font-medium text-foreground font-mono">
                               {defaultMargin.top}
                               &quot;
                             </span>
@@ -131,18 +108,14 @@ export const ResetConfirmationModal = React.memo(
                       )}
                       {marginBottomChanged && (
                         <div className="flex justify-between items-center">
-                          <span className={tokens.colors.neutral.textMuted}>Bottom:</span>
+                          <span className="text-muted-foreground">Bottom:</span>
                           <div className="flex items-center gap-2">
-                            <span
-                              className={`${tokens.typography.medium} ${tokens.colors.warning.text} ${tokens.typography.semibold} font-mono`}
-                            >
+                            <span className="font-medium text-warning-foreground font-semibold font-mono">
                               {margin.bottom}
                               &quot;
                             </span>
-                            <span className={tokens.colors.neutral.textMuted}>→</span>
-                            <span
-                              className={`${tokens.typography.medium} ${tokens.colors.neutral.text} font-mono`}
-                            >
+                            <span className="text-muted-foreground">→</span>
+                            <span className="font-medium text-foreground font-mono">
                               {defaultMargin.bottom}
                               &quot;
                             </span>
@@ -151,18 +124,14 @@ export const ResetConfirmationModal = React.memo(
                       )}
                       {marginLeftChanged && (
                         <div className="flex justify-between items-center">
-                          <span className={tokens.colors.neutral.textMuted}>Left:</span>
+                          <span className="text-muted-foreground">Left:</span>
                           <div className="flex items-center gap-2">
-                            <span
-                              className={`${tokens.typography.medium} ${tokens.colors.warning.text} ${tokens.typography.semibold} font-mono`}
-                            >
+                            <span className="font-medium text-warning-foreground font-semibold font-mono">
                               {margin.left}
                               &quot;
                             </span>
-                            <span className={tokens.colors.neutral.textMuted}>→</span>
-                            <span
-                              className={`${tokens.typography.medium} ${tokens.colors.neutral.text} font-mono`}
-                            >
+                            <span className="text-muted-foreground">→</span>
+                            <span className="font-medium text-foreground font-mono">
                               {defaultMargin.left}
                               &quot;
                             </span>
@@ -171,18 +140,14 @@ export const ResetConfirmationModal = React.memo(
                       )}
                       {marginRightChanged && (
                         <div className="flex justify-between items-center">
-                          <span className={tokens.colors.neutral.textMuted}>Right:</span>
+                          <span className="text-muted-foreground">Right:</span>
                           <div className="flex items-center gap-2">
-                            <span
-                              className={`${tokens.typography.medium} ${tokens.colors.warning.text} ${tokens.typography.semibold} font-mono`}
-                            >
+                            <span className="font-medium text-warning-foreground font-semibold font-mono">
                               {margin.right}
                               &quot;
                             </span>
-                            <span className={tokens.colors.neutral.textMuted}>→</span>
-                            <span
-                              className={`${tokens.typography.medium} ${tokens.colors.neutral.text} font-mono`}
-                            >
+                            <span className="text-muted-foreground">→</span>
+                            <span className="font-medium text-foreground font-mono">
                               {defaultMargin.right}
                               &quot;
                             </span>
@@ -197,23 +162,19 @@ export const ResetConfirmationModal = React.memo(
           </div>
 
           {/* Action buttons */}
-          <div className={`flex ${tokens.spacing.gapMedium} pt-2`}>
+          <div className="flex gap-3 pt-2">
             <button
               ref={cancelButtonRef}
               type="button"
               onClick={onCancel}
-              className={`flex-1 px-4 py-2 ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.colors.neutral.bgWhite} border ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.colors.neutral.hover} ${tokens.effects.hoverBorder} ${tokens.effects.focusRing} ${tokens.transitions.default}`
-                .trim()
-                .replace(/\s+/g, ' ')}
+              className="flex-1 px-4 py-2 text-sm font-medium text-foreground bg-background border border-border rounded-md hover:bg-muted hover:border-border-hover focus:outline-none focus:ring-2 focus:ring-ring-focus focus:ring-offset-2 ring-offset-ring-offset transition-all duration-300"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={onConfirm}
-              className={`flex-1 px-4 py-2 ${tokens.typography.small} ${tokens.typography.medium} text-white ${tokens.buttons.variants.warning} ${tokens.borders.rounded} focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:ring-offset-2 ${tokens.transitions.default}`
-                .trim()
-                .replace(/\s+/g, ' ')}
+              className="flex-1 px-4 py-2 text-sm font-medium text-white bg-warning-action hover:bg-warning-action-hover active:bg-warning-action-active rounded-md focus:outline-none focus:ring-2 focus:ring-ring-focus-warning focus:ring-offset-2 ring-offset-ring-offset transition-all duration-300"
             >
               Reset to Defaults
             </button>

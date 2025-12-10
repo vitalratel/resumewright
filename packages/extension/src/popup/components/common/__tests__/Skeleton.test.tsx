@@ -1,10 +1,5 @@
-/**
- * Skeleton Component Tests
- * P2: Skeleton loading screens
- *
- * Tests skeleton components for proper rendering,
- * accessibility, and animation behavior.
- */
+// ABOUTME: Tests for Skeleton loading components.
+// ABOUTME: Verifies rendering, accessibility, and animation behavior.
 
 import { render, screen } from '@testing-library/react';
 import { describe, expect } from 'vitest';
@@ -24,15 +19,14 @@ describe('Skeleton', () => {
 
       expect(skeleton).toBeInTheDocument();
       expect(skeleton).toHaveClass('animate-pulse', 'rounded-md');
-      // Token-based background includes both light and dark mode (bg-gray-50 dark:bg-gray-850)
-      expect(skeleton.className).toContain('bg-gray-50');
+      expect(skeleton.className).toContain('bg-muted');
     });
 
     it('renders text variant', () => {
       const { container } = render(<Skeleton variant="text" className="w-32 h-4" />);
       const skeleton = container.firstChild as HTMLElement;
 
-      expect(skeleton).toHaveClass('rounded-md', 'h-4'); // Using tokens.borders.rounded
+      expect(skeleton).toHaveClass('rounded-md', 'h-4');
     });
 
     it('renders circle variant', () => {
@@ -130,8 +124,9 @@ describe('Skeleton', () => {
       const wrapper = container.querySelector('.flex.justify-between');
       expect(wrapper).toBeInTheDocument();
 
-      // Should have border bottom (tokens include both light and dark mode)
-      expect(wrapper).toHaveClass('border-b', 'border');
+      // Should have border bottom with semantic token
+      expect(wrapper).toHaveClass('border-b');
+      expect(wrapper).toHaveClass('border-border');
     });
 
     it('has logo and settings icon skeletons', () => {
@@ -246,9 +241,9 @@ describe('Skeleton', () => {
       const { container: rectContainer } = render(<Skeleton variant="rect" />);
       const { container: circleContainer } = render(<Skeleton variant="circle" />);
 
-      expect(textContainer.firstChild).toHaveClass('rounded-md'); // Using tokens.borders.rounded
-      expect(rectContainer.firstChild).toHaveClass('rounded-md'); // Using tokens.borders.rounded
-      expect(circleContainer.firstChild).toHaveClass('rounded-full'); // Using tokens.borders.full
+      expect(textContainer.firstChild).toHaveClass('rounded-md');
+      expect(rectContainer.firstChild).toHaveClass('rounded-md');
+      expect(circleContainer.firstChild).toHaveClass('rounded-full');
     });
   });
 });

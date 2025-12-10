@@ -36,7 +36,6 @@ describe('Modal', () => {
       render(<Modal {...defaultProps} />);
 
       const modalContent = screen.getByRole('dialog');
-      // Check for fadeIn animation class (from tokens.animations.fadeIn)
       expect(modalContent.className).toMatch(/animate-fade-in|animate-\[fadeIn/);
     });
   });

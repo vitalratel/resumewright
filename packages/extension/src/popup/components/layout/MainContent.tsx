@@ -1,16 +1,10 @@
-/**
- * MainContent Component
- * Refactored to use Context API instead of prop drilling
- * State machine content renderer
- *
- * Renders different content based on UI state
- */
+// ABOUTME: State machine content renderer using Context API.
+// ABOUTME: Renders different content based on UI state (import, converting, success, error).
 
 import React, { useTransition } from 'react';
 import { generateFilename } from '../../../shared/utils/filenameSanitization';
 import { useAppContext } from '../../context/AppContext';
 import { useConversion } from '../../context/ConversionContext';
-import { tokens } from '../../styles/tokens';
 import { ConvertingState } from '../conversion/ConvertingState';
 import { ErrorState } from '../conversion/ErrorState';
 import { Success } from '../conversion/Success';
@@ -37,12 +31,10 @@ export const MainContent = React.memo(() => {
   return (
     <main id="main-content" className="flex-1 overflow-y-auto">
       {uiState === 'waiting_for_import' && (
-        <div className={tokens.animations.fadeIn}>
-          {/* Isolate file import errors */}
+        <div className="animate-fade-in">
           <SectionErrorBoundary section="file-import" onReset={appState.clearImportedFile}>
             <FileImport
               onFileValidated={(content, fileName, fileSize) => {
-                // React 19 pattern: wrap async operations in startTransition
                 startTransition(async () => {
                   await handleFileValidated(content, fileName, fileSize);
                 });
@@ -57,17 +49,17 @@ export const MainContent = React.memo(() => {
       {(uiState === 'file_validated' || uiState === 'validation_error') && <FileValidatedView />}
 
       {uiState === 'converting' && (
-        <div className={tokens.animations.fadeIn}>
+        <div className="animate-fade-in">
           <ConvertingState />
         </div>
       )}
 
       {uiState === 'success' && (
-        <div ref={successRef} className={tokens.animations.fadeIn}>
+        <div ref={successRef} className="animate-fade-in">
           <ErrorBoundary key={`success-${appState.lastFilename}`}>
             <Success
               filename={lastFilename ?? generateFilename(undefined)}
-              autoCloseSeconds={20} // Increased from default 10s to 20s for WCAG 2.2.1
+              autoCloseSeconds={20}
               onExportAnother={appState.reset}
             />
           </ErrorBoundary>
@@ -75,7 +67,7 @@ export const MainContent = React.memo(() => {
       )}
 
       {uiState === 'error' && lastError && (
-        <div ref={errorRef} className={tokens.animations.fadeIn}>
+        <div ref={errorRef} className="animate-fade-in">
           <ErrorState
             error={lastError}
             onRetry={handleRetry}

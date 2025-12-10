@@ -1,8 +1,30 @@
-//! Type conversion macros for WASM-JavaScript boundary
-//!
-//! This module provides helper macros to reduce boilerplate when converting between
-//! Rust types and JavaScript JsValue using serde_wasm_bindgen. These macros handle
-//! common conversion patterns and error handling consistently.
+//! ABOUTME: Macros for WASM-JavaScript boundary operations.
+//! ABOUTME: Provides debug logging, type conversion, and error handling helpers.
+
+/// Debug logging macro - only logs when debug-logging feature is enabled.
+///
+/// Outputs to the browser console via `web_sys::console::log_1`.
+/// When the `debug-logging` feature is disabled, this compiles to nothing.
+///
+/// # Example
+///
+/// ```ignore
+/// debug_log!("Processing stage: {}", stage_name);
+/// debug_log!("Elapsed: {}ms", elapsed);
+/// ```
+#[cfg(feature = "debug-logging")]
+#[macro_export]
+macro_rules! debug_log {
+    ($($arg:tt)*) => {
+        web_sys::console::log_1(&format!($($arg)*).into());
+    };
+}
+
+#[cfg(not(feature = "debug-logging"))]
+#[macro_export]
+macro_rules! debug_log {
+    ($($arg:tt)*) => {};
+}
 
 /// Convert JsValue to a Rust type with automatic error handling
 ///

@@ -178,47 +178,46 @@ describe('MarginPreview', () => {
   });
 
   describe('Dark Mode Styling', () => {
-    it('should include dark mode classes on page container', () => {
+    it('should use semantic classes on page container', () => {
       const { container } = render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
 
       // Find the page container (has border-2 class)
       const pageContainer = container.querySelector('.border-2');
       expect(pageContainer).toBeInTheDocument();
 
-      // Verify dark mode classes are present
-      expect(pageContainer?.className).toContain('dark:bg-gray-900');
-      expect(pageContainer?.className).toContain('dark:border-gray-700');
+      // Verify semantic classes are present (CSS variables handle dark mode)
+      expect(pageContainer?.className).toContain('bg-card');
+      expect(pageContainer?.className).toContain('border-border');
     });
 
-    it('should include dark mode classes on content area', () => {
+    it('should use semantic classes on content area', () => {
       const { container } = render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
 
-      // Content area should have dark mode background
+      // Content area should use semantic background class
       const contentArea = container.querySelector('.p-1.overflow-hidden');
-      expect(contentArea?.className).toContain('dark:bg-gray-900');
+      expect(contentArea?.className).toContain('bg-card');
     });
 
-    it('should include dark mode classes on dimension label', () => {
+    it('should use semantic classes on dimension label', () => {
       const { container } = render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
 
-      // Dimension label should have dark mode background
-      const dimensionLabel = container.querySelector('.bg-white\\/90');
-      expect(dimensionLabel?.className).toContain('dark:bg-gray-850/90');
+      // Dimension label should use semantic background class
+      const dimensionLabel = container.querySelector('[data-testid="dimension-label"]');
+      expect(dimensionLabel?.className).toContain('bg-card');
     });
 
-    it('should use design tokens with dark mode variants', () => {
+    it('should use semantic color tokens for margin colors', () => {
       const { container } = render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
 
-      // Verify tokens.marginPreview classes are applied (these include dark: variants)
-      // Top/Bottom margins should have blue colors
-      const topMargin = container.querySelector('.bg-blue-200');
+      // Top/Bottom margins should have info colors
+      const topMargin = container.querySelector('.bg-info\\/30');
       expect(topMargin).toBeInTheDocument();
-      expect(topMargin?.className).toContain('dark:bg-blue-700');
+      expect(topMargin?.className).toContain('border-info/50');
 
-      // Left/Right margins should have green colors
-      const leftMargin = container.querySelector('.bg-green-200');
+      // Left/Right margins should have success colors
+      const leftMargin = container.querySelector('.bg-success\\/30');
       expect(leftMargin).toBeInTheDocument();
-      expect(leftMargin?.className).toContain('dark:bg-green-700');
+      expect(leftMargin?.className).toContain('border-success/50');
     });
   });
 

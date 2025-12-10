@@ -24,10 +24,10 @@ describe('Spinner', () => {
       expect(svg).toHaveClass('w-6', 'h-6'); // medium size from tokens
     });
 
-    it('renders with default blue color', () => {
+    it('renders with default primary color', () => {
       const { container } = render(<Spinner delayMs={0} />);
       const svg = container.querySelector('svg');
-      expect(svg).toHaveClass('text-blue-500');
+      expect(svg).toHaveClass('text-primary');
     });
 
     it('has spinning animation', () => {
@@ -221,7 +221,7 @@ describe('Spinner', () => {
       const svg = container.querySelector('svg');
 
       // Should use defaults
-      expect(svg).toHaveClass('w-6', 'h-6', 'text-blue-500');
+      expect(svg).toHaveClass('w-6', 'h-6', 'text-primary');
     });
 
     it('handles empty ariaLabel', () => {

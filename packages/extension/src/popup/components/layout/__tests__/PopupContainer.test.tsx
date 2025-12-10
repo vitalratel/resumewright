@@ -11,7 +11,7 @@ import { PopupContainer } from '../PopupContainer';
 
 // Test constants for popup dimensions and test content
 const POPUP_DIMENSIONS = {
-  WIDTH: 'max-w-md', // From tokens.layout.maxWidthPopup (448px in Tailwind)
+  WIDTH: 'max-w-md', // 448px in Tailwind
   HEIGHT: '600px',
 } as const;
 

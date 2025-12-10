@@ -2,9 +2,8 @@
 // ABOUTME: Uses tabs to eliminate scrolling and improve keyboard accessibility.
 
 import { ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/outline';
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import type { UserSettings } from '@/shared/types/settings';
-import { tokens } from '../../styles/tokens';
 import { Alert } from '../common/Alert';
 import { RangeSlider } from '../common/RangeSlider';
 import { SkeletonSettings } from '../common/Skeleton';
@@ -47,66 +46,20 @@ export const SettingsView = React.memo(
   }: SettingsViewProps) => {
     const [activeTab, setActiveTab] = useState('page');
 
-    // Memoize page size handlers to prevent recreation
-    const handlePageSizeLetter = useCallback(() => onPageSizeChange('Letter'), [onPageSizeChange]);
-    const handlePageSizeA4 = useCallback(() => onPageSizeChange('A4'), [onPageSizeChange]);
-    const handlePageSizeLegal = useCallback(() => onPageSizeChange('Legal'), [onPageSizeChange]);
-
-    const pageSizeHandlers = {
-      Letter: handlePageSizeLetter,
-      A4: handlePageSizeA4,
-      Legal: handlePageSizeLegal,
-    } as const;
-
-    // Memoize margin handlers to prevent recreation
-    const handleMarginTop = useCallback(
-      (value: number) => onMarginChange('top', value),
-      [onMarginChange],
-    );
-    const handleMarginBottom = useCallback(
-      (value: number) => onMarginChange('bottom', value),
-      [onMarginChange],
-    );
-    const handleMarginLeft = useCallback(
-      (value: number) => onMarginChange('left', value),
-      [onMarginChange],
-    );
-    const handleMarginRight = useCallback(
-      (value: number) => onMarginChange('right', value),
-      [onMarginChange],
-    );
-
-    const marginHandlers = {
-      top: handleMarginTop,
-      bottom: handleMarginBottom,
-      left: handleMarginLeft,
-      right: handleMarginRight,
-    } as const;
-
     // Loading state with skeleton
     if (!settings) {
       return (
         <div className="w-[360px] min-h-[200px] p-4" aria-busy="true" aria-live="polite">
           {/* Header skeleton */}
-          <div className={`flex items-center ${tokens.spacing.marginMedium}`}>
-            <div className={`flex items-center ${tokens.spacing.gapSmall}`}>
-              <div
-                className={`w-5 h-5 ${tokens.colors.neutral.bg} ${tokens.borders.rounded} animate-pulse`}
-              ></div>
-              <div
-                className={`w-12 h-5 ${tokens.colors.neutral.bg} ${tokens.borders.rounded} animate-pulse`}
-              ></div>
+          <div className="flex items-center mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-muted rounded-md animate-pulse"></div>
+              <div className="w-12 h-5 bg-muted rounded-md animate-pulse"></div>
             </div>
-            <div
-              className={`ml-2 w-16 h-5 ${tokens.colors.neutral.bg} ${tokens.borders.rounded} animate-pulse`}
-            ></div>
+            <div className="ml-2 w-16 h-5 bg-muted rounded-md animate-pulse"></div>
           </div>
 
-          <p
-            className={`${tokens.typography.base} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginMedium}`}
-          >
-            Loading settings...
-          </p>
+          <p className="text-base text-muted-foreground mb-4">Loading settings...</p>
 
           <SkeletonSettings />
         </div>
@@ -114,25 +67,21 @@ export const SettingsView = React.memo(
     }
 
     return (
-      <div className={`w-[360px] min-h-[200px] p-4 ${tokens.colors.neutral.bgWhite}`}>
+      <div className="w-[360px] min-h-[200px] p-4 bg-card">
         {/* Header */}
-        <div className={`flex items-center justify-between ${tokens.spacing.marginMedium}`}>
+        <div className="flex items-center justify-between mb-4">
           <button
             type="button"
             onClick={onBack}
-            className={`${tokens.colors.neutral.textMuted} ${tokens.colors.neutral.hover} ${tokens.buttons.variants.iconActive} ${tokens.effects.hoverScale} p-1 ${tokens.borders.rounded} relative flex items-center ${tokens.spacing.gapSmall} ${tokens.transitions.default} ${tokens.effects.focusRing}`}
+            className="text-muted-foreground hover:bg-muted active:bg-muted hover:scale-105 active:scale-95 p-1 rounded-md relative flex items-center gap-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background"
             aria-label="Back to main screen"
           >
-            <ArrowLeftIcon className={tokens.icons.sm} aria-hidden="true" />
-            <span
-              className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.textMuted}`}
-            >
-              Back
-            </span>
+            <ArrowLeftIcon className="w-5 h-5" aria-hidden="true" />
+            <span className="text-sm font-medium text-muted-foreground">Back</span>
             {isDirty && (
               <>
                 <span
-                  className={`absolute -top-1 -right-1 w-2 h-2 ${tokens.colors.warning.icon} rounded-full`}
+                  className="absolute -top-1 -right-1 w-2 h-2 bg-warning rounded-full"
                   aria-hidden="true"
                   title="You have unsaved changes"
                 />
@@ -142,9 +91,7 @@ export const SettingsView = React.memo(
               </>
             )}
           </button>
-          <h1
-            className={`flex-1 flex items-center justify-center text-center ${tokens.typography.large} ${tokens.typography.semibold} ${tokens.colors.neutral.text}`}
-          >
+          <h1 className="flex-1 flex items-center justify-center text-center text-lg font-semibold text-foreground">
             Settings
           </h1>
           <div className="w-18"></div>
@@ -153,11 +100,11 @@ export const SettingsView = React.memo(
         {/* Visual dirty indicator banner */}
         {isDirty && !saving && (
           <output
-            className={`flex items-center ${tokens.spacing.gapSmall} ${tokens.colors.info.text} ${tokens.typography.small} px-4 py-2 ${tokens.colors.info.bg} border ${tokens.colors.info.border} ${tokens.borders.roundedLg} ${tokens.spacing.marginMedium}`}
+            className="flex items-center gap-2 text-info text-sm px-4 py-2 bg-info/10 border border-info/20 rounded-lg mb-4"
             aria-live="polite"
           >
             <svg
-              className={`animate-spin ${tokens.icons.xs} ${tokens.colors.primary.text} shrink-0`}
+              className="animate-spin w-4 h-4 text-primary shrink-0"
               viewBox="0 0 24 24"
               aria-hidden="true"
             >
@@ -190,7 +137,7 @@ export const SettingsView = React.memo(
 
         {/* Error Messages */}
         {errors.general && (
-          <Alert variant="error" className={tokens.spacing.marginMedium}>
+          <Alert variant="error" className="mb-4">
             {errors.general}
           </Alert>
         )}
@@ -199,21 +146,16 @@ export const SettingsView = React.memo(
         {(saving || showSuccess) && (
           <output
             aria-live="polite"
-            className={`block ${tokens.spacing.marginMedium} px-4 py-3 ${tokens.borders.roundedLg} border-2 ${
-              showSuccess && !saving
-                ? `${tokens.colors.success.bg} ${tokens.colors.success.borderStrong}`
-                : `${tokens.colors.info.bg} ${tokens.colors.info.border}`
+            className={`block mb-4 px-4 py-3 rounded-lg border-2 ${
+              showSuccess && !saving ? 'bg-success/10 border-success' : 'bg-info/10 border-info/20'
             } transition-all duration-300`}
           >
-            <div className={`flex items-center ${tokens.spacing.gapSmall}`}>
+            <div className="flex items-center gap-2">
               {showSuccess && !saving ? (
-                <CheckIcon
-                  className={`${tokens.icons.sm} ${tokens.colors.success.icon} shrink-0`}
-                  aria-hidden="true"
-                />
+                <CheckIcon className="w-5 h-5 text-success shrink-0" aria-hidden="true" />
               ) : (
                 <svg
-                  className={`animate-spin h-5 w-5 ${tokens.colors.primary.text} shrink-0`}
+                  className="animate-spin h-5 w-5 text-primary shrink-0"
                   viewBox="0 0 24 24"
                   aria-hidden="true"
                 >
@@ -234,10 +176,8 @@ export const SettingsView = React.memo(
                 </svg>
               )}
               <span
-                className={`${tokens.typography.small} ${tokens.typography.medium} ${
-                  showSuccess && !saving
-                    ? tokens.colors.success.textStrong
-                    : tokens.colors.info.textStrong
+                className={`text-sm font-medium ${
+                  showSuccess && !saving ? 'text-success' : 'text-info'
                 }`}
               >
                 {saving ? 'Saving changes...' : 'Settings saved!'}
@@ -251,26 +191,20 @@ export const SettingsView = React.memo(
           // biome-ignore lint/a11y/noNoninteractiveTabindex: tabIndex={0} is required per WAI-ARIA tabpanel pattern for keyboard navigation
           <div role="tabpanel" id="tabpanel-page" aria-labelledby="tab-page" tabIndex={0}>
             {/* Page Size Selection */}
-            <fieldset className={`${tokens.spacing.marginMedium} border-0 p-0 m-0`}>
-              <legend
-                className={`block ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
-              >
-                Page Size
-              </legend>
-              <p
-                className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}
-              >
+            <fieldset className="mb-4 border-0 p-0 m-0">
+              <legend className="block text-sm font-medium text-foreground mb-3">Page Size</legend>
+              <p className="text-xs text-muted-foreground mb-3">
                 Control <PDF /> page dimensions
               </p>
-              <div className={tokens.spacing.gapSmall}>
+              <div className="gap-2">
                 {(['Letter', 'A4', 'Legal'] as const).map((size) => (
                   <label
                     key={size}
-                    className={`w-full text-left ${tokens.colors.neutral.text} p-3 rounded-md border-2 ${tokens.transitions.default} cursor-pointer block ${
+                    className={`w-full text-left text-foreground p-3 rounded-md border-2 transition-colors cursor-pointer block ${
                       settings.defaultConfig.pageSize === size
-                        ? `${tokens.colors.borders.success} ${tokens.colors.success.bg} ${tokens.effects.shadow}`
-                        : `${tokens.borders.default} ${tokens.colors.neutral.hover} ${tokens.effects.hoverBorder} ${tokens.effects.shadowInteractive} ${tokens.effects.hoverScale}`
-                    } has-focus-visible:ring-2 has-focus-visible:ring-blue-500 has-focus-visible:ring-offset-2`}
+                        ? 'border-success bg-success/10 shadow-sm dark:shadow-none'
+                        : 'border-border hover:bg-muted hover:border-border shadow-sm hover:shadow-md hover:scale-105'
+                    } has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-2`}
                   >
                     <div className="flex items-center">
                       <input
@@ -278,21 +212,19 @@ export const SettingsView = React.memo(
                         name="pageSize"
                         value={size}
                         checked={settings.defaultConfig.pageSize === size}
-                        onChange={() => pageSizeHandlers[size]()}
+                        onChange={() => onPageSizeChange(size)}
                         className="sr-only"
                       />
                       <div
-                        className={`w-4 h-4 ${tokens.borders.full} border-2 mr-3 flex items-center justify-center shrink-0 ${
+                        className={`w-4 h-4 rounded-full border-2 mr-3 flex items-center justify-center shrink-0 ${
                           settings.defaultConfig.pageSize === size
-                            ? `${tokens.colors.borders.success} ${tokens.colors.success.bg}`
-                            : tokens.colors.borders.default
+                            ? 'border-success bg-success/10'
+                            : 'border-border'
                         }`}
                         aria-hidden="true"
                       >
                         {settings.defaultConfig.pageSize === size && (
-                          <div
-                            className={`w-2 h-2 ${tokens.borders.full} ${tokens.colors.success.bg}`}
-                          />
+                          <div className="w-2 h-2 rounded-full bg-success/10" />
                         )}
                       </div>
                       <span>
@@ -307,19 +239,12 @@ export const SettingsView = React.memo(
             </fieldset>
 
             {/* Margin Controls */}
-            <fieldset className={`${tokens.spacing.marginMedium} border-0 p-0 m-0`}>
-              <legend
-                className={`block ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
-              >
-                Margins
-              </legend>
-              <p
-                className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}
-                id="margins-help"
-              >
+            <fieldset className="mb-4 border-0 p-0 m-0">
+              <legend className="block text-sm font-medium text-foreground mb-3">Margins</legend>
+              <p className="text-xs text-muted-foreground mb-3" id="margins-help">
                 In inches (0 - 1.5). Use arrow keys to adjust.
               </p>
-              <div className={tokens.spacing.sectionGapCompact} aria-describedby="margins-help">
+              <div className="space-y-4 md:space-y-6" aria-describedby="margins-help">
                 {(['top', 'bottom', 'left', 'right'] as const).map((side) => (
                   <RangeSlider
                     key={side}
@@ -329,14 +254,14 @@ export const SettingsView = React.memo(
                     min={0}
                     max={1.5}
                     step={0.05}
-                    onChange={marginHandlers[side]}
+                    onChange={(value) => onMarginChange(side, value)}
                     unit='"'
                   />
                 ))}
               </div>
 
               {/* Visual Margin Preview */}
-              <div className={tokens.spacing.marginMedium}>
+              <div className="mt-4">
                 <MarginPreview
                   pageSize={settings.defaultConfig.pageSize}
                   margins={settings.defaultConfig.margin}
@@ -351,7 +276,7 @@ export const SettingsView = React.memo(
           // biome-ignore lint/a11y/noNoninteractiveTabindex: tabIndex={0} is required per WAI-ARIA tabpanel pattern for keyboard navigation
           <div role="tabpanel" id="tabpanel-general" aria-labelledby="tab-general" tabIndex={0}>
             {/* Appearance Section */}
-            <div className={tokens.spacing.marginMedium}>
+            <div className="mb-4">
               <ThemeSelector />
             </div>
 
@@ -360,7 +285,7 @@ export const SettingsView = React.memo(
               type="button"
               onClick={onResetClick}
               aria-label="Reset settings to default values"
-              className={`w-full ${tokens.colors.neutral.text} border ${tokens.colors.borders.default} ${tokens.colors.neutral.hover} ${tokens.effects.hoverBorder} ${tokens.effects.shadowInteractive} ${tokens.buttons.variants.iconActive} ${tokens.effects.hoverScale} px-4 py-2 ${tokens.borders.roundedLg} ${tokens.typography.small} ${tokens.effects.focusRing} ${tokens.transitions.default}`}
+              className="w-full text-foreground border border-border hover:bg-muted hover:border-border shadow-sm hover:shadow-md active:bg-muted hover:scale-105 active:scale-95 px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background transition-all duration-300"
             >
               Reset to Defaults
             </button>

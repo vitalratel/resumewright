@@ -2,7 +2,6 @@
 // ABOUTME: Follows NN/g and Material Design best practices for tab UX.
 
 import React from 'react';
-import { tokens } from '../../styles/tokens';
 
 export interface Tab {
   id: string;
@@ -19,11 +18,7 @@ interface TabGroupProps {
 export const TabGroup = React.memo(
   ({ tabs, activeTab, onTabChange, 'aria-label': ariaLabel = 'Settings tabs' }: TabGroupProps) => {
     return (
-      <div
-        role="tablist"
-        aria-label={ariaLabel}
-        className={`flex ${tokens.spacing.gapSmall} ${tokens.spacing.marginMedium}`}
-      >
+      <div role="tablist" aria-label={ariaLabel} className="flex gap-2 mb-4">
         {tabs.map((tab) => {
           const isActive = tab.id === activeTab;
           return (
@@ -48,18 +43,9 @@ export const TabGroup = React.memo(
                   onTabChange(tabs[prevIndex].id);
                 }
               }}
-              className={`
-              flex-1 px-4 py-2 ${tokens.typography.small} ${tokens.typography.medium}
-              ${tokens.borders.roundedLg} ${tokens.transitions.default}
-              ${tokens.effects.focusRing}
-              ${
-                isActive
-                  ? `${tokens.colors.primary.bg} text-white`
-                  : `${tokens.colors.neutral.bg} ${tokens.colors.neutral.text} ${tokens.colors.neutral.hover}`
-              }
-            `
-                .trim()
-                .replace(/\s+/g, ' ')}
+              className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300
+                focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background
+                ${isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground hover:bg-muted/80'}`}
             >
               {tab.label}
             </button>

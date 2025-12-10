@@ -1,23 +1,7 @@
-/**
- * MarginPreview Component
- * Visual margin preview
- * Enhanced preview with larger size and page content representation
- *
- * Displays a visual representation of page margins in real-time.
- * Shows a scaled-down page with colored margin overlays that update
- * as the user adjusts margin sliders.
- *
- * Features:
- * - Real-time margin visualization
- * - Page size awareness (Letter vs A4 aspect ratio)
- * - Accessible with proper ARIA labels
- * - Color-coded margins with labels
- * - Content area indication with simulated text lines
- * - Larger preview size (120px base width, up from 80px)
- */
+// ABOUTME: Visual margin preview component for PDF settings.
+// ABOUTME: Displays real-time margin visualization with page size awareness.
 
 import React from 'react';
-import { tokens } from '../styles/tokens';
 
 interface MarginPreviewProps {
   /** Current page size setting */
@@ -112,26 +96,20 @@ const MarginPreviewComponent: React.FC<MarginPreviewProps> = ({
       {/* Preview Container */}
       <div className="flex flex-col items-center">
         {/* Title */}
-        <div
-          className={`${tokens.typography.xs} ${tokens.typography.semibold} ${tokens.colors.neutral.text} ${tokens.spacing.marginSmall}`}
-        >
-          Margin Preview
-        </div>
+        <div className="text-xs font-semibold text-foreground mb-3">Margin Preview</div>
 
-        {/* Page Preview - Increased from 160px to 200px */}
+        {/* Page Preview */}
         <div
-          className={`relative ${tokens.colors.neutral.bgWhite} dark:bg-gray-900 border-2 ${tokens.colors.neutral.border} ${tokens.effects.shadowMd}`}
+          className="relative bg-card border-2 border-border shadow-md dark:shadow-none"
           style={pageContainerStyle}
         >
           {/* Top Margin */}
           <div
-            className={`absolute top-0 left-0 right-0 ${tokens.marginPreview.topBottom} border-b-2 opacity-70`}
+            className="absolute top-0 left-0 right-0 bg-info/30 border-info/50 border-b-2 opacity-70"
             style={topMarginStyle}
             aria-hidden="true"
           >
-            <div
-              className={`text-[9px] ${tokens.typography.semibold} ${tokens.marginPreview.topBottomText} text-center ${tokens.spacing.marginSmall}`}
-            >
+            <div className="text-[9px] font-semibold text-info-text text-center mb-3">
               {margins.top}
               &quot;
             </div>
@@ -139,13 +117,11 @@ const MarginPreviewComponent: React.FC<MarginPreviewProps> = ({
 
           {/* Left Margin */}
           <div
-            className={`absolute top-0 left-0 bottom-0 ${tokens.marginPreview.leftRight} border-r-2 opacity-70`}
+            className="absolute top-0 left-0 bottom-0 bg-success/30 border-success/50 border-r-2 opacity-70"
             style={leftMarginStyle}
             aria-hidden="true"
           >
-            <div
-              className={`text-[9px] ${tokens.typography.semibold} ${tokens.marginPreview.leftRightText} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-90 whitespace-nowrap`}
-            >
+            <div className="text-[9px] font-semibold text-success-text absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-90 whitespace-nowrap">
               {margins.left}
               &quot;
             </div>
@@ -153,13 +129,11 @@ const MarginPreviewComponent: React.FC<MarginPreviewProps> = ({
 
           {/* Right Margin */}
           <div
-            className={`absolute top-0 right-0 bottom-0 ${tokens.marginPreview.leftRight} border-l-2 opacity-70`}
+            className="absolute top-0 right-0 bottom-0 bg-success/30 border-success/50 border-l-2 opacity-70"
             style={rightMarginStyle}
             aria-hidden="true"
           >
-            <div
-              className={`text-[9px] ${tokens.typography.semibold} ${tokens.marginPreview.leftRightText} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-90 whitespace-nowrap`}
-            >
+            <div className="text-[9px] font-semibold text-success-text absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-90 whitespace-nowrap">
               {margins.right}
               &quot;
             </div>
@@ -167,60 +141,43 @@ const MarginPreviewComponent: React.FC<MarginPreviewProps> = ({
 
           {/* Bottom Margin */}
           <div
-            className={`absolute bottom-0 left-0 right-0 ${tokens.marginPreview.topBottom} border-t-2 opacity-70`}
+            className="absolute bottom-0 left-0 right-0 bg-info/30 border-info/50 border-t-2 opacity-70"
             style={bottomMarginStyle}
             aria-hidden="true"
           >
-            <div
-              className={`text-[9px] ${tokens.typography.semibold} ${tokens.marginPreview.topBottomText} text-center ${tokens.spacing.marginSmall}`}
-            >
+            <div className="text-[9px] font-semibold text-info-text text-center mb-3">
               {margins.bottom}
               &quot;
             </div>
           </div>
 
-          {/* Content Area - Added simulated text lines */}
+          {/* Content Area */}
           <div
-            className={`absolute ${tokens.colors.neutral.bgWhite} dark:bg-gray-900 flex flex-col justify-start p-1 overflow-hidden`}
+            className="absolute bg-card flex flex-col justify-start p-1 overflow-hidden"
             style={contentAreaStyle}
             aria-hidden="true"
           >
             {/* Simulated text lines to show content area */}
-            <div className={tokens.spacing.gapSmall}>
-              <div
-                className={`h-1 ${tokens.marginPreview.contentLine} rounded`}
-                style={TEXT_LINE_WIDTHS.full}
-              />
-              <div
-                className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`}
-                style={TEXT_LINE_WIDTHS.wide}
-              />
-              <div
-                className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`}
-                style={TEXT_LINE_WIDTHS.medium}
-              />
-              <div
-                className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`}
-                style={TEXT_LINE_WIDTHS.narrow}
-              />
+            <div className="gap-2">
+              <div className="h-1 bg-foreground rounded" style={TEXT_LINE_WIDTHS.full} />
+              <div className="h-1 bg-muted-foreground rounded" style={TEXT_LINE_WIDTHS.wide} />
+              <div className="h-1 bg-muted-foreground rounded" style={TEXT_LINE_WIDTHS.medium} />
+              <div className="h-1 bg-muted-foreground rounded" style={TEXT_LINE_WIDTHS.narrow} />
               <div className="h-0.5" />
+              <div className="h-1 bg-muted-foreground rounded" style={TEXT_LINE_WIDTHS.full} />
               <div
-                className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`}
-                style={TEXT_LINE_WIDTHS.full}
-              />
-              <div
-                className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`}
+                className="h-1 bg-muted-foreground rounded"
                 style={TEXT_LINE_WIDTHS.mediumWide}
               />
               <div
-                className={`h-1 ${tokens.marginPreview.contentLineFade} rounded`}
+                className="h-1 bg-muted-foreground rounded"
                 style={TEXT_LINE_WIDTHS.mediumNarrow}
               />
             </div>
 
             {/* Content area dimensions label */}
             <div
-              className={`absolute bottom-1 right-1 text-[8px] ${tokens.colors.neutral.textMuted} bg-white/90 dark:bg-gray-850/90 px-1 rounded`}
+              className="absolute bottom-1 right-1 text-[8px] text-muted-foreground bg-card/90 px-1 rounded"
               data-testid="dimension-label"
             >
               {(dimensions.width - margins.left - margins.right).toFixed(2)}
@@ -230,20 +187,18 @@ const MarginPreviewComponent: React.FC<MarginPreviewProps> = ({
           </div>
         </div>
 
-        {/* Legend - Enhanced colors */}
-        <div
-          className={`${tokens.spacing.marginMedium} flex ${tokens.spacing.gapLarge} text-[10px] ${tokens.colors.neutral.text}`}
-        >
+        {/* Legend */}
+        <div className="mt-4 flex gap-4 text-[10px] text-foreground">
           <div className="flex items-center gap-1.5">
             <div
-              className={`w-3.5 h-3.5 ${tokens.marginPreview.topBottom} border-2 opacity-70 rounded-sm`}
+              className="w-3.5 h-3.5 bg-info/30 border-info/50 border-2 opacity-70 rounded-sm"
               aria-hidden="true"
             />
             <span>Top/Bottom</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div
-              className={`w-3.5 h-3.5 ${tokens.marginPreview.leftRight} border-2 opacity-70 rounded-sm`}
+              className="w-3.5 h-3.5 bg-success/30 border-success/50 border-2 opacity-70 rounded-sm"
               aria-hidden="true"
             />
             <span>Left/Right</span>

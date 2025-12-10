@@ -1,13 +1,10 @@
-/**
- * ABOUTME: Drag-and-drop file upload component for CV import.
- * ABOUTME: Provides visual feedback during drag operations and a browse button fallback.
- */
+// ABOUTME: Drag-and-drop file upload component for CV import.
+// ABOUTME: Provides visual feedback during drag operations and a browse button fallback.
 
 import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import type { ChangeEvent } from 'react';
 import React, { useRef } from 'react';
 import { useDragAndDrop } from '../../hooks/ui/useDragAndDrop';
-import { tokens } from '../../styles/tokens';
 import { TSX } from '../common/TechTerm';
 
 interface DragDropZoneProps {
@@ -34,10 +31,7 @@ export const DragDropZone = React.memo(({ onFileDrop, isValidating }: DragDropZo
 
   return (
     <>
-      <label
-        htmlFor="file-input"
-        className={`block ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} px-3`}
-      >
+      <label htmlFor="file-input" className="block text-sm font-medium text-foreground px-3">
         Import Your CV File
       </label>
 
@@ -47,24 +41,19 @@ export const DragDropZone = React.memo(({ onFileDrop, isValidating }: DragDropZo
         </output>
       )}
 
-      {/* Drop zone - handles drag-and-drop only */}
       <div
         {...dragHandlers}
-        className={`border-2 border-dashed ${tokens.borders.roundedLg} p-4 text-center ${tokens.transitions.default} ${
+        className={`border-2 border-dashed rounded-lg p-4 text-center transition-all duration-200 ${
           isDragging
-            ? `${tokens.colors.borders.primary} ${tokens.colors.info.bg} scale-[1.05] ${tokens.effects.shadowMd}`
-            : `${tokens.colors.borders.primary} hover:border-blue-400 ${tokens.colors.info.hover} hover:scale-[1.03]`
-        }`
-          .trim()
-          .replace(/\s+/g, ' ')}
+            ? 'border-primary bg-primary/10 shadow-md'
+            : 'border-primary/30 hover:border-primary/50 hover:bg-primary/5'
+        }`}
       >
         <ArrowUpTrayIcon
-          className={`${tokens.icons.hero} mx-auto ${tokens.spacing.marginSmall} ${isDragging ? tokens.colors.primary.text : 'text-blue-400'} ${tokens.transitions.default}`
-            .trim()
-            .replace(/\s+/g, ' ')}
+          className={`w-16 h-16 mx-auto mb-2 ${isDragging ? 'text-primary' : 'text-primary/60'} transition-all duration-300`}
           aria-hidden="true"
         />
-        <p className={`${tokens.typography.base} ${tokens.colors.neutral.textMuted} mb-1`}>
+        <p className="text-base text-muted-foreground mb-1">
           {isDragging ? (
             <>
               Release to import (
@@ -74,30 +63,27 @@ export const DragDropZone = React.memo(({ onFileDrop, isValidating }: DragDropZo
             'Drag & drop your CV file here'
           )}
         </p>
-        <p className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} mt-3`}>
+        <p className="text-xs text-muted-foreground mt-3">
           Supports: <TSX /> files (up to 1MB)
         </p>
       </div>
 
-      {/* Browse button - outside drop zone for proper accessibility */}
       <div className="mt-2 text-center">
         <button
           onClick={handleBrowseClick}
           disabled={isValidating}
-          className={`${tokens.buttons.default.primary} ${tokens.borders.rounded} ${tokens.typography.small} ${tokens.typography.medium} ${tokens.effects.focusRing} ${
+          className={`px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset ${
             isValidating
-              ? `${tokens.effects.disabledState}`
-              : `${tokens.colors.primary.bg} ${tokens.colors.primary.hover} text-white`
-          } flex items-center justify-center ${tokens.spacing.gapSmall} mx-auto`
-            .trim()
-            .replace(/\s+/g, ' ')}
+              ? 'opacity-50 cursor-not-allowed'
+              : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+          } flex items-center justify-center gap-2 mx-auto`}
           type="button"
           data-testid="browse-files-button"
           aria-busy={isValidating}
         >
           {isValidating && (
             <svg
-              className={`${tokens.animations.spin} ${tokens.icons.xs}`.trim().replace(/\s+/g, ' ')}
+              className="animate-spin w-3 h-3"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"

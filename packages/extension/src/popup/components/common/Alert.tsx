@@ -1,23 +1,9 @@
-/**
- * Alert Component
- * Standardized alert/message display with semantic variants
- *
- * Replaces duplicated alert patterns across multiple files:
- * - FileImport.tsx (error alerts)
- * - Settings.tsx (error alerts)
- * - Error.tsx, Success.tsx (state components)
- *
- * Features:
- * - WCAG 2.1 AA compliant with proper ARIA roles
- * - Semantic variants (error, success, info, warning)
- * - Live region announcements for screen readers
- * - Consistent styling via design tokens
- */
+// ABOUTME: Standardized alert/message display with semantic variants.
+// ABOUTME: WCAG 2.1 AA compliant with proper ARIA roles and live regions.
 
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import React from 'react';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
-import { tokens } from '../../styles/tokens';
 
 type AlertVariant = 'error' | 'success' | 'info' | 'warning';
 
@@ -38,6 +24,17 @@ interface AlertProps {
   /** Dismiss handler callback */
   onDismiss?: () => void;
 }
+
+/**
+ * Variant styles using semantic Tailwind classes with opacity pattern
+ * Background: /10 for light tint, Border: /20 for subtle, Text: -text for contrast
+ */
+const variantClasses: Record<AlertVariant, string> = {
+  error: 'bg-destructive/10 border-destructive/20 text-destructive-text',
+  success: 'bg-success/10 border-success/20 text-success-text',
+  info: 'bg-info/10 border-info/20 text-info-text',
+  warning: 'bg-warning/10 border-warning/20 text-warning-text',
+};
 
 /**
  * Alert component for displaying messages with semantic meaning
@@ -71,25 +68,11 @@ export const Alert = React.memo(
       );
     }
 
-    const variantStyles = tokens.colors[variant];
-
     return (
       <div
         role={assertive ? 'alert' : 'status'}
         aria-live={assertive ? 'assertive' : 'polite'}
-        className={`
-        ${tokens.spacing.alert}
-        ${variantStyles.bg}
-        ${variantStyles.border}
-        ${tokens.borders.default}
-        ${tokens.borders.rounded}
-        ${tokens.typography.small}
-        ${variantStyles.text}
-        ${dismissible ? 'flex items-start justify-between gap-3' : ''}
-        ${className}
-      `
-          .trim()
-          .replace(/\s+/g, ' ')}
+        className={`p-3 border rounded-md text-sm ${variantClasses[variant]} ${dismissible ? 'flex items-start justify-between gap-3' : ''} ${className}`}
       >
         <div className={dismissible ? 'flex-1' : ''}>{children}</div>
 
@@ -97,11 +80,11 @@ export const Alert = React.memo(
         {dismissible && onDismiss && (
           <button
             onClick={onDismiss}
-            className={`shrink-0 ${tokens.colors.neutral.hover} ${tokens.borders.rounded} p-0.5 ${tokens.transitions.default} ${tokens.effects.focusRing}`}
+            className="shrink-0 hover:bg-muted rounded-md p-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset"
             aria-label="Dismiss alert"
             type="button"
           >
-            <XMarkIcon className={`${tokens.icons.sm} ${variantStyles.text}`} aria-hidden="true" />
+            <XMarkIcon className="w-5 h-5" aria-hidden="true" />
           </button>
         )}
       </div>

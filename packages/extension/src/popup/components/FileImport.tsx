@@ -1,38 +1,12 @@
-/**
- * FileImport Component
- *
- * Handles CV file upload with drag-and-drop support and validation.
- * Validates file type, size, and content before passing to conversion pipeline.
- *
- * Features:
- * - Drag-and-drop file upload with visual feedback
- * - File type validation (.tsx, .ts, .jsx, .js)
- * - File size validation (max 1MB)
- * - Syntax error detection with user-friendly messages
- * - Collapsible help card with auto-minimize after 3 launches
- * - Success feedback on valid file import
- *
- * @example
- * ```tsx
- * <FileImport
- *   onFileValidated={(content, name, size) => startConversion(content)}
- *   onValidationError={(error) => showError(error)}
- *   onClearFile={() => resetState()}
- *   importedFile={currentFile}
- *   validationError={error}
- *   isValidating={false}
- * />
- * ```
- *
- * @see {@link ConvertingState} for next step after validation
- */
+// ABOUTME: CV file upload component with drag-and-drop support and validation.
+// ABOUTME: Validates file type, size, content and provides user-friendly error messages.
 
 import { DocumentTextIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FILE_SIZE_LIMITS, validateFileExtension } from '@/shared/domain/pdf/validation';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
+import { useEvent } from '../hooks/core/useEvent';
 import { useFileReader } from '../hooks/integration/useFileReader';
-import { tokens } from '../styles/tokens';
 import { formatFileSize } from '../utils/formatting';
 import { ConfirmDialog } from './common/ConfirmDialog';
 import { DragDropZone } from './import/DragDropZone';
@@ -200,12 +174,12 @@ export const FileImport = React.memo(
       }
     };
 
-    const handleClearFile = useCallback(() => {
+    const handleClearFile = useEvent(() => {
       // Confirmation before clearing file
       setShowClearConfirm(true);
-    }, []);
+    });
 
-    const handleConfirmClear = useCallback(() => {
+    const handleConfirmClear = useEvent(() => {
       onClearFile();
       // Hide success message when clearing file
       setShowSuccess(false);
@@ -213,59 +187,45 @@ export const FileImport = React.memo(
         fileInputRef.current.value = '';
       }
       setShowClearConfirm(false);
-    }, [onClearFile]);
+    });
 
-    // P1-REACT-PERF: Memoize success dismiss handler
-    const handleDismissSuccess = useCallback(() => {
+    const handleDismissSuccess = useEvent(() => {
       setShowSuccess(false);
-    }, []);
+    });
 
     return (
-      <div className={tokens.spacing.sectionGapCompact}>
-        {/* Extracted to ImportInfoCard component */}
+      <div className="space-y-4">
         <ImportInfoCard />
 
-        {/* Success feedback message - Dismissible */}
         {showSuccess && importedFile && (
           <output
             aria-live="polite"
             aria-atomic="true"
-            className={`${tokens.spacing.alert} ${tokens.colors.success.bg} ${tokens.colors.success.border} ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.typography.small} ${tokens.colors.success.text} flex items-center justify-between ${tokens.animations.fadeIn}`}
+            className="px-3 py-1.5 bg-success/10 border border-success/30 rounded-md text-sm text-success-text flex items-center justify-between animate-fade-in"
           >
-            <div className={`flex items-center ${tokens.spacing.gapSmall}`}>
+            <div className="flex items-center gap-2">
               <span>✓</span>
               CV validated successfully
             </div>
             <button
               type="button"
               onClick={handleDismissSuccess}
-              className={`${tokens.spacing.gapSmall} hover:text-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 ${tokens.borders.rounded}`}
+              className="gap-2 hover:text-success-text focus:outline-none focus:ring-2 focus:ring-ring rounded-md"
               aria-label="Dismiss success message"
             >
-              {/* Consistent icon sizing using tokens */}
-              <XMarkIcon className={tokens.icons.xs} aria-hidden="true" />
+              <XMarkIcon className="w-3 h-3" aria-hidden="true" />
             </button>
           </output>
         )}
 
-        {/* File imported state or drag-drop zone */}
         {importedFile ? (
-          <div
-            className={`border-2 ${tokens.colors.success.borderStrong} ${tokens.colors.success.bg} ${tokens.borders.roundedLg} ${tokens.spacing.card}`}
-          >
+          <div className="border-2 border-success bg-success/10 rounded-lg p-4">
             <div className="flex items-center justify-between">
-              <div className={`flex items-center ${tokens.spacing.gapMedium}`}>
-                <DocumentTextIcon
-                  className={`${tokens.icons.lg} ${tokens.colors.success.icon}`}
-                  aria-hidden="true"
-                />
+              <div className="flex items-center gap-3">
+                <DocumentTextIcon className="w-8 h-8 text-success" aria-hidden="true" />
                 <div>
-                  <p
-                    className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.success.textStrong}`}
-                  >
-                    {importedFile.name}
-                  </p>
-                  <p className={`${tokens.typography.xs} ${tokens.colors.success.text}`}>
+                  <p className="text-sm font-medium text-success-text">{importedFile.name}</p>
+                  <p className="text-xs text-success-text/80">
                     {formatFileSize(importedFile.size)}
                   </p>
                 </div>
@@ -273,62 +233,46 @@ export const FileImport = React.memo(
               <button
                 type="button"
                 onClick={handleClearFile}
-                className={`${tokens.colors.success.icon} hover:text-green-700 ${tokens.buttons.iconOnly.default} ${tokens.borders.rounded} ${tokens.colors.success.hover} ${tokens.effects.focusRing.replace('focus:ring-blue-500', 'focus:ring-green-500')}`}
+                className="text-success hover:text-success/80 p-2 rounded-md hover:bg-success/20 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background"
                 aria-label="Clear imported file"
               >
-                <XMarkIcon className={tokens.icons.sm} aria-hidden="true" />
+                <XMarkIcon className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
           </div>
         ) : (
-          /* Extracted to DragDropZone component */
           <DragDropZone onFileDrop={handleFile} isValidating={isValidating} />
         )}
 
-        {/* Validation error */}
         {validationError !== null && validationError !== undefined && validationError !== '' && (
           <div
             role="alert"
             data-testid="validation-error"
-            className={`${tokens.spacing.alert} ${tokens.colors.error.bg} ${tokens.colors.error.border} ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.typography.small} ${tokens.colors.error.textStrong}`}
+            className="px-3 py-1.5 bg-destructive/10 border border-destructive/30 rounded-md text-sm text-destructive-text"
           >
             {validationError}
           </div>
         )}
 
-        {/* Validating state - P2: Enhanced with skeleton */}
         {isValidating && (
           <output
             aria-live="polite"
-            className={`border-2 ${tokens.colors.info.border} ${tokens.colors.info.bg} ${tokens.borders.roundedLg} ${tokens.spacing.card} animate-pulse block`}
+            className="border-2 border-info/30 bg-info/10 rounded-lg p-4 animate-pulse block"
           >
-            <div className={`flex items-center ${tokens.spacing.gapMedium}`}>
-              {/* Spinner */}
-              <div
-                className={`${tokens.animations.spin} ${tokens.borders.full} h-6 w-6 border-2 ${tokens.colors.loading.spinner} ${tokens.colors.loading.spinnerDark}`}
-              ></div>
+            <div className="flex items-center gap-3">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-info/20 border-t-info"></div>
 
-              {/* Loading text and skeleton */}
-              <div className={`flex-1 ${tokens.spacing.gapSmall}`}>
-                <p
-                  className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.info.textStrong}`}
-                >
-                  Validating file...
-                </p>
+              <div className="flex-1 space-y-2">
+                <p className="text-sm font-medium text-info-text">Validating file...</p>
                 <div className="space-y-1">
-                  <div
-                    className={`h-2 ${tokens.colors.loading.skeleton} ${tokens.borders.rounded} w-3/4`}
-                  ></div>
-                  <div
-                    className={`h-2 ${tokens.colors.loading.skeleton} ${tokens.borders.rounded} w-1/2`}
-                  ></div>
+                  <div className="h-2 bg-info/30 rounded-md w-3/4"></div>
+                  <div className="h-2 bg-info/30 rounded-md w-1/2"></div>
                 </div>
               </div>
             </div>
           </output>
         )}
 
-        {/* Clear file confirmation dialog */}
         <ConfirmDialog
           isOpen={showClearConfirm}
           title="Clear File?"

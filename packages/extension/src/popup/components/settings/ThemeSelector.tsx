@@ -1,15 +1,7 @@
-/**
- * Theme Selector Component
- *
- * Allows users to choose between light, dark, and auto themes.
- * Auto mode follows system preference.
- *
- * Uses radio input pattern for better semantics and accessibility.
- * Screen readers will announce this as a radio group with proper selection state.
- */
+// ABOUTME: Theme selector component for light, dark, and auto modes.
+// ABOUTME: Uses radio input pattern for accessibility with system preference support.
 
 import { useDarkMode } from '@/popup/hooks/ui/useDarkMode';
-import { tokens } from '../../styles/tokens';
 import { ComputerIcon } from '../common/icons/ComputerIcon';
 import { MoonIcon } from '../common/icons/MoonIcon';
 import { SunIcon } from '../common/icons/SunIcon';
@@ -20,26 +12,14 @@ export function ThemeSelector() {
   return (
     <div>
       <fieldset className="border-0 p-0 m-0">
-        <legend
-          className={`block ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} mb-2`}
-        >
-          Theme
-        </legend>
+        <legend className="block text-sm font-medium text-foreground mb-2">Theme</legend>
 
-        <div
-          className={`flex ${tokens.spacing.gapSmall}`}
-          role="radiogroup"
-          aria-label="Theme selection"
-        >
+        <div className="flex gap-2" role="radiogroup" aria-label="Theme selection">
           {/* Light Theme */}
           <label
-            className={`flex-1 ${tokens.buttons.compact.primary} ${tokens.borders.roundedLg} border-2 ${tokens.transitions.default} cursor-pointer ${
-              theme === 'light'
-                ? `${tokens.colors.borders.primary} ${tokens.colors.info.bg}`
-                : tokens.colors.borders.default
-            }`
-              .trim()
-              .replace(/\s+/g, ' ')}
+            className={`flex-1 px-4 py-2 min-h-[38px] rounded-lg border-2 transition-colors cursor-pointer ${
+              theme === 'light' ? 'border-primary bg-info/10' : 'border-border'
+            }`}
           >
             <input
               type="radio"
@@ -49,23 +29,17 @@ export function ThemeSelector() {
               onChange={() => setTheme('light')}
               className="sr-only"
             />
-            <span className={`flex items-center justify-center ${tokens.spacing.gapSmall}`}>
-              <SunIcon className={tokens.icons.sm} aria-hidden="true" />
-              <span className={`${tokens.typography.small} ${tokens.colors.neutral.text}`}>
-                Light
-              </span>
+            <span className="flex items-center justify-center gap-2">
+              <SunIcon className="w-5 h-5" aria-hidden="true" />
+              <span className="text-sm text-foreground">Light</span>
             </span>
           </label>
 
           {/* Dark Theme */}
           <label
-            className={`flex-1 ${tokens.buttons.compact.primary} ${tokens.borders.roundedLg} border-2 ${tokens.transitions.default} cursor-pointer ${
-              theme === 'dark'
-                ? `${tokens.colors.borders.primary} ${tokens.colors.info.bg}`
-                : tokens.colors.borders.default
-            }`
-              .trim()
-              .replace(/\s+/g, ' ')}
+            className={`flex-1 px-4 py-2 min-h-[38px] rounded-lg border-2 transition-colors cursor-pointer ${
+              theme === 'dark' ? 'border-primary bg-info/10' : 'border-border'
+            }`}
           >
             <input
               type="radio"
@@ -75,23 +49,17 @@ export function ThemeSelector() {
               onChange={() => setTheme('dark')}
               className="sr-only"
             />
-            <span className={`flex items-center justify-center ${tokens.spacing.gapSmall}`}>
-              <MoonIcon className={tokens.icons.sm} aria-hidden="true" />
-              <span className={`${tokens.typography.small} ${tokens.colors.neutral.text}`}>
-                Dark
-              </span>
+            <span className="flex items-center justify-center gap-2">
+              <MoonIcon className="w-5 h-5" aria-hidden="true" />
+              <span className="text-sm text-foreground">Dark</span>
             </span>
           </label>
 
           {/* Auto Theme */}
           <label
-            className={`flex-1 ${tokens.buttons.compact.primary} ${tokens.borders.roundedLg} border-2 ${tokens.transitions.default} cursor-pointer ${
-              theme === 'auto'
-                ? `${tokens.colors.borders.primary} ${tokens.colors.info.bg}`
-                : tokens.colors.borders.default
-            }`
-              .trim()
-              .replace(/\s+/g, ' ')}
+            className={`flex-1 px-4 py-2 min-h-[38px] rounded-lg border-2 transition-colors cursor-pointer ${
+              theme === 'auto' ? 'border-primary bg-info/10' : 'border-border'
+            }`}
           >
             <input
               type="radio"
@@ -101,17 +69,15 @@ export function ThemeSelector() {
               onChange={() => setTheme('auto')}
               className="sr-only"
             />
-            <span className={`flex items-center justify-center ${tokens.spacing.gapSmall}`}>
-              <ComputerIcon className={tokens.icons.sm} aria-hidden="true" />
-              <span className={`${tokens.typography.small} ${tokens.colors.neutral.text}`}>
-                Auto
-              </span>
+            <span className="flex items-center justify-center gap-2">
+              <ComputerIcon className="w-5 h-5" aria-hidden="true" />
+              <span className="text-sm text-foreground">Auto</span>
             </span>
           </label>
         </div>
       </fieldset>
 
-      <p className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted}`}>
+      <p className="text-xs text-muted-foreground">
         {theme === 'auto' ? 'Follows your system preference' : `Always use ${theme} mode`}
       </p>
     </div>

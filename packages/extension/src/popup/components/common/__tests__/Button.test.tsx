@@ -50,10 +50,10 @@ describe('Button', () => {
     });
 
     it.each([
-      ['primary', 'bg-blue-600'],
+      ['primary', 'bg-primary'],
       ['secondary', 'border-2'],
-      ['tertiary', 'bg-gray-50'],
-      ['danger', 'bg-red-500'],
+      ['tertiary', 'bg-muted'],
+      ['danger', 'bg-danger-action'],
       ['ghost', 'bg-transparent'],
       ['link', 'hover:underline'], // Link has hover:underline, not just underline
     ] as const)('renders %s variant with correct styling', (variant, expectedClass) => {
@@ -406,14 +406,14 @@ describe('Button', () => {
     it('primary variant has correct colors', () => {
       const { container } = render(<Button variant="primary">Primary</Button>);
       const button = container.querySelector('button');
-      expect(button).toHaveClass('bg-blue-600');
-      expect(button).toHaveClass('text-white');
+      expect(button).toHaveClass('bg-primary');
+      expect(button).toHaveClass('text-primary-foreground');
     });
 
     it('danger variant has correct colors', () => {
       const { container } = render(<Button variant="danger">Danger</Button>);
       const button = container.querySelector('button');
-      expect(button).toHaveClass('bg-red-500');
+      expect(button).toHaveClass('bg-danger-action');
       expect(button).toHaveClass('text-white');
     });
 

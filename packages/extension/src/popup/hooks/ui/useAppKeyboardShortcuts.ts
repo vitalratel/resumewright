@@ -1,14 +1,9 @@
-/**
- * useAppKeyboardShortcuts Hook
- *
- * Extract keyboard shortcuts logic from App.tsx
- *
- * Solution: Use refs for frequently changing values + stable callback handlers
- * to ensure shortcuts array only recreates when actual handler functions change.
- */
+// ABOUTME: Keyboard shortcuts configuration for the main App component.
+// ABOUTME: Returns stable shortcut configs that read latest state via useEvent.
 
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import type { UIState } from '../../store';
+import { useEvent } from '../core/useEvent';
 import type { ShortcutConfig } from './useKeyboardShortcuts';
 
 interface UseAppKeyboardShortcutsOptions {
@@ -17,7 +12,7 @@ interface UseAppKeyboardShortcutsOptions {
   showShortcutsModal: boolean;
   currentView: 'main' | 'settings' | 'help';
 
-  // Handlers
+  // Handlers (stable references from useEvent in App.tsx)
   onExport: () => void;
   onRetry: () => void;
   onOpenSettings: () => void;
@@ -29,10 +24,11 @@ interface UseAppKeyboardShortcutsOptions {
 }
 
 /**
- * Provides stable keyboard shortcuts array for App component
+ * Provides keyboard shortcuts for the App component.
  *
- * Uses refs for frequently changing state (uiState, modal visibility, etc.)
- * to prevent shortcuts array recreation on every render.
+ * Uses useEvent for handlers that need to read current state,
+ * ensuring the shortcuts array stays stable while handlers
+ * always access the latest values.
  */
 export function useAppKeyboardShortcuts({
   uiState,
@@ -48,66 +44,38 @@ export function useAppKeyboardShortcuts({
   onShowShortcutsModal,
   onHideShortcutsModal,
 }: UseAppKeyboardShortcutsOptions): ShortcutConfig[] {
-  // Use refs for frequently changing values to avoid recreating handlers
-  const uiStateRef = useRef(uiState);
-  const importedFileRef = useRef(importedFile);
-  const showShortcutsModalRef = useRef(showShortcutsModal);
-  const currentViewRef = useRef(currentView);
-
-  // Keep refs updated
-  useEffect(() => {
-    uiStateRef.current = uiState;
-  }, [uiState]);
-
-  useEffect(() => {
-    importedFileRef.current = importedFile;
-  }, [importedFile]);
-
-  useEffect(() => {
-    showShortcutsModalRef.current = showShortcutsModal;
-  }, [showShortcutsModal]);
-
-  useEffect(() => {
-    currentViewRef.current = currentView;
-  }, [currentView]);
-
-  // Stable handlers that read from refs
-  // Only recreate when the actual handler functions change, not when state changes
-
-  const handleExportShortcut = useCallback(() => {
-    if (uiStateRef.current === 'file_validated' && importedFileRef.current) {
+  // Wrap handlers that need to check current state
+  const handleExportShortcut = useEvent(() => {
+    if (uiState === 'file_validated' && importedFile) {
       onExport();
     }
-  }, [onExport]);
+  });
 
-  const handleRetryShortcut = useCallback(() => {
-    if (uiStateRef.current === 'error') {
+  const handleRetryShortcut = useEvent(() => {
+    if (uiState === 'error') {
       onRetry();
     }
-  }, [onRetry]);
+  });
 
-  const handleEscapeShortcut = useCallback(() => {
-    if (showShortcutsModalRef.current) {
+  const handleEscapeShortcut = useEvent(() => {
+    if (showShortcutsModal) {
       onHideShortcutsModal();
-    } else if (currentViewRef.current === 'settings') {
+    } else if (currentView === 'settings') {
       void onCloseSettings();
-    } else if (currentViewRef.current === 'help') {
+    } else if (currentView === 'help') {
       onCloseHelp();
     }
-  }, [onHideShortcutsModal, onCloseSettings, onCloseHelp]);
+  });
 
-  // Return stable shortcuts array
-  // Only recreates when handler functions change, not when state changes
+  // Shortcuts array is stable - handlers are stable via useEvent
   return useMemo(
     () => [
-      // Primary Actions
       {
         key: 'e',
         ctrl: true,
         meta: true,
         handler: handleExportShortcut,
         description: 'Export to PDF',
-        // Note: enabled check uses refs inside handler, not here
         enabled: true,
       },
       {

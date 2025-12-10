@@ -1,16 +1,11 @@
-/**
- * Error Boundary Component
- *
- * Catches React errors and prevents complete app crashes.
- * Provides fallback UI and error recovery options for both full-app and section-specific failures.
- */
+// ABOUTME: Error boundary catching React errors to prevent complete app crashes.
+// ABOUTME: Provides fallback UI and error recovery options for both full-app and section-specific failures.
 
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import type { ErrorInfo, ReactNode } from 'react';
 import { Component } from 'react';
 import { formatErrorTimestamp, logErrorToService } from '@/shared/errors/tracking/telemetry';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
-import { tokens } from '../styles/tokens';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -108,64 +103,45 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   render(): ReactNode {
     if (this.state.hasError) {
       return (
-        <div
-          className={`min-h-screen flex items-center justify-center ${tokens.colors.neutral.bg} ${tokens.spacing.card}`}
-        >
-          <div
-            className={`max-w-md w-full ${tokens.colors.neutral.bgWhite} ${tokens.borders.roundedLg} ${tokens.effects.shadow} ${tokens.spacing.cardGenerous}`}
-          >
-            <div
-              className={`flex items-center justify-center w-12 h-12 mx-auto ${tokens.colors.error.bg} ${tokens.borders.full}`}
-            >
-              <ExclamationTriangleIcon
-                className={`${tokens.icons.md} ${tokens.colors.error.icon}`}
-                aria-hidden="true"
-              />
+        <div className="min-h-screen flex items-center justify-center bg-muted p-4">
+          <div className="max-w-md w-full bg-card rounded-lg shadow-lg dark:shadow-none border border-border p-6">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-destructive/10 rounded-full">
+              <ExclamationTriangleIcon className="w-6 h-6 text-destructive" aria-hidden="true" />
             </div>
 
-            <h1
-              className={`${tokens.spacing.marginMedium} ${tokens.typography.large} ${tokens.typography.semibold} ${tokens.colors.neutral.text} text-center`}
-            >
+            <h1 className="mt-4 text-lg font-semibold text-foreground text-center">
               Something went wrong
             </h1>
 
-            <p
-              className={`${tokens.spacing.marginSmall} ${tokens.typography.base} ${tokens.colors.neutral.textMuted} text-center`}
-            >
+            <p className="mt-2 text-base text-muted-foreground text-center">
               The extension encountered an error. You can try to recover or reload the popup.
             </p>
 
             {/* Show error details in development mode */}
             {import.meta.env.DEV && this.state.error && (
-              <details
-                className={`${tokens.spacing.marginMedium} ${tokens.spacing.cardSmall} ${tokens.colors.neutral.bg} ${tokens.borders.rounded}`}
-              >
-                <summary
-                  className={`${tokens.typography.small} ${tokens.typography.medium} cursor-pointer`}
-                >
+              <details className="mt-4 p-3 bg-muted rounded-md">
+                <summary className="text-sm font-medium cursor-pointer">
                   Error Details (Dev Only)
                 </summary>
-                <pre
-                  className={`${tokens.spacing.marginSmall} ${tokens.typography.xs} font-mono ${tokens.colors.neutral.textMuted} whitespace-pre-wrap wrap-break-words`}
-                >
+                <pre className="mt-2 text-xs font-mono text-muted-foreground whitespace-pre-wrap wrap-break-words">
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}
                 </pre>
               </details>
             )}
 
-            <div className={`flex ${tokens.spacing.gapSmall} ${tokens.spacing.marginMedium}`}>
+            <div className="flex gap-2 mt-4">
               <button
                 type="button"
                 onClick={this.handleReset}
-                className={`flex-1 ${tokens.buttons.default.secondary} ${tokens.buttons.secondary} ${tokens.typography.medium} ${tokens.borders.rounded} ${tokens.effects.focusRing}`}
+                className="flex-1 px-4 py-2 bg-muted text-foreground hover:bg-muted/80 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background"
               >
                 Try to Recover
               </button>
               <button
                 type="button"
                 onClick={this.handleReload}
-                className={`flex-1 ${tokens.buttons.default.primary} ${tokens.colors.primary.bg} text-white ${tokens.colors.primary.hover} ${tokens.typography.medium} ${tokens.borders.rounded} ${tokens.effects.focusRing}`}
+                className="flex-1 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background"
               >
                 Reload Popup
               </button>
@@ -282,39 +258,23 @@ export class SectionErrorBoundary extends Component<SectionErrorBoundaryProps, E
       const sectionInfo = SECTION_MESSAGES[section];
 
       return (
-        <div
-          className={`${tokens.spacing.card} ${tokens.colors.neutral.bg} ${tokens.borders.rounded} ${tokens.borders.default}`}
-        >
-          <div className={`flex items-start ${tokens.spacing.gapSmall}`}>
+        <div className="p-4 bg-muted rounded-md border border-border">
+          <div className="flex items-start gap-2">
             <ExclamationTriangleIcon
-              className={`${tokens.icons.md} ${tokens.colors.error.icon} shrink-0`}
+              className="w-6 h-6 text-destructive shrink-0"
               aria-hidden="true"
             />
             <div className="flex-1">
-              <h3
-                className={`${tokens.typography.base} ${tokens.typography.semibold} ${tokens.colors.neutral.text}`}
-              >
-                {sectionInfo.title}
-              </h3>
-              <p
-                className={`${tokens.spacing.marginSmall} ${tokens.typography.small} ${tokens.colors.neutral.textMuted}`}
-              >
+              <h3 className="text-base font-semibold text-foreground">{sectionInfo.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
                 {fallbackMessage ?? sectionInfo.description}
               </p>
 
               {/* Show error details in development */}
               {import.meta.env.DEV && this.state.error && (
-                <details
-                  className={`${tokens.spacing.marginSmall} ${tokens.spacing.cardSmall} ${tokens.colors.neutral.bgWhite} ${tokens.borders.rounded}`}
-                >
-                  <summary
-                    className={`${tokens.typography.xs} ${tokens.typography.medium} cursor-pointer`}
-                  >
-                    Error Details
-                  </summary>
-                  <pre
-                    className={`${tokens.spacing.marginSmall} ${tokens.typography.xs} font-mono ${tokens.colors.neutral.textMuted} whitespace-pre-wrap wrap-break-words`}
-                  >
+                <details className="mt-2 p-3 bg-card rounded-md">
+                  <summary className="text-xs font-medium cursor-pointer">Error Details</summary>
+                  <pre className="mt-2 text-xs font-mono text-muted-foreground whitespace-pre-wrap wrap-break-words">
                     {this.state.error.toString()}
                   </pre>
                 </details>
@@ -323,7 +283,7 @@ export class SectionErrorBoundary extends Component<SectionErrorBoundaryProps, E
               <button
                 type="button"
                 onClick={this.handleReset}
-                className={`${tokens.spacing.marginSmall} px-3 py-1.5 ${tokens.colors.neutral.bgWhite} ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text} ${tokens.colors.neutral.hover} ${tokens.effects.focusRing}`}
+                className="mt-2 px-3 py-1.5 bg-card border border-border rounded-md text-sm font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background"
               >
                 Dismiss Error
               </button>

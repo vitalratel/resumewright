@@ -1,12 +1,5 @@
-//! WASM-specific tests for public JavaScript API
-//!
-//! These tests verify that the public API functions correctly when compiled to WASM
-//! and called from JavaScript. Tests cover:
-//! - TSX → PDF conversion in WASM environment
-//! - Progress callbacks
-//! - Error handling and serialization
-//! - Font detection and handling
-//! - Configuration serialization
+//! ABOUTME: Smoke tests for the public WASM JavaScript API.
+//! ABOUTME: Validates happy paths and API contracts; see specialized test files for edge cases.
 //!
 //! Run with: wasm-pack test --headless --chrome --package wasm-bridge
 
@@ -59,11 +52,6 @@ fn valid_tsx() -> &'static str {
             </div>
         );
     "#
-}
-
-/// Helper: Create invalid TSX (unclosed tag)
-fn invalid_tsx() -> &'static str {
-    "<div><h1>Unclosed"
 }
 
 //
@@ -181,61 +169,7 @@ fn test_progress_callback_invocation() {
 }
 
 //
-// Test 3: Error Handling - Invalid TSX
-//
-
-#[wasm_bindgen_test]
-fn test_error_handling_invalid_tsx() {
-    let converter = TsxToPdfConverter::new();
-    let config = create_test_config();
-
-    // Try to convert invalid TSX
-    let result = converter.convert_tsx_to_pdf(invalid_tsx(), config, None, None);
-
-    // Should fail
-    assert!(result.is_err(), "Invalid TSX should return error");
-
-    let error = result.err().unwrap();
-
-    // Error should be an object
-    assert!(error.is_object(), "Error should be an object");
-
-    // Check error structure (ConversionError)
-    let code = Reflect::get(&error, &"code".into()).unwrap();
-    assert!(code.is_string(), "Error should have 'code' field");
-
-    let code_str = code.as_string().unwrap();
-    assert!(
-        code_str == "TSX_PARSE_ERROR" || code_str == "INVALID_TSX_STRUCTURE",
-        "Error code should be TSX_PARSE_ERROR or INVALID_TSX_STRUCTURE, got '{}'",
-        code_str
-    );
-
-    let message = Reflect::get(&error, &"message".into()).unwrap();
-    assert!(message.is_string(), "Error should have 'message' field");
-    assert!(
-        !message.as_string().unwrap().is_empty(),
-        "Error message should not be empty"
-    );
-
-    let stage = Reflect::get(&error, &"stage".into()).unwrap();
-    assert!(stage.is_string(), "Error should have 'stage' field");
-
-    let recoverable = Reflect::get(&error, &"recoverable".into()).unwrap();
-    assert!(
-        recoverable.is_truthy() || !recoverable.is_truthy(),
-        "Error should have 'recoverable' field"
-    );
-
-    let suggestions = Reflect::get(&error, &"suggestions".into()).unwrap();
-    assert!(
-        suggestions.is_array(),
-        "Error should have 'suggestions' array"
-    );
-}
-
-//
-// Test 4: Error Handling - TSX Size Limit
+// Test 3: Error Handling - TSX Size Limit
 //
 
 #[wasm_bindgen_test]
@@ -278,7 +212,7 @@ fn test_error_handling_size_limit() {
 }
 
 //
-// Test 5: Font Detection
+// Test 4: Font Detection
 //
 
 #[wasm_bindgen_test]
@@ -337,7 +271,7 @@ fn test_font_detection() {
 }
 
 //
-// Test 6: Font Detection - No Fonts
+// Test 5: Font Detection - No Fonts
 //
 
 #[wasm_bindgen_test]
@@ -374,7 +308,7 @@ fn test_font_detection_no_fonts() {
 }
 
 //
-// Test 7: Font Handling - FontCollection
+// Test 6: Font Handling - FontCollection
 //
 
 #[wasm_bindgen_test]
@@ -398,7 +332,7 @@ fn test_font_collection_api() {
 }
 
 //
-// Test 8: Configuration Serialization
+// Test 7: Configuration Serialization
 //
 
 #[wasm_bindgen_test]
@@ -419,35 +353,7 @@ fn test_configuration_serialization() {
 }
 
 //
-// Test 9: Configuration - Invalid Config
-//
-
-#[wasm_bindgen_test]
-fn test_invalid_configuration() {
-    let converter = TsxToPdfConverter::new();
-
-    // Invalid config (missing required fields)
-    let invalid_config = Object::new();
-    // Intentionally incomplete
-
-    let result = converter.convert_tsx_to_pdf(valid_tsx(), invalid_config.into(), None, None);
-
-    // Should fail with INVALID_CONFIG
-    assert!(result.is_err(), "Invalid config should return error");
-
-    let error = result.err().unwrap();
-    let code = Reflect::get(&error, &"code".into()).unwrap();
-
-    // Error code should be INVALID_CONFIG
-    assert_eq!(
-        code.as_string().unwrap(),
-        "INVALID_CONFIG",
-        "Error code should be INVALID_CONFIG"
-    );
-}
-
-//
-// Test 10: ATS Validation
+// Test 8: ATS Validation
 //
 
 #[wasm_bindgen_test]
@@ -479,54 +385,4 @@ fn test_ats_validation() {
 
     let errors = Reflect::get(&report, &"errors".into()).unwrap();
     assert!(errors.is_array(), "Report should have 'errors' array");
-}
-
-//
-// Test 11: Multiple Conversions (Memory Leak Check)
-//
-
-#[wasm_bindgen_test]
-fn test_multiple_conversions() {
-    let converter = TsxToPdfConverter::new();
-
-    // Perform multiple conversions in sequence
-    for i in 0..5 {
-        let config = create_test_config();
-
-        let result = converter.convert_tsx_to_pdf(valid_tsx(), config, None, None);
-
-        assert!(result.is_ok(), "Conversion {} should succeed", i + 1);
-
-        let pdf_bytes = result.unwrap();
-        assert!(!pdf_bytes.is_empty(), "PDF {} should not be empty", i + 1);
-    }
-
-    // If we get here without errors, no obvious memory leaks in WASM
-}
-
-//
-// Test 12: Error Recovery - Second Attempt
-//
-
-#[wasm_bindgen_test]
-fn test_error_recovery() {
-    let converter = TsxToPdfConverter::new();
-    let config = create_test_config();
-
-    // First attempt with invalid TSX
-    let result1 = converter.convert_tsx_to_pdf(invalid_tsx(), config.clone(), None, None);
-    assert!(result1.is_err(), "First attempt should fail");
-
-    // Second attempt with valid TSX (should succeed after error)
-    let result2 = converter.convert_tsx_to_pdf(valid_tsx(), config, None, None);
-    assert!(result2.is_ok(), "Second attempt should succeed");
-
-    let error = result1.err().unwrap();
-    let recoverable = Reflect::get(&error, &"recoverable".into()).unwrap();
-
-    // Error should be marked as recoverable
-    assert!(
-        recoverable.is_truthy() || !recoverable.is_truthy(),
-        "Error should have recoverable field"
-    );
 }

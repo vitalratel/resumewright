@@ -1,14 +1,10 @@
-/**
- * Keyboard Shortcuts Help Modal
- *
- * Displays all available keyboard shortcuts organized by category with search/filter functionality.
- * Enhances accessibility and usability for power users.
- */
+// ABOUTME: Keyboard shortcuts help modal with search functionality.
+// ABOUTME: Displays shortcuts organized by category (General, Actions, Help) for power users.
 
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import { useEvent } from '../hooks/core/useEvent';
 import type { ShortcutConfig } from '../hooks/ui/useKeyboardShortcuts';
 import { formatShortcut } from '../hooks/ui/useKeyboardShortcuts';
-import { tokens } from '../styles/tokens';
 import { Modal } from './common/Modal';
 
 interface KeyboardShortcutsModalProps {
@@ -77,10 +73,9 @@ export function KeyboardShortcutsModal({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // P1-REACT-PERF: Memoize search handler
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = useEvent((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-  }, []);
+  });
 
   // Filter shortcuts based on search query
   const filteredShortcuts = shortcuts.filter((s) => {
@@ -105,23 +100,18 @@ export function KeyboardShortcutsModal({
       className="max-h-[80vh] overflow-hidden flex flex-col"
     >
       {/* Header */}
-      <div className={`flex items-center justify-between p-4 border-b ${tokens.borders.default}`}>
-        <h2
-          id="shortcuts-modal-title"
-          className={`${tokens.typography.large} ${tokens.typography.semibold} ${tokens.colors.neutral.text}`}
-        >
+      <div className="flex items-center justify-between p-4 border-b border-border">
+        <h2 id="shortcuts-modal-title" className="text-lg font-semibold text-foreground">
           Keyboard Shortcuts
         </h2>
         <button
           type="button"
           onClick={onClose}
-          className={`${tokens.colors.neutral.textMuted} ${tokens.colors.neutral.hover} ${tokens.effects.focusRing} ${tokens.borders.rounded} ${tokens.transitions.default}`
-            .trim()
-            .replace(/\s+/g, ' ')}
+          className="text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background rounded-md transition-all duration-300"
           aria-label="Close shortcuts help"
         >
           <svg
-            className={tokens.icons.sm}
+            className="w-4 h-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -138,7 +128,7 @@ export function KeyboardShortcutsModal({
       </div>
 
       {/* Search/Filter Input */}
-      <div className={`p-4 border-b ${tokens.colors.borders.default}`}>
+      <div className="p-4 border-b border-border">
         <label htmlFor="shortcut-search" className="sr-only">
           Search shortcuts
         </label>
@@ -149,9 +139,7 @@ export function KeyboardShortcutsModal({
           value={searchQuery}
           onChange={handleSearchChange}
           placeholder="Search shortcuts..."
-          className={`w-full px-3 py-2 ${tokens.typography.small} ${tokens.borders.default} ${tokens.borders.rounded} ${tokens.colors.neutral.text} ${tokens.colors.neutral.bgWhite} focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 ${tokens.transitions.default}`
-            .trim()
-            .replace(/\s+/g, ' ')}
+          className="w-full px-3 py-2 text-sm border border-border rounded-md text-foreground bg-card focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-300"
           aria-describedby="search-description"
         />
         <p id="search-description" className="sr-only">
@@ -160,27 +148,17 @@ export function KeyboardShortcutsModal({
       </div>
 
       {/* Content - Scrollable */}
-      <div className={`p-4 ${tokens.spacing.sectionGap} overflow-y-auto flex-1`}>
+      <div className="p-4 space-y-4 overflow-y-auto flex-1">
         {hasResults ? (
           categories.map((category) => (
             <div key={category.title}>
-              <h3
-                className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.textMuted} ${tokens.spacing.marginSmall}`}
-              >
-                {category.title}
-              </h3>
-              <dl className={tokens.spacing.gapSmall}>
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">{category.title}</h3>
+              <dl className="space-y-2">
                 {category.shortcuts.map((item) => (
                   <div key={item.shortcut} className="flex items-center justify-between">
-                    <dt className={`${tokens.typography.small} ${tokens.colors.neutral.text}`}>
-                      {item.description}
-                    </dt>
+                    <dt className="text-sm text-foreground">{item.description}</dt>
                     <dd className="ml-4">
-                      <kbd
-                        className={`${tokens.code.kbd} ${tokens.typography.semibold} ${tokens.colors.neutral.text} ${tokens.colors.neutral.bg} ${tokens.effects.shadow}`
-                          .trim()
-                          .replace(/\s+/g, ' ')}
-                      >
+                      <kbd className="px-2 py-1 font-mono text-xs font-semibold text-foreground bg-muted rounded-md shadow-sm dark:shadow-none">
                         {item.shortcut}
                       </kbd>
                     </dd>
@@ -191,7 +169,7 @@ export function KeyboardShortcutsModal({
           ))
         ) : (
           <div className="text-center py-8">
-            <p className={`${tokens.typography.small} ${tokens.colors.neutral.textMuted}`}>
+            <p className="text-sm text-muted-foreground">
               No shortcuts match &quot;
               {searchQuery}
               &quot;
@@ -201,15 +179,10 @@ export function KeyboardShortcutsModal({
       </div>
 
       {/* Footer */}
-      <div className={`p-4 border-t ${tokens.borders.default} ${tokens.colors.neutral.bg}`}>
-        <p className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted} text-center`}>
-          Press{' '}
-          <kbd
-            className={`px-1 py-0.5 ${tokens.typography.xs} ${tokens.typography.semibold} ${tokens.colors.neutral.bg} ${tokens.borders.rounded}`}
-          >
-            Esc
-          </kbd>{' '}
-          to close
+      <div className="p-4 border-t border-border bg-muted">
+        <p className="text-xs text-muted-foreground text-center">
+          Press <kbd className="px-1 py-0.5 text-xs font-semibold bg-muted rounded-md">Esc</kbd> to
+          close
         </p>
       </div>
     </Modal>

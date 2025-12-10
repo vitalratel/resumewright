@@ -44,7 +44,7 @@ tsx-parser = { path = "../tsx-parser" }
 cv-domain = { path = "../cv-domain" }
 layout-engine = { path = "../layout-engine" }
 js-sys = { workspace = true }
-web-sys = { version = "0.3", features = ["console", "Window", "Performance"] }
+web-sys = { version = "0.3", features = ["console"] }
 pdf-test-utils = { path = "../pdf-test-utils", optional = true }
 
 [dev-dependencies]

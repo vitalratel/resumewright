@@ -1,9 +1,5 @@
-/**
- * ProgressStatus Component
- *
- * Displays current conversion stage with icon, operation text, and ETA.
- * Includes support for multi-page progress tracking and debounced ETA updates.
- */
+// ABOUTME: Displays current conversion stage with icon, operation text, and ETA.
+// ABOUTME: Supports multi-page progress tracking with debounced ETA updates.
 
 import React, { useMemo } from 'react';
 import type { ConversionStatus } from '../../../shared/types/models';
@@ -13,7 +9,6 @@ import {
   getStageIcon,
 } from '../../../shared/utils/progressCalculations';
 import { useDebounce } from '../../hooks/core/useDebounce';
-import { tokens } from '../../styles/tokens';
 
 interface ProgressStatusProps {
   /** Current conversion stage */
@@ -43,41 +38,29 @@ export const ProgressStatus = React.memo(
 
     return (
       <div
-        className={`w-full ${tokens.spacing.gapSmall} flex flex-col text-center`}
+        className="w-full gap-2 flex flex-col text-center"
         data-testid="progress-status"
         data-stage={stage}
       >
-        {/* Stage icon and display name */}
         <div className="flex items-center justify-center space-x-2">
           <span className="text-2xl" role="img" aria-label={stageDisplay}>
             {stageIcon}
           </span>
-          <p
-            className={`${tokens.typography.small} ${tokens.typography.medium} ${tokens.colors.neutral.text}`}
-          >
-            {stageDisplay}
-          </p>
+          <p className="text-sm font-medium text-foreground">{stageDisplay}</p>
         </div>
 
-        {/* Current operation */}
-        <p className={`${tokens.typography.base} ${tokens.colors.neutral.textMuted}`}>
-          {currentOperation}
-        </p>
+        <p className="text-base text-muted-foreground">{currentOperation}</p>
 
-        {/* ETA display (debounced) */}
         {debouncedEta !== undefined && debouncedEta > 0 ? (
-          <p className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted}`}>
+          <p className="text-xs text-muted-foreground">
             {formatTimeRemaining(debouncedEta)} remaining
           </p>
         ) : stage !== 'completed' && stage !== 'failed' && stage !== 'cancelled' ? (
-          <p className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted}`}>
-            Usually completes in 3-5 seconds
-          </p>
+          <p className="text-xs text-muted-foreground">Usually completes in 3-5 seconds</p>
         ) : null}
 
-        {/* Page progress (multi-page support) */}
         {pagesProcessed !== undefined && totalPages !== undefined && totalPages > 1 && (
-          <p className={`${tokens.typography.xs} ${tokens.colors.neutral.textMuted}`}>
+          <p className="text-xs text-muted-foreground">
             Page {pagesProcessed} of {totalPages}
           </p>
         )}

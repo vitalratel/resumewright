@@ -1,11 +1,6 @@
-/**
- * Error Location Info Component
- *
- * Displays line/column information for parse errors or file size for memory errors.
- * Extracted from ErrorState for better component organization .
- */
+// ABOUTME: Displays line/column information for parse errors or file size for memory errors.
+// ABOUTME: Extracted from ErrorState for better component organization.
 
-import { tokens } from '../../styles/tokens';
 import { formatFileSize } from '../../utils/formatting';
 
 interface ErrorLocationInfoProps {
@@ -36,9 +31,7 @@ export function ErrorLocationInfo({ line, column, fileSize, maxSize }: ErrorLoca
   }
 
   return (
-    <div
-      className={`w-full max-w-md ${tokens.typography.small} ${tokens.colors.neutral.textMuted} ${tokens.colors.info.bg} ${tokens.spacing.cardSmall} ${tokens.borders.roundedLg} ${tokens.colors.info.border}`}
-    >
+    <div className="w-full max-w-md text-sm text-muted-foreground bg-info/10 p-3 rounded-lg border border-info/20">
       {/* Parse error line/column */}
       {line !== undefined && (
         <p className="font-mono" data-testid="error-location">
@@ -50,9 +43,9 @@ export function ErrorLocationInfo({ line, column, fileSize, maxSize }: ErrorLoca
       {/* File size information */}
       {fileSize !== undefined && maxSize !== undefined && (
         <p data-testid="error-size">
-          File size: <span className={tokens.typography.semibold}>{formatFileSize(fileSize)}</span>
+          File size: <span className="font-semibold">{formatFileSize(fileSize)}</span>
           {' / '}
-          <span className={tokens.colors.neutral.textMuted}>
+          <span className="text-muted-foreground">
             max:
             {formatFileSize(maxSize)}
           </span>

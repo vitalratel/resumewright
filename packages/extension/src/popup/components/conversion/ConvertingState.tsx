@@ -1,12 +1,12 @@
 // ABOUTME: Displays PDF conversion progress with visual feedback and accessibility.
 // ABOUTME: Shows stage, percentage, ETA, and provides cancel functionality.
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useConversion } from '../../context/ConversionContext';
+import { useEvent } from '../../hooks/core/useEvent';
 import { useThrottledAnnouncement } from '../../hooks/ui/useThrottledAnnouncement';
 import { useProgressStore } from '../../store/progressStore';
-import { tokens } from '../../styles/tokens';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { Spinner } from '../common/Spinner';
 import { ErrorBoundary } from '../ErrorBoundary';
@@ -51,58 +51,43 @@ export const ConvertingState = React.memo(() => {
   // Only announce every 10% progress or every 5 seconds (whichever is longer)
   const shouldAnnounce = useThrottledAnnouncement(currentProgress.percentage, 10, 5000);
 
-  // Memoize cancel handler to prevent ConfirmDialog re-renders
-  const handleConfirmCancel = useCallback(() => {
+  const handleConfirmCancel = useEvent(() => {
     setShowCancelConfirm(false);
     if (handleCancelConversion) {
       handleCancelConversion();
     }
-  }, [handleCancelConversion]);
+  });
 
-  const handleCancelDialog = useCallback(() => {
+  const handleCancelDialog = useEvent(() => {
     setShowCancelConfirm(false);
-  }, []);
+  });
 
   return (
-    <div
-      className={`w-full h-full ${tokens.colors.neutral.bgWhite} ${tokens.spacing.cardFullPage} flex flex-col items-center justify-center ${tokens.spacing.sectionGapCompact} ${tokens.animations.fadeIn}`}
-    >
-      {/* P1-A11Y-005: Throttled announcements for screen readers */}
+    <div className="w-full h-full bg-elevated px-6 py-8 md:px-8 md:py-10 flex flex-col items-center justify-center space-y-4 animate-fade-in">
       {shouldAnnounce && (
         <output aria-live="polite" aria-atomic="true" className="sr-only">
           Converting: {currentProgress.percentage}% complete. {currentProgress.currentOperation}.
         </output>
       )}
 
-      {/* Animated Spinner - 32px blue-500 - aria-label for screen readers */}
       <Spinner size="large" ariaLabel="Converting to PDF" />
 
-      {/* Heading - Full-page typography */}
-      <h1
-        className={`${tokens.typography.sectionHeading} tracking-tight ${tokens.colors.neutral.text} text-center`}
-      >
+      <h1 className="text-xl font-semibold tracking-tight text-foreground text-center">
         Converting to PDF...
       </h1>
 
-      {/* Show filename being converted */}
       {appState.lastFilename !== null &&
         appState.lastFilename !== undefined &&
         appState.lastFilename !== '' && (
-          <p
-            className={`${tokens.typography.base} ${tokens.colors.neutral.textMuted} font-mono ${tokens.colors.neutral.bg} ${tokens.spacing.alert} ${tokens.borders.rounded} ${tokens.colors.neutral.border} ${tokens.borders.default} max-w-full truncate`
-              .trim()
-              .replace(/\s+/g, ' ')}
-          >
+          <p className="text-base text-muted-foreground font-mono bg-muted px-3 py-1.5 rounded-md border border-border max-w-full truncate">
             {appState.lastFilename}
           </p>
         )}
 
-      {/* Progress Bar */}
       <div className="w-full">
         <ProgressBar percentage={currentProgress.percentage} animated />
       </div>
 
-      {/* Progress Status */}
       <ProgressStatus
         stage={currentProgress.stage}
         currentOperation={currentProgress.currentOperation}
@@ -111,17 +96,13 @@ export const ConvertingState = React.memo(() => {
         totalPages={currentProgress.totalPages}
       />
 
-      {/* Cancel Button - Touch target, Show confirmation */}
-      {/* Double-click protection to prevent accidental cancellation */}
       {handleCancelConversion && (
         <button
           type="button"
           onClick={() => {
             if (cancelClickCount === 0) {
-              // First click - start timer with AbortController
               setCancelClickCount(1);
 
-              // AbortController pattern for async timer
               const controller = new AbortController();
               abortControllerRef.current = controller;
 
@@ -139,7 +120,6 @@ export const ConvertingState = React.memo(() => {
                 }
               });
             } else {
-              // Second click within 2s - show confirmation
               if (abortControllerRef.current) {
                 abortControllerRef.current.abort();
                 abortControllerRef.current = null;
@@ -148,9 +128,7 @@ export const ConvertingState = React.memo(() => {
               setShowCancelConfirm(true);
             }
           }}
-          className={`${tokens.typography.small} ${cancelClickCount > 0 ? tokens.colors.warning.text : tokens.colors.neutral.textMuted} ${tokens.colors.link.hover} ${tokens.colors.link.hoverUnderline} ${tokens.spacing.marginSmall} ${tokens.effects.focusRingLight} ${tokens.buttons.default.secondary} ${tokens.transitions.default}`
-            .trim()
-            .replace(/\s+/g, ' ')}
+          className={`text-sm ${cancelClickCount > 0 ? 'text-warning-foreground' : 'text-muted-foreground'} hover:text-link hover:underline mt-2 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-300`}
           aria-label={
             cancelClickCount > 0 ? 'Click again to confirm cancellation' : 'Cancel conversion'
           }

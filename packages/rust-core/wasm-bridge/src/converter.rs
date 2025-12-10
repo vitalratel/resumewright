@@ -11,29 +11,14 @@
 
 use wasm_bindgen::prelude::*;
 
-// Import conversion macros
-use crate::{from_js, to_js};
+use crate::{debug_log, from_js, to_js};
 
 use cv_domain::{extract_metadata, extract_tsx_layout_config_from_document};
 use layout_engine::calculate_layout_direct;
 use pdf_generator::PDFConfig;
 use tsx_parser::parse_tsx;
 
-// Import from refactored modules
 use crate::error::create_error;
-
-/// Debug logging macro - only logs when debug-logging feature is enabled
-#[cfg(feature = "debug-logging")]
-macro_rules! debug_log {
-    ($($arg:tt)*) => {
-        web_sys::console::log_1(&format!($($arg)*).into());
-    };
-}
-
-#[cfg(not(feature = "debug-logging"))]
-macro_rules! debug_log {
-    ($($arg:tt)*) => {};
-}
 
 // ConversionError is now in crate::error module
 

@@ -43,6 +43,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      '@': path.resolve(__dirname, './src'),
       '@/background': path.resolve(__dirname, './src/background'),
       '@/popup': path.resolve(__dirname, './src/popup'),
       '@/shared': path.resolve(__dirname, './src/shared'),

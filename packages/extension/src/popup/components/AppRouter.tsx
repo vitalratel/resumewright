@@ -36,7 +36,6 @@ import type { ConversionHandlers } from '../hooks/conversion/useConversionHandle
 import type { AppState } from '../hooks/integration/useAppState';
 import { useFocusTrap } from '../hooks/ui/useFocusManagement';
 import type { ShortcutConfig } from '../hooks/ui/useKeyboardShortcuts';
-import { tokens } from '../styles/tokens';
 import { ErrorBoundary } from './ErrorBoundary';
 import { AppFooter } from './layout/AppFooter';
 import { AppHeader } from './layout/AppHeader';
@@ -157,7 +156,7 @@ export function AppRouter({
           <Suspense
             fallback={
               <div className="flex items-center justify-center h-full">
-                <div className={tokens.colors.neutral.textMuted}>Loading settings...</div>
+                <div className="text-muted-foreground">Loading settings...</div>
               </div>
             }
           >
@@ -179,7 +178,7 @@ export function AppRouter({
         <Suspense
           fallback={
             <div className="flex items-center justify-center h-full">
-              <div className={tokens.colors.neutral.textMuted}>Loading help...</div>
+              <div className="text-muted-foreground">Loading help...</div>
             </div>
           }
         >

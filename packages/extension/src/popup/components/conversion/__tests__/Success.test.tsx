@@ -73,14 +73,14 @@ describe('Success', () => {
     it('should render success checkmark icon', () => {
       const { container } = render(<Success {...defaultProps} />);
 
-      const icon = container.querySelector('svg.w-12.h-12');
+      const icon = container.querySelector('svg.w-16.h-16');
       expect(icon).toBeInTheDocument();
     });
 
     it('should have green-themed success icon', () => {
       const { container } = render(<Success {...defaultProps} />);
 
-      const icon = container.querySelector('svg.text-green-600');
+      const icon = container.querySelector('svg.text-icon-success');
       expect(icon).toBeInTheDocument();
     });
 
@@ -196,7 +196,7 @@ describe('Success', () => {
       render(<Success {...defaultProps} autoCloseSeconds={5} />);
 
       const timer = screen.getByText('Closing in 5s');
-      expect(timer).toHaveClass('text-xs', 'text-gray-600');
+      expect(timer).toHaveClass('text-xs', 'text-muted-foreground');
     });
   });
 
@@ -254,7 +254,7 @@ describe('Success', () => {
       const { container } = render(<Success {...defaultProps} />);
 
       const successContainer = container.querySelector('.success-card') as HTMLElement;
-      expect(successContainer).toHaveClass('w-full', 'h-full', 'bg-white');
+      expect(successContainer).toHaveClass('w-full', 'h-full', 'bg-elevated');
     });
 
     it('should render with all optional props', () => {

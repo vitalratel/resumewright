@@ -1,14 +1,8 @@
-/**
- * TechTerm Component
- * P2-A11Y-009: Technical terms explained with tooltips
- *
- * Wraps technical terms with accessible tooltips/abbreviations
- * to help users understand unfamiliar jargon.
- */
+// ABOUTME: Technical terms with accessible tooltips/abbreviations.
+// ABOUTME: Helps users understand unfamiliar jargon with native browser tooltips.
 
 import type { ReactNode } from 'react';
 import { TECH_TERMS } from '../../constants/techTerms';
-import { tokens } from '../../styles/tokens';
 
 interface TechTermProps {
   /** The technical term to display */
@@ -24,23 +18,16 @@ interface TechTermProps {
   showUnderline?: boolean;
 }
 
-/**
- * TechTerm displays technical terms with accessible tooltips
- * Uses <abbr> element with title attribute for native browser tooltips
- * and keyboard/screen reader accessibility
- */
 export function TechTerm({ term, explanation, children, showUnderline = true }: TechTermProps) {
   return (
     <abbr
       title={explanation}
       className={`
-        ${showUnderline ? `border-b border-dotted ${tokens.colors.neutral.border}` : ''}
-        cursor-help
-        no-underline
-        ${tokens.transitions.default}
-        ${tokens.effects.hoverBorder}
-        ${tokens.effects.focusRingLight}
-        ${tokens.borders.rounded}
+        ${showUnderline ? 'border-b border-dotted border-border' : ''}
+        cursor-help no-underline transition-all duration-300
+        hover:border-muted-foreground
+        focus:outline-none focus:ring-2 focus:ring-ring
+        rounded-md
       `
         .trim()
         .replace(/\s+/g, ' ')}
