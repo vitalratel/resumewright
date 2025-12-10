@@ -18,7 +18,7 @@ export function AppHeader({ onOpenSettings, onShowKeyboardShortcuts, onShowHelp 
     <header className="bg-primary text-primary-foreground p-4 flex items-center justify-between shadow-md dark:shadow-none border-b-2 border-primary/70 relative z-10">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-card text-primary focus:px-4 focus:py-2 focus:rounded focus:shadow-lg"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-card focus:text-foreground focus:px-4 focus:py-2 focus:rounded focus:shadow-lg"
       >
         Skip to main content
       </a>

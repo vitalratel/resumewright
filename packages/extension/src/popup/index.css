@@ -116,8 +116,8 @@
   /* Info - blue-600 for accents, use /10 for alert backgrounds */
   --info: oklch(54.6% 0.245 262.881);
   --info-foreground: oklch(1 0 0);
-  /* Info text on light bg - blue-700 for contrast */
-  --info-text: oklch(48.8% 0.217 264.376);
+  /* Info text on light bg - darker blue for WCAG AA contrast on white (4.5:1+) */
+  --info-text: oklch(38% 0.18 262);
 
   /* Border and input */
   --border: oklch(0.88 0 0);
@@ -143,8 +143,8 @@
   --popover: oklch(0.269 0.006 264);
   --popover-foreground: oklch(0.985 0 0);
 
-  /* Primary - LinkedIn Blue (blue-500 for better visibility in dark) */
-  --primary: oklch(62.3% 0.214 259.815);
+  /* Primary - blue-600 for WCAG AA with white text (4.5:1 contrast) */
+  --primary: oklch(54.6% 0.245 262.881);
   --primary-foreground: oklch(1 0 0);
 
   /* Secondary - gray-800 for secondary elements */
@@ -180,8 +180,8 @@
   /* Info - blue-400 in dark for better visibility */
   --info: oklch(70.7% 0.165 254.624);
   --info-foreground: oklch(1 0 0);
-  /* Info text in dark - blue-400 for contrast on dark bg */
-  --info-text: oklch(70.7% 0.165 254.624);
+  /* Info text in dark - blue-300 for WCAG AA contrast on dark bg */
+  --info-text: oklch(79.7% 0.113 228.508);
 
   /* Border and input */
   --border: oklch(0.35 0 0);

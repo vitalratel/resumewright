@@ -2,11 +2,9 @@
 // ABOUTME: Verifies browser.downloads API usage and blob URL handling.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { resetLogger, setLogger } from '../../infrastructure/logging/instance';
-import type { Logger } from '../../infrastructure/logging/logger';
 import { downloadPDF } from './downloader';
 
-// Mock browser
+// Mock URL APIs
 global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
 global.URL.revokeObjectURL = vi.fn();
 
@@ -23,22 +21,18 @@ vi.mock('wxt/browser', () => ({
   },
 }));
 
-describe('downloader', () => {
-  const mockLogger = {
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  } as unknown as Logger;
+// Silence error logs during tests
+vi.mock('../../infrastructure/logging/instance', () => ({
+  getLogger: () => ({ error: vi.fn() }),
+}));
 
+describe('downloader', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    setLogger(mockLogger);
     vi.useFakeTimers();
   });
 
   afterEach(() => {
-    resetLogger();
     vi.useRealTimers();
   });
 

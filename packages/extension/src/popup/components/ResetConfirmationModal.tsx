@@ -77,9 +77,7 @@ export const ResetConfirmationModal = React.memo(
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Page Size:</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-warning-foreground font-semibold">
-                        {pageSize}
-                      </span>
+                      <span className="text-warning-foreground font-semibold">{pageSize}</span>
                       <span className="text-muted-foreground">→</span>
                       <span className="font-medium text-foreground">{defaultPageSize}</span>
                     </div>
@@ -94,7 +92,7 @@ export const ResetConfirmationModal = React.memo(
                         <div className="flex justify-between items-center">
                           <span className="text-muted-foreground">Top:</span>
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-warning-foreground font-semibold font-mono">
+                            <span className="text-warning-foreground font-semibold font-mono">
                               {margin.top}
                               &quot;
                             </span>
@@ -110,7 +108,7 @@ export const ResetConfirmationModal = React.memo(
                         <div className="flex justify-between items-center">
                           <span className="text-muted-foreground">Bottom:</span>
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-warning-foreground font-semibold font-mono">
+                            <span className="text-warning-foreground font-semibold font-mono">
                               {margin.bottom}
                               &quot;
                             </span>
@@ -126,7 +124,7 @@ export const ResetConfirmationModal = React.memo(
                         <div className="flex justify-between items-center">
                           <span className="text-muted-foreground">Left:</span>
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-warning-foreground font-semibold font-mono">
+                            <span className="text-warning-foreground font-semibold font-mono">
                               {margin.left}
                               &quot;
                             </span>
@@ -142,7 +140,7 @@ export const ResetConfirmationModal = React.memo(
                         <div className="flex justify-between items-center">
                           <span className="text-muted-foreground">Right:</span>
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-warning-foreground font-semibold font-mono">
+                            <span className="text-warning-foreground font-semibold font-mono">
                               {margin.right}
                               &quot;
                             </span>

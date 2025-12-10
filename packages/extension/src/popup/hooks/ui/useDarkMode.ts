@@ -1,21 +1,15 @@
-/**
- * Dark Mode Hook
- *
- * Manages theme preference with system detection and persistence.
- * Supports light, dark, and auto (system preference) modes.
- */
+// ABOUTME: Dark mode hook with system detection and persistence.
+// ABOUTME: Uses localStorage cache for instant load, settingsStore for persistence.
 
 import { useEffect, useState } from 'react';
-import { loadSettings, saveSettings } from '@/shared/infrastructure/settings/storage';
+import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
+import { getCachedTheme, setCachedTheme } from '@/shared/infrastructure/settings/themeCache';
 
 type Theme = 'light' | 'dark' | 'auto';
 
 export function useDarkMode() {
-  // Load saved theme preference
-  const [theme, setTheme] = useState<Theme>(() => {
-    const settings = loadSettings();
-    return settings.theme;
-  });
+  // Load from localStorage cache (sync, prevents flash)
+  const [theme, setTheme] = useState<Theme>(getCachedTheme);
 
   // Track system preference separately
   const [systemPrefersDark, setSystemPrefersDark] = useState(
@@ -41,13 +35,25 @@ export function useDarkMode() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
+  // Sync with settingsStore on mount (in case cache is stale)
+  useEffect(() => {
+    const cachedTheme = getCachedTheme();
+    settingsStore.loadSettings().then((settings) => {
+      if (settings.theme !== cachedTheme) {
+        setTheme(settings.theme);
+        setCachedTheme(settings.theme);
+      }
+    });
+  }, []);
+
   const setThemePreference = (newTheme: Theme) => {
     setTheme(newTheme);
+    setCachedTheme(newTheme);
 
-    // Persist to localStorage
-    const settings = loadSettings();
-    const updated = { ...settings, theme: newTheme };
-    saveSettings(updated);
+    // Persist to settingsStore (async, source of truth)
+    settingsStore.loadSettings().then((settings) => {
+      settingsStore.saveSettings({ ...settings, theme: newTheme });
+    });
   };
 
   return {

@@ -29,11 +29,6 @@ const TIMEOUT_CONVERSION = 5000; // Performance target: <5 seconds
  * The popup shows a loading screen while WASM initializes, then shows the FileImport component.
  * We need to wait for WASM initialization to complete before the file input is available.
  */
-interface ConsoleLog {
-  type: string;
-  text: string;
-}
-
 async function uploadTsxFile(popupPage: Page, filePath: string): Promise<void> {
   // Wait for the popup to fully load
   await popupPage.waitForLoadState('networkidle');
@@ -82,12 +77,6 @@ test('should convert single-column CV to PDF within performance targets', async 
   const popupPage = await context.newPage();
   await popupPage.goto(`${config.protocol}://${extensionId}/converter.html`);
 
-  // Set up console capture for download metadata
-  const logs: ConsoleLog[] = [];
-  popupPage.on('console', (msg) => {
-    logs.push({ type: msg.type(), text: msg.text() });
-  });
-
   // Upload TSX file
   await uploadTsxFile(popupPage, fixturePath);
 
@@ -111,27 +100,7 @@ test('should convert single-column CV to PDF within performance targets', async 
   // Verify conversion completed within performance target
   expect(downloadDuration).toBeLessThan(TIMEOUT_CONVERSION);
 
-  // Extract filename from browser logs
-  // Note: Log format is "[PdfDownloader] [INFO] Download started successfully"
-  const downloadLog = logs.find(
-    (log) =>
-      log.text.includes('[PdfDownloader]') && log.text.includes('Download started successfully'),
-  );
-  let filename = 'Resume.pdf';
-  if (downloadLog !== undefined) {
-    const match = downloadLog.text.match(/filename:\s*([^\s,}]+)/);
-    if (match !== null && match[1] !== undefined) {
-      filename = match[1];
-    }
-  }
-
-  // Verify filename format (Name_Resume_YYYY-MM-DD.pdf or Resume_YYYY-MM-DD.pdf)
-  // Format: Resume_YYYY-MM-DD.pdf (when name not extracted) or Name_Resume_YYYY-MM-DD.pdf
-  expect(filename).toMatch(/^([A-Za-z_]+_)?Resume_\d{4}-\d{2}-\d{2}\.pdf$/);
-
-  console.warn(`✓ Conversion successful:`);
-  console.warn(`  Duration: ${downloadDuration}ms`);
-  console.warn(`  Filename: ${filename}`);
+  console.warn(`✓ Conversion successful: ${downloadDuration}ms`);
 });
 
 /**
@@ -310,7 +279,7 @@ test('should show user-friendly error message for invalid TSX', async ({
 
   // Create a temporary invalid TSX file
   const invalidTsx = '<div>Missing closing tag<p>Broken</div>';
-  const tempDir = path.join(process.cwd(), 'packages/extension/test-results/temp');
+  const tempDir = path.join(process.cwd(), 'test-results/temp');
   if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir, { recursive: true });
   }

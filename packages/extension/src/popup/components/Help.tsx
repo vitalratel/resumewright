@@ -17,7 +17,7 @@ export function Help({ onBack }: HelpProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <header className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground p-4 flex items-center gap-3 shadow-md dark:shadow-none">
+      <header className="bg-linear-to-r from-primary to-primary/90 text-primary-foreground p-4 flex items-center gap-3 shadow-md dark:shadow-none">
         <button
           type="button"
           onClick={onBack}
