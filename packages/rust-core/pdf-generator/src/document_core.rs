@@ -187,7 +187,7 @@ impl PDFDocumentCore {
             pdfa::apply_pdfa1b_compliance(&mut self.doc, &self.config)?;
             pdfa::add_document_id(&mut self.doc)?;
 
-            // Embed Karla fonts for all pages (PDF/A requires all fonts embedded)
+            // Embed Inter fonts for all pages (PDF/A requires all fonts embedded)
             // This replaces Type1 fonts with embedded TrueType fonts that support Unicode
             // Note: This must be done AFTER font_registry.register_fonts() in generator.rs
             // because we're replacing the Type1 font references with embedded CIDFont Type 2
