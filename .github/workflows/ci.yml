@@ -119,7 +119,7 @@ jobs:
           fi
 
       - name: Upload WASM artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: wasm-build
           path: |
@@ -276,7 +276,7 @@ jobs:
 
       - name: Upload visual test results
         if: always() && steps.check-baselines.outputs.baselines_exist == 'true'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: visual-test-results
           path: packages/extension/playwright-report/
@@ -315,7 +315,7 @@ jobs:
 
       - name: Upload benchmark results
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: rust-benchmark-results
           path: |

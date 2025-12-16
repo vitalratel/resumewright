@@ -241,21 +241,21 @@ jobs:
           echo "4. Submit to Firefox Add-ons" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload extension build
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: extension-build-v${{ github.event.inputs.version }}
           path: packages/extension/dist/
           retention-days: 90
 
       - name: Upload WASM module
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: wasm-module-v${{ github.event.inputs.version }}
           path: packages/rust-core/wasm-bridge/pkg/
           retention-days: 90
 
       - name: Upload changelog draft
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: changelog-v${{ github.event.inputs.version }}
           path: CHANGELOG_DRAFT.md
