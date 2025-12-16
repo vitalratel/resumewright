@@ -510,6 +510,7 @@ mod tests {
     use crate::css_parser::StyleDeclaration;
     use crate::layout_renderer::{BoxContent, LayoutBox, LayoutStructure, Page};
     use crate::{Margin, PDFConfig, PageSize};
+    use layout_types::TextLine;
     use std::cell::Cell;
 
     #[test]
@@ -589,7 +590,7 @@ mod tests {
                     y: 100.0,
                     width: 200.0,
                     height: 50.0,
-                    content: BoxContent::Text(vec!["Test".to_string()]),
+                    content: BoxContent::Text(vec![TextLine::from("Test")]),
                     style: StyleDeclaration::default(),
                     element_type: None,
                 }],

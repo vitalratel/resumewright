@@ -7,7 +7,7 @@
 //!
 //! Implements CSS `box-decoration-break: clone` semantics.
 
-use layout_types::{BoxContent, LayoutBox, StyleDeclaration};
+use layout_types::{BoxContent, LayoutBox, StyleDeclaration, TextLine};
 
 use super::coordinate_adjuster::adjust_box_y_coordinates;
 
@@ -318,7 +318,7 @@ fn apply_list_orphan_prevention(
 /// # Returns
 /// Tuple of (first_fragment_content, second_fragment_content)
 pub fn split_text_lines(
-    lines: Vec<String>,
+    lines: Vec<TextLine>,
     split_height: f64,
     style: &StyleDeclaration,
 ) -> (BoxContent, BoxContent) {
@@ -389,14 +389,14 @@ pub fn calculate_content_height(content: &BoxContent, style: &StyleDeclaration) 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use layout_types::TextStyle;
+    use layout_types::{TextLine, TextStyle};
 
     #[test]
     fn test_split_text_lines_basic() {
         let lines = vec![
-            "Line 1".to_string(),
-            "Line 2".to_string(),
-            "Line 3".to_string(),
+            TextLine::from("Line 1"),
+            TextLine::from("Line 2"),
+            TextLine::from("Line 3"),
         ];
         let style = StyleDeclaration {
             text: TextStyle {
@@ -424,7 +424,7 @@ mod tests {
 
     #[test]
     fn test_calculate_content_height_text() {
-        let content = BoxContent::Text(vec!["Line 1".to_string(), "Line 2".to_string()]);
+        let content = BoxContent::Text(vec![TextLine::from("Line 1"), TextLine::from("Line 2")]);
         let style = StyleDeclaration {
             text: TextStyle {
                 line_height: Some(15.0),
@@ -440,9 +440,9 @@ mod tests {
     fn test_split_text_lines_prevents_orphan() {
         // Test that splitting doesn't create 1-line orphans
         let lines = vec![
-            "Line 1".to_string(),
-            "Line 2".to_string(),
-            "Line 3".to_string(),
+            TextLine::from("Line 1"),
+            TextLine::from("Line 2"),
+            TextLine::from("Line 3"),
         ];
         let style = StyleDeclaration {
             text: TextStyle {
@@ -472,9 +472,9 @@ mod tests {
     fn test_split_text_lines_prevents_widow() {
         // Test that splitting doesn't create 1-line widows
         let lines = vec![
-            "Line 1".to_string(),
-            "Line 2".to_string(),
-            "Line 3".to_string(),
+            TextLine::from("Line 1"),
+            TextLine::from("Line 2"),
+            TextLine::from("Line 3"),
         ];
         let style = StyleDeclaration {
             text: TextStyle {
@@ -504,10 +504,10 @@ mod tests {
     fn test_split_text_lines_allows_valid_split() {
         // Test that valid splits (2+ lines each) work
         let lines = vec![
-            "Line 1".to_string(),
-            "Line 2".to_string(),
-            "Line 3".to_string(),
-            "Line 4".to_string(),
+            TextLine::from("Line 1"),
+            TextLine::from("Line 2"),
+            TextLine::from("Line 3"),
+            TextLine::from("Line 4"),
         ];
         let style = StyleDeclaration {
             text: TextStyle {
@@ -545,10 +545,10 @@ mod tests {
             width: 200.0,
             height: 80.0, // 4 lines * 20pt
             content: BoxContent::Text(vec![
-                "Line 1".to_string(),
-                "Line 2".to_string(),
-                "Line 3".to_string(),
-                "Line 4".to_string(),
+                TextLine::from("Line 1"),
+                TextLine::from("Line 2"),
+                TextLine::from("Line 3"),
+                TextLine::from("Line 4"),
             ]),
             style: StyleDeclaration {
                 text: TextStyle {
@@ -594,7 +594,7 @@ mod tests {
             y: 100.0,
             width: 200.0,
             height: 20.0,
-            content: BoxContent::Text(vec!["Child 1 text".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("Child 1 text")]),
             style: StyleDeclaration::default(),
             element_type: None,
         };
@@ -604,7 +604,7 @@ mod tests {
             y: 120.0,
             width: 200.0,
             height: 20.0,
-            content: BoxContent::Text(vec!["Child 2 text".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("Child 2 text")]),
             style: StyleDeclaration::default(),
             element_type: None,
         };
@@ -614,7 +614,7 @@ mod tests {
             y: 140.0,
             width: 200.0,
             height: 20.0,
-            content: BoxContent::Text(vec!["Child 3 text".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("Child 3 text")]),
             style: StyleDeclaration::default(),
             element_type: None,
         };
@@ -643,7 +643,11 @@ mod tests {
 
             // Child 1 should be complete
             if let BoxContent::Text(lines) = &children[0].content {
-                assert_eq!(lines[0], "Child 1 text", "First child should have its text");
+                assert_eq!(
+                    lines[0].plain_text(),
+                    "Child 1 text",
+                    "First child should have its text"
+                );
             } else {
                 panic!("Expected text in first child");
             }
@@ -661,14 +665,22 @@ mod tests {
 
             // Verify child2 text is preserved
             if let BoxContent::Text(lines) = &children[0].content {
-                assert_eq!(lines[0], "Child 2 text", "Child2 text should be preserved");
+                assert_eq!(
+                    lines[0].plain_text(),
+                    "Child 2 text",
+                    "Child2 text should be preserved"
+                );
             } else {
                 panic!("Expected text in child2");
             }
 
             // Verify child3 text is preserved
             if let BoxContent::Text(lines) = &children[1].content {
-                assert_eq!(lines[0], "Child 3 text", "Child3 text should be preserved");
+                assert_eq!(
+                    lines[0].plain_text(),
+                    "Child 3 text",
+                    "Child3 text should be preserved"
+                );
             } else {
                 panic!("Expected text in child3");
             }
@@ -686,9 +698,9 @@ mod tests {
             width: 200.0,
             height: 60.0, // 3 lines * 20pt
             content: BoxContent::Text(vec![
-                "Line 1".to_string(),
-                "Line 2".to_string(),
-                "Line 3".to_string(),
+                TextLine::from("Line 1"),
+                TextLine::from("Line 2"),
+                TextLine::from("Line 3"),
             ]),
             style: StyleDeclaration {
                 text: TextStyle {
@@ -737,7 +749,7 @@ mod tests {
             y: 700.0,
             width: 180.0,
             height: 12.0,
-            content: BoxContent::Text(vec!["First bullet point".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("First bullet point")]),
             style: StyleDeclaration {
                 text: TextStyle {
                     font_size: Some(10.0),
@@ -754,7 +766,7 @@ mod tests {
             y: 712.0,
             width: 180.0,
             height: 12.0,
-            content: BoxContent::Text(vec!["Second bullet point".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("Second bullet point")]),
             style: StyleDeclaration {
                 text: TextStyle {
                     font_size: Some(10.0),
@@ -771,7 +783,7 @@ mod tests {
             y: 724.0,
             width: 180.0,
             height: 12.0,
-            content: BoxContent::Text(vec!["Third bullet point".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("Third bullet point")]),
             style: StyleDeclaration {
                 text: TextStyle {
                     font_size: Some(10.0),
@@ -831,7 +843,7 @@ mod tests {
             y: 700.0,
             width: 200.0,
             height: 20.0,
-            content: BoxContent::Text(vec!["EDUCATION".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("EDUCATION")]),
             style: StyleDeclaration::default(),
             element_type: Some(layout_types::ElementType::Heading2),
         };
@@ -842,9 +854,9 @@ mod tests {
             width: 200.0,
             height: 60.0,
             content: BoxContent::Text(vec![
-                "Mathematician, Mathematics Teacher".to_string(),
-                "Perm State University".to_string(),
-                "Perm, Russia".to_string(),
+                TextLine::from("Mathematician, Mathematics Teacher"),
+                TextLine::from("Perm State University"),
+                TextLine::from("Perm, Russia"),
             ]),
             style: StyleDeclaration {
                 text: TextStyle {
@@ -910,7 +922,9 @@ mod tests {
             y: 700.0,
             width: 180.0,
             height: 13.0,
-            content: BoxContent::Text(vec!["Built backend services and RESTful APIs".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from(
+                "Built backend services and RESTful APIs",
+            )]),
             style: StyleDeclaration {
                 text: TextStyle {
                     line_height: Some(13.0),
@@ -950,7 +964,8 @@ mod tests {
                 if let BoxContent::Text(lines) = &child.content {
                     assert_eq!(lines.len(), 1, "Text should have 1 line");
                     assert_eq!(
-                        lines[0], "Built backend services and RESTful APIs",
+                        lines[0].plain_text(),
+                        "Built backend services and RESTful APIs",
                         "Text content should be preserved"
                     );
                 } else {

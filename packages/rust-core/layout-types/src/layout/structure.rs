@@ -134,11 +134,65 @@ pub struct LayoutBox {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum BoxContent {
     /// Text content to be rendered (wrapped into lines for proper display)
-    Text(Vec<String>),
+    /// Each line is a vector of styled text segments allowing inline formatting.
+    Text(Vec<TextLine>),
     /// Container with nested child boxes
     Container(Vec<LayoutBox>),
     /// Empty box with no content
     Empty,
+}
+
+/// A single line of text with optional styled segments
+///
+/// Supports both simple text (single segment) and rich text (multiple segments
+/// with different styles like bold/italic spans within a line).
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct TextLine {
+    /// Styled segments that make up this line
+    pub segments: Vec<super::TextSegment>,
+}
+
+impl TextLine {
+    /// Create a simple text line with a single unstyled segment
+    pub fn simple(text: String) -> Self {
+        Self {
+            segments: vec![super::TextSegment {
+                text,
+                font_weight: None,
+                font_style: None,
+                font_size: None,
+                text_decoration: None,
+                color: None,
+            }],
+        }
+    }
+
+    /// Create a text line from styled segments
+    pub fn from_segments(segments: Vec<super::TextSegment>) -> Self {
+        Self { segments }
+    }
+
+    /// Get the plain text content of this line (without styling)
+    pub fn plain_text(&self) -> String {
+        self.segments.iter().map(|s| s.text.as_str()).collect()
+    }
+
+    /// Check if this line is empty
+    pub fn is_empty(&self) -> bool {
+        self.segments.is_empty() || self.segments.iter().all(|s| s.text.is_empty())
+    }
+}
+
+impl From<String> for TextLine {
+    fn from(text: String) -> Self {
+        Self::simple(text)
+    }
+}
+
+impl From<&str> for TextLine {
+    fn from(text: &str) -> Self {
+        Self::simple(text.to_string())
+    }
 }
 
 // ============================================================================

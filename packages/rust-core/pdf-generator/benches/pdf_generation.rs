@@ -12,7 +12,7 @@ fn create_single_page_layout() -> LayoutStructure {
             y: 720.0,
             width: 468.0,
             height: 30.0,
-            content: BoxContent::Text(vec!["John Doe".to_string()]),
+            content: BoxContent::Text(vec!["John Doe".to_string().into()]),
             style: StyleDeclaration::default(),
             element_type: Some(ElementType::Heading1),
         },
@@ -22,7 +22,10 @@ fn create_single_page_layout() -> LayoutStructure {
             y: 690.0,
             width: 468.0,
             height: 15.0,
-            content: BoxContent::Text(vec!["john.doe@example.com | +1-555-123-4567".to_string()]),
+            content: BoxContent::Text(vec!["john.doe@example.com | +1-555-123-4567"
+                .to_string()
+                .into()]),
+
             style: StyleDeclaration::default(),
             element_type: Some(ElementType::Paragraph),
         },
@@ -32,7 +35,7 @@ fn create_single_page_layout() -> LayoutStructure {
             y: 650.0,
             width: 468.0,
             height: 20.0,
-            content: BoxContent::Text(vec!["Experience".to_string()]),
+            content: BoxContent::Text(vec!["Experience".to_string().into()]),
             style: StyleDeclaration::default(),
             element_type: Some(ElementType::Heading2),
         },
@@ -45,7 +48,8 @@ fn create_single_page_layout() -> LayoutStructure {
             content: BoxContent::Text(vec![
                 "Senior Software Engineer\nTech Company Inc.\nJanuary 2020 - Present\n\
                 Leading development of cloud-based applications using Rust and TypeScript."
-                    .to_string(),
+                    .to_string()
+                    .into(),
             ]),
             style: StyleDeclaration::default(),
             element_type: Some(ElementType::Div),
@@ -56,7 +60,7 @@ fn create_single_page_layout() -> LayoutStructure {
             y: 520.0,
             width: 468.0,
             height: 20.0,
-            content: BoxContent::Text(vec!["Education".to_string()]),
+            content: BoxContent::Text(vec!["Education".to_string().into()]),
             style: StyleDeclaration::default(),
             element_type: Some(ElementType::Heading2),
         },
@@ -68,7 +72,8 @@ fn create_single_page_layout() -> LayoutStructure {
             height: 40.0,
             content: BoxContent::Text(vec![
                 "Bachelor of Science in Computer Science\nUniversity of Technology\n2016 - 2020"
-                    .to_string(),
+                    .to_string()
+                    .into(),
             ]),
             style: StyleDeclaration::default(),
             element_type: Some(ElementType::Paragraph),
@@ -97,7 +102,7 @@ fn create_multi_page_layout() -> LayoutStructure {
                 y: 720.0 - y_offset,
                 width: 468.0,
                 height: 30.0,
-                content: BoxContent::Text(vec![format!("Page {} Content", page_num)]),
+                content: BoxContent::Text(vec![format!("Page {} Content", page_num).into()]),
                 style: StyleDeclaration::default(),
                 element_type: Some(ElementType::Heading1),
             },
@@ -111,7 +116,8 @@ fn create_multi_page_layout() -> LayoutStructure {
                     Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \
                     Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris. \
                     Duis aute irure dolor in reprehenderit in voluptate velit esse cillum."
-                        .repeat(5),
+                        .repeat(5)
+                        .into(),
                 ]),
                 style: StyleDeclaration::default(),
                 element_type: Some(ElementType::Paragraph),
@@ -174,7 +180,7 @@ fn bench_varying_page_counts(c: &mut Criterion) {
                         y: 720.0,
                         width: 468.0,
                         height: 30.0,
-                        content: BoxContent::Text(vec![format!("Page {}", page_num)]),
+                        content: BoxContent::Text(vec![format!("Page {}", page_num).into()]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Heading1),
                     },
@@ -183,7 +189,7 @@ fn bench_varying_page_counts(c: &mut Criterion) {
                         y: 690.0,
                         width: 468.0,
                         height: 200.0,
-                        content: BoxContent::Text(vec!["Sample content.".repeat(20)]),
+                        content: BoxContent::Text(vec!["Sample content.".repeat(20).into()]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Paragraph),
                     },

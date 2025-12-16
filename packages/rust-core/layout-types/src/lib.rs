@@ -37,7 +37,7 @@ pub use css::{
 };
 pub use error::ValidationError;
 pub use layout::{
-    BoxContent, ElementType, LayoutBox, LayoutElement, LayoutInfo, LayoutStructure, Page,
+    BoxContent, ElementType, LayoutBox, LayoutElement, LayoutInfo, LayoutStructure, Page, TextLine,
     TextSegment,
 };
 pub use primitives::{BorderLineStyle, BorderStyle, Color, Rect, Spacing};

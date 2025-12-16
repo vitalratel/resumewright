@@ -23,7 +23,7 @@ use layout_types::{BoxContent, LayoutBox, LayoutStructure, Page};
 ///
 /// ```
 /// use pdf_generator::layout_analyzer::extract_all_text_from_layout;
-/// use layout_types::{LayoutStructure, Page, LayoutBox, BoxContent, StyleDeclaration};
+/// use layout_types::{LayoutStructure, Page, LayoutBox, BoxContent, StyleDeclaration, TextLine};
 ///
 /// let layout = LayoutStructure {
 ///     pages: vec![Page {
@@ -33,7 +33,7 @@ use layout_types::{BoxContent, LayoutBox, LayoutStructure, Page};
 ///             y: 0.0,
 ///             width: 100.0,
 ///             height: 20.0,
-///             content: BoxContent::Text(vec!["Hello".to_string()]),
+///             content: BoxContent::Text(vec![TextLine::from("Hello")]),
 ///             style: StyleDeclaration::default(),
 ///             element_type: None,
 ///         }],
@@ -53,7 +53,7 @@ pub fn extract_all_text_from_layout(layout: &LayoutStructure) -> String {
             match &layout_box.content {
                 BoxContent::Text(lines) => {
                     for line in lines {
-                        text.push_str(line);
+                        text.push_str(&line.plain_text());
                         text.push(' ');
                     }
                 }
@@ -120,6 +120,7 @@ pub fn estimate_content_size(page: &Page) -> usize {
 mod tests {
     use super::*;
     use crate::css_parser::StyleDeclaration;
+    use layout_types::TextLine;
 
     #[test]
     fn test_extract_all_text_from_layout_empty() {
@@ -143,7 +144,7 @@ mod tests {
                     y: 0.0,
                     width: 100.0,
                     height: 20.0,
-                    content: BoxContent::Text(vec!["Hello World".to_string()]),
+                    content: BoxContent::Text(vec![TextLine::from("Hello World")]),
                     style: StyleDeclaration::default(),
                     element_type: None,
                 }],
@@ -172,7 +173,7 @@ mod tests {
                             y: 10.0,
                             width: 100.0,
                             height: 20.0,
-                            content: BoxContent::Text(vec!["First".to_string()]),
+                            content: BoxContent::Text(vec![TextLine::from("First")]),
                             style: StyleDeclaration::default(),
                             element_type: None,
                         },
@@ -181,7 +182,7 @@ mod tests {
                             y: 40.0,
                             width: 100.0,
                             height: 20.0,
-                            content: BoxContent::Text(vec!["Second".to_string()]),
+                            content: BoxContent::Text(vec![TextLine::from("Second")]),
                             style: StyleDeclaration::default(),
                             element_type: None,
                         },

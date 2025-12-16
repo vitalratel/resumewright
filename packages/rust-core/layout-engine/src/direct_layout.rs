@@ -267,7 +267,7 @@ pub fn calculate_layout_direct(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use layout_types::{BorderLineStyle, BorderStyle, Color, Display};
+    use layout_types::{BorderLineStyle, BorderStyle, Color, Display, TextLine};
 
     fn create_container_with_border(text: &str, y: f64) -> layout_types::LayoutBox {
         let mut style = layout_types::StyleDeclaration::default();
@@ -292,7 +292,7 @@ mod tests {
                 y,
                 width: 500.0,
                 height: 30.0,
-                content: BoxContent::Text(vec![text.to_string()]),
+                content: BoxContent::Text(vec![TextLine::from(text)]),
                 style: layout_types::StyleDeclaration::default(),
                 element_type: Some(layout_types::ElementType::Heading2),
             }]),
@@ -351,7 +351,7 @@ mod tests {
             y: 130.0,
             width: 500.0,
             height: 50.0,
-            content: BoxContent::Text(vec!["Job content here".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("Job content here")]),
             style: layout_types::StyleDeclaration::default(),
             element_type: None,
         };
@@ -378,8 +378,10 @@ mod tests {
             flattened
                 .iter()
                 .map(|b| match &b.content {
-                    BoxContent::Text(t) =>
-                        format!("Text({})", t.first().unwrap_or(&"".to_string())),
+                    BoxContent::Text(t) => format!(
+                        "Text({})",
+                        t.first().map_or("".to_string(), |l| l.plain_text())
+                    ),
                     BoxContent::Container(_) => "Container".to_string(),
                     BoxContent::Empty => "Empty".to_string(),
                 })
@@ -427,7 +429,7 @@ mod tests {
                 y: 100.0,
                 width: 200.0,
                 height: 30.0,
-                content: BoxContent::Text(vec!["Title".to_string()]),
+                content: BoxContent::Text(vec![TextLine::from("Title")]),
                 style: layout_types::StyleDeclaration::default(),
                 element_type: None,
             }]),

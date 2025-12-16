@@ -318,6 +318,7 @@ fn test_pdf_includes_color_space() {
 #[test]
 fn test_comprehensive_multi_page_layout() {
     use cv_domain::CVMetadata;
+    use layout_types::TextLine;
     use pdf_generator::css_parser::{Color, StyleDeclaration};
     use pdf_generator::{validate_ats_compatibility, BoxContent, LayoutBox, LayoutStructure, Page};
 
@@ -331,7 +332,7 @@ fn test_comprehensive_multi_page_layout() {
             y: 72.0,
             width: 468.0,
             height: 24.0,
-            content: BoxContent::Text(vec!["John Doe - Software Engineer".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("John Doe - Software Engineer")]),
             style: {
                 let mut s = StyleDeclaration::default();
                 s.text.font_size = Some(18.0);
@@ -352,7 +353,7 @@ fn test_comprehensive_multi_page_layout() {
             y: 110.0,
             width: 468.0,
             height: 16.0,
-            content: BoxContent::Text(vec!["Experience Section".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("Experience Section")]),
             style: {
                 let mut s = StyleDeclaration::default();
                 s.text.font_size = Some(12.0);
@@ -373,7 +374,7 @@ fn test_comprehensive_multi_page_layout() {
         y: 72.0,
         width: 468.0,
         height: 14.0,
-        content: BoxContent::Text(vec!["Continued from page 1".to_string()]),
+        content: BoxContent::Text(vec![TextLine::from("Continued from page 1")]),
         style: {
             let mut s = StyleDeclaration::default();
             s.text.font_size = Some(11.0);
@@ -393,7 +394,7 @@ fn test_comprehensive_multi_page_layout() {
         y: 72.0,
         width: 468.0,
         height: 14.0,
-        content: BoxContent::Text(vec!["Final page content".to_string()]),
+        content: BoxContent::Text(vec![TextLine::from("Final page content")]),
         style: {
             let mut s = StyleDeclaration::default();
             s.text.font_size = Some(10.0);
@@ -506,6 +507,7 @@ fn test_inline_bold_text_renders_to_pdf() {
     // This was a bug: "Native: Russian" would only render "Russian", missing "Native:"
     use layout_types::{
         BoxContent, ElementType, FontWeight, LayoutBox, LayoutStructure, Page, StyleDeclaration,
+        TextLine,
     };
 
     let config = PDFConfig::default();
@@ -517,7 +519,7 @@ fn test_inline_bold_text_renders_to_pdf() {
         y: 100.0,
         width: 400.0,
         height: 20.0,
-        content: BoxContent::Text(vec!["Native: Russian, Ukrainian".to_string()]),
+        content: BoxContent::Text(vec![TextLine::from("Native: Russian, Ukrainian")]),
         style: {
             let mut s = StyleDeclaration::default();
             s.text.font_weight = Some(FontWeight::Normal);

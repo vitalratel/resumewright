@@ -16,8 +16,8 @@ use crate::pdf_operators::{
 use crate::text_utils::{apply_text_transform, calculate_text_alignment_offset};
 
 // Import shared layout types from layout-types crate
-use layout_types::TextDecoration;
 pub use layout_types::{BoxContent, ElementType, LayoutBox, LayoutStructure, Page};
+use layout_types::{FontStyle, FontWeight, TextDecoration, TextLine};
 use layout_types::{DEFAULT_FONT_SIZE, DEFAULT_LINE_HEIGHT_RATIO};
 
 // Re-export extracted functions for backward compatibility
@@ -312,22 +312,22 @@ fn calculate_text_style_params(style: &StyleDeclaration) -> TextStyleParams {
     }
 }
 
-/// Render a text box to PDF content
+/// Render a text box to PDF content with styled segments
 fn render_text_box<C: ContentBuilder>(
     layout_box: &LayoutBox,
-    lines: &[String],
+    lines: &[TextLine],
     page_height: f64,
     content: &mut C,
 ) -> Result<(), PDFError> {
     let style = &layout_box.style;
 
-    // Extract all style parameters
+    // Extract base style parameters from box style
     let TextStyleParams {
-        font_size,
+        font_size: base_font_size,
         line_height,
         leading,
-        color,
-        font_name,
+        color: base_color,
+        font_name: _base_font_name,
     } = calculate_text_style_params(style);
 
     // Render bullet for list items (before text)
@@ -335,63 +335,111 @@ fn render_text_box<C: ContentBuilder>(
         render_list_bullet(layout_box, page_height, content)?;
     }
 
-    // Set text color once for all lines
-    content.set_fill_color_rgb(
-        color.r as f64 / 255.0,
-        color.g as f64 / 255.0,
-        color.b as f64 / 255.0,
-    );
-
     // Render each line separately
-    for (line_index, line_text) in lines.iter().enumerate() {
+    for (line_index, line) in lines.iter().enumerate() {
         // Convert coordinates (PDF origin is bottom-left, we use top-left)
-        // Position text baseline at: y + leading + font_size + (line_index * line_height)
-        let pdf_y =
-            page_height - layout_box.y - leading - font_size - (line_index as f64 * line_height);
+        let pdf_y = page_height
+            - layout_box.y
+            - leading
+            - base_font_size
+            - (line_index as f64 * line_height);
 
-        // Apply text transform
-        let transformed_text = apply_text_transform(line_text, style);
+        // Calculate total line width for alignment
+        let total_line_width: f64 = line
+            .segments
+            .iter()
+            .map(|seg| {
+                let seg_font_size = seg.font_size.unwrap_or(base_font_size);
+                let seg_font_name = get_segment_font_name(
+                    style,
+                    seg.font_weight.or(style.text.font_weight),
+                    seg.font_style.or(style.text.font_style),
+                );
+                estimate_text_width(&seg.text, seg_font_size, seg_font_name)
+            })
+            .sum();
 
-        // Calculate text width for alignment (use transformed text)
-        let text_width = estimate_text_width(&transformed_text, font_size, font_name);
-        let x_offset = calculate_text_alignment_offset(style, layout_box.width, text_width);
+        let x_offset = calculate_text_alignment_offset(style, layout_box.width, total_line_width);
+        let mut current_x = layout_box.x + x_offset;
 
-        // Render text using ContentBuilder methods
-        // Standard 14 fonts (Helvetica, etc.) use literal strings: (text) Tj
-        // CIDFont Type 2 fonts (Karla) use hex encoding: <hex> Tj
-        content.begin_text();
-        content.set_font(font_name, font_size);
-        content.set_text_position(layout_box.x + x_offset, pdf_y);
+        // Render each segment with its own style
+        for segment in &line.segments {
+            let seg_font_size = segment.font_size.unwrap_or(base_font_size);
+            let seg_font_weight = segment.font_weight.or(style.text.font_weight);
+            let seg_font_style = segment.font_style.or(style.text.font_style);
+            let seg_font_name = get_segment_font_name(style, seg_font_weight, seg_font_style);
 
-        // For PDF/A-1b, all fonts are embedded as CIDFont Type 2 with Identity-H encoding
-        // Use hex encoding for all text
-        content.show_text_hex(&encode_as_cidfont_hex(&transformed_text));
+            // Use segment color or fall back to base color
+            let seg_color = segment.color.as_ref().map_or_else(
+                || base_color,
+                |c| Color {
+                    r: c.r,
+                    g: c.g,
+                    b: c.b,
+                    a: c.a,
+                },
+            );
 
-        content.end_text();
+            // Apply text transform
+            let transformed_text = apply_text_transform(&segment.text, style);
+            let seg_width = estimate_text_width(&transformed_text, seg_font_size, seg_font_name);
 
-        // Render text decoration (underline, strikethrough)
-        if let Some(decoration) = style.text.text_decoration {
-            if decoration != TextDecoration::None {
-                render_text_decoration(
-                    decoration,
-                    layout_box.x + x_offset,
-                    pdf_y,
-                    text_width,
-                    font_size,
-                    &color,
-                    content,
-                )?;
+            // Set color for this segment
+            content.set_fill_color_rgb(
+                seg_color.r as f64 / 255.0,
+                seg_color.g as f64 / 255.0,
+                seg_color.b as f64 / 255.0,
+            );
+
+            // Render text segment
+            content.begin_text();
+            content.set_font(seg_font_name, seg_font_size);
+            content.set_text_position(current_x, pdf_y);
+            content.show_text_hex(&encode_as_cidfont_hex(&transformed_text));
+            content.end_text();
+
+            // Render text decoration for this segment
+            let seg_decoration = segment.text_decoration.or(style.text.text_decoration);
+            if let Some(decoration) = seg_decoration {
+                if decoration != TextDecoration::None {
+                    render_text_decoration(
+                        decoration,
+                        current_x,
+                        pdf_y,
+                        seg_width,
+                        seg_font_size,
+                        &seg_color,
+                        content,
+                    )?;
+                }
             }
+
+            // Advance x position for next segment
+            current_x += seg_width;
         }
     }
 
     Ok(())
 }
 
+/// Get font name for a segment based on its weight and style
+fn get_segment_font_name(
+    base_style: &StyleDeclaration,
+    font_weight: Option<FontWeight>,
+    font_style: Option<FontStyle>,
+) -> &'static str {
+    // Create a temporary style with the segment's font properties
+    let mut temp_style = base_style.clone();
+    temp_style.text.font_weight = font_weight;
+    temp_style.text.font_style = font_style;
+    get_font_name(&temp_style)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::css_parser::{FontStyle, FontWeight};
+    use layout_types::TextLine;
 
     #[test]
     fn test_get_font_name_normal() {
@@ -477,7 +525,7 @@ mod tests {
             y: 10.0,
             width: 100.0,
             height: 12.0,
-            content: BoxContent::Text(vec!["Hello World".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("Hello World")]),
             style: StyleDeclaration::default(),
             element_type: None,
         };
@@ -502,6 +550,7 @@ mod tests {
 #[cfg(test)]
 mod integration_tests {
     use super::*;
+    use layout_types::TextLine;
 
     /// Integration test: Verify text box generates correct PDF operators
     #[test]
@@ -519,13 +568,14 @@ mod integration_tests {
             y: 100.0,
             width: 200.0,
             height: 20.0,
-            content: BoxContent::Text(vec!["Test Text".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("Test Text")]),
             style,
             element_type: None,
         };
 
         let mut content = String::new();
-        render_text_box(&layout_box, &["Test Text".to_string()], 792.0, &mut content).unwrap();
+        let lines = vec![TextLine::from("Test Text")];
+        render_text_box(&layout_box, &lines, 792.0, &mut content).unwrap();
 
         // Verify essential PDF operators are present
         assert!(content.contains("rg"), "Should set fill color");
@@ -625,19 +675,14 @@ mod integration_tests {
             y: 100.0,
             width: 200.0,
             height: 20.0,
-            content: BoxContent::Text(vec!["Underlined".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("Underlined")]),
             style,
             element_type: None,
         };
 
         let mut content = String::new();
-        render_text_box(
-            &layout_box,
-            &["Underlined".to_string()],
-            792.0,
-            &mut content,
-        )
-        .unwrap();
+        let lines = vec![TextLine::from("Underlined")];
+        render_text_box(&layout_box, &lines, 792.0, &mut content).unwrap();
 
         // Verify underline operators
         assert!(content.contains("RG"), "Should set stroke color");
@@ -687,9 +732,9 @@ mod integration_tests {
     #[test]
     fn test_render_multi_line_text() {
         let lines = vec![
-            "Line 1".to_string(),
-            "Line 2".to_string(),
-            "Line 3".to_string(),
+            TextLine::from("Line 1"),
+            TextLine::from("Line 2"),
+            TextLine::from("Line 3"),
         ];
         let mut style = StyleDeclaration::default();
         style.text.font_size = Some(12.0);
@@ -729,7 +774,7 @@ mod integration_tests {
             y: 10.0,
             width: 100.0,
             height: 20.0,
-            content: BoxContent::Text(vec!["Content".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("Content")]),
             style: StyleDeclaration::default(),
             element_type: None,
         };
