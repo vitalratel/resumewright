@@ -4,6 +4,8 @@
 //! By introducing LayoutElement as an intermediate representation, we decouple the layout logic
 //! from the specific AST structure, making the code unit testable.
 
+use layout_types::{FontStyle, FontWeight, TextSegment};
+use style_resolver::resolve_tailwind_classes;
 use tsx_parser::{JSXChild, JSXElement, JSXExpression};
 
 /// Intermediate representation of an element for layout computation
@@ -99,6 +101,7 @@ impl LayoutElement {
 // Production methods (available in all builds)
 impl LayoutElement {
     /// Extract all text content recursively
+    #[allow(dead_code)]
     pub fn extract_all_text(&self) -> String {
         if self.is_text() {
             return self.text_content().unwrap_or("").to_string();
@@ -118,8 +121,90 @@ impl LayoutElement {
     ///
     /// Unlike direct_text(), this recursively extracts ALL text content,
     /// which is what we need for layout computation.
+    #[allow(dead_code)]
     pub fn extract_text_for_layout(&self) -> String {
         self.extract_all_text().trim().to_string()
+    }
+
+    /// Extract styled text segments from this element's children
+    ///
+    /// This is the key method for inline rich text support. It walks through
+    /// children and extracts text with their associated styles, preserving
+    /// inline formatting like italic and bold from spans.
+    ///
+    /// # Arguments
+    /// * `parent_style` - The resolved style of the parent element (for inheritance)
+    ///
+    /// # Returns
+    /// Vector of TextSegments with text and style information
+    pub fn extract_styled_segments(
+        &self,
+        parent_font_weight: Option<FontWeight>,
+        parent_font_style: Option<FontStyle>,
+    ) -> Vec<TextSegment> {
+        let mut segments = Vec::new();
+        self.collect_styled_segments_recursive(
+            &mut segments,
+            parent_font_weight,
+            parent_font_style,
+        );
+        segments
+    }
+
+    fn collect_styled_segments_recursive(
+        &self,
+        segments: &mut Vec<TextSegment>,
+        current_font_weight: Option<FontWeight>,
+        current_font_style: Option<FontStyle>,
+    ) {
+        if self.is_text() {
+            // Direct text node - use current styles
+            if let Some(content) = self.text_content() {
+                if !content.is_empty() {
+                    segments.push(TextSegment {
+                        text: content.to_string(),
+                        font_weight: current_font_weight,
+                        font_style: current_font_style,
+                        font_size: None, // Inherit from parent
+                        text_decoration: None,
+                        color: None,
+                    });
+                }
+            }
+        } else {
+            // Element node - check if it has styles to apply
+            let (child_weight, child_style) =
+                self.resolve_inline_styles(current_font_weight, current_font_style);
+
+            // Process children with potentially updated styles
+            for child in &self.children {
+                child.collect_styled_segments_recursive(segments, child_weight, child_style);
+            }
+        }
+    }
+
+    /// Resolve styles from this element's className
+    fn resolve_inline_styles(
+        &self,
+        parent_weight: Option<FontWeight>,
+        parent_style: Option<FontStyle>,
+    ) -> (Option<FontWeight>, Option<FontStyle>) {
+        // Check if this is a semantic element that implies styling
+        let (semantic_weight, semantic_style) = match self.tag.as_str() {
+            "strong" | "b" => (Some(FontWeight::Bold), parent_style),
+            "em" | "i" => (parent_weight, Some(FontStyle::Italic)),
+            _ => (parent_weight, parent_style),
+        };
+
+        // Apply className styles (override semantic)
+        if let Some(class_name) = &self.class_name {
+            let resolved = resolve_tailwind_classes(class_name);
+            let weight = resolved.text.font_weight.or(semantic_weight);
+            let style = resolved.text.font_style.or(semantic_style);
+            (weight, style)
+        } else {
+            (semantic_weight, semantic_style)
+        }
     }
 }
 

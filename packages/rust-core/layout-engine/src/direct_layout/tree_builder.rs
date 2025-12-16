@@ -9,7 +9,7 @@ use super::layout_element::jsx_to_layout_element;
 use super::style_conversion::convert_style_to_taffy;
 use super::text_measurement::TextMeasureContext;
 use crate::error::LayoutError;
-use layout_types::{Display, StyleDeclaration, TextMeasurer};
+use layout_types::{Display, StyleDeclaration, TextMeasurer, TextSegment};
 use std::collections::HashMap;
 use style_resolver::resolve_element_styles;
 use taffy::prelude::*;
@@ -66,6 +66,7 @@ pub fn jsx_to_taffy(
     // Check if element has styled inline children that need their own layout boxes
     // e.g., <p><span className="font-semibold">Label:</span> value</p>
     // The span needs to be a separate box to preserve its bold styling
+    // NOTE: italic is NOT included - italic text uses inline segments for proper text flow
     let has_styled_inline_children = layout_elem.children.iter().any(|child| {
         !child.is_text()
             && matches!(child.tag.as_str(), "span" | "strong" | "em" | "b" | "i")
@@ -89,27 +90,44 @@ pub fn jsx_to_taffy(
     // Treat elements with styled inline children like flex containers for layout purposes
     let treat_as_flex = is_flex_container || has_styled_inline_children;
 
-    // 5. Extract text content from LayoutElement (now unit testable!)
+    // 5. Extract text content as styled segments from LayoutElement
     // For flex containers or elements with styled inline children,
     // we don't extract text from child elements - they're layout children
-    let text_content = if treat_as_flex {
+    let text_segments = if treat_as_flex {
         // Only extract direct text nodes, not from child elements
-        // Don't trim - preserve leading whitespace for proper spacing after inline elements
-        layout_elem
+        let direct_text: String = layout_elem
             .children
             .iter()
             .filter_map(|c| c.text_content())
             .collect::<Vec<_>>()
-            .join(" ")
+            .join(" ");
+        if direct_text.trim().is_empty() {
+            Vec::new()
+        } else {
+            vec![TextSegment {
+                text: direct_text,
+                font_weight: resolved_style.text.font_weight,
+                font_style: resolved_style.text.font_style,
+                font_size: None,
+                text_decoration: None,
+                color: None,
+            }]
+        }
     } else {
-        layout_elem.extract_text_for_layout()
+        // Extract styled segments from inline elements (handles italic spans, etc.)
+        let segments = layout_elem.extract_styled_segments(
+            resolved_style.text.font_weight,
+            resolved_style.text.font_style,
+        );
+        // Filter out empty segments
+        segments
+            .into_iter()
+            .filter(|s| !s.text.trim().is_empty())
+            .collect()
     };
-    // Trim only if empty or whitespace-only
-    let text_content = if text_content.trim().is_empty() {
-        String::new()
-    } else {
-        text_content
-    };
+
+    // Check if we have any text content
+    let has_text_content = !text_segments.is_empty();
 
     // Check if element has block-level children (not inline like span, em, etc.)
     // Inline elements are already extracted in text_content above
@@ -130,24 +148,24 @@ pub fn jsx_to_taffy(
         || resolved_style.box_model.border_bottom.is_some()
         || resolved_style.box_model.border_left.is_some();
 
-    let (node_id, content_type) =
-        if !text_content.is_empty() && !has_border && !has_block_element_children {
-            // Text leaf node (only if no borders and no block children)
-            create_text_node(tree, &text_content, &resolved_style, element_name)?
-        } else {
-            // Container with children (or text node that needs borders)
-            create_container_node(
-                tree,
-                node_info_map,
-                jsx,
-                &text_content,
-                &resolved_style,
-                element_name,
-                measurer,
-                has_styled_inline_children,
-                element_type,
-            )?
-        };
+    let (node_id, content_type) = if has_text_content && !has_border && !has_block_element_children
+    {
+        // Text leaf node (only if no borders and no block children)
+        create_text_node(tree, &text_segments, &resolved_style, element_name)?
+    } else {
+        // Container with children (or text node that needs borders)
+        create_container_node(
+            tree,
+            node_info_map,
+            jsx,
+            &text_segments,
+            &resolved_style,
+            element_name,
+            measurer,
+            has_styled_inline_children,
+            element_type,
+        )?
+    };
 
     // Store info in map for later LayoutBox extraction
     let info = JsxElementInfo {
@@ -160,21 +178,23 @@ pub fn jsx_to_taffy(
     Ok(node_id)
 }
 
-/// Create a text leaf node in the Taffy tree
+/// Create a text leaf node in the Taffy tree with styled segments
 fn create_text_node(
     tree: &mut TaffyTree<TextMeasureContext>,
-    text_content: &str,
+    segments: &[TextSegment],
     resolved_style: &StyleDeclaration,
     element_name: &str,
 ) -> Result<(NodeId, ContentType), LayoutError> {
-    let context = TextMeasureContext::new(text_content.to_string(), resolved_style);
+    // Concatenate all segment text for measurement purposes
+    let full_text: String = segments.iter().map(|s| s.text.as_str()).collect();
+    let context = TextMeasureContext::new(full_text, resolved_style);
     let taffy_style = convert_style_to_taffy(resolved_style, Some(element_name));
 
     let node_id = tree
         .new_leaf_with_context(taffy_style, context)
         .map_err(|e| LayoutError::CalculationFailed(format!("Taffy leaf error: {}", e)))?;
 
-    Ok((node_id, ContentType::Text(text_content.to_string())))
+    Ok((node_id, ContentType::Text(segments.to_vec())))
 }
 
 /// Create a container node with children in the Taffy tree
@@ -183,7 +203,7 @@ fn create_container_node(
     tree: &mut TaffyTree<TextMeasureContext>,
     node_info_map: &mut HashMap<NodeId, JsxElementInfo>,
     jsx: &JSXElement,
-    text_content: &str,
+    text_segments: &[TextSegment],
     resolved_style: &StyleDeclaration,
     element_name: &str,
     measurer: &dyn TextMeasurer,
@@ -206,6 +226,7 @@ fn create_container_node(
             let child_class = tsx_parser::extract_class_name(child_jsx);
 
             // Check if this is a styled inline element that needs its own box
+            // NOTE: italic is NOT included - italic text uses inline segments for proper text flow
             let is_styled_inline =
                 matches!(child_tag.as_str(), "span" | "strong" | "em" | "b" | "i")
                     && child_class.as_ref().is_some_and(|c| {
@@ -239,7 +260,8 @@ fn create_container_node(
     // This handles:
     // 1. <h2 className="border-b">HEADING</h2> - bordered container with text
     // 2. <p><span className="font-semibold">Label:</span> value</p> - " value" sibling text
-    let should_add_text_child = !text_content.is_empty()
+    let has_text_content = !text_segments.is_empty();
+    let should_add_text_child = has_text_content
         && (
             child_ids.is_empty() ||  // No children yet, text is the only content
         is_flex_container ||     // Flex containers need separate text boxes
@@ -255,7 +277,7 @@ fn create_container_node(
         text_child_style.box_model.border_left = None;
 
         let (text_node_id, text_content_type) =
-            create_text_node(tree, text_content, &text_child_style, element_name)?;
+            create_text_node(tree, text_segments, &text_child_style, element_name)?;
         child_ids.push(text_node_id);
 
         // Store the text node info

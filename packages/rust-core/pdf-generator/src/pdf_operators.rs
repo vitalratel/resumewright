@@ -297,7 +297,7 @@ pub fn render_list_bullet<C: ContentBuilder>(
 mod tests {
     use super::*;
     use crate::css_parser::StyleDeclaration;
-    use layout_types::BoxContent;
+    use layout_types::{BoxContent, TextLine};
 
     #[test]
     fn test_render_background() {
@@ -614,7 +614,7 @@ mod tests {
             y: 100.0,
             width: 200.0,
             height: 20.0,
-            content: BoxContent::Text(vec!["List item".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("List item")]),
             style,
             element_type: None,
         };
@@ -652,7 +652,7 @@ mod tests {
             y: 50.0,
             width: 150.0,
             height: 30.0,
-            content: BoxContent::Text(vec!["Item".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("Item")]),
             style,
             element_type: None,
         };

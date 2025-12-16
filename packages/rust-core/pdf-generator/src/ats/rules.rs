@@ -127,7 +127,12 @@ fn collect_text_from_box(layout_box: &LayoutBox, all_text: &mut String) {
     match &layout_box.content {
         BoxContent::Text(lines) => {
             // Join wrapped lines with spaces
-            all_text.push_str(&lines.join(" "));
+            let text: String = lines
+                .iter()
+                .map(|l| l.plain_text())
+                .collect::<Vec<_>>()
+                .join(" ");
+            all_text.push_str(&text);
             all_text.push(' ');
         }
         BoxContent::Container(children) => {
@@ -373,7 +378,7 @@ mod tests {
     use super::*;
     use crate::css_parser::StyleDeclaration;
     use cv_domain::{FontComplexity, LayoutType};
-    use layout_types::{BoxContent, LayoutBox, Page};
+    use layout_types::{BoxContent, LayoutBox, Page, TextLine};
 
     #[test]
     fn test_collect_text_from_layout() {
@@ -388,7 +393,7 @@ mod tests {
                         y: 0.0,
                         width: 100.0,
                         height: 20.0,
-                        content: BoxContent::Text(vec!["Jane Smith".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("Jane Smith")]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Heading1),
                     },
@@ -397,7 +402,7 @@ mod tests {
                         y: 20.0,
                         width: 100.0,
                         height: 15.0,
-                        content: BoxContent::Text(vec!["jane@example.com".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("jane@example.com")]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Paragraph),
                     },
@@ -406,7 +411,7 @@ mod tests {
                         y: 35.0,
                         width: 100.0,
                         height: 15.0,
-                        content: BoxContent::Text(vec!["+1-555-123-4567".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("+1-555-123-4567")]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Paragraph),
                     },
@@ -415,7 +420,7 @@ mod tests {
                         y: 50.0,
                         width: 100.0,
                         height: 20.0,
-                        content: BoxContent::Text(vec!["Experience".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("Experience")]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Heading2),
                     },
@@ -424,9 +429,9 @@ mod tests {
                         y: 70.0,
                         width: 100.0,
                         height: 15.0,
-                        content: BoxContent::Text(vec![
-                            "Senior Software Engineer - May 2020 - Present".to_string(),
-                        ]),
+                        content: BoxContent::Text(vec![TextLine::from(
+                            "Senior Software Engineer - May 2020 - Present",
+                        )]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Paragraph),
                     },
@@ -435,9 +440,9 @@ mod tests {
                         y: 85.0,
                         width: 100.0,
                         height: 15.0,
-                        content: BoxContent::Text(vec![
-                            "Software Engineer - January 2018 - April 2020".to_string(),
-                        ]),
+                        content: BoxContent::Text(vec![TextLine::from(
+                            "Software Engineer - January 2018 - April 2020",
+                        )]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Paragraph),
                     },
@@ -446,9 +451,9 @@ mod tests {
                         y: 100.0,
                         width: 100.0,
                         height: 15.0,
-                        content: BoxContent::Text(vec![
-                            "Junior Developer - March 2016 - December 2017".to_string(),
-                        ]),
+                        content: BoxContent::Text(vec![TextLine::from(
+                            "Junior Developer - March 2016 - December 2017",
+                        )]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Paragraph),
                     },
@@ -457,9 +462,9 @@ mod tests {
                         y: 115.0,
                         width: 100.0,
                         height: 15.0,
-                        content: BoxContent::Text(vec![
-                            "Intern - June 2015 - February 2016".to_string()
-                        ]),
+                        content: BoxContent::Text(vec![TextLine::from(
+                            "Intern - June 2015 - February 2016",
+                        )]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Paragraph),
                     },
@@ -468,9 +473,9 @@ mod tests {
                         y: 130.0,
                         width: 100.0,
                         height: 15.0,
-                        content: BoxContent::Text(vec![
-                            "Teaching Assistant - September 2014 - May 2015".to_string(),
-                        ]),
+                        content: BoxContent::Text(vec![TextLine::from(
+                            "Teaching Assistant - September 2014 - May 2015",
+                        )]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Paragraph),
                     },
@@ -479,7 +484,7 @@ mod tests {
                         y: 150.0,
                         width: 100.0,
                         height: 20.0,
-                        content: BoxContent::Text(vec!["Education".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("Education")]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Heading2),
                     },
@@ -488,9 +493,9 @@ mod tests {
                         y: 170.0,
                         width: 100.0,
                         height: 15.0,
-                        content: BoxContent::Text(vec![
-                            "Bachelor of Science in Computer Science".to_string()
-                        ]),
+                        content: BoxContent::Text(vec![TextLine::from(
+                            "Bachelor of Science in Computer Science",
+                        )]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Paragraph),
                     },
@@ -499,7 +504,7 @@ mod tests {
                         y: 200.0,
                         width: 100.0,
                         height: 20.0,
-                        content: BoxContent::Text(vec!["Skills".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("Skills")]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Heading2),
                     },
@@ -508,9 +513,9 @@ mod tests {
                         y: 220.0,
                         width: 100.0,
                         height: 15.0,
-                        content: BoxContent::Text(vec![
-                            "Python, JavaScript, Rust, React".to_string()
-                        ]),
+                        content: BoxContent::Text(vec![TextLine::from(
+                            "Python, JavaScript, Rust, React",
+                        )]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Paragraph),
                     },
@@ -556,7 +561,7 @@ mod tests {
                         y: 0.0,
                         width: 100.0,
                         height: 20.0,
-                        content: BoxContent::Text(vec!["John Doe".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("John Doe")]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Heading1),
                     },
@@ -565,7 +570,7 @@ mod tests {
                         y: 20.0,
                         width: 100.0,
                         height: 15.0,
-                        content: BoxContent::Text(vec!["john@example.com".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("john@example.com")]),
                         style: StyleDeclaration::default(),
                         element_type: Some(ElementType::Paragraph),
                     },

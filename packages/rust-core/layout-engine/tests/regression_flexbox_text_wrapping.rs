@@ -285,14 +285,15 @@ function Resume() {
     fn find_date_lines(layout_box: &layout_types::LayoutBox) -> Option<Vec<String>> {
         match &layout_box.content {
             layout_types::BoxContent::Text(lines) => {
-                let text = lines.join(" ");
+                let plain_lines: Vec<String> = lines.iter().map(|l| l.plain_text()).collect();
+                let text = plain_lines.join(" ");
                 if text.contains("November 2002") {
                     println!(
                         "Found date box: x={:.2}, y={:.2}, w={:.2}, h={:.2}",
                         layout_box.x, layout_box.y, layout_box.width, layout_box.height
                     );
-                    println!("  Lines: {:?}", lines);
-                    return Some(lines.clone());
+                    println!("  Lines: {:?}", plain_lines);
+                    return Some(plain_lines);
                 }
                 None
             }
@@ -383,14 +384,15 @@ function Resume() {
     fn find_date_lines(layout_box: &layout_types::LayoutBox) -> Option<Vec<String>> {
         match &layout_box.content {
             layout_types::BoxContent::Text(lines) => {
-                let text = lines.join(" ");
+                let plain_lines: Vec<String> = lines.iter().map(|l| l.plain_text()).collect();
+                let text = plain_lines.join(" ");
                 if text.contains("November 2002") && text.contains("November 2022") {
                     println!(
                         "Found date box: x={:.2}, y={:.2}, w={:.2}, h={:.2}",
                         layout_box.x, layout_box.y, layout_box.width, layout_box.height
                     );
-                    println!("  Lines: {:?}", lines);
-                    return Some(lines.clone());
+                    println!("  Lines: {:?}", plain_lines);
+                    return Some(plain_lines);
                 }
                 None
             }

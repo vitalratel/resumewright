@@ -41,7 +41,7 @@ pub fn adjust_box_y_coordinates(layout_box: &mut LayoutBox, new_y: f64) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use layout_types::{ElementType, StyleDeclaration};
+    use layout_types::{ElementType, StyleDeclaration, TextLine};
 
     fn create_test_box(y: f64, height: f64) -> LayoutBox {
         LayoutBox {
@@ -49,7 +49,7 @@ mod tests {
             y,
             width: 100.0,
             height,
-            content: BoxContent::Text(vec!["Test".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("Test")]),
             element_type: None,
             style: StyleDeclaration::default(),
         }

@@ -132,7 +132,48 @@ pub fn paginate_boxes(
                 false
             };
 
-        if should_move_heading_to_next_page {
+        // H3 subtitle-aware orphan prevention
+        // H3 headings often have a subtitle (italic text) immediately following.
+        // If the H3 + subtitle fit but leave no room for actual content, move H3 to next page.
+        let is_h3 = current_box
+            .element_type
+            .is_some_and(|et| matches!(et, layout_types::ElementType::Heading3));
+
+        let should_move_h3_with_subtitle =
+            if is_h3 && !should_move_heading_to_next_page && box_bottom_on_page <= page_bottom {
+                // H3 fits - check if it has a subtitle that also fits but leaves no room for content
+                let next_idx = find_next_content_box(&boxes, i + 1);
+                if let Some(idx) = next_idx {
+                    let next_box = &boxes[idx];
+                    let next_bottom = (next_box.y - page_y_offset) + next_box.height;
+                    let next_is_text = matches!(&next_box.content, BoxContent::Text(_));
+                    let next_is_small = next_box.height < 25.0; // Subtitle is typically small
+
+                    // If next box is a small text box (subtitle pattern) that fits
+                    if next_is_text && next_is_small && next_bottom <= page_bottom {
+                        // Check what comes after the subtitle
+                        let content_after_idx = find_next_content_box(&boxes, idx + 1);
+                        if let Some(after_idx) = content_after_idx {
+                            let content_box = &boxes[after_idx];
+                            let content_bottom =
+                                (content_box.y - page_y_offset) + content_box.height;
+
+                            // If the content after subtitle doesn't fit, move H3 to prevent orphan
+                            content_bottom > page_bottom
+                        } else {
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                } else {
+                    false
+                }
+            } else {
+                false
+            };
+
+        if should_move_heading_to_next_page || should_move_h3_with_subtitle {
             // Move heading to next page to keep it with its content
             finalize_and_start_new_page(&mut pages, &mut current_page_boxes);
             page_y_offset = current_box.y - content_top;
@@ -378,7 +419,7 @@ fn finalize_current_page(current_page_boxes: Vec<LayoutBox>, page_number: usize)
 #[cfg(test)]
 mod tests {
     use super::*;
-    use layout_types::{BoxContent, ElementType, StyleDeclaration};
+    use layout_types::{BoxContent, ElementType, StyleDeclaration, TextLine};
 
     /// Create a test box with proper y position (simulating Taffy-computed positions)
     fn create_test_box_at(y: f64, height: f64, element_type: Option<ElementType>) -> LayoutBox {
@@ -387,7 +428,7 @@ mod tests {
             y,
             width: 100.0,
             height,
-            content: BoxContent::Text(vec!["Test".to_string()]),
+            content: BoxContent::Text(vec![TextLine::from("Test")]),
             element_type,
             style: StyleDeclaration::default(),
         }

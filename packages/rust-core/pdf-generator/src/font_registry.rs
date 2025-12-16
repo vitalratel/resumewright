@@ -359,6 +359,7 @@ mod tests {
     use super::*;
     use crate::css_parser::StyleDeclaration;
     use crate::layout_renderer::{BoxContent, LayoutBox, Page};
+    use layout_types::TextLine;
 
     #[test]
     fn test_new_creates_empty_registry() {
@@ -402,7 +403,7 @@ mod tests {
                     y: 0.0,
                     width: 100.0,
                     height: 20.0,
-                    content: BoxContent::Text(vec!["Test".to_string()]),
+                    content: BoxContent::Text(vec![TextLine::from("Test")]),
                     style,
                     element_type: None,
                 }],
@@ -428,7 +429,7 @@ mod tests {
                         y: 0.0,
                         width: 100.0,
                         height: 20.0,
-                        content: BoxContent::Text(vec!["Test 1".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("Test 1")]),
                         style: style.clone(),
                         element_type: None,
                     },
@@ -437,7 +438,7 @@ mod tests {
                         y: 25.0,
                         width: 100.0,
                         height: 20.0,
-                        content: BoxContent::Text(vec!["Test 2".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("Test 2")]),
                         style: style.clone(),
                         element_type: None,
                     },
@@ -467,7 +468,7 @@ mod tests {
                         y: 0.0,
                         width: 100.0,
                         height: 20.0,
-                        content: BoxContent::Text(vec!["Test 1".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("Test 1")]),
                         style: style_helvetica,
                         element_type: None,
                     },
@@ -476,7 +477,7 @@ mod tests {
                         y: 25.0,
                         width: 100.0,
                         height: 20.0,
-                        content: BoxContent::Text(vec!["Test 2".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("Test 2")]),
                         style: style_courier,
                         element_type: None,
                     },
@@ -504,7 +505,7 @@ mod tests {
                     y: 0.0,
                     width: 100.0,
                     height: 20.0,
-                    content: BoxContent::Text(vec!["Test".to_string()]),
+                    content: BoxContent::Text(vec![TextLine::from("Test")]),
                     style,
                     element_type: None,
                 }],
@@ -789,7 +790,7 @@ mod tests {
                         y: 10.0,
                         width: 180.0,
                         height: 20.0,
-                        content: BoxContent::Text(vec!["Nested text".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("Nested text")]),
                         style,
                         element_type: None,
                     }]),
@@ -824,7 +825,7 @@ mod tests {
                         y: 0.0,
                         width: 100.0,
                         height: 20.0,
-                        content: BoxContent::Text(vec!["Bold text".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("Bold text")]),
                         style: style_bold,
                         element_type: None,
                     },
@@ -833,7 +834,7 @@ mod tests {
                         y: 25.0,
                         width: 100.0,
                         height: 20.0,
-                        content: BoxContent::Text(vec!["Italic text".to_string()]),
+                        content: BoxContent::Text(vec![TextLine::from("Italic text")]),
                         style: style_italic,
                         element_type: None,
                     },

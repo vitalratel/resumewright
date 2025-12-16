@@ -2,11 +2,12 @@
 
 mod structure;
 
-pub use structure::{BoxContent, ElementType, LayoutBox, LayoutStructure, Page};
+pub use structure::{BoxContent, ElementType, LayoutBox, LayoutStructure, Page, TextLine};
 
 use serde::{Deserialize, Serialize};
 
-use crate::css::{FontStyle, FontWeight, StyleDeclaration};
+use crate::css::{FontStyle, FontWeight, StyleDeclaration, TextDecoration};
+use crate::primitives::Color;
 
 // ============================================================================
 // Layout Element Types
@@ -27,6 +28,10 @@ pub struct TextSegment {
     pub font_style: Option<FontStyle>,
     /// Font size in points (None means inherit from parent)
     pub font_size: Option<f64>,
+    /// Text decoration (None means inherit from parent)
+    pub text_decoration: Option<TextDecoration>,
+    /// Text color (None means inherit from parent)
+    pub color: Option<Color>,
 }
 
 /// Layout information attached to an element after layout computation

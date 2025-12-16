@@ -324,6 +324,15 @@ mod tests {
 }
 #[cfg(test)]
 mod test {
+    use super::resolve_tailwind_classes;
+
+    #[test]
+    fn test_italic_class() {
+        use layout_types::FontStyle;
+        let style = resolve_tailwind_classes("italic");
+        assert_eq!(style.text.font_style, Some(FontStyle::Italic));
+    }
+
     #[test]
     fn test_tailwind_inline_output() {
         use tailwind_css::TailwindBuilder;

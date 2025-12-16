@@ -455,7 +455,7 @@ fn test_inline_bold_span_text_extraction() {
             match &layout_box.content {
                 BoxContent::Text(lines) => {
                     for line in lines {
-                        texts.push(line.clone());
+                        texts.push(line.plain_text());
                     }
                 }
                 BoxContent::Container(children) => {
@@ -541,7 +541,7 @@ fn test_periods_are_preserved() {
             match &layout_box.content {
                 BoxContent::Text(lines) => {
                     for line in lines {
-                        texts.push(line.clone());
+                        texts.push(line.plain_text());
                     }
                 }
                 BoxContent::Container(children) => {
@@ -727,7 +727,7 @@ fn test_flex_container_span_children_rendered() {
             match &layout_box.content {
                 BoxContent::Text(lines) => {
                     for line in lines {
-                        texts.push(line.clone());
+                        texts.push(line.plain_text());
                     }
                 }
                 BoxContent::Container(children) => {
@@ -813,7 +813,7 @@ fn test_space_y_gap_applied_to_flex_column() {
             match &layout_box.content {
                 BoxContent::Text(lines) => {
                     if !lines.is_empty() {
-                        positions.push((lines[0].clone(), layout_box.y));
+                        positions.push((lines[0].plain_text(), layout_box.y));
                     }
                 }
                 BoxContent::Container(children) => {

@@ -112,7 +112,14 @@ fn extract_headings_from_box(
 /// Extract text content from a layout box (including nested text)
 fn extract_text_from_box(layout_box: &LayoutBox) -> Option<String> {
     match &layout_box.content {
-        BoxContent::Text(lines) => Some(lines.join(" ")),
+        BoxContent::Text(lines) => {
+            let text: String = lines
+                .iter()
+                .map(|l| l.plain_text())
+                .collect::<Vec<_>>()
+                .join(" ");
+            Some(text)
+        }
         BoxContent::Container(children) => {
             let mut result = String::new();
             for child in children {
@@ -210,7 +217,7 @@ pub fn create_bookmark_tree(bookmarks: &[BookmarkInfo]) -> Vec<(Bookmark, Option
 #[cfg(test)]
 mod tests {
     use super::*;
-    use layout_types::{Page, StyleDeclaration};
+    use layout_types::{Page, StyleDeclaration, TextLine};
 
     fn create_heading_box(element: &str, text: &str) -> LayoutBox {
         LayoutBox {
@@ -218,7 +225,7 @@ mod tests {
             y: 0.0,
             width: 100.0,
             height: 20.0,
-            content: BoxContent::Text(vec![text.to_string()]),
+            content: BoxContent::Text(vec![TextLine::from(text)]),
             style: StyleDeclaration::new(),
             element_type: Some(match element {
                 "h1" => ElementType::Heading1,
