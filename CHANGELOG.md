@@ -12,10 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Inline rich text support with styled segments (bold/italic within text lines)
 
-### Changed
-- Switched embedded font from Karla to Inter for broader language support (147 languages)
-- WASM bundle size increased from 2.6MB to 3.9MB due to Inter font
-
 ### Fixed
 - Prevent H2 section headers from being orphaned without H3 content
 - Refined orphan prevention and standardized font sizing

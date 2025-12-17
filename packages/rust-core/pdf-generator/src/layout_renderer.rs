@@ -190,7 +190,7 @@ fn render_page_number<C: ContentBuilder>(
     content.set_font(font_name, font_size);
     content.set_text_position(x, y);
 
-    // For PDF/A-1b, Helvetica/Times/Courier are embedded as Inter CIDFont Type 2
+    // For PDF/A-1b, Helvetica/Times/Courier are embedded as Karla CIDFont Type 2
     // Use hex encoding for all text (CIDFont Type 2 with Identity-H encoding)
     content.show_text_hex(&encode_as_cidfont_hex(&page_text));
 

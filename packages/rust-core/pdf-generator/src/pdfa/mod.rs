@@ -165,7 +165,7 @@ pub fn apply_pdfa1b_compliance(
 /// the Standard 14 fonts (Helvetica, Times, Courier, etc.) that are normally
 /// present in PDF readers.
 ///
-/// This function embeds Inter fonts
+/// This function embeds Karla fonts
 /// for all pages in the document.
 ///
 /// # Arguments

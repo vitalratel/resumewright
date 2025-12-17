@@ -15,7 +15,7 @@
 ///
 /// # Note
 /// This function is for legacy PDF literal strings only (e.g., Standard 14 fonts).
-/// For CIDFont Type 2 fonts (Inter), use [`encode_as_cidfont_hex`] instead.
+/// For CIDFont Type 2 fonts (Karla), use [`encode_as_cidfont_hex`] instead.
 ///
 /// # Examples
 /// ```
@@ -46,7 +46,7 @@ pub fn escape_pdf_string(s: &str) -> String {
 /// Encode text as hex-encoded CIDs for CIDFont Type 2 with Identity-H encoding
 ///
 /// Converts Unicode characters to 2-byte hex CID values as required by CIDFont Type 2
-/// fonts (e.g., Inter with Identity-H encoding).
+/// fonts (e.g., Karla with Identity-H encoding).
 ///
 /// # Arguments
 /// * `text` - The text to encode

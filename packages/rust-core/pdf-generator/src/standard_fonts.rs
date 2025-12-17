@@ -3,42 +3,41 @@
 //! PDF/A-1b requires ALL fonts to be embedded, including the Standard 14 fonts
 //! (Helvetica, Times, Courier, etc.) that are normally present in PDF readers.
 //!
-//! This module provides Inter fonts embedded directly in the binary for PDF/A
-//! compliance. Inter is a typeface designed for computer screens with a tall
-//! x-height for excellent readability.
+//! This module provides Karla fonts embedded directly in the binary for PDF/A
+//! compliance. Karla is a grotesque sans-serif with excellent readability.
 //!
 //! # Font Mapping
 //!
-//! - Helvetica → Inter Regular
-//! - Helvetica-Bold → Inter Bold
-//! - Helvetica-Oblique → Inter Italic
-//! - Helvetica-BoldOblique → Inter Bold Italic
+//! - Helvetica → Karla Regular
+//! - Helvetica-Bold → Karla Bold
+//! - Helvetica-Oblique → Karla Italic
+//! - Helvetica-BoldOblique → Karla Bold Italic
 //!
 //! # License
 //!
-//! Inter: SIL Open Font License 1.1
-//! Source: https://github.com/rsms/inter
+//! Karla: SIL Open Font License 1.1
+//! Source: https://github.com/googlefonts/karla
 
 use crate::error::PDFError;
 use font_toolkit::embedding::embed_truetype_font;
 use layout_types::{FontStyle, FontWeight};
 
-/// Inter Regular
-const INTER_REGULAR: &[u8] = include_bytes!("../fonts/Inter-Regular.ttf");
+/// Karla Regular
+const KARLA_REGULAR: &[u8] = include_bytes!("../fonts/Karla-Regular.ttf");
 
-/// Inter Bold
-const INTER_BOLD: &[u8] = include_bytes!("../fonts/Inter-Bold.ttf");
+/// Karla Bold
+const KARLA_BOLD: &[u8] = include_bytes!("../fonts/Karla-Bold.ttf");
 
-/// Inter Italic
-const INTER_ITALIC: &[u8] = include_bytes!("../fonts/Inter-Italic.ttf");
+/// Karla Italic
+const KARLA_ITALIC: &[u8] = include_bytes!("../fonts/Karla-Italic.ttf");
 
-/// Inter Bold Italic
-const INTER_BOLD_ITALIC: &[u8] = include_bytes!("../fonts/Inter-BoldItalic.ttf");
+/// Karla Bold Italic
+const KARLA_BOLD_ITALIC: &[u8] = include_bytes!("../fonts/Karla-BoldItalic.ttf");
 
 /// Embeds a Standard 14 font replacement for PDF/A compliance.
 ///
 /// For PDF/A-1b, even the Standard 14 fonts must be embedded. This function
-/// embeds Inter fonts based on the requested weight and style.
+/// embeds Karla fonts based on the requested weight and style.
 ///
 /// # Arguments
 ///
@@ -65,18 +64,18 @@ pub fn embed_standard_font(
     weight: FontWeight,
     style: FontStyle,
 ) -> Result<(u32, u16), PDFError> {
-    // Select appropriate Inter variant
+    // Select appropriate Karla variant
     // Bolder maps to Bold, Lighter maps to Normal (no actual Lighter variant)
-    // Oblique maps to Italic (Inter doesn't have separate oblique)
+    // Oblique maps to Italic (Karla doesn't have separate oblique)
     let (font_bytes, family_name) = match (weight, style) {
         (FontWeight::Bold | FontWeight::Bolder, FontStyle::Italic | FontStyle::Oblique) => {
-            (INTER_BOLD_ITALIC, "Inter-BoldItalic")
+            (KARLA_BOLD_ITALIC, "Karla-BoldItalic")
         }
-        (FontWeight::Bold | FontWeight::Bolder, FontStyle::Normal) => (INTER_BOLD, "Inter-Bold"),
+        (FontWeight::Bold | FontWeight::Bolder, FontStyle::Normal) => (KARLA_BOLD, "Karla-Bold"),
         (FontWeight::Normal | FontWeight::Lighter, FontStyle::Italic | FontStyle::Oblique) => {
-            (INTER_ITALIC, "Inter-Italic")
+            (KARLA_ITALIC, "Karla-Italic")
         }
-        (FontWeight::Normal | FontWeight::Lighter, FontStyle::Normal) => (INTER_REGULAR, "Inter"),
+        (FontWeight::Normal | FontWeight::Lighter, FontStyle::Normal) => (KARLA_REGULAR, "Karla"),
     };
 
     // Convert weight/style for embedding
