@@ -7,25 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2024-12-16
+
 ### Added
-- Core PDF conversion pipeline (Parse → Extract → Render → Layout → Generate)
-- Rust/WASM engine with 14 focused crates
-- TypeScript browser extension with React UI
-- File import workflow for TSX CV code
-- Local-only processing (zero data transmission)
-- Support for A4 and Letter paper sizes
-- Google Fonts integration
-- Comprehensive test suite (Rust, TypeScript, Playwright)
+- Inline rich text support with styled segments (bold/italic within text lines)
 
-### Quality Metrics
-- Rust test coverage target: 80%
-- TypeScript test coverage target: 80%
-- WCAG 2.1 Level A compliance: 100%
+### Fixed
+- Prevent H2 section headers from being orphaned without H3 content
+- Refined orphan prevention and standardized font sizing
+- Improved dark mode color contrast for WCAG AA compliance
+- Dark overlay for header buttons to meet WCAG AA contrast
 
+### Refactored
+- Replaced hardcoded Tailwind colors with semantic design tokens
 
-## [0.1.0] - Beta Release (Upcoming)
+## [0.1.0] - 2024-12-04
 
-Initial beta release for testing and feedback.
+Initial beta release.
 
 ---
 
