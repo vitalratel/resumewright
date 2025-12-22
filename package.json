@@ -54,12 +54,12 @@
     "@babel/preset-react": "^7.28.5",
     "@babel/preset-typescript": "^7.28.5",
     "@playwright/test": "^1.57.0",
-    "@swc/core": "^1.15.5",
-    "@webext-core/fake-browser": "^1.3.2",
+    "@swc/core": "^1.15.7",
+    "@webext-core/fake-browser": "^1.3.4",
     "husky": "^9.1.7",
-    "knip": "^5.73.4",
+    "knip": "^5.76.3",
     "lint-staged": "^16.2.7",
     "web-ext": "^9.2.0",
-    "wxt": "^0.20.11"
+    "wxt": "^0.20.13"
   }
 }
