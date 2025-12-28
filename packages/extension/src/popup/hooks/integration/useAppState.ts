@@ -1,15 +1,8 @@
-/**
- * useAppState Hook
- * Consolidates all store subscriptions into a single object
- *
- * PERFORMANCE: Direct subscriptions for stable references
- * - Firefox fix: Removed useShallow to prevent CPU loop in ze() function
- * - Uses individual subscriptions (17 total) but all return stable references
- * - Functions are stable (same reference), primitives trigger re-renders only on change
- * - Prevents Zustand's shallow equality checker from running in tight loop
- */
+// ABOUTME: Consolidates all store subscriptions into a single AppState object.
+// ABOUTME: Uses useShallow for efficient shallow equality comparison.
 
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import type { ConversionError, ConversionProgress } from '@/shared/types/models';
 import { usePopupStore } from '../../store';
 import { useProgressStore } from '../../store/progressStore';
@@ -46,97 +39,64 @@ export interface AppState {
 }
 
 /**
- * Consolidated app state hook
- * Firefox fix: Removed useShallow to prevent CPU loop in ze (shallow equality checker)
- * Direct subscriptions prevent constant object recreation
+ * Consolidated app state hook using Zustand's useShallow for efficient updates
  */
 export function useAppState(): AppState {
-  // State data - individual subscriptions (stable primitive values)
-  const uiState = usePopupStore((state) => state.uiState);
-  const validationError = usePopupStore((state) => state.validationError);
-  const isValidating = usePopupStore((state) => state.isValidating);
-  const lastError = usePopupStore((state) => state.lastError);
-  const lastFilename = usePopupStore((state) => state.lastFilename);
-  const importedFile = usePopupStore((state) => state.importedFile);
+  const popupState = usePopupStore(
+    useShallow((state) => ({
+      // State
+      uiState: state.uiState,
+      validationError: state.validationError,
+      isValidating: state.isValidating,
+      lastError: state.lastError,
+      lastFilename: state.lastFilename,
+      importedFile: state.importedFile,
+      // Actions
+      setValidating: state.setValidating,
+      setValidationError: state.setValidationError,
+      clearValidationError: state.clearValidationError,
+      startConversion: state.startConversion,
+      setSuccess: state.setSuccess,
+      setError: state.setError,
+      setUIState: state.setUIState,
+      setImportedFile: state.setImportedFile,
+      clearImportedFileData: state.clearImportedFile,
+      resetStore: state.reset,
+    })),
+  );
 
-  // Actions - direct function references (stable)
-  const setValidating = usePopupStore((state) => state.setValidating);
-  const setValidationError = usePopupStore((state) => state.setValidationError);
-  const clearValidationError = usePopupStore((state) => state.clearValidationError);
-  const startConversion = usePopupStore((state) => state.startConversion);
-  const setSuccess = usePopupStore((state) => state.setSuccess);
-  const setError = usePopupStore((state) => state.setError);
-  const setUIState = usePopupStore((state) => state.setUIState);
-  const setImportedFile = usePopupStore((state) => state.setImportedFile);
-  const clearImportedFileData = usePopupStore((state) => state.clearImportedFile);
-  const resetStore = usePopupStore((state) => state.reset);
-
-  // Progress store - direct function reference (stable)
   const getProgress = useProgressStore((state) => state.getProgress);
 
   // Coordinated action: Clear imported file and reset UI state
   const clearImportedFile = useCallback(() => {
-    clearImportedFileData();
-    setUIState('waiting_for_import');
-    clearValidationError();
-  }, [clearImportedFileData, setUIState, clearValidationError]);
+    popupState.clearImportedFileData();
+    popupState.setUIState('waiting_for_import');
+    popupState.clearValidationError();
+  }, [popupState]);
 
-  // Combined reset action
   const reset = useCallback(() => {
-    resetStore();
-  }, [resetStore]);
+    popupState.resetStore();
+  }, [popupState]);
 
-  // Firefox fix: useMemo with stable primitive/function dependencies
-  // No more object spread from useShallow - all subscriptions are direct
-  return useMemo(
-    () => ({
-      // UI State
-      uiState,
-      validationError,
-      isValidating,
-      lastError,
-      lastFilename,
-
-      // UI Actions
-      setValidating,
-      setValidationError,
-      clearValidationError,
-      startConversion,
-      setSuccess,
-      setError,
-      setUIState,
-
-      // Persisted Data
-      importedFile,
-
-      // Persisted Actions
-      setImportedFile,
-      clearImportedFile,
-
-      // Progress
-      getProgress,
-
-      // Combined Actions
-      reset,
-    }),
-    [
-      uiState,
-      validationError,
-      isValidating,
-      lastError,
-      lastFilename,
-      setValidating,
-      setValidationError,
-      clearValidationError,
-      startConversion,
-      setSuccess,
-      setError,
-      setUIState,
-      importedFile,
-      setImportedFile,
-      clearImportedFile,
-      getProgress,
-      reset,
-    ],
-  );
+  return {
+    // State
+    uiState: popupState.uiState,
+    validationError: popupState.validationError,
+    isValidating: popupState.isValidating,
+    lastError: popupState.lastError,
+    lastFilename: popupState.lastFilename,
+    importedFile: popupState.importedFile,
+    // Actions
+    setValidating: popupState.setValidating,
+    setValidationError: popupState.setValidationError,
+    clearValidationError: popupState.clearValidationError,
+    startConversion: popupState.startConversion,
+    setSuccess: popupState.setSuccess,
+    setError: popupState.setError,
+    setUIState: popupState.setUIState,
+    setImportedFile: popupState.setImportedFile,
+    clearImportedFile,
+    getProgress,
+    reset,
+  };
 }

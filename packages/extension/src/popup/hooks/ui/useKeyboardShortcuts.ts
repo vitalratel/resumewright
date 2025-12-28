@@ -152,8 +152,7 @@ function matchesShortcut(event: KeyboardEvent, shortcut: ShortcutConfig): boolea
  * ```
  */
 export function useKeyboardShortcuts(shortcuts: ShortcutConfig[]): void {
-  // Firefox fix: Use ref to prevent event listener churn when shortcuts array changes
-  // This prevents memory leak from constantly adding/removing listeners
+  // Use ref to keep stable reference - prevents event listener churn when array changes
   const shortcutsRef = useRef(shortcuts);
 
   // Update ref on every render to see latest values
