@@ -16,6 +16,7 @@ import { Success } from '../../conversion/Success';
 import { ErrorBoundary } from '../../ErrorBoundary';
 import { FileImport } from '../../FileImport';
 import { MainContent } from '../MainContent';
+import { createMockAppContext, createMockConversionContext } from './testHelpers';
 
 // Mock child components
 vi.mock('../../FileImport', () => ({
@@ -94,48 +95,9 @@ vi.mock('../../../context/ConversionContext', () => ({
   useConversion: () => mockUseConversion(),
 }));
 
-// Mock Context providers
-const mockAppContext: AppContextValue = {
-  appState: {
-    // UI State
-    uiState: 'waiting_for_import' as const,
-    validationError: null,
-    isValidating: false,
-    lastError: null,
-    lastFilename: null,
-    // Persisted Data
-    importedFile: null,
-    // Progress
-    getProgress: vi.fn(() => undefined),
-    // UI Actions
-    setValidating: vi.fn(),
-    setValidationError: vi.fn(),
-    clearValidationError: vi.fn(),
-    startConversion: vi.fn(),
-    setSuccess: vi.fn(),
-    setError: vi.fn(),
-    setUIState: vi.fn(),
-    // Persisted Actions
-    setImportedFile: vi.fn(),
-    clearImportedFile: vi.fn(),
-    // Combined Actions
-    reset: vi.fn(),
-  },
-  currentJobId: '',
-  successRef: { current: null },
-  errorRef: { current: null },
-  onOpenSettings: vi.fn(),
-};
-
-const mockConversionContext: ConversionHandlers = {
-  handleFileValidated: vi.fn(),
-  handleExportClick: vi.fn(),
-  handleCancelConversion: vi.fn(),
-  handleRetry: vi.fn(),
-  handleDismissError: vi.fn(),
-  handleImportDifferent: vi.fn(),
-  handleReportIssue: vi.fn(),
-};
+// Create mock instances using shared factories
+const mockAppContext = createMockAppContext();
+const mockConversionContext = createMockConversionContext();
 
 // Test constants
 const UI_STATES = {

@@ -15,9 +15,9 @@ import {
   formatErrorDetailsForClipboard,
   formatErrorTimestamp,
 } from '@/shared/errors/tracking/telemetry';
-import type { ConversionError } from '@/shared/types/models';
 
 import { ErrorDetails } from '../ErrorDetails';
+import { createError } from './testHelpers';
 
 // Mock the errorTracking utilities
 vi.mock('@/shared/errors/tracking/telemetry', () => ({
@@ -29,22 +29,6 @@ vi.mock('@/shared/errors/tracking/telemetry', () => ({
   }),
   copyToClipboard: vi.fn(),
 }));
-
-/**
- * Creates a test ConversionError with sensible defaults
- */
-function createError(overrides: Partial<ConversionError> = {}): ConversionError {
-  return {
-    stage: 'generating-pdf',
-    code: ErrorCode.WASM_EXECUTION_ERROR,
-    message: 'Test error message',
-    timestamp: Date.now(),
-    recoverable: true,
-    suggestions: [],
-    technicalDetails: 'Test technical details',
-    ...overrides,
-  };
-}
 
 describe('ErrorDetails', () => {
   beforeEach(() => {

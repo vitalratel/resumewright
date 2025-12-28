@@ -10,9 +10,9 @@
 
 import { render, screen } from '@testing-library/react';
 import { describe, expect, vi } from 'vitest';
-import type { ConversionError } from '@/shared/types/models';
 import { ErrorCode } from '../../../../shared/errors/codes';
 import { ErrorSuggestions } from '../ErrorSuggestions';
+import { createError } from './testHelpers';
 
 // Mock help resources utilities
 vi.mock('@/shared/errors/helpResources', () => ({
@@ -41,17 +41,6 @@ vi.mock('@/shared/errors/helpResources', () => ({
 }));
 
 describe('ErrorSuggestions', () => {
-  // Base error fixture
-  const createError = (overrides: Partial<ConversionError> = {}): ConversionError => ({
-    stage: 'generating-pdf',
-    code: ErrorCode.WASM_EXECUTION_ERROR,
-    message: 'Test error',
-    timestamp: Date.now(),
-    recoverable: true,
-    suggestions: [],
-    ...overrides,
-  });
-
   describe('Main Suggestions', () => {
     it('renders suggestions list when provided', () => {
       const error = createError();
