@@ -105,15 +105,14 @@ export default defineConfig({
       },
       react({
         jsxRuntime: 'automatic',
-        // Use SWC for faster transpilation (4x speedup vs esbuild)
-        babel: undefined,
+        babel: {
+          plugins: [['babel-plugin-react-compiler', { target: '19' }]],
+        },
       }),
       wasm(),
     ] as Plugin[],
     esbuild: {
-      // Use SWC for TypeScript transpilation instead of esbuild
-      // Note: @vitejs/plugin-react already uses SWC by default
-      // This is just to ensure consistency
+      // TypeScript transpilation settings
       tsconfigRaw: {
         compilerOptions: {
           useDefineForClassFields: true,

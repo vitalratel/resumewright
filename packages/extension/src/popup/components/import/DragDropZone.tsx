@@ -3,7 +3,7 @@
 
 import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import type { ChangeEvent } from 'react';
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { useDragAndDrop } from '../../hooks/ui/useDragAndDrop';
 import { TSX } from '../common/TechTerm';
 
@@ -14,7 +14,7 @@ interface DragDropZoneProps {
   isValidating: boolean;
 }
 
-export const DragDropZone = React.memo(({ onFileDrop, isValidating }: DragDropZoneProps) => {
+export function DragDropZone({ onFileDrop, isValidating }: DragDropZoneProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isDragging, dragHandlers } = useDragAndDrop(onFileDrop);
 
@@ -120,4 +120,4 @@ export const DragDropZone = React.memo(({ onFileDrop, isValidating }: DragDropZo
       />
     </>
   );
-});
+}

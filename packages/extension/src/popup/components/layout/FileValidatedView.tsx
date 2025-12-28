@@ -2,7 +2,7 @@
 // ABOUTME: Uses Context API for state management.
 
 import { DocumentArrowDownIcon } from '@heroicons/react/24/outline';
-import React, { useMemo, useTransition } from 'react';
+import { useMemo, useTransition } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useConversion } from '../../context/ConversionContext';
 import { useQuickSettings } from '../../context/QuickSettingsContext';
@@ -12,7 +12,7 @@ import { Button } from '../common/Button';
 import { FileImport } from '../FileImport';
 
 // Props removed - now using Context API
-export const FileValidatedView = React.memo(() => {
+export function FileValidatedView() {
   const { appState, onOpenSettings } = useAppContext();
   const { handleFileValidated, handleExportClick } = useConversion();
   const { settings } = useQuickSettings();
@@ -80,4 +80,4 @@ export const FileValidatedView = React.memo(() => {
       )}
     </div>
   );
-});
+}

@@ -1,7 +1,7 @@
 // ABOUTME: Displays PDF conversion progress with visual feedback and accessibility.
 // ABOUTME: Shows stage, percentage, ETA, and provides cancel functionality.
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useConversion } from '../../context/ConversionContext';
 import { useEvent } from '../../hooks/core/useEvent';
@@ -13,7 +13,7 @@ import { ErrorBoundary } from '../ErrorBoundary';
 import { ProgressBar } from './ProgressBar';
 import { ProgressStatus } from './ProgressStatus';
 
-export const ConvertingState = React.memo(() => {
+export function ConvertingState() {
   const { currentJobId, appState } = useAppContext();
   const { handleCancelConversion } = useConversion();
   const jobId = currentJobId;
@@ -154,4 +154,4 @@ export const ConvertingState = React.memo(() => {
       )}
     </div>
   );
-});
+}

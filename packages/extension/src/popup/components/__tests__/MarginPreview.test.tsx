@@ -295,13 +295,7 @@ describe('MarginPreview', () => {
     });
   });
 
-  describe('React.memo Behavior', () => {
-    it('should be wrapped with React.memo', () => {
-      // React.memo components have specific properties
-      expect(typeof MarginPreview).toBe('object');
-      expect('$$typeof' in MarginPreview).toBe(true);
-    });
-
+  describe('Re-render Behavior', () => {
     it('should render without errors when props change', () => {
       const { rerender } = render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
 
