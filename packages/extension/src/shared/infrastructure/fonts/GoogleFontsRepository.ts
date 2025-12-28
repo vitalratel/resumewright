@@ -10,7 +10,6 @@
 import type { FontCacheStats, IFontRepository } from '../../domain/fonts/IFontRepository';
 import type { FontStyle, FontWeight } from '../../domain/fonts/types';
 import { getLogger } from '../logging/instance';
-import type { IRetryPolicy } from '../retry/ExponentialBackoffRetryPolicy';
 import { ExponentialBackoffRetryPolicy } from '../retry/ExponentialBackoffRetryPolicy';
 
 /**
@@ -83,9 +82,9 @@ export class GoogleFontsRepository implements IFontRepository {
   private readonly fetchTimeoutMs = 30000; // 30 seconds
 
   /** Retry policy for network operations */
-  private readonly retryPolicy: IRetryPolicy;
+  private readonly retryPolicy: ExponentialBackoffRetryPolicy;
 
-  constructor(retryPolicy?: IRetryPolicy) {
+  constructor(retryPolicy?: ExponentialBackoffRetryPolicy) {
     // Use network preset by default (optimized for font fetching)
     this.retryPolicy = retryPolicy || ExponentialBackoffRetryPolicy.presets.network;
   }
