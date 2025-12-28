@@ -32,26 +32,6 @@ interface RetryConfig {
 type RetryCallback = (attempt: number, delay: number, error: Error) => void;
 
 /**
- * Retry Policy Interface
- */
-export interface IRetryPolicy {
-  /**
-   * Execute an operation with retry logic
-   *
-   * @param operation - Async operation to execute
-   * @param onRetry - Optional callback invoked before each retry
-   * @returns Promise resolving to operation result
-   * @throws Last error if all retries exhausted
-   */
-  execute: <T>(operation: () => Promise<T>, onRetry?: RetryCallback) => Promise<T>;
-
-  /**
-   * Get current retry configuration
-   */
-  getConfig: () => Readonly<RetryConfig>;
-}
-
-/**
  * Default retry configuration
  */
 const DEFAULT_CONFIG: Required<RetryConfig> = {
@@ -65,14 +45,14 @@ const DEFAULT_CONFIG: Required<RetryConfig> = {
 /**
  * Exponential Backoff Retry Policy
  *
- * Implements IRetryPolicy with exponential backoff strategy:
+ * Retry strategy with exponential backoff:
  * - Delay increases exponentially: baseDelay * 2^(attempt-1)
  * - Adds ±30% jitter to prevent thundering herd
  * - Caps delay at maxDelayMs
  * - Respects total timeout across all attempts
  * - Supports custom shouldRetry predicate
  */
-export class ExponentialBackoffRetryPolicy implements IRetryPolicy {
+export class ExponentialBackoffRetryPolicy {
   private readonly config: Required<RetryConfig>;
 
   constructor(config: Partial<RetryConfig> = {}) {
