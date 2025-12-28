@@ -4,7 +4,7 @@
  */
 
 import { Buffer } from 'node:buffer';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 import { type ConsoleLogEntry, captureDiagnostics, setupConsoleCapture } from './diagnostics';
 
@@ -18,6 +18,109 @@ interface UploadOptions {
   expectError?: boolean;
   /** Whether to enable verbose diagnostics (default: false) */
   verbose?: boolean;
+}
+
+/**
+ * Base implementation for TSX file upload
+ *
+ * Handles all shared logic: WASM wait, validation checking, diagnostics.
+ * The actual file upload is delegated to the provided uploadFn.
+ */
+async function uploadTsxBase(
+  page: Page,
+  uploadFn: (fileInput: Locator) => Promise<void>,
+  logPrefix: string,
+  options?: UploadOptions,
+): Promise<void> {
+  const timeout = options?.timeout ?? 15000;
+  const verbose = options?.verbose ?? false;
+  const logs: ConsoleLogEntry[] = [];
+
+  // Set up console capture if verbose mode
+  if (verbose) {
+    setupConsoleCapture(page);
+  }
+
+  // Wait for popup to fully load
+  await page.waitForLoadState('networkidle');
+
+  // Wait for WASM initialization - file input appears after WASM is ready
+  try {
+    await page.waitForSelector('[data-testid="file-input"]', {
+      state: 'attached',
+      timeout,
+    });
+  } catch (error) {
+    // Capture diagnostics on failure
+    const diagnostics = await captureDiagnostics(page, logs);
+    console.error(`${logPrefix} File input not found. Diagnostics:`, {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      consoleLogs: diagnostics.consoleLogs,
+      visibleText: diagnostics.textContent.substring(0, 500),
+    });
+    throw new Error(
+      `File input not found: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
+  }
+
+  if (verbose) {
+    console.warn(`${logPrefix} File input ready, uploading...`);
+  }
+
+  // Execute the upload strategy
+  const fileInput = page.locator('[data-testid="file-input"]');
+  await uploadFn(fileInput);
+
+  // Wait for validation to process
+  await page.waitForTimeout(1000);
+
+  // Check for validation errors
+  const validationError = page.locator('[role="alert"]');
+  const hasError = await validationError.isVisible().catch(() => false);
+
+  if (options?.expectError) {
+    if (!hasError) {
+      throw new Error('Expected validation error but file was accepted');
+    }
+    if (verbose) {
+      const errorText = await validationError.textContent();
+      console.warn(`${logPrefix} Got expected error:`, errorText);
+    }
+    return;
+  }
+
+  if (hasError) {
+    const errorText = await validationError.textContent();
+
+    // Capture detailed diagnostics on validation failure
+    const diagnostics = await captureDiagnostics(page, logs);
+    console.error(`${logPrefix} File validation failed:`, {
+      errorText,
+      consoleLogs: diagnostics.consoleLogs.filter(
+        (log) => log.text.includes('validate') || log.text.includes('WASM') || log.type === 'error',
+      ),
+    });
+
+    throw new Error(`File validation failed: ${errorText}`);
+  }
+
+  if (verbose) {
+    console.warn(`${logPrefix} File validated successfully`);
+  }
+
+  // Wait for export button to be enabled (file validated + settings loaded)
+  try {
+    await expect(
+      page.locator('[data-testid="preview-button"], [data-testid="export-button"]'),
+    ).toBeVisible({ timeout });
+  } catch (error) {
+    const diagnostics = await captureDiagnostics(page, logs);
+    console.error(`${logPrefix} Export button not visible. Diagnostics:`, {
+      consoleLogs: diagnostics.consoleLogs,
+      visibleText: diagnostics.textContent.substring(0, 500),
+    });
+    throw error;
+  }
 }
 
 /**
@@ -42,102 +145,19 @@ export async function uploadTsxContent(
   content: string,
   options?: UploadOptions,
 ): Promise<void> {
-  const timeout = options?.timeout ?? 15000;
-  const verbose = options?.verbose ?? false;
-  const logs: ConsoleLogEntry[] = [];
-
-  // Set up console capture if verbose mode
-  if (verbose) {
-    setupConsoleCapture(page);
-  }
-
-  // Wait for popup to fully load
-  await page.waitForLoadState('networkidle');
-
-  // Wait for WASM initialization - file input appears after WASM is ready
-  try {
-    await page.waitForSelector('[data-testid="file-input"]', {
-      state: 'attached',
-      timeout,
-    });
-  } catch (error) {
-    // Capture diagnostics on failure
-    const diagnostics = await captureDiagnostics(page, logs);
-    console.error('[uploadTsxContent] File input not found. Diagnostics:', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      consoleLogs: diagnostics.consoleLogs,
-      visibleText: diagnostics.textContent.substring(0, 500),
-    });
-    throw new Error(
-      `File input not found: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
-
-  if (verbose) {
-    console.warn('[uploadTsxContent] File input ready, uploading content:', fileName);
-  }
-
-  // Upload file content from buffer
-  const fileInput = page.locator('[data-testid="file-input"]');
-  const buffer = Buffer.from(content, 'utf-8');
-  await fileInput.setInputFiles({
-    name: fileName,
-    mimeType: 'text/plain',
-    buffer,
-  });
-
-  // Wait for validation to process (monitor console for validation logs)
-  await page.waitForTimeout(1000);
-
-  // Check for validation errors
-  const validationError = page.locator('[role="alert"]');
-  const hasError = await validationError.isVisible().catch(() => false);
-
-  if (options?.expectError) {
-    if (!hasError) {
-      throw new Error('Expected validation error but file was accepted');
-    }
-    if (verbose) {
-      const errorText = await validationError.textContent();
-      console.warn('[uploadTsxContent] Got expected error:', errorText);
-    }
-    return;
-  }
-
-  if (hasError) {
-    const errorText = await validationError.textContent();
-
-    // Capture detailed diagnostics on validation failure
-    const diagnostics = await captureDiagnostics(page, logs);
-    console.error('[uploadTsxContent] File validation failed:', {
-      errorText,
-      fileName,
-      consoleLogs: diagnostics.consoleLogs.filter(
-        (log) => log.text.includes('validate') || log.text.includes('WASM') || log.type === 'error',
-      ),
-    });
-
-    throw new Error(`File validation failed: ${errorText}`);
-  }
-
-  if (verbose) {
-    console.warn('[uploadTsxContent] File validated successfully');
-  }
-
-  // Wait for export button to be enabled (file validated + settings loaded)
-  // Note: For manual uploads, the button is "preview-button", for Claude-detected CVs it's "export-button"
-  try {
-    await expect(
-      page.locator('[data-testid="preview-button"], [data-testid="export-button"]'),
-    ).toBeVisible({ timeout });
-  } catch (error) {
-    const diagnostics = await captureDiagnostics(page, logs);
-    console.error('[uploadTsxContent] Export button not visible. Diagnostics:', {
-      consoleLogs: diagnostics.consoleLogs,
-      visibleText: diagnostics.textContent.substring(0, 500),
-    });
-    throw error;
-  }
+  await uploadTsxBase(
+    page,
+    async (fileInput) => {
+      const buffer = Buffer.from(content, 'utf-8');
+      await fileInput.setInputFiles({
+        name: fileName,
+        mimeType: 'text/plain',
+        buffer,
+      });
+    },
+    `[uploadTsxContent:${fileName}]`,
+    options,
+  );
 }
 
 /**
@@ -167,95 +187,12 @@ export async function uploadTsxFile(
   filePath: string,
   options?: UploadOptions,
 ): Promise<void> {
-  const timeout = options?.timeout ?? 15000;
-  const verbose = options?.verbose ?? false;
-  const logs: ConsoleLogEntry[] = [];
-
-  // Set up console capture if verbose mode
-  if (verbose) {
-    setupConsoleCapture(page);
-  }
-
-  // Wait for popup to fully load
-  await page.waitForLoadState('networkidle');
-
-  // Wait for WASM initialization - file input appears after WASM is ready
-  try {
-    await page.waitForSelector('[data-testid="file-input"]', {
-      state: 'attached',
-      timeout,
-    });
-  } catch (error) {
-    // Capture diagnostics on failure
-    const diagnostics = await captureDiagnostics(page, logs);
-    console.error('[uploadTsxFile] File input not found. Diagnostics:', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      consoleLogs: diagnostics.consoleLogs,
-      visibleText: diagnostics.textContent.substring(0, 500),
-    });
-    throw new Error(
-      `File input not found: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
-
-  if (verbose) {
-    console.warn('[uploadTsxFile] File input ready, uploading file:', filePath);
-  }
-
-  // Upload file
-  const fileInput = page.locator('[data-testid="file-input"]');
-  await fileInput.setInputFiles(filePath);
-
-  // Wait for validation to process (monitor console for validation logs)
-  await page.waitForTimeout(1000);
-
-  // Check for validation errors
-  const validationError = page.locator('[role="alert"]');
-  const hasError = await validationError.isVisible().catch(() => false);
-
-  if (options?.expectError) {
-    if (!hasError) {
-      throw new Error('Expected validation error but file was accepted');
-    }
-    if (verbose) {
-      const errorText = await validationError.textContent();
-      console.warn('[uploadTsxFile] Got expected error:', errorText);
-    }
-    return;
-  }
-
-  if (hasError) {
-    const errorText = await validationError.textContent();
-
-    // Capture detailed diagnostics on validation failure
-    const diagnostics = await captureDiagnostics(page, logs);
-    console.error('[uploadTsxFile] File validation failed:', {
-      errorText,
-      file: filePath,
-      consoleLogs: diagnostics.consoleLogs.filter(
-        (log) => log.text.includes('validate') || log.text.includes('WASM') || log.type === 'error',
-      ),
-    });
-
-    throw new Error(`File validation failed: ${errorText}`);
-  }
-
-  if (verbose) {
-    console.warn('[uploadTsxFile] File validated successfully');
-  }
-
-  // Wait for export button to be enabled (file validated + settings loaded)
-  // Note: For manual uploads, the button is "preview-button", for Claude-detected CVs it's "export-button"
-  try {
-    await expect(
-      page.locator('[data-testid="preview-button"], [data-testid="export-button"]'),
-    ).toBeVisible({ timeout });
-  } catch (error) {
-    const diagnostics = await captureDiagnostics(page, logs);
-    console.error('[uploadTsxFile] Export button not visible. Diagnostics:', {
-      consoleLogs: diagnostics.consoleLogs,
-      visibleText: diagnostics.textContent.substring(0, 500),
-    });
-    throw error;
-  }
+  await uploadTsxBase(
+    page,
+    async (fileInput) => {
+      await fileInput.setInputFiles(filePath);
+    },
+    `[uploadTsxFile:${filePath}]`,
+    options,
+  );
 }

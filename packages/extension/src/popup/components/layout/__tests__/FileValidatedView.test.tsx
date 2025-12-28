@@ -12,6 +12,13 @@ import type { AppContextValue } from '../../../context/AppContext';
 import type { QuickSettingsContextValue } from '../../../context/QuickSettingsContext';
 import type { ConversionHandlers } from '../../../hooks/conversion/useConversionHandlers';
 import { FileValidatedView } from '../FileValidatedView';
+import {
+  createMockAppContext,
+  createMockConversionContext,
+  createMockQuickSettingsContext,
+  TEST_FILE,
+  TEST_SETTINGS,
+} from './testHelpers';
 
 // Mock contexts
 const mockUseAppContext = vi.fn();
@@ -50,74 +57,16 @@ vi.mock('../../../utils/marginPresets', () => ({
   }),
 }));
 
-const mockAppContext: AppContextValue = {
+// Create mock instances using shared factories
+const mockAppContext = createMockAppContext({
   appState: {
+    ...createMockAppContext().appState,
     uiState: 'file_validated' as const,
-    importedFile: null,
-    validationError: null,
-    lastError: null,
-    isValidating: false,
-    lastFilename: null,
-    getProgress: vi.fn(),
-    setValidating: vi.fn(),
-    setValidationError: vi.fn(),
-    clearValidationError: vi.fn(),
-    startConversion: vi.fn(),
-    setSuccess: vi.fn(),
-    setError: vi.fn(),
-    setUIState: vi.fn(),
-    setImportedFile: vi.fn(),
-    clearImportedFile: vi.fn(),
-    reset: vi.fn(),
   },
   currentJobId: 'test-job-id',
-  successRef: { current: null },
-  errorRef: { current: null },
-  onOpenSettings: vi.fn(),
-};
-
-const mockConversionContext: ConversionHandlers = {
-  handleFileValidated: vi.fn(),
-  handleExportClick: vi.fn(async () => {}),
-  handleCancelConversion: vi.fn(),
-  handleRetry: vi.fn(),
-  handleDismissError: vi.fn(),
-  handleImportDifferent: vi.fn(),
-  handleReportIssue: vi.fn(),
-};
-
-const mockQuickSettingsContext: QuickSettingsContextValue = {
-  settings: null,
-  handlers: {
-    handlePageSizeChange: vi.fn(),
-    handleMarginsChange: vi.fn(),
-    handleCustomMarginChange: vi.fn(),
-  },
-};
-
-// Test constants
-const TEST_FILE = {
-  name: 'resume.tsx',
-  size: 2048,
-  content: '// Mock TSX content',
-};
-
-const TEST_SETTINGS = {
-  theme: 'auto' as const,
-  autoDetectCV: true,
-  showConvertButtons: true,
-  telemetryEnabled: false,
-  retentionDays: 30,
-  settingsVersion: 1,
-  lastUpdated: Date.now(),
-  defaultConfig: {
-    pageSize: 'Letter' as const,
-    margin: { top: 0.75, right: 0.75, bottom: 0.75, left: 0.75 },
-    fontSize: 12,
-    fontFamily: 'Arial',
-    compress: false,
-  },
-};
+});
+const mockConversionContext = createMockConversionContext();
+const mockQuickSettingsContext = createMockQuickSettingsContext();
 
 describe('FileValidatedView', () => {
   beforeEach(() => {

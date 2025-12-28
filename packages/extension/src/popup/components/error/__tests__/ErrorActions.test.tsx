@@ -9,8 +9,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, vi } from 'vitest';
 import { ErrorCode } from '@/shared/errors/codes';
-import type { ConversionError } from '@/shared/types/models';
 import { ErrorActions } from '../ErrorActions';
+import { createError } from './testHelpers';
 
 // Mock clipboard functions
 vi.mock('@/shared/errors/tracking/telemetry', async () => {
@@ -22,18 +22,6 @@ vi.mock('@/shared/errors/tracking/telemetry', async () => {
 });
 
 describe('ErrorActions', () => {
-  // Base error fixture
-  const createError = (overrides: Partial<ConversionError> = {}): ConversionError => ({
-    stage: 'generating-pdf',
-    code: ErrorCode.WASM_EXECUTION_ERROR,
-    message: 'Test error',
-    timestamp: Date.now(),
-    recoverable: true,
-    suggestions: [],
-    technicalDetails: 'Test details',
-    ...overrides,
-  });
-
   describe('Retry Button', () => {
     it('shows retry button when error is recoverable', () => {
       const error = createError({ recoverable: true });
