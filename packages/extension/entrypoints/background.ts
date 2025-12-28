@@ -30,13 +30,13 @@ export default defineBackground({
       logger.info('Background', 'Starting initialization...');
     }
 
-    // Create LifecycleManager instance (DI pattern)
-    const lifecycleManager = new LifecycleManager();
+    // Initialize lifecycle event handlers (onInstalled, onStartup)
+    new LifecycleManager();
 
     // Setup message handler synchronously (before WASM)
     // Service workers can be terminated at any time, message handlers must be
     // registered immediately to ensure messages are received
-    setupMessageHandler(lifecycleManager);
+    setupMessageHandler();
 
     // Test storage API in development
     if (isDev) {

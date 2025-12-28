@@ -8,19 +8,7 @@
 import { defineExtensionStorage } from '@webext-core/storage';
 import { browser } from 'wxt/browser';
 import type { ErrorEvent } from '@/shared/errors/tracking/telemetry';
-import type { ConversionStatus } from '@/shared/types/models';
 import type { UserSettings } from '@/shared/types/settings';
-
-/**
- * Job state for lifecycle management persistence
- */
-interface JobState {
-  jobId: string;
-  status: ConversionStatus;
-  startTime: number;
-  lastUpdate: number;
-  tsx?: string;
-}
 
 /**
  * WASM badge error info for UI display
@@ -49,9 +37,6 @@ interface LocalStorageSchema {
 
   // Settings fallback (primary is sync storage)
   'resumewright-settings': UserSettings | null;
-
-  // Lifecycle management
-  resumewright_job_states: Record<string, JobState> | null;
 
   // Zustand store persistence (dynamic key based on store name)
   // Note: Zustand uses its own key pattern, handled separately

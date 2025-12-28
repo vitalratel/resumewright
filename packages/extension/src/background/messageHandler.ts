@@ -9,8 +9,6 @@ import { isWASMInitialized } from '@/shared/infrastructure/wasm/loader';
 import { onMessage, sendMessage } from '@/shared/messaging';
 import type { TsxToPdfConverter } from '../shared/domain/pdf/types';
 import { validateTsxSyntax } from '../shared/domain/pdf/validation';
-import type { ConversionStatus } from '../shared/types/models';
-import type { LifecycleManager } from './lifecycleManager';
 import { ConversionService } from './services/ConversionService';
 import { ProgressTracker } from './services/ProgressTracker';
 import { parseConversionError } from './utils/errorParser';
@@ -20,7 +18,7 @@ import { getWasmStatus, retryWasmInit } from './wasmInit';
  * Setup message handlers for extension communication
  * Uses @webext-core/messaging for type-safe message passing
  */
-export function setupMessageHandler(lifecycleManager: LifecycleManager): void {
+export function setupMessageHandler(): void {
   const conversionService = new ConversionService();
   const progressTracker = new ProgressTracker();
   const getConverterInstance: () => TsxToPdfConverter = createConverterInstance;
@@ -114,11 +112,9 @@ export function setupMessageHandler(lifecycleManager: LifecycleManager): void {
     try {
       getLogger().info('MessageHandler', `Starting PDF conversion (job: ${jobId})`);
 
-      await lifecycleManager.saveJobCheckpoint(jobId, 'queued');
       progressTracker.startTracking(jobId);
 
       const onProgress = (stage: string, percentage: number) => {
-        void lifecycleManager.saveJobCheckpoint(jobId, stage as ConversionStatus);
         progressTracker.createProgressCallback(jobId)(stage, percentage);
       };
 
@@ -179,7 +175,6 @@ export function setupMessageHandler(lifecycleManager: LifecycleManager): void {
       return { success: false };
     } finally {
       progressTracker.stopTracking(jobId);
-      await lifecycleManager.clearJobCheckpoint(jobId);
     }
   });
 
