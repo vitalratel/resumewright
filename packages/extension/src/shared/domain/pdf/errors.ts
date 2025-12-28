@@ -4,7 +4,6 @@
 import type { InferOutput } from 'valibot';
 import { array, boolean, object, optional, safeParse, string } from 'valibot';
 import { ErrorCode } from '../../errors/codes';
-import { generateErrorId } from '../../errors/tracking/telemetry';
 import type { ConversionError } from '../../types/models';
 
 /**
@@ -62,7 +61,6 @@ export function parseWasmError(error: unknown): ConversionError {
         code: errorJson.code as ErrorCode,
         message: errorJson.message,
         timestamp: Date.now(),
-        errorId: generateErrorId(),
         technicalDetails: errorJson.technicalDetails,
         recoverable: errorJson.recoverable ?? false,
         suggestions: errorJson.suggestions ?? [],
@@ -90,7 +88,6 @@ export function parseWasmError(error: unknown): ConversionError {
     code: ErrorCode.UNKNOWN_ERROR,
     message: `Conversion failed: ${errorMessage}`,
     timestamp: Date.now(),
-    errorId: generateErrorId(),
     recoverable: false,
     suggestions: ['Check TSX syntax', 'Try again', 'Contact support if error persists'],
   };

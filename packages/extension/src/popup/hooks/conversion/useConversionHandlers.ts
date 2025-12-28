@@ -56,7 +56,6 @@ export function useConversionHandlers(options: UseConversionHandlersOptions): Co
   const handleReportIssue = useCallback(async () => {
     if (lastError) {
       const details = formatErrorDetailsForClipboard({
-        errorId: lastError.errorId,
         timestamp: formatErrorTimestamp(new Date(lastError.timestamp)),
         code: lastError.code,
         message: lastError.message,

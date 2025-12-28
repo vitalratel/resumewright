@@ -163,7 +163,6 @@ describe('usePopupStore - UI State', () => {
         stage: 'parsing',
         category: ErrorCategory.SYNTAX,
         timestamp: Date.now(),
-        errorId: 'test-error-1',
       });
     });
 
@@ -208,7 +207,6 @@ describe('usePopupStore - UI State', () => {
         stage: 'queued',
         category: ErrorCategory.UNKNOWN,
         timestamp: Date.now(),
-        errorId: 'test-error-2',
       });
       result.current.reset();
     });
@@ -238,7 +236,6 @@ describe('usePopupStore - UI State', () => {
         stage: 'queued',
         category: ErrorCategory.UNKNOWN,
         timestamp: Date.now(),
-        errorId: 'test-error-3',
       });
     });
 

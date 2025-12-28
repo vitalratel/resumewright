@@ -7,7 +7,6 @@
 
 import { useCallback } from 'react';
 import { ErrorCode } from '@/shared/errors/codes';
-import { generateErrorId } from '@/shared/errors/tracking/telemetry';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { ERROR_MESSAGES, FILE_SIZE_THRESHOLDS } from '../../constants/app';
 import { extensionAPI } from '../../services/extensionAPI';
@@ -49,7 +48,6 @@ export function useConversionExecution({
         code: ErrorCode.CONVERSION_START_FAILED,
         message: ERROR_MESSAGES.wasmNotReady,
         timestamp: Date.now(),
-        errorId: generateErrorId(),
         recoverable: true,
         suggestions: [
           'Reload the extension',
@@ -92,7 +90,6 @@ export function useConversionExecution({
         code: ErrorCode.CONVERSION_START_FAILED,
         message: ERROR_MESSAGES.conversionStartFailed,
         timestamp: Date.now(),
-        errorId: generateErrorId(),
         recoverable: true,
         suggestions: [
           'Try converting again',

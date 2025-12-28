@@ -33,7 +33,6 @@ describe('ErrorState', () => {
     suggestions: ['Try regenerating the CV', 'Check for syntax errors'],
     category: ErrorCategory.SYNTAX,
     timestamp: Date.now(),
-    errorId: 'test-error-1',
   };
 
   beforeEach(() => {
@@ -211,7 +210,7 @@ describe('ErrorState', () => {
 
       // Should call copyToClipboard with formatted error details
       await waitFor(() => {
-        expect(copyToClipboardSpy).toHaveBeenCalledWith(expect.stringContaining(baseError.errorId));
+        expect(copyToClipboardSpy).toHaveBeenCalledWith(expect.stringContaining(baseError.code));
       });
 
       copyToClipboardSpy.mockRestore();

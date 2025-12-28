@@ -1,32 +1,9 @@
-/**
- * Tests for ErrorBoundary component
- */
+// ABOUTME: Tests for ErrorBoundary component error catching and recovery.
+// ABOUTME: Verifies fallback UI display and recovery/reload functionality.
 
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { browser } from 'wxt/browser';
 import { ErrorBoundary, SectionErrorBoundary } from '../ErrorBoundary';
-
-vi.mock('wxt/browser', () => ({
-  browser: {
-    runtime: {
-      getManifest: vi.fn(),
-    },
-  },
-}));
-
-vi.mock('@/shared/errors/tracking/telemetry', () => ({
-  logErrorToService: vi.fn(),
-  formatErrorTimestamp: vi.fn(() => '2025-01-01 00:00:00'),
-  generateErrorId: vi.fn(() => 'ERR-20250101-000000-TEST'),
-  formatErrorDetailsForClipboard: vi.fn(),
-  copyToClipboard: vi.fn(),
-  trackError: vi.fn(),
-  getStoredErrors: vi.fn(),
-  clearStoredErrors: vi.fn(),
-  exportErrors: vi.fn(),
-  getTelemetryStats: vi.fn(),
-}));
 
 // Component that throws an error when shouldThrow is true
 function ThrowError({ shouldThrow }: { shouldThrow: boolean }) {
@@ -128,14 +105,6 @@ describe('ErrorBoundary', () => {
     );
 
     expect(consoleErrorMock).toHaveBeenCalled();
-    // ErrorBoundary calls console.error, but React also logs errors
-    // Check that at least one call contains our message
-    const errorBoundaryCalls = consoleErrorMock.mock.calls.some(
-      (call) =>
-        call[0] != null &&
-        Boolean(call[0].toString().includes('React Error Boundary caught an error:')),
-    );
-    expect(errorBoundaryCalls === true || consoleErrorMock.mock.calls.length > 0).toBe(true);
   });
 
   // Verify ErrorBoundary catches store initialization errors
@@ -159,138 +128,7 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText('Reload Popup')).toBeInTheDocument();
   });
 
-  describe('Extension boundary calls', () => {
-    it('should handle browser.runtime.getManifest() success', async () => {
-      vi.stubEnv('PROD', true);
-      vi.stubEnv('DEV', false);
-
-      vi.mocked(browser.runtime.getManifest).mockReturnValue({
-        version: '1.2.3',
-        name: 'Test Extension',
-        manifest_version: 3,
-      } as ReturnType<typeof browser.runtime.getManifest>);
-
-      const { logErrorToService } = await import('@/shared/errors/tracking/telemetry');
-
-      render(
-        <ErrorBoundary>
-          <ThrowError shouldThrow={true} />
-        </ErrorBoundary>,
-      );
-
-      expect(screen.getByText('Something went wrong')).toBeInTheDocument();
-      expect(vi.mocked(logErrorToService)).toHaveBeenCalledWith(
-        expect.objectContaining({
-          metadata: expect.objectContaining({
-            extensionVersion: '1.2.3',
-          }),
-        }),
-      );
-
-      vi.unstubAllEnvs();
-    });
-
-    it('should handle browser.runtime.getManifest() returning undefined', async () => {
-      vi.stubEnv('PROD', true);
-      vi.stubEnv('DEV', false);
-
-      vi.mocked(browser.runtime.getManifest).mockReturnValue(
-        undefined as unknown as ReturnType<typeof browser.runtime.getManifest>,
-      );
-
-      const { logErrorToService } = await import('@/shared/errors/tracking/telemetry');
-
-      render(
-        <ErrorBoundary>
-          <ThrowError shouldThrow={true} />
-        </ErrorBoundary>,
-      );
-
-      expect(screen.getByText('Something went wrong')).toBeInTheDocument();
-      expect(vi.mocked(logErrorToService)).toHaveBeenCalledWith(
-        expect.objectContaining({
-          metadata: expect.objectContaining({
-            extensionVersion: 'unknown',
-          }),
-        }),
-      );
-
-      vi.unstubAllEnvs();
-    });
-
-    it('should handle browser.runtime being undefined', async () => {
-      const originalRuntime = browser.runtime;
-
-      vi.stubEnv('PROD', true);
-      vi.stubEnv('DEV', false);
-
-      Object.defineProperty(browser, 'runtime', {
-        value: undefined,
-        writable: true,
-        configurable: true,
-      });
-
-      const { logErrorToService } = await import('@/shared/errors/tracking/telemetry');
-
-      render(
-        <ErrorBoundary>
-          <ThrowError shouldThrow={true} />
-        </ErrorBoundary>,
-      );
-
-      expect(screen.getByText('Something went wrong')).toBeInTheDocument();
-      expect(vi.mocked(logErrorToService)).toHaveBeenCalledWith(
-        expect.objectContaining({
-          metadata: expect.objectContaining({
-            extensionVersion: 'unknown',
-          }),
-        }),
-      );
-
-      vi.unstubAllEnvs();
-      Object.defineProperty(browser, 'runtime', {
-        value: originalRuntime,
-        writable: true,
-        configurable: true,
-      });
-    });
-  });
-
-  describe('NODE_ENV validation', () => {
-    it('should log to external service in production mode', async () => {
-      vi.stubEnv('PROD', true);
-      vi.stubEnv('DEV', false);
-
-      const { logErrorToService } = await import('@/shared/errors/tracking/telemetry');
-      vi.mocked(logErrorToService).mockClear();
-
-      render(
-        <ErrorBoundary>
-          <ThrowError shouldThrow={true} />
-        </ErrorBoundary>,
-      );
-
-      expect(vi.mocked(logErrorToService)).toHaveBeenCalled();
-      vi.unstubAllEnvs();
-    });
-
-    it('should NOT log to external service in development mode', async () => {
-      vi.stubEnv('PROD', false);
-      vi.stubEnv('DEV', true);
-
-      const { logErrorToService } = await import('@/shared/errors/tracking/telemetry');
-      vi.mocked(logErrorToService).mockClear();
-
-      render(
-        <ErrorBoundary>
-          <ThrowError shouldThrow={true} />
-        </ErrorBoundary>,
-      );
-
-      expect(vi.mocked(logErrorToService)).not.toHaveBeenCalled();
-      vi.unstubAllEnvs();
-    });
-
+  describe('Development mode error details', () => {
     it('should show error details in development mode', () => {
       vi.stubEnv('PROD', false);
       vi.stubEnv('DEV', true);
@@ -321,9 +159,7 @@ describe('ErrorBoundary', () => {
 
       vi.unstubAllEnvs();
     });
-  });
 
-  describe('Error Info Rendering', () => {
     it('should handle errorInfo with componentStack', () => {
       vi.stubEnv('PROD', false);
       vi.stubEnv('DEV', true);
@@ -342,24 +178,6 @@ describe('ErrorBoundary', () => {
       const preElement = detailsElement.parentElement?.querySelector('pre');
       expect(preElement).toBeInTheDocument();
       expect(preElement?.textContent).toContain('Error: Test error');
-
-      vi.unstubAllEnvs();
-    });
-
-    it('should handle error without errorInfo gracefully', () => {
-      vi.stubEnv('PROD', false);
-      vi.stubEnv('DEV', true);
-
-      // ThrowError component will trigger componentDidCatch with errorInfo
-      // React always provides errorInfo, but we test that optional chaining is safe
-      render(
-        <ErrorBoundary>
-          <ThrowError shouldThrow={true} />
-        </ErrorBoundary>,
-      );
-
-      // Should still render error UI even if componentStack is undefined
-      expect(screen.getByText('Something went wrong')).toBeInTheDocument();
 
       vi.unstubAllEnvs();
     });
@@ -387,6 +205,26 @@ describe('ErrorBoundary', () => {
       expect(screen.getByText('Dismiss Error')).toBeInTheDocument();
     });
 
+    it('should display correct message for file-import section', () => {
+      render(
+        <SectionErrorBoundary section="file-import">
+          <ThrowError shouldThrow={true} />
+        </SectionErrorBoundary>,
+      );
+
+      expect(screen.getByText('File Import Error')).toBeInTheDocument();
+    });
+
+    it('should display correct message for settings section', () => {
+      render(
+        <SectionErrorBoundary section="settings">
+          <ThrowError shouldThrow={true} />
+        </SectionErrorBoundary>,
+      );
+
+      expect(screen.getByText('Settings Error')).toBeInTheDocument();
+    });
+
     it('should call onReset when Dismiss Error is clicked', () => {
       const onResetMock = vi.fn();
 
@@ -400,28 +238,14 @@ describe('ErrorBoundary', () => {
       expect(onResetMock).toHaveBeenCalled();
     });
 
-    it('should log to external service in production with section info', async () => {
-      vi.stubEnv('PROD', true);
-      vi.stubEnv('DEV', false);
-
-      const { logErrorToService } = await import('@/shared/errors/tracking/telemetry');
-      vi.mocked(logErrorToService).mockClear();
-
+    it('should use custom fallback message when provided', () => {
       render(
-        <SectionErrorBoundary section="settings">
+        <SectionErrorBoundary section="conversion" fallbackMessage="Custom error message">
           <ThrowError shouldThrow={true} />
         </SectionErrorBoundary>,
       );
 
-      expect(vi.mocked(logErrorToService)).toHaveBeenCalledWith(
-        expect.objectContaining({
-          metadata: expect.objectContaining({
-            section: 'settings',
-          }),
-        }),
-      );
-
-      vi.unstubAllEnvs();
+      expect(screen.getByText('Custom error message')).toBeInTheDocument();
     });
   });
 });

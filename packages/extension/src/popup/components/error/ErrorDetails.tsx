@@ -1,4 +1,4 @@
-// ABOUTME: Displays error metadata (ID, timestamp) with copy-to-clipboard functionality.
+// ABOUTME: Displays error metadata (code, timestamp) with copy-to-clipboard functionality.
 // ABOUTME: Extracted from ErrorState to maintain single responsibility.
 
 import { CheckIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
@@ -34,7 +34,6 @@ export const ErrorDetails = memo(({ error, category }: ErrorDetailsProps) => {
 
   const handleCopyError = async () => {
     const errorDetails: ErrorDetailsType = {
-      errorId: error.errorId || 'N/A',
       timestamp: formattedTimestamp,
       code: error.code,
       message: error.message,
@@ -57,9 +56,9 @@ export const ErrorDetails = memo(({ error, category }: ErrorDetailsProps) => {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground">Error ID:</span>
+            <span className="text-sm font-medium text-muted-foreground">Error Code:</span>
             <code className="text-sm font-mono text-foreground bg-card px-2 py-0.5 rounded-md border border-border">
-              {error.errorId || 'UNKNOWN'}
+              {error.code}
             </code>
           </div>
           <div className="flex items-center gap-2">
@@ -82,9 +81,9 @@ export const ErrorDetails = memo(({ error, category }: ErrorDetailsProps) => {
         </Button>
       </div>
 
-      {/* Suggestion to report with error ID */}
+      {/* Suggestion to report with error code */}
       <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-        Use the error ID above when reporting this issue for faster resolution.
+        Use the error code above when reporting this issue for faster resolution.
       </p>
     </div>
   );

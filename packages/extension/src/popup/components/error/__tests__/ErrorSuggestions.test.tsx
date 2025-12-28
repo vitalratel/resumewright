@@ -46,7 +46,6 @@ describe('ErrorSuggestions', () => {
     stage: 'generating-pdf',
     code: ErrorCode.WASM_EXECUTION_ERROR,
     message: 'Test error',
-    errorId: 'test-123',
     timestamp: Date.now(),
     recoverable: true,
     suggestions: [],

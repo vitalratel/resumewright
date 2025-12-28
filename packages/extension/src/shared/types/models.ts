@@ -180,9 +180,6 @@ export interface ConversionError {
 
   /** Timestamp when the error occurred */
   timestamp: number;
-
-  /** Unique error identifier for tracking and reporting */
-  errorId: string;
 }
 
 /**

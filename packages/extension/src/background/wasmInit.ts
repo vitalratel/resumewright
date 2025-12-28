@@ -59,7 +59,6 @@ ${error.stack}`
 
         // Log retry attempts with structured data
         getLogger().error('WasmInit', 'WASM initialization failed, retrying', {
-          errorId: conversionError.errorId,
           code: conversionError.code,
           attempt,
           maxRetries: MAX_INIT_RETRIES,
@@ -84,7 +83,6 @@ ${error.stack}`
     );
 
     getLogger().error('WasmInit', 'Max retries reached', {
-      errorId: maxRetriesError.errorId,
       code: maxRetriesError.code,
       finalAttempt: MAX_INIT_RETRIES,
       permanentFailure: true,

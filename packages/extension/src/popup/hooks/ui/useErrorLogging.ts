@@ -15,40 +15,30 @@ type ErrorMessage = (typeof ERROR_MESSAGES)[keyof typeof ERROR_MESSAGES];
  * Log comprehensive error details for debugging
  *
  * Logger automatically gates based on environment (dev mode only)
- * Only logs when errorId or code changes (unique errors)
+ * Only logs when code or timestamp changes (unique errors)
  */
 export function useErrorLogging(
   error: ConversionError,
   category?: ErrorCategory,
   errorMessage?: ErrorMessage,
 ): void {
-  const {
-    errorId,
-    code,
-    message,
-    technicalDetails,
-    metadata,
-    timestamp,
-    recoverable,
-    suggestions,
-  } = error;
+  const { code, message, technicalDetails, metadata, timestamp, recoverable, suggestions } = error;
 
   // Track previous error to detect changes
-  const prevErrorRef = useRef<{ errorId?: string; code: string } | null>(null);
+  const prevErrorRef = useRef<{ code: string; timestamp: number } | null>(null);
 
   useEffect(() => {
-    // Only log when errorId or code actually changes
+    // Only log when code or timestamp actually changes
     const prev = prevErrorRef.current;
-    if (prev !== null && prev.errorId === errorId && prev.code === code) {
+    if (prev !== null && prev.code === code && prev.timestamp === timestamp) {
       return;
     }
-    prevErrorRef.current = { errorId, code };
+    prevErrorRef.current = { code, timestamp };
 
     const logger = getLogger();
 
     // Structured error log for programmatic access
     logger.error('ErrorState', 'Error displayed', {
-      errorId,
       code,
       category,
       message,
@@ -63,7 +53,6 @@ export function useErrorLogging(
     logger.error(
       'ErrorState',
       `=== ResumeWright Error Report ===
-Error ID: ${errorId !== null && errorId !== undefined && errorId !== '' ? errorId : 'N/A'}
 Error Code: ${code}
 Category: ${category !== null && category !== undefined ? category : 'UNKNOWN'}
 --- User-Facing Message ---
@@ -75,7 +64,6 @@ ${metadata !== null && metadata !== undefined ? `--- Metadata ---\n${JSON.string
 `,
     );
   }, [
-    errorId,
     code,
     category,
     message,

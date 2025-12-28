@@ -77,7 +77,6 @@ export function useAppSubscriptions(): void {
               recoverable: true,
               suggestions: ['Try exporting the file again', 'Check browser download permissions'],
               timestamp: Date.now(),
-              errorId: `ERR-${Date.now()}`,
             });
           }
         } else {

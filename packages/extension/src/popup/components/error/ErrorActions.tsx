@@ -63,7 +63,6 @@ export const ErrorActions = memo(
       } else {
         // Copy error details to clipboard
         const details = formatErrorDetailsForClipboard({
-          errorId: error.errorId,
           timestamp: formatErrorTimestamp(new Date(error.timestamp)),
           code: error.code,
           message: error.message,
