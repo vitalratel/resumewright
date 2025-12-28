@@ -2,13 +2,13 @@
 // ABOUTME: Supports multi-page progress tracking with debounced ETA updates.
 
 import { useMemo } from 'react';
+import { useDebounce } from 'use-debounce';
 import type { ConversionStatus } from '../../../shared/types/models';
 import {
   formatTimeRemaining,
   getStageDisplayName,
   getStageIcon,
 } from '../../../shared/utils/progressCalculations';
-import { useDebounce } from '../../hooks/core/useDebounce';
 
 interface ProgressStatusProps {
   /** Current conversion stage */
@@ -39,7 +39,7 @@ export function ProgressStatus({
   const stageDisplay = useMemo(() => getStageDisplayName(stage), [stage]);
 
   // Debounce ETA to prevent jumping when updates are rapid
-  const debouncedEta = useDebounce(eta, 500);
+  const [debouncedEta] = useDebounce(eta, 500);
 
   return (
     <div
