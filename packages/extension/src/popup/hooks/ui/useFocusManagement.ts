@@ -32,10 +32,7 @@ export function useFocusOnMount(shouldFocus: boolean, focusDelay = 100) {
 
 /**
  * Hook to announce content to screen readers without shifting focus
- * Uses aria-live regions that are already in the DOM
- *
- * Firefox fix: Reuses single live region instead of creating new ones on every message
- * to prevent DOM node accumulation causing crashes
+ * Reuses single live region to prevent DOM node accumulation
  */
 export function useScreenReaderAnnouncement(
   message: string | null,
