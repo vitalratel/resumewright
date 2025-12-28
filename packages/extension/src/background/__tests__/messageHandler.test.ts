@@ -2,7 +2,6 @@
 // ABOUTME: Verifies handler registration and error handling paths.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { LifecycleManager } from '../lifecycleManager';
 
 // Track registered handlers for testing
 const registeredHandlers = new Map<string, (args: { data: unknown }) => unknown>();
@@ -85,15 +84,6 @@ vi.mock('@/shared/infrastructure/storage/typedStorage', () => ({
   },
 }));
 
-// Mock LifecycleManager
-const mockLifecycleManager: LifecycleManager = {
-  saveJobCheckpoint: vi.fn(),
-  clearJobCheckpoint: vi.fn(),
-  getActiveJobIds: vi.fn(() => []),
-  hasJob: vi.fn(() => false),
-  initialize: vi.fn(),
-} as unknown as LifecycleManager;
-
 describe('messageHandler', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -101,7 +91,7 @@ describe('messageHandler', () => {
 
     // Import and setup after mocks
     const { setupMessageHandler } = await import('../messageHandler');
-    setupMessageHandler(mockLifecycleManager);
+    setupMessageHandler();
   });
 
   describe('handler registration', () => {

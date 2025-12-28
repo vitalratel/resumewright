@@ -1,17 +1,9 @@
-/**
- * LifecycleManager Tests
- *
- * Tests service worker lifecycle management and checkpoint recovery.
- * Uses fakeBrowser for realistic storage behavior.
- */
+// ABOUTME: Tests for LifecycleManager lifecycle event handling.
+// ABOUTME: Verifies onInstalled and onStartup event registration and initialization.
 
 import { fakeBrowser } from '@webext-core/fake-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { localExtStorage } from '@/shared/infrastructure/storage/typedStorage';
-import type { ConversionStatus } from '../../shared/types/models';
 import type { UserSettings } from '../../shared/types/settings';
-
-const STORAGE_KEY = 'resumewright_job_states';
 
 // Use vi.hoisted to create shared mock instances that persist across module resets
 const mocks = vi.hoisted(() => ({
@@ -96,16 +88,6 @@ describe('LifecycleManager', () => {
       expect(onStartupListener).toBeDefined();
     });
 
-    it('should clear existing storage on initialize', async () => {
-      const { LifecycleManager } = await import('../lifecycleManager');
-      const manager = new LifecycleManager();
-
-      await manager.initialize();
-
-      const stored = await localExtStorage.getItem(STORAGE_KEY);
-      expect(stored).toEqual({});
-    });
-
     it('should initialize default settings', async () => {
       const { settingsStore } = await import('@/shared/infrastructure/settings/SettingsStore');
       vi.mocked(settingsStore.loadSettings).mockResolvedValue(mockSettings);
@@ -152,172 +134,43 @@ describe('LifecycleManager', () => {
     });
   });
 
-  describe('checkpoint management', () => {
-    it('should save job checkpoint to storage', async () => {
-      const { LifecycleManager } = await import('../lifecycleManager');
-      const manager = new LifecycleManager();
+  describe('lifecycle events', () => {
+    it('should call initialize on install event', async () => {
+      expect(onInstalledListener).toBeDefined();
 
-      const jobId = 'test-job-123';
-      const status: ConversionStatus = 'parsing';
-      const tsx = 'const CV = () => <div>Test</div>';
-
-      await manager.saveJobCheckpoint(jobId, status, tsx);
-
-      const stored = await localExtStorage.getItem(STORAGE_KEY);
-      expect(stored).toMatchObject({
-        [jobId]: {
-          jobId,
-          status,
-          tsx,
-          startTime: expect.any(Number),
-          lastUpdate: expect.any(Number),
-        },
-      });
-    });
-
-    it('should save checkpoint without TSX content', async () => {
-      const { LifecycleManager } = await import('../lifecycleManager');
-      const manager = new LifecycleManager();
-
-      const jobId = 'test-job-456';
-      const status: ConversionStatus = 'queued';
-
-      await manager.saveJobCheckpoint(jobId, status);
-
-      const stored = await localExtStorage.getItem(STORAGE_KEY);
-      expect(stored).toMatchObject({
-        [jobId]: {
-          jobId,
-          status,
-        },
-      });
-      // tsx should not be present when not provided
-      expect(stored).toBeDefined();
-      expect(stored?.[jobId].tsx).toBeUndefined();
-    });
-  });
-
-  describe('checkpoint cleanup', () => {
-    it('should remove checkpoint after job completion', async () => {
-      const { LifecycleManager } = await import('../lifecycleManager');
-      const manager = new LifecycleManager();
-
-      const jobId = 'completed-job';
-
-      // Set up existing job
-      await localExtStorage.setItem(STORAGE_KEY, {
-        [jobId]: {
-          jobId,
-          status: 'generating-pdf' as ConversionStatus,
-          startTime: Date.now(),
-          lastUpdate: Date.now(),
-        },
-      });
-
-      await manager.clearJobCheckpoint(jobId);
-
-      const stored = await localExtStorage.getItem(STORAGE_KEY);
-      expect(stored).toEqual({});
-    });
-  });
-
-  describe('orphaned job detection', () => {
-    it('should detect abandoned jobs after service worker restart', async () => {
-      const orphanedJob = {
-        jobId: 'orphaned-123',
-        status: 'generating-pdf' as ConversionStatus,
-        startTime: Date.now() - 60000,
-        lastUpdate: Date.now() - 40000, // Last updated 40 seconds ago (< 5 min threshold)
-      };
-
-      await localExtStorage.setItem(STORAGE_KEY, { 'orphaned-123': orphanedJob });
-
-      expect(onStartupListener).toBeDefined();
-      onStartupListener?.();
-
-      await vi.waitFor(() => {
-        expect(mocks.logger.warn).toHaveBeenCalled();
-        const warnCalls = mocks.logger.warn.mock.calls;
-        const hasOrphanedWarning = warnCalls.some(
-          (call) => typeof call[1] === 'string' && call[1].includes('orphaned-123'),
-        );
-        expect(hasOrphanedWarning).toBe(true);
-      });
-    });
-
-    it('should not flag old jobs as orphaned (>5 minutes)', async () => {
-      const oldJob = {
-        jobId: 'old-456',
-        status: 'generating-pdf' as ConversionStatus,
-        startTime: Date.now() - 10 * 60 * 1000,
-        lastUpdate: Date.now() - 6 * 60 * 1000, // Updated 6 minutes ago (beyond threshold)
-      };
-
-      await localExtStorage.setItem(STORAGE_KEY, { 'old-456': oldJob });
-
-      expect(onStartupListener).toBeDefined();
-      onStartupListener?.();
+      onInstalledListener?.({ reason: 'install' });
 
       // Give async operations time to complete
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      // Jobs older than 5 minutes should not be flagged
-      const warnCalls = mocks.logger.warn.mock.calls;
-      const hasOrphanedWarning = warnCalls.some(
-        (call) => typeof call[1] === 'string' && call[1].includes('old-456'),
-      );
-      expect(hasOrphanedWarning).toBe(false);
-    });
-
-    it('should handle empty storage on startup', async () => {
-      // Storage is already empty from beforeEach
-
-      // Should not throw
-      expect(onStartupListener).toBeDefined();
-      expect(() => onStartupListener?.()).not.toThrow();
-    });
-  });
-
-  describe('job tracking', () => {
-    it('should register active job on checkpoint save', async () => {
-      const { LifecycleManager } = await import('../lifecycleManager');
-      const manager = new LifecycleManager();
-
-      const jobId = 'track-test-123';
-      const status: ConversionStatus = 'parsing';
-
-      await manager.saveJobCheckpoint(jobId, status);
-
-      const stored = await localExtStorage.getItem(STORAGE_KEY);
-      expect(stored).toBeDefined();
-      expect(stored?.[jobId]).toMatchObject({
-        startTime: expect.any(Number),
+      await vi.waitFor(() => {
+        expect(mocks.logger.info).toHaveBeenCalledWith(
+          'LifecycleManager',
+          'Performing first-time initialization',
+        );
       });
     });
 
-    it('should preserve start time across multiple checkpoints', async () => {
-      const { LifecycleManager } = await import('../lifecycleManager');
-      const manager = new LifecycleManager();
+    it('should handle update event', async () => {
+      expect(onInstalledListener).toBeDefined();
 
-      const jobId = 'multi-checkpoint-789';
+      onInstalledListener?.({ reason: 'update', previousVersion: '1.0.0' });
 
-      // First checkpoint
-      await manager.saveJobCheckpoint(jobId, 'queued');
-      const firstStored = await localExtStorage.getItem(STORAGE_KEY);
-      expect(firstStored).toBeDefined();
-      const firstStartTime = firstStored?.[jobId].startTime;
+      await vi.waitFor(() => {
+        expect(mocks.logger.info).toHaveBeenCalledWith(
+          'LifecycleManager',
+          ' Updated from version 1.0.0',
+        );
+      });
+    });
 
-      // Wait a bit
-      await new Promise((resolve) => setTimeout(resolve, 10));
+    it('should log on browser startup', () => {
+      expect(onStartupListener).toBeDefined();
 
-      // Second checkpoint
-      await manager.saveJobCheckpoint(jobId, 'parsing');
-      const secondStored = await localExtStorage.getItem(STORAGE_KEY);
-      expect(secondStored).toBeDefined();
-      const secondStartTime = secondStored?.[jobId].startTime;
+      onStartupListener?.();
 
-      // Start time should be preserved
-      expect(secondStartTime).toBe(firstStartTime);
+      expect(mocks.logger.info).toHaveBeenCalledWith(
+        'LifecycleManager',
+        'onStartup: Browser started',
+      );
     });
   });
 });
