@@ -31,7 +31,7 @@
  * @see {@link UnsavedChangesModal} for navigation protection
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
 import type { UserSettings } from '@/shared/types/settings';
@@ -45,7 +45,7 @@ interface SettingsProps {
   onBack: () => void;
 }
 
-export const Settings = React.memo(({ onBack }: SettingsProps) => {
+export function Settings({ onBack }: SettingsProps) {
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [originalSettings, setOriginalSettings] = useState<UserSettings | null>(null);
   const [saving, setSaving] = useState(false);
@@ -233,4 +233,4 @@ export const Settings = React.memo(({ onBack }: SettingsProps) => {
       )}
     </>
   );
-});
+}

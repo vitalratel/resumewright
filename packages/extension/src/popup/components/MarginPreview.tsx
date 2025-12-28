@@ -1,8 +1,6 @@
 // ABOUTME: Visual margin preview component for PDF settings.
 // ABOUTME: Displays real-time margin visualization with page size awareness.
 
-import React from 'react';
-
 interface MarginPreviewProps {
   /** Current page size setting */
   pageSize: 'Letter' | 'A4' | 'Legal';
@@ -28,11 +26,7 @@ const PAGE_DIMENSIONS = {
   Legal: { width: 8.5, height: 14 },
 };
 
-const MarginPreviewComponent: React.FC<MarginPreviewProps> = ({
-  pageSize,
-  margins,
-  className = '',
-}) => {
+export function MarginPreview({ pageSize, margins, className = '' }: MarginPreviewProps) {
   const dimensions = PAGE_DIMENSIONS[pageSize];
 
   // Calculate percentage margins for visual display
@@ -207,8 +201,4 @@ const MarginPreviewComponent: React.FC<MarginPreviewProps> = ({
       </div>
     </div>
   );
-};
-
-MarginPreviewComponent.displayName = 'MarginPreview';
-
-export const MarginPreview = React.memo(MarginPreviewComponent);
+}

@@ -2,7 +2,7 @@
 // ABOUTME: Extracted from ErrorState to maintain single responsibility.
 
 import { CheckIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
-import { memo, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ErrorCategory } from '@/shared/errors/codes';
 import type { ErrorDetails as ErrorDetailsType } from '@/shared/errors/tracking/telemetry';
 import {
@@ -23,7 +23,7 @@ interface ErrorDetailsProps {
 /**
  * ErrorDetails component shows error ID, timestamp, and copy functionality
  */
-export const ErrorDetails = memo(({ error, category }: ErrorDetailsProps) => {
+export function ErrorDetails({ error, category }: ErrorDetailsProps) {
   const [copySuccess, setCopySuccess] = useState(false);
 
   // Memoize formatted timestamp to avoid calling twice per render
@@ -87,4 +87,4 @@ export const ErrorDetails = memo(({ error, category }: ErrorDetailsProps) => {
       </p>
     </div>
   );
-});
+}

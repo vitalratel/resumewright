@@ -2,7 +2,7 @@
 // ABOUTME: WCAG 2.1 AA compliant with proper ARIA roles and live regions.
 
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import React from 'react';
+import type { ReactNode } from 'react';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 
 type AlertVariant = 'error' | 'success' | 'info' | 'warning';
@@ -11,7 +11,7 @@ interface AlertProps {
   /** Visual and semantic variant */
   variant: AlertVariant;
   /** Alert content */
-  children: React.ReactNode;
+  children: ReactNode;
   /** Additional CSS classes */
   className?: string;
   /**
@@ -51,43 +51,41 @@ const variantClasses: Record<AlertVariant, string> = {
  *   <p>File uploaded successfully</p>
  * </Alert>
  */
-export const Alert = React.memo(
-  ({
-    variant,
-    children,
-    className = '',
-    assertive = variant === 'error',
-    dismissible = false,
-    onDismiss,
-  }: AlertProps) => {
-    // Warn if dismissible is true but onDismiss is not provided
-    if (import.meta.env.MODE !== 'production' && dismissible && !onDismiss) {
-      getLogger().warn(
-        'Alert',
-        'dismissible=true but onDismiss is not provided. Button will not render.',
-      );
-    }
-
-    return (
-      <div
-        role={assertive ? 'alert' : 'status'}
-        aria-live={assertive ? 'assertive' : 'polite'}
-        className={`p-3 border rounded-md text-sm ${variantClasses[variant]} ${dismissible ? 'flex items-start justify-between gap-3' : ''} ${className}`}
-      >
-        <div className={dismissible ? 'flex-1' : ''}>{children}</div>
-
-        {/* Dismissible button */}
-        {dismissible && onDismiss && (
-          <button
-            onClick={onDismiss}
-            className="shrink-0 hover:bg-muted rounded-md p-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset"
-            aria-label="Dismiss alert"
-            type="button"
-          >
-            <XMarkIcon className="w-5 h-5" aria-hidden="true" />
-          </button>
-        )}
-      </div>
+export function Alert({
+  variant,
+  children,
+  className = '',
+  assertive = variant === 'error',
+  dismissible = false,
+  onDismiss,
+}: AlertProps) {
+  // Warn if dismissible is true but onDismiss is not provided
+  if (import.meta.env.MODE !== 'production' && dismissible && !onDismiss) {
+    getLogger().warn(
+      'Alert',
+      'dismissible=true but onDismiss is not provided. Button will not render.',
     );
-  },
-);
+  }
+
+  return (
+    <div
+      role={assertive ? 'alert' : 'status'}
+      aria-live={assertive ? 'assertive' : 'polite'}
+      className={`p-3 border rounded-md text-sm ${variantClasses[variant]} ${dismissible ? 'flex items-start justify-between gap-3' : ''} ${className}`}
+    >
+      <div className={dismissible ? 'flex-1' : ''}>{children}</div>
+
+      {/* Dismissible button */}
+      {dismissible && onDismiss && (
+        <button
+          onClick={onDismiss}
+          className="shrink-0 hover:bg-muted rounded-md p-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset"
+          aria-label="Dismiss alert"
+          type="button"
+        >
+          <XMarkIcon className="w-5 h-5" aria-hidden="true" />
+        </button>
+      )}
+    </div>
+  );
+}

@@ -1,8 +1,6 @@
 // ABOUTME: Skeleton loading components for better perceived performance.
 // ABOUTME: Multiple variants (text, rect, circle) with pulse animation.
 
-import React from 'react';
-
 interface SkeletonProps {
   /** Additional CSS classes for custom sizing */
   className?: string;
@@ -10,7 +8,7 @@ interface SkeletonProps {
   variant?: 'text' | 'rect' | 'circle';
 }
 
-export const Skeleton = React.memo(({ className = '', variant = 'rect' }: SkeletonProps) => {
+export function Skeleton({ className = '', variant = 'rect' }: SkeletonProps) {
   const baseClasses = 'animate-pulse bg-muted';
   const variantClasses = {
     text: 'h-4 rounded-md',
@@ -24,9 +22,9 @@ export const Skeleton = React.memo(({ className = '', variant = 'rect' }: Skelet
       aria-hidden="true"
     />
   );
-});
+}
 
-export const SkeletonFileImport = React.memo(() => {
+export function SkeletonFileImport() {
   return (
     <div
       className="border-2 border-border rounded-lg p-4 space-y-6 md:space-y-8"
@@ -44,9 +42,9 @@ export const SkeletonFileImport = React.memo(() => {
       </div>
     </div>
   );
-});
+}
 
-export const SkeletonSettings = React.memo(() => {
+export function SkeletonSettings() {
   return (
     <div className="space-y-6 md:space-y-8" aria-hidden="true" role="presentation">
       <div className="gap-2">
@@ -73,9 +71,9 @@ export const SkeletonSettings = React.memo(() => {
       </div>
     </div>
   );
-});
+}
 
-export const SkeletonHeader = React.memo(() => {
+export function SkeletonHeader() {
   return (
     <div
       className="flex justify-between items-center p-4 border-b border-border"
@@ -89,13 +87,13 @@ export const SkeletonHeader = React.memo(() => {
       <Skeleton className="w-8 h-8" variant="circle" />
     </div>
   );
-});
+}
 
-export const SkeletonExportSection = React.memo(() => {
+export function SkeletonExportSection() {
   return (
     <div className="px-6 py-8 md:px-8 md:py-10 space-y-4" aria-hidden="true" role="presentation">
       <Skeleton className="w-full h-11" />
       <Skeleton className="w-48 h-3 mx-auto" variant="text" />
     </div>
   );
-});
+}

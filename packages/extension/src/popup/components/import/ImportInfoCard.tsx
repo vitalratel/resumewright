@@ -2,7 +2,7 @@
 // ABOUTME: Auto-minimizes after 3 launches using localStorage tracking.
 
 import { ChevronDownIcon, ChevronUpIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocalStorage } from '../../hooks/integration/useLocalStorage';
 import { LocalStorageKeys } from '../../utils/localStorage';
 import { TSX } from '../common/TechTerm';
@@ -18,7 +18,7 @@ const AUTO_MINIMIZE_AFTER_LAUNCHES = 3;
  * - Launch count tracking in localStorage
  * - Accessible labels and ARIA
  */
-export const ImportInfoCard = React.memo(() => {
+export function ImportInfoCard() {
   // Info card minimize functionality
   // Namespaced localStorage keys to prevent conflicts
   const [infoCardMinimized, setInfoCardMinimized] = useLocalStorage(
@@ -102,4 +102,4 @@ export const ImportInfoCard = React.memo(() => {
       </div>
     </div>
   );
-});
+}

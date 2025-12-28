@@ -73,6 +73,7 @@
     "@webext-core/messaging": "^2.3.0",
     "autoprefixer": "^10.4.23",
     "axe-core": "^4.11.0",
+    "babel-plugin-react-compiler": "^1.0.0",
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.0.11",
     "jest-axe": "^10.0.0",

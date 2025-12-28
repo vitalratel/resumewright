@@ -1,7 +1,7 @@
 // ABOUTME: State machine content renderer using Context API.
 // ABOUTME: Renders different content based on UI state (import, converting, success, error).
 
-import React, { useTransition } from 'react';
+import { useTransition } from 'react';
 import { generateFilename } from '../../../shared/utils/filenameSanitization';
 import { useAppContext } from '../../context/AppContext';
 import { useConversion } from '../../context/ConversionContext';
@@ -12,7 +12,7 @@ import { ErrorBoundary, SectionErrorBoundary } from '../ErrorBoundary';
 import { FileImport } from '../FileImport';
 import { FileValidatedView } from './FileValidatedView';
 
-export const MainContent = React.memo(() => {
+export function MainContent() {
   const { appState, successRef, errorRef } = useAppContext();
   const conversionHandlers = useConversion();
 
@@ -79,4 +79,4 @@ export const MainContent = React.memo(() => {
       )}
     </main>
   );
-});
+}
