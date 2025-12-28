@@ -455,7 +455,6 @@ describe('App Integration Tests', () => {
         stage: 'generating-pdf',
         recoverable: true,
         suggestions: ['Try again', 'Check console for details'],
-        errorId: 'test-error-id',
         timestamp: Date.now(),
       });
 

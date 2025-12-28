@@ -8,7 +8,6 @@ import type { ConversionError, ConversionStatus, ErrorMetadata } from '../../typ
 import type { ErrorCode } from '../codes';
 import { ERROR_MESSAGES, ERROR_RECOVERABLE, ERROR_SUGGESTIONS } from '../messages';
 import { ERROR_CATEGORIES } from '../metadata';
-import { generateErrorId, trackError } from '../tracking/telemetry';
 
 /**
  * Options for creating a ConversionError
@@ -58,22 +57,10 @@ export function createConversionError(options: CreateErrorOptions): ConversionEr
     technicalDetails,
     recoverable: ERROR_RECOVERABLE[code],
     timestamp: Date.now(),
-    errorId: generateErrorId(),
     suggestions: ERROR_SUGGESTIONS[code],
     category: ERROR_CATEGORIES[code],
     metadata,
   };
-
-  // Track error in telemetry (async, non-blocking)
-  void trackError({
-    errorId: error.errorId,
-    timestamp: new Date(error.timestamp).toISOString(),
-    code: error.code,
-    message: error.message,
-    category: error.category,
-    technicalDetails: error.technicalDetails,
-    metadata: error.metadata as Record<string, unknown> | undefined,
-  });
 
   return error;
 }

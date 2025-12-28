@@ -27,7 +27,6 @@ describe('ErrorActions', () => {
     stage: 'generating-pdf',
     code: ErrorCode.WASM_EXECUTION_ERROR,
     message: 'Test error',
-    errorId: 'test-123',
     timestamp: Date.now(),
     recoverable: true,
     suggestions: [],
@@ -337,7 +336,7 @@ describe('ErrorActions', () => {
       const copyButton = screen.getByText('Copy Error Details');
       await user.click(copyButton);
 
-      expect(copyToClipboard).toHaveBeenCalledWith(expect.stringContaining('test-123'));
+      expect(copyToClipboard).toHaveBeenCalledWith(expect.stringContaining('WASM_EXECUTION_ERROR'));
 
       import.meta.env.DEV = originalEnv;
     });

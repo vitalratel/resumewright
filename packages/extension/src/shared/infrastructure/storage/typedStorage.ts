@@ -7,7 +7,6 @@
 
 import { defineExtensionStorage } from '@webext-core/storage';
 import { browser } from 'wxt/browser';
-import type { ErrorEvent } from '@/shared/errors/tracking/telemetry';
 import type { UserSettings } from '@/shared/types/settings';
 
 /**
@@ -31,9 +30,6 @@ interface LocalStorageSchema {
   wasmInitTime: number | null;
   wasmInitError: string | null;
   wasmBadgeError: WasmBadgeError | null;
-
-  // Error telemetry
-  errorTelemetry: ErrorEvent[] | null;
 
   // Settings fallback (primary is sync storage)
   'resumewright-settings': UserSettings | null;

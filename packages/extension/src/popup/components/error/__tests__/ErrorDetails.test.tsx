@@ -25,7 +25,7 @@ vi.mock('@/shared/errors/tracking/telemetry', () => ({
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
   }),
   formatErrorDetailsForClipboard: vi.fn((details) => {
-    return `Error ID: ${details.errorId}\nTime: ${details.timestamp}\nCode: ${details.code}\nMessage: ${details.message}`;
+    return `Error Code: ${details.code}\nTime: ${details.timestamp}\nMessage: ${details.message}`;
   }),
   copyToClipboard: vi.fn(),
 }));
@@ -38,7 +38,6 @@ function createError(overrides: Partial<ConversionError> = {}): ConversionError 
     stage: 'generating-pdf',
     code: ErrorCode.WASM_EXECUTION_ERROR,
     message: 'Test error message',
-    errorId: 'test-error-123',
     timestamp: Date.now(),
     recoverable: true,
     suggestions: [],
@@ -58,19 +57,12 @@ describe('ErrorDetails', () => {
   });
 
   describe('Rendering', () => {
-    it('renders error ID', () => {
-      const error = createError({ errorId: 'ABC-123-XYZ' });
+    it('renders error code', () => {
+      const error = createError({ code: ErrorCode.TSX_PARSE_ERROR });
       render(<ErrorDetails error={error} />);
 
-      expect(screen.getByText('Error ID:')).toBeInTheDocument();
-      expect(screen.getByText('ABC-123-XYZ')).toBeInTheDocument();
-    });
-
-    it('renders "UNKNOWN" when error ID is missing', () => {
-      const error = createError({ errorId: undefined });
-      render(<ErrorDetails error={error} />);
-
-      expect(screen.getByText('UNKNOWN')).toBeInTheDocument();
+      expect(screen.getByText('Error Code:')).toBeInTheDocument();
+      expect(screen.getByText(ErrorCode.TSX_PARSE_ERROR)).toBeInTheDocument();
     });
 
     it('renders formatted timestamp', () => {
@@ -98,7 +90,7 @@ describe('ErrorDetails', () => {
       const error = createError();
       render(<ErrorDetails error={error} />);
 
-      expect(screen.getByText(/Use the error ID above when reporting/i)).toBeInTheDocument();
+      expect(screen.getByText(/Use the error code above when reporting/i)).toBeInTheDocument();
     });
 
     it('applies correct styling classes', () => {
@@ -115,7 +107,6 @@ describe('ErrorDetails', () => {
     it('calls copyToClipboard with formatted error details when copy button clicked', async () => {
       const user = userEvent.setup();
       const error = createError({
-        errorId: 'test-123',
         code: ErrorCode.WASM_EXECUTION_ERROR,
         message: 'Test error',
         technicalDetails: 'Details',
@@ -132,7 +123,6 @@ describe('ErrorDetails', () => {
       await waitFor(() => {
         expect(formatErrorDetailsForClipboard).toHaveBeenCalledWith(
           expect.objectContaining({
-            errorId: 'test-123',
             code: ErrorCode.WASM_EXECUTION_ERROR,
             message: 'Test error',
             category: ErrorCategory.SYNTAX,
@@ -435,13 +425,13 @@ describe('ErrorDetails', () => {
       expect(copyButton).toHaveAttribute('aria-label', 'Copy error details to clipboard');
     });
 
-    it('error ID is in code element for semantic markup', () => {
-      const error = createError({ errorId: 'TEST-123' });
+    it('error code is in code element for semantic markup', () => {
+      const error = createError({ code: ErrorCode.TSX_PARSE_ERROR });
       const { container } = render(<ErrorDetails error={error} />);
 
       const codeElement = container.querySelector('code');
       expect(codeElement).toBeInTheDocument();
-      expect(codeElement).toHaveTextContent('TEST-123');
+      expect(codeElement).toHaveTextContent(ErrorCode.TSX_PARSE_ERROR);
       expect(codeElement).toHaveClass('font-mono');
     });
 
@@ -483,24 +473,6 @@ describe('ErrorDetails', () => {
   });
 
   describe('Edge Cases', () => {
-    it('handles very long error IDs', () => {
-      const longErrorId = 'A'.repeat(100);
-      const error = createError({ errorId: longErrorId });
-
-      render(<ErrorDetails error={error} />);
-
-      expect(screen.getByText(longErrorId)).toBeInTheDocument();
-    });
-
-    it('handles special characters in error ID', () => {
-      const specialId = 'ERR-2024-01-15T14:30:00.123Z-ABC_123-XYZ';
-      const error = createError({ errorId: specialId });
-
-      render(<ErrorDetails error={error} />);
-
-      expect(screen.getByText(specialId)).toBeInTheDocument();
-    });
-
     it('handles rapid multiple clicks gracefully', async () => {
       const user = userEvent.setup();
       const error = createError();
@@ -558,17 +530,17 @@ describe('ErrorDetails', () => {
     });
 
     it('re-renders when error prop changes', () => {
-      const error1 = createError({ errorId: 'ERROR-1' });
-      const error2 = createError({ errorId: 'ERROR-2' });
+      const error1 = createError({ code: ErrorCode.WASM_EXECUTION_ERROR });
+      const error2 = createError({ code: ErrorCode.TSX_PARSE_ERROR });
 
       const { rerender } = render(<ErrorDetails error={error1} />);
 
-      expect(screen.getByText('ERROR-1')).toBeInTheDocument();
+      expect(screen.getByText(ErrorCode.WASM_EXECUTION_ERROR)).toBeInTheDocument();
 
       rerender(<ErrorDetails error={error2} />);
 
-      expect(screen.queryByText('ERROR-1')).not.toBeInTheDocument();
-      expect(screen.getByText('ERROR-2')).toBeInTheDocument();
+      expect(screen.queryByText(ErrorCode.WASM_EXECUTION_ERROR)).not.toBeInTheDocument();
+      expect(screen.getByText(ErrorCode.TSX_PARSE_ERROR)).toBeInTheDocument();
     });
   });
 });

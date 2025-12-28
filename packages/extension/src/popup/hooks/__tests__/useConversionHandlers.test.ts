@@ -263,7 +263,6 @@ describe('useConversionHandlers', () => {
         message: 'Test error',
         recoverable: true,
         timestamp: Date.now(),
-        errorId: 'error-123',
         suggestions: [],
       };
       mockAppState.lastError = testError;
@@ -274,7 +273,7 @@ describe('useConversionHandlers', () => {
         await result.current.handleReportIssue();
       });
 
-      expect(copyToClipboard).toHaveBeenCalledWith(expect.stringContaining('error-123'));
+      expect(copyToClipboard).toHaveBeenCalledWith(expect.stringContaining('TSX_PARSE_ERROR'));
     });
 
     it('does not copy when no error exists', async () => {

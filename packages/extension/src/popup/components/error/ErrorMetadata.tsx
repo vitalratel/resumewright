@@ -1,4 +1,4 @@
-// ABOUTME: Displays error ID, timestamp, and copy-to-clipboard functionality.
+// ABOUTME: Displays error code, timestamp, and copy-to-clipboard functionality.
 // ABOUTME: Provides tracking information for support purposes.
 
 import { CheckIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
@@ -13,9 +13,6 @@ import type { ErrorMetadata as ErrorMetadataType } from '@/shared/types/models';
 import { useLoadingState } from '../../hooks/ui/useLoadingState';
 
 interface ErrorMetadataProps {
-  /** Error ID for tracking */
-  errorId?: string;
-
   /** Error timestamp */
   timestamp: number;
 
@@ -39,10 +36,9 @@ interface ErrorMetadataProps {
  * ErrorMetadata Component
  *
  * Displays error tracking information with copy-to-clipboard functionality.
- * Provides user with error ID and timestamp for support purposes.
+ * Provides user with error code and timestamp for support purposes.
  */
 export function ErrorMetadata({
-  errorId,
   timestamp,
   code,
   message,
@@ -63,7 +59,6 @@ export function ErrorMetadata({
   const handleCopyError = async () => {
     await executeCopy(async () => {
       const errorDetails: ErrorDetails = {
-        errorId: errorId !== null && errorId !== undefined && errorId !== '' ? errorId : 'N/A',
         timestamp: formatErrorTimestamp(new Date(timestamp)),
         code,
         message,
@@ -86,9 +81,9 @@ export function ErrorMetadata({
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground">Error ID:</span>
+            <span className="text-sm font-medium text-muted-foreground">Error Code:</span>
             <code className="text-sm font-mono text-foreground bg-card px-2 py-0.5 rounded-md border border-border">
-              {errorId !== null && errorId !== undefined && errorId !== '' ? errorId : 'UNKNOWN'}
+              {code}
             </code>
           </div>
           <div className="flex items-center gap-2">
@@ -148,9 +143,9 @@ export function ErrorMetadata({
         </button>
       </div>
 
-      {/* Suggestion to report with error ID */}
+      {/* Suggestion to report with error code */}
       <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-        Use the error ID above when reporting this issue for faster resolution.
+        Use the error code above when reporting this issue for faster resolution.
       </p>
     </div>
   );

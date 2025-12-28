@@ -13,7 +13,6 @@ import {
   copyToClipboard,
   formatErrorDetailsForClipboard,
   formatErrorTimestamp,
-  generateErrorId,
 } from '@/shared/errors/tracking/telemetry';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 import type { WasmCompatibilityReport } from '@/shared/infrastructure/wasm/compatibility';
@@ -76,7 +75,6 @@ export const WasmFallback = React.memo(
         code: ErrorCode.WASM_INIT_FAILED,
         message: 'Failed to initialize WASM converter',
         timestamp: Date.now(),
-        errorId: generateErrorId(),
         recoverable: true,
         suggestions: ['Restart browser', 'Check WebAssembly support', 'Update browser'],
         category: ErrorCategory.SYSTEM,
@@ -90,7 +88,6 @@ export const WasmFallback = React.memo(
 
       // Copy error details to clipboard
       const details = formatErrorDetailsForClipboard({
-        errorId: wasmError.errorId,
         timestamp: formatErrorTimestamp(new Date(wasmError.timestamp)),
         code: wasmError.code,
         message: wasmError.message,

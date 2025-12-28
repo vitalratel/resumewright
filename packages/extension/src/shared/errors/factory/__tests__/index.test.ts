@@ -21,12 +21,6 @@ import {
 import { createTsxParseError } from '../validationErrors';
 import { createWasmInitError } from '../wasmErrors';
 
-// Mock error ID generation and telemetry
-vi.mock('../../tracking/telemetry', () => ({
-  generateErrorId: vi.fn(() => 'test-error-id-123'),
-  trackError: vi.fn(), // Mock telemetry tracking
-}));
-
 describe('Error Factory', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -49,7 +43,6 @@ describe('Error Factory', () => {
         suggestions: expect.any(Array),
         category: expect.any(String),
         timestamp: expect.any(Number),
-        errorId: 'test-error-id-123',
       });
     });
 
@@ -106,15 +99,6 @@ describe('Error Factory', () => {
 
       expect(error.timestamp).toBeGreaterThanOrEqual(before);
       expect(error.timestamp).toBeLessThanOrEqual(after);
-    });
-
-    it('should generate unique error ID', () => {
-      const error = createConversionError({
-        code: ErrorCode.TSX_PARSE_ERROR,
-        stage: 'parsing',
-      });
-
-      expect(error.errorId).toBe('test-error-id-123');
     });
 
     it('should set recoverable flag based on error code', () => {
@@ -461,7 +445,6 @@ describe('Error Factory', () => {
         expect(error).toHaveProperty('suggestions');
         expect(error).toHaveProperty('category');
         expect(error).toHaveProperty('timestamp');
-        expect(error).toHaveProperty('errorId');
       });
     });
 
@@ -473,16 +456,6 @@ describe('Error Factory', () => {
 
       expect(error.timestamp).toBeGreaterThan(0);
       expect(error.timestamp).toBeLessThanOrEqual(Date.now());
-    });
-
-    it('should have non-empty error IDs', () => {
-      const error = createConversionError({
-        code: ErrorCode.TSX_PARSE_ERROR,
-        stage: 'parsing',
-      });
-
-      expect(error.errorId).toBeTruthy();
-      expect(error.errorId.length).toBeGreaterThan(0);
     });
 
     it('should have non-empty messages', () => {
@@ -559,41 +532,6 @@ describe('Error Factory', () => {
       });
 
       expect(error.metadata).toBeUndefined();
-    });
-  });
-
-  describe('integration with error tracking', () => {
-    it('should call generateErrorId for each error', async () => {
-      const telemetry = await import('../../tracking/telemetry');
-
-      createConversionError({
-        code: ErrorCode.TSX_PARSE_ERROR,
-        stage: 'parsing',
-      });
-
-      expect(telemetry.generateErrorId).toHaveBeenCalledOnce();
-    });
-
-    it('should generate unique IDs for multiple errors', async () => {
-      const telemetry = await import('../../tracking/telemetry');
-      let idCounter = 0;
-      vi.mocked(telemetry.generateErrorId).mockImplementation(() => {
-        idCounter += 1;
-        return `id-${idCounter}`;
-      });
-
-      const error1 = createConversionError({
-        code: ErrorCode.TSX_PARSE_ERROR,
-        stage: 'parsing',
-      });
-
-      const error2 = createConversionError({
-        code: ErrorCode.PDF_GENERATION_FAILED,
-        stage: 'generating-pdf',
-      });
-
-      expect(error1.errorId).toBe('id-1');
-      expect(error2.errorId).toBe('id-2');
     });
   });
 });

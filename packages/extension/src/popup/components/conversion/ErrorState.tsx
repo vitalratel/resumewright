@@ -171,7 +171,6 @@ export const ErrorState = memo(
         )}
 
         <ErrorMetadata
-          errorId={error.errorId}
           timestamp={error.timestamp}
           code={error.code}
           message={error.message}

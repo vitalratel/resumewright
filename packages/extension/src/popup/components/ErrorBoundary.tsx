@@ -4,7 +4,6 @@
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import type { ErrorInfo, ReactNode } from 'react';
 import { Component } from 'react';
-import { formatErrorTimestamp, logErrorToService } from '@/shared/errors/tracking/telemetry';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 
 interface ErrorBoundaryProps {
@@ -37,53 +36,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Logging for dev
     getLogger().error('ErrorBoundary', 'React Error Boundary caught an error', {
       error,
       errorInfo,
     });
 
-    // External logging for production with PII sanitization (fix)
-    if (import.meta.env.PROD) {
-      void logErrorToService({
-        errorId: `REACT-${Date.now()}`,
-        code: 'REACT_ERROR',
-        message: error.message, // Message only, no stack with user data
-        timestamp: formatErrorTimestamp(),
-        category: 'React Error Boundary',
-        technicalDetails: this.sanitizeComponentStack(errorInfo.componentStack),
-        metadata: {
-          userAgent: navigator.userAgent,
-          extensionVersion: browser.runtime?.getManifest?.()?.version || 'unknown',
-          url: window.location.href,
-        },
-        // DO NOT include: error.stack, settings, CV content, localStorage
-      });
-    }
-
     this.setState({
       error,
       errorInfo,
     });
-  }
-
-  /**
-   * Sanitizes component stack to remove file paths, variable names, and potential PII
-   * @param stack - The component stack from errorInfo
-   * @returns Sanitized stack trace or undefined if empty
-   */
-  private sanitizeComponentStack(stack: string | null | undefined): string | undefined {
-    if (stack === null || stack === undefined) return undefined;
-
-    // Remove file paths, variable names, and potential PII
-    return stack
-      .split('\n')
-      .map((line) => {
-        // Replace specific file paths and function names with generic labels
-        return line.replace(/at [^(]*\([^)]*\)/, 'at Component');
-      })
-      .join('\n')
-      .substring(0, 500); // Limit length to prevent excessive data
   }
 
   handleReset = (): void => {
@@ -212,33 +173,7 @@ export class SectionErrorBoundary extends Component<SectionErrorBoundaryProps, E
       section,
     });
 
-    // Log to external service in production
-    if (import.meta.env.PROD) {
-      void logErrorToService({
-        errorId: `SECTION-${Date.now()}`,
-        code: 'SECTION_ERROR',
-        message: error.message,
-        timestamp: formatErrorTimestamp(),
-        category: `Section Error: ${section}`,
-        technicalDetails: this.sanitizeComponentStack(errorInfo.componentStack),
-        metadata: {
-          section,
-          userAgent: navigator.userAgent,
-          extensionVersion: browser.runtime?.getManifest?.()?.version || 'unknown',
-        },
-      });
-    }
-
     this.setState({ error, errorInfo });
-  }
-
-  private sanitizeComponentStack(stack: string | null | undefined): string | undefined {
-    if (stack === null || stack === undefined) return undefined;
-    return stack
-      .split('\n')
-      .map((line) => line.replace(/at [^(]*\([^)]*\)/, 'at Component'))
-      .join('\n')
-      .substring(0, 500);
   }
 
   handleReset = (): void => {

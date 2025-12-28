@@ -4,7 +4,6 @@
  * Sanitizes error messages for security
  */
 
-import { generateErrorId } from '@/shared/errors/tracking/telemetry';
 /**
  * Parse and enrich error information for ConversionError.
  * Provides user-friendly errors with full debugging context.
@@ -129,7 +128,6 @@ export function parseConversionError(error: unknown, _jobId: string): Conversion
     code: code as ErrorCode,
     message: sanitizedMessage,
     timestamp: Date.now(),
-    errorId: generateErrorId(),
     technicalDetails: sanitizedTechnicalDetails,
     recoverable: code !== 'MEMORY_LIMIT_EXCEEDED', // Size errors not recoverable
     suggestions,

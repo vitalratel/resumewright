@@ -1,14 +1,9 @@
 // ABOUTME: Tests for WASM error parsing module.
 // ABOUTME: Covers JSON parsing, stage mapping, and fallback error handling.
 
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { ErrorCode } from '../../errors/codes';
 import { parseWasmError } from './errors';
-
-// Mock the telemetry module to avoid side effects
-vi.mock('../../errors/tracking/telemetry', () => ({
-  generateErrorId: vi.fn(() => 'ERR-TEST-123456-ABCD'),
-}));
 
 describe('parseWasmError', () => {
   describe('valid JSON error parsing', () => {
@@ -30,7 +25,6 @@ describe('parseWasmError', () => {
       expect(result.technicalDetails).toBe('Syntax error at line 5');
       expect(result.recoverable).toBe(true);
       expect(result.suggestions).toEqual(['Check syntax', 'Try again']);
-      expect(result.errorId).toBe('ERR-TEST-123456-ABCD');
       expect(result.timestamp).toBeTypeOf('number');
     });
 

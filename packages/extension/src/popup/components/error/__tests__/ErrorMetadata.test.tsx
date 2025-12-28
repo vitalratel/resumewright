@@ -35,7 +35,6 @@ vi.mock('@/shared/errors/tracking/telemetry', () => ({
 
 describe('ErrorMetadata', () => {
   const baseProps = {
-    errorId: 'ERR-123-456',
     timestamp: Date.now(),
     code: ErrorCode.WASM_EXECUTION_ERROR,
     message: 'Test error message',
@@ -50,25 +49,19 @@ describe('ErrorMetadata', () => {
     mockCopyToClipboard.mockResolvedValue(true);
   });
 
-  describe('Error ID Display', () => {
-    it('displays error ID when provided', () => {
-      render(<ErrorMetadata {...baseProps} errorId="ERR-ABC-123" />);
+  describe('Error Code Display', () => {
+    it('displays error code', () => {
+      render(<ErrorMetadata {...baseProps} />);
 
-      expect(screen.getByText('Error ID:')).toBeInTheDocument();
-      expect(screen.getByText('ERR-ABC-123')).toBeInTheDocument();
+      expect(screen.getByText('Error Code:')).toBeInTheDocument();
+      expect(screen.getByText(ErrorCode.WASM_EXECUTION_ERROR)).toBeInTheDocument();
     });
 
-    it('displays "UNKNOWN" when error ID not provided', () => {
-      render(<ErrorMetadata {...baseProps} errorId={undefined} />);
+    it('renders error code in monospace font', () => {
+      render(<ErrorMetadata {...baseProps} />);
 
-      expect(screen.getByText('UNKNOWN')).toBeInTheDocument();
-    });
-
-    it('renders error ID in monospace font', () => {
-      render(<ErrorMetadata {...baseProps} errorId="ERR-123" />);
-
-      const errorIdElement = screen.getByText('ERR-123');
-      expect(errorIdElement).toHaveClass('font-mono');
+      const errorCodeElement = screen.getByText(ErrorCode.WASM_EXECUTION_ERROR);
+      expect(errorCodeElement).toHaveClass('font-mono');
     });
   });
 
@@ -119,7 +112,6 @@ describe('ErrorMetadata', () => {
 
       await waitFor(() => {
         expect(mockFormatErrorDetailsForClipboard).toHaveBeenCalledWith({
-          errorId: baseProps.errorId,
           timestamp: mockFormatErrorTimestamp.mock.results[0].value,
           code: baseProps.code,
           message: baseProps.message,
@@ -306,7 +298,9 @@ describe('ErrorMetadata', () => {
       render(<ErrorMetadata {...baseProps} />);
 
       expect(
-        screen.getByText(/Use the error ID above when reporting this issue for faster resolution/i),
+        screen.getByText(
+          /Use the error code above when reporting this issue for faster resolution/i,
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -367,20 +361,6 @@ describe('ErrorMetadata', () => {
   });
 
   describe('Edge Cases', () => {
-    it('handles extremely long error IDs', () => {
-      const longErrorId = `ERR-${'A'.repeat(100)}`;
-      render(<ErrorMetadata {...baseProps} errorId={longErrorId} />);
-
-      expect(screen.getByText(longErrorId)).toBeInTheDocument();
-    });
-
-    it('handles error ID with special characters', () => {
-      const specialErrorId = 'ERR-!@#$%^&*()';
-      render(<ErrorMetadata {...baseProps} errorId={specialErrorId} />);
-
-      expect(screen.getByText(specialErrorId)).toBeInTheDocument();
-    });
-
     it('handles missing optional props', () => {
       render(
         <ErrorMetadata
@@ -390,7 +370,7 @@ describe('ErrorMetadata', () => {
         />,
       );
 
-      expect(screen.getByText('UNKNOWN')).toBeInTheDocument();
+      expect(screen.getByText(ErrorCode.WASM_EXECUTION_ERROR)).toBeInTheDocument();
       expect(screen.getByText('Copy Details')).toBeInTheDocument();
     });
 
@@ -407,7 +387,7 @@ describe('ErrorMetadata', () => {
 
       render(<ErrorMetadata {...allProps} />);
 
-      expect(screen.getByText(baseProps.errorId)).toBeInTheDocument();
+      expect(screen.getByText(baseProps.code)).toBeInTheDocument();
       expect(screen.getByText('Copy Details')).toBeInTheDocument();
     });
   });
