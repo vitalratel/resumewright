@@ -171,22 +171,25 @@ pub fn apply_pdfa1b_compliance(
 /// # Arguments
 /// * `doc` - Mutable reference to the PDF document
 /// * `page_ids` - List of page object IDs to update
+/// * `text_content` - Text content for font subsetting
 ///
 /// # Returns
 /// Result indicating success or failure of the operation.
 pub fn embed_standard_fonts_for_pages(
     doc: &mut lopdf::Document,
     page_ids: &[(u32, u16)],
+    text_content: &str,
 ) -> Result<(), PDFError> {
     use crate::standard_fonts::embed_standard_font;
     use layout_types::{FontStyle, FontWeight};
     use lopdf::{dictionary, Object};
 
     // First, embed all font variants and collect their IDs
-    let regular_id = embed_standard_font(doc, FontWeight::Normal, FontStyle::Normal)?;
-    let bold_id = embed_standard_font(doc, FontWeight::Bold, FontStyle::Normal)?;
-    let italic_id = embed_standard_font(doc, FontWeight::Normal, FontStyle::Italic)?;
-    let bold_italic_id = embed_standard_font(doc, FontWeight::Bold, FontStyle::Italic)?;
+    let regular_id = embed_standard_font(doc, FontWeight::Normal, FontStyle::Normal, text_content)?;
+    let bold_id = embed_standard_font(doc, FontWeight::Bold, FontStyle::Normal, text_content)?;
+    let italic_id = embed_standard_font(doc, FontWeight::Normal, FontStyle::Italic, text_content)?;
+    let bold_italic_id =
+        embed_standard_font(doc, FontWeight::Bold, FontStyle::Italic, text_content)?;
 
     // Then, add fonts to each page's resources
     for &page_id in page_ids {
@@ -296,6 +299,8 @@ mod tests {
         assert!(catalog.get(b"OutputIntents").is_ok());
     }
 
+    const TEST_TEXT: &str = "Hello World";
+
     #[test]
     fn test_embed_standard_fonts_for_pages() {
         use lopdf::dictionary;
@@ -309,7 +314,7 @@ mod tests {
         };
         let page_id = doc.add_object(page);
 
-        let result = embed_standard_fonts_for_pages(&mut doc, &[page_id]);
+        let result = embed_standard_fonts_for_pages(&mut doc, &[page_id], TEST_TEXT);
         assert!(result.is_ok());
 
         // Verify fonts were added to page resources
@@ -361,7 +366,7 @@ mod tests {
         let invalid_page_id = doc.add_object(Object::Null);
 
         // Should succeed but skip non-dictionary pages silently
-        let result = embed_standard_fonts_for_pages(&mut doc, &[invalid_page_id]);
+        let result = embed_standard_fonts_for_pages(&mut doc, &[invalid_page_id], TEST_TEXT);
         assert!(result.is_ok());
     }
 
@@ -378,7 +383,7 @@ mod tests {
         let page_id = doc.add_object(page);
 
         // Should succeed by creating Resources dictionary
-        let result = embed_standard_fonts_for_pages(&mut doc, &[page_id]);
+        let result = embed_standard_fonts_for_pages(&mut doc, &[page_id], TEST_TEXT);
         assert!(result.is_ok());
 
         // Verify Resources and Font were created
@@ -407,7 +412,7 @@ mod tests {
         let page2_id = doc.add_object(page2);
 
         // Should succeed for both pages
-        let result = embed_standard_fonts_for_pages(&mut doc, &[page1_id, page2_id]);
+        let result = embed_standard_fonts_for_pages(&mut doc, &[page1_id, page2_id], TEST_TEXT);
         assert!(result.is_ok());
 
         // Verify both pages have fonts

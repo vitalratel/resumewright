@@ -191,6 +191,7 @@ fn test_subset_embed_pipeline() {
         "Roboto",
         400,   // Regular weight
         false, // Not italic
+        None,  // Full font (no subsetting mapping)
     )
     .expect("Font embedding should succeed");
 
@@ -258,7 +259,7 @@ fn test_full_pipeline() {
 
     // Step 3: Embed in PDF
     let mut doc = Document::with_version("1.7");
-    let embedded_font = embed_truetype_font(&mut doc, &subset_bytes, "Roboto", 400, false)
+    let embedded_font = embed_truetype_font(&mut doc, &subset_bytes, "Roboto", 400, false, None)
         .expect("Font embedding should succeed");
 
     // Step 4: Validate complete pipeline
@@ -334,13 +335,13 @@ fn test_embed_different_variants() {
     let mut doc = Document::with_version("1.7");
 
     // Embed same font with different metadata
-    let regular = embed_truetype_font(&mut doc, ROBOTO_TTF, "Roboto", 400, false)
+    let regular = embed_truetype_font(&mut doc, ROBOTO_TTF, "Roboto", 400, false, None)
         .expect("Regular embedding should succeed");
 
-    let bold = embed_truetype_font(&mut doc, ROBOTO_TTF, "Roboto", 700, false)
+    let bold = embed_truetype_font(&mut doc, ROBOTO_TTF, "Roboto", 700, false, None)
         .expect("Bold embedding should succeed");
 
-    let italic = embed_truetype_font(&mut doc, ROBOTO_TTF, "Roboto", 400, true)
+    let italic = embed_truetype_font(&mut doc, ROBOTO_TTF, "Roboto", 400, true, None)
         .expect("Italic embedding should succeed");
 
     // Verify different resource names

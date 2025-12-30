@@ -180,6 +180,7 @@ fn test_subset_metrics_is_public() {
         subset_glyphs: 150,
         size_reduction_pct: 80.0,
         glyph_reduction_pct: 85.0,
+        cid_to_new_gid: std::collections::BTreeMap::new(),
     };
 
     assert_eq!(metrics.original_size, 100000);
@@ -191,8 +192,8 @@ fn test_subset_metrics_is_public() {
 }
 
 #[test]
-fn test_subset_metrics_is_copy_clone() {
-    // Verify SubsetMetrics implements Copy and Clone
+fn test_subset_metrics_is_clone() {
+    // Verify SubsetMetrics implements Clone
     use font_toolkit::SubsetMetrics;
 
     let metrics = SubsetMetrics {
@@ -202,13 +203,13 @@ fn test_subset_metrics_is_copy_clone() {
         subset_glyphs: 5,
         size_reduction_pct: 50.0,
         glyph_reduction_pct: 50.0,
+        cid_to_new_gid: std::collections::BTreeMap::new(),
     };
 
-    let metrics2 = metrics; // Copy
-    let metrics3 = metrics; // Clone
+    let metrics2 = metrics.clone();
 
     assert_eq!(metrics.original_size, metrics2.original_size);
-    assert_eq!(metrics.subset_size, metrics3.subset_size);
+    assert_eq!(metrics.subset_size, metrics2.subset_size);
 }
 
 #[test]

@@ -6,6 +6,7 @@
 use crate::config::PDFConfig;
 use crate::encoding::escape_pdf_string;
 use crate::error::PDFError;
+use crate::layout_analyzer::extract_all_text_from_layout;
 use crate::layout_renderer::LayoutStructure;
 use lopdf::{dictionary, Object};
 use std::collections::HashSet;
@@ -296,6 +297,11 @@ impl PDFGenerator {
     {
         // Store layout for bookmark extraction
         self.document_core.set_layout(layout.clone());
+
+        // Extract all text for font subsetting
+        let text_content = extract_all_text_from_layout(layout);
+        self.font_registry.set_text_content(text_content.clone());
+        self.document_core.set_text_content(text_content);
 
         // Collect fonts needed
         let fonts = PDFFontRegistry::collect_fonts_from_layout(layout);

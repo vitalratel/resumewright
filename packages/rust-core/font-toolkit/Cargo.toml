@@ -14,7 +14,7 @@ advanced-fonts = ["dep:subsetter"]  # Optional: Enable font subsetting (adds ~1M
 [dependencies]
 # Font processing
 ttf-parser = "0.25.1"  # TrueType font parsing
-subsetter = { version = "0.2", optional = true }  # Font subsetting (by Typst) - only with 'advanced-fonts' feature
+subsetter = { version = "0.2", optional = true, default-features = false }  # Font subsetting (by Typst) - no variable font support to save ~500KB
 wuff = { version = "0.2", default-features = true }  # WOFF2 decompression (pure Rust, no paste dependency)
 flate2 = "1.1"       # WOFF decompression
 

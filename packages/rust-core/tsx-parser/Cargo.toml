@@ -10,7 +10,7 @@ publish = false
 serde = { workspace = true }
 thiserror = { workspace = true }
 oxc_allocator = "0.105"
-oxc_parser = "0.105"
+oxc_parser = { version = "0.105", default-features = false }  # Disable regex parsing - not needed for TSX
 oxc_ast = "0.105"
 oxc_span = "0.105"
 
