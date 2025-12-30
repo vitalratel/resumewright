@@ -19,6 +19,8 @@ pub struct PDFDocumentCore {
     config: PDFConfig,
     /// Layout structure for bookmark extraction
     layout: Option<LayoutStructure>,
+    /// Text content for font subsetting
+    text_content: String,
 }
 
 impl PDFDocumentCore {
@@ -34,7 +36,13 @@ impl PDFDocumentCore {
             doc,
             config,
             layout: None,
+            text_content: String::new(),
         })
+    }
+
+    /// Set the text content for font subsetting
+    pub fn set_text_content(&mut self, text: String) {
+        self.text_content = text;
     }
 
     /// Initialize document catalog and metadata
@@ -207,8 +215,8 @@ impl PDFDocumentCore {
                     None
                 })
                 .collect();
-            // Embed standard fonts for PDF/A compliance
-            pdfa::embed_standard_fonts_for_pages(&mut self.doc, &page_ids)?;
+            // Embed standard fonts for PDF/A compliance (with subsetting)
+            pdfa::embed_standard_fonts_for_pages(&mut self.doc, &page_ids, &self.text_content)?;
         }
 
         let mut buffer = Vec::new();

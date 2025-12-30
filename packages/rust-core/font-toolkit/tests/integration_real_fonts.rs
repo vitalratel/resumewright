@@ -333,6 +333,7 @@ fn test_embed_roboto_regular_in_pdf() {
         "Roboto",
         400,   // Regular weight
         false, // Not italic
+        None,  // Full font (no subsetting)
     )
     .expect("Embedding Roboto should succeed");
 
@@ -359,6 +360,7 @@ fn test_embed_opensans_bold_in_pdf() {
         "Open Sans",
         700, // Bold weight
         false,
+        None, // Full font (no subsetting)
     )
     .expect("Embedding Open Sans Bold should succeed");
 
@@ -372,10 +374,10 @@ fn test_embed_multiple_real_fonts() {
     let mut doc = Document::with_version("1.7");
 
     // Embed both fonts in same document
-    let roboto = embed_truetype_font(&mut doc, ROBOTO_REGULAR_TTF, "Roboto", 400, false)
+    let roboto = embed_truetype_font(&mut doc, ROBOTO_REGULAR_TTF, "Roboto", 400, false, None)
         .expect("Embedding Roboto should succeed");
 
-    let opensans = embed_truetype_font(&mut doc, OPENSANS_BOLD_TTF, "Open Sans", 700, false)
+    let opensans = embed_truetype_font(&mut doc, OPENSANS_BOLD_TTF, "Open Sans", 700, false, None)
         .expect("Embedding Open Sans should succeed");
 
     // Verify different resource names
@@ -412,7 +414,7 @@ fn test_pipeline_subset_and_embed_roboto() {
 
     // Step 2: Embed subset font in PDF
     let mut doc = Document::with_version("1.7");
-    let embedded = embed_truetype_font(&mut doc, &subset_bytes, "Roboto", 400, false)
+    let embedded = embed_truetype_font(&mut doc, &subset_bytes, "Roboto", 400, false, None)
         .expect("Embedding subset should succeed");
 
     // Verify complete pipeline
@@ -444,7 +446,7 @@ fn test_pipeline_woff_to_subset_to_pdf() {
 
     // Step 3: Embed in PDF
     let mut doc = Document::with_version("1.7");
-    embed_truetype_font(&mut doc, &subset_bytes, "Roboto", 400, false)
+    embed_truetype_font(&mut doc, &subset_bytes, "Roboto", 400, false, None)
         .expect("Embedding should succeed");
 
     println!(
@@ -468,7 +470,7 @@ fn test_pipeline_multiple_fonts_different_content() {
     let (subset1, _) = subset_font_core(ROBOTO_REGULAR_TTF, Some(&face1), TYPICAL_CV, true)
         .expect("Roboto subsetting should succeed");
 
-    let embedded1 = embed_truetype_font(&mut doc, &subset1, "Roboto", 400, false)
+    let embedded1 = embed_truetype_font(&mut doc, &subset1, "Roboto", 400, false, None)
         .expect("Roboto embedding should succeed");
 
     // Subset and embed Open Sans with Unicode content
@@ -476,7 +478,7 @@ fn test_pipeline_multiple_fonts_different_content() {
     let (subset2, _) = subset_font_core(OPENSANS_BOLD_TTF, Some(&face2), UNICODE_CV, true)
         .expect("Open Sans subsetting should succeed");
 
-    let embedded2 = embed_truetype_font(&mut doc, &subset2, "Open Sans", 700, false)
+    let embedded2 = embed_truetype_font(&mut doc, &subset2, "Open Sans", 700, false, None)
         .expect("Open Sans embedding should succeed");
 
     // Verify both fonts embedded successfully with unique names

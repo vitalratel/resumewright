@@ -224,6 +224,7 @@ fn bench_font_embedding(c: &mut Criterion) {
                 black_box("Roboto"),
                 black_box(400),
                 black_box(false),
+                None, // No CID-to-GID mapping for benchmark
             );
             black_box(result).expect("Embedding should succeed");
         });
@@ -234,16 +235,37 @@ fn bench_font_embedding(c: &mut Criterion) {
             let mut doc = Document::with_version("1.7");
 
             // Embed regular
-            embed_truetype_font(&mut doc, black_box(&subset_bytes), "Roboto", 400, false)
-                .expect("Embedding regular should succeed");
+            embed_truetype_font(
+                &mut doc,
+                black_box(&subset_bytes),
+                "Roboto",
+                400,
+                false,
+                None,
+            )
+            .expect("Embedding regular should succeed");
 
             // Embed bold
-            embed_truetype_font(&mut doc, black_box(&subset_bytes), "Roboto", 700, false)
-                .expect("Embedding bold should succeed");
+            embed_truetype_font(
+                &mut doc,
+                black_box(&subset_bytes),
+                "Roboto",
+                700,
+                false,
+                None,
+            )
+            .expect("Embedding bold should succeed");
 
             // Embed italic
-            embed_truetype_font(&mut doc, black_box(&subset_bytes), "Roboto", 400, true)
-                .expect("Embedding italic should succeed");
+            embed_truetype_font(
+                &mut doc,
+                black_box(&subset_bytes),
+                "Roboto",
+                400,
+                true,
+                None,
+            )
+            .expect("Embedding italic should succeed");
 
             black_box(doc);
         });
@@ -282,6 +304,7 @@ fn bench_full_pipeline(c: &mut Criterion) {
                 "Roboto",
                 400,
                 false,
+                None,
             );
             black_box(result).expect("Embedding should succeed");
         });
@@ -307,6 +330,7 @@ fn bench_full_pipeline(c: &mut Criterion) {
                 "Roboto",
                 400,
                 false,
+                None,
             );
             black_box(result).expect("Embedding should succeed");
         });
@@ -328,6 +352,7 @@ fn bench_full_pipeline(c: &mut Criterion) {
                 "Roboto",
                 400,
                 false,
+                None,
             );
             black_box(result).expect("Embedding should succeed");
         });
@@ -351,6 +376,7 @@ fn bench_full_pipeline(c: &mut Criterion) {
                 "Roboto",
                 400,
                 false,
+                None,
             );
             black_box(result).expect("Embedding should succeed");
         });

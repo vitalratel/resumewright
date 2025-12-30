@@ -21,7 +21,7 @@ const OPENSANS_BOLD_TTF: &[u8] =
 fn extract_tounicode_cmap(font_bytes: &[u8], font_name: &str) -> String {
     let mut doc = Document::with_version("1.7");
 
-    let embedded = embed_truetype_font(&mut doc, font_bytes, font_name, 400, false)
+    let embedded = embed_truetype_font(&mut doc, font_bytes, font_name, 400, false, None)
         .expect("Font embedding should succeed");
 
     // Find ToUnicode CMap stream in document

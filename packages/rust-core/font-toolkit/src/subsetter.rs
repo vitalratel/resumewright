@@ -150,7 +150,7 @@ pub enum SubsetError {
 ///     Err(e) => eprintln!("Subsetting failed: {}", e),
 /// }
 /// ```
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct SubsetMetrics {
     /// Original font size in bytes
     pub original_size: usize,
@@ -169,6 +169,10 @@ pub struct SubsetMetrics {
 
     /// Glyph count reduction percentage (0.0 to 100.0)
     pub glyph_reduction_pct: f32,
+
+    /// Mapping of Unicode codepoint → new glyph ID in the subsetted font
+    /// Only includes characters that were in the subset text and have glyphs
+    pub cid_to_new_gid: std::collections::BTreeMap<u32, u16>,
 }
 
 impl SubsetMetrics {
@@ -178,6 +182,7 @@ impl SubsetMetrics {
         subset_size: usize,
         original_glyphs: u16,
         subset_glyphs: u16,
+        cid_to_new_gid: std::collections::BTreeMap<u32, u16>,
     ) -> Self {
         let size_reduction_pct = if original_size > 0 {
             (1.0 - (subset_size as f32 / original_size as f32)) * 100.0
@@ -198,6 +203,7 @@ impl SubsetMetrics {
             subset_glyphs,
             size_reduction_pct,
             glyph_reduction_pct,
+            cid_to_new_gid,
         }
     }
 }
@@ -288,6 +294,8 @@ pub fn subset_font_core(
     text: &str,
     return_metrics: bool,
 ) -> Result<(Vec<u8>, Option<SubsetMetrics>), SubsetError> {
+    use std::collections::BTreeMap;
+
     let original_size = font_bytes.len();
 
     // Parse font if not provided
@@ -304,8 +312,8 @@ pub fn subset_font_core(
 
     let original_glyphs = face_ref.number_of_glyphs();
 
-    // Phase 1: Collect used glyphs
-    let used_glyphs = collect_used_glyphs(face_ref, text);
+    // Phase 1: Collect used glyphs AND build char→old_gid mapping
+    let (used_glyphs, char_to_old_gid) = collect_used_glyphs_with_mapping(face_ref, text);
 
     // Phase 2: Build GlyphRemapper
     let mut remapper = GlyphRemapper::new();
@@ -334,13 +342,26 @@ pub fn subset_font_core(
         reason: format!("Subset validation failed: {:?}", e),
     })?;
 
-    // Phase 5: Compute metrics if requested
+    // Phase 5: Build CID→new_gid mapping using remapper
+    let mut cid_to_new_gid = BTreeMap::new();
+
+    // GID 0 (.notdef) is always present as new GID 0
+    cid_to_new_gid.insert(0u32, 0u16);
+
+    for (codepoint, old_gid) in &char_to_old_gid {
+        if let Some(new_gid) = remapper.get(*old_gid) {
+            cid_to_new_gid.insert(*codepoint, new_gid);
+        }
+    }
+
+    // Phase 6: Compute metrics if requested
     let metrics = if return_metrics {
         Some(SubsetMetrics::new(
             original_size,
             subset_bytes.len(),
             original_glyphs,
             subset_glyphs,
+            cid_to_new_gid,
         ))
     } else {
         None
@@ -353,9 +374,15 @@ pub fn subset_font_core(
 // Phase 1: Glyph Collection
 // ============================================================================
 
-/// Collects all glyph IDs used in the given text
-fn collect_used_glyphs(face: &Face, text: &str) -> HashSet<GlyphId> {
+/// Collects all glyph IDs used in the given text and returns char→gid mapping
+fn collect_used_glyphs_with_mapping(
+    face: &Face,
+    text: &str,
+) -> (HashSet<GlyphId>, std::collections::BTreeMap<u32, u16>) {
+    use std::collections::BTreeMap;
+
     let mut glyphs = HashSet::new();
+    let mut char_to_gid = BTreeMap::new();
 
     // Glyph 0 (.notdef) is mandatory
     glyphs.insert(GlyphId(0));
@@ -363,16 +390,18 @@ fn collect_used_glyphs(face: &Face, text: &str) -> HashSet<GlyphId> {
     // Space is commonly needed
     if let Some(space_glyph) = face.glyph_index(' ') {
         glyphs.insert(space_glyph);
+        char_to_gid.insert(' ' as u32, space_glyph.0);
     }
 
     // Map all characters in text
     for ch in text.chars() {
         if let Some(glyph_id) = face.glyph_index(ch) {
             glyphs.insert(glyph_id);
+            char_to_gid.insert(ch as u32, glyph_id.0);
         }
     }
 
-    glyphs
+    (glyphs, char_to_gid)
 }
 
 // Note: Composite glyph dependencies are automatically handled by the subsetter crate
@@ -404,8 +433,10 @@ mod tests {
 
     #[test]
     fn test_subset_metrics_zero_original_size() {
+        use std::collections::BTreeMap;
+
         // Test division by zero protection
-        let metrics = SubsetMetrics::new(0, 0, 0, 0);
+        let metrics = SubsetMetrics::new(0, 0, 0, 0, BTreeMap::new());
 
         // Should handle zero gracefully without divide-by-zero
         assert_eq!(
@@ -422,8 +453,10 @@ mod tests {
 
     #[test]
     fn test_subset_metrics_zero_original_glyphs() {
+        use std::collections::BTreeMap;
+
         // Test with zero glyphs but non-zero size
-        let metrics = SubsetMetrics::new(1000, 500, 0, 0);
+        let metrics = SubsetMetrics::new(1000, 500, 0, 0, BTreeMap::new());
 
         // Should handle zero glyphs gracefully
         assert_eq!(
@@ -438,8 +471,10 @@ mod tests {
 
     #[test]
     fn test_subset_metrics_normal_values() {
+        use std::collections::BTreeMap;
+
         // Test normal reduction scenario
-        let metrics = SubsetMetrics::new(1000, 100, 500, 50);
+        let metrics = SubsetMetrics::new(1000, 100, 500, 50, BTreeMap::new());
 
         assert_eq!(metrics.size_reduction_pct, 90.0);
         assert_eq!(metrics.glyph_reduction_pct, 90.0);

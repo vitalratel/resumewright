@@ -20,6 +20,9 @@
 
 use crate::error::PDFError;
 use font_toolkit::embedding::embed_truetype_font;
+use font_toolkit::strip_hinting_tables;
+#[cfg(feature = "advanced-fonts")]
+use font_toolkit::subsetter::subset_font_core;
 use layout_types::{FontStyle, FontWeight};
 
 /// Karla Regular
@@ -44,6 +47,7 @@ const KARLA_BOLD_ITALIC: &[u8] = include_bytes!("../fonts/Karla-BoldItalic.ttf")
 /// * `doc` - Mutable reference to the PDF document
 /// * `weight` - Font weight (Normal, Bold)
 /// * `style` - Font style (Normal, Italic)
+/// * `text_content` - Text content for font subsetting (only glyphs used will be embedded)
 ///
 /// # Returns
 ///
@@ -57,12 +61,13 @@ const KARLA_BOLD_ITALIC: &[u8] = include_bytes!("../fonts/Karla-BoldItalic.ttf")
 /// use lopdf::Document;
 ///
 /// let mut doc = Document::with_version("1.4");
-/// let font_id = embed_standard_font(&mut doc, FontWeight::Bold, FontStyle::Normal).unwrap();
+/// let font_id = embed_standard_font(&mut doc, FontWeight::Bold, FontStyle::Normal, "Hello").unwrap();
 /// ```
 pub fn embed_standard_font(
     doc: &mut lopdf::Document,
     weight: FontWeight,
     style: FontStyle,
+    #[cfg_attr(not(feature = "advanced-fonts"), allow(unused_variables))] text_content: &str,
 ) -> Result<(u32, u16), PDFError> {
     // Select appropriate Karla variant
     // Bolder maps to Bold, Lighter maps to Normal (no actual Lighter variant)
@@ -86,9 +91,65 @@ pub fn embed_standard_font(
         FontWeight::Normal => 400,
     };
 
-    // Embed the full TrueType font
-    let embedded = embed_truetype_font(doc, font_bytes, family_name, weight_value, is_italic)
-        .map_err(|e| PDFError::FontError(format!("Failed to embed standard font: {}", e)))?;
+    // Subset the font if advanced-fonts feature is enabled
+    #[cfg(feature = "advanced-fonts")]
+    let (final_bytes, cid_to_new_gid): (Vec<u8>, std::collections::BTreeMap<u32, u16>) =
+        match subset_font_core(font_bytes, None, text_content, true) {
+            Ok((bytes, Some(metrics))) => {
+                eprintln!(
+                    "[PDF] Subsetted {}: {} bytes -> {} bytes ({:.1}% reduction)",
+                    family_name,
+                    font_bytes.len(),
+                    bytes.len(),
+                    (1.0 - bytes.len() as f64 / font_bytes.len() as f64) * 100.0
+                );
+                (bytes, metrics.cid_to_new_gid)
+            }
+            Ok((bytes, None)) => {
+                // Metrics should always be returned when return_metrics=true, but handle anyway
+                eprintln!(
+                    "WARNING: Subsetting succeeded but no metrics for {}. Using empty mapping.",
+                    family_name
+                );
+                (bytes, std::collections::BTreeMap::new())
+            }
+            Err(e) => {
+                eprintln!(
+                    "WARNING: Font subsetting failed for {}: {}. Using full font.",
+                    family_name, e
+                );
+                (font_bytes.to_vec(), std::collections::BTreeMap::new())
+            }
+        };
+
+    #[cfg(not(feature = "advanced-fonts"))]
+    let final_bytes: Vec<u8> = font_bytes.to_vec();
+
+    // Strip hinting tables (not needed for PDF, saves ~30-60% per font)
+    let optimized_bytes = strip_hinting_tables(&final_bytes);
+
+    // Embed the font
+    #[cfg(feature = "advanced-fonts")]
+    let embedded = embed_truetype_font(
+        doc,
+        &optimized_bytes,
+        family_name,
+        weight_value,
+        is_italic,
+        Some(&cid_to_new_gid),
+    )
+    .map_err(|e| PDFError::FontError(format!("Failed to embed standard font: {}", e)))?;
+
+    #[cfg(not(feature = "advanced-fonts"))]
+    let embedded = embed_truetype_font(
+        doc,
+        &optimized_bytes,
+        family_name,
+        weight_value,
+        is_italic,
+        None,
+    )
+    .map_err(|e| PDFError::FontError(format!("Failed to embed standard font: {}", e)))?;
 
     Ok(embedded.font_id)
 }
@@ -98,31 +159,35 @@ mod tests {
     use super::*;
     use lopdf::Document;
 
+    const TEST_TEXT: &str = "Hello World";
+
     #[test]
     fn test_embed_standard_font_regular() {
         let mut doc = Document::with_version("1.4");
-        let result = embed_standard_font(&mut doc, FontWeight::Normal, FontStyle::Normal);
+        let result =
+            embed_standard_font(&mut doc, FontWeight::Normal, FontStyle::Normal, TEST_TEXT);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_embed_standard_font_bold() {
         let mut doc = Document::with_version("1.4");
-        let result = embed_standard_font(&mut doc, FontWeight::Bold, FontStyle::Normal);
+        let result = embed_standard_font(&mut doc, FontWeight::Bold, FontStyle::Normal, TEST_TEXT);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_embed_standard_font_italic() {
         let mut doc = Document::with_version("1.4");
-        let result = embed_standard_font(&mut doc, FontWeight::Normal, FontStyle::Italic);
+        let result =
+            embed_standard_font(&mut doc, FontWeight::Normal, FontStyle::Italic, TEST_TEXT);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_embed_standard_font_bold_italic() {
         let mut doc = Document::with_version("1.4");
-        let result = embed_standard_font(&mut doc, FontWeight::Bold, FontStyle::Italic);
+        let result = embed_standard_font(&mut doc, FontWeight::Bold, FontStyle::Italic, TEST_TEXT);
         assert!(result.is_ok());
     }
 }

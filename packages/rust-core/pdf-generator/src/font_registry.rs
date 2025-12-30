@@ -7,6 +7,7 @@ use crate::error::PDFError;
 use crate::layout_renderer::{BoxContent, LayoutBox, LayoutStructure};
 use font_toolkit::embedding::embed_truetype_font;
 use font_toolkit::mapper::{is_google_font, map_web_safe_font, select_font_variant};
+use font_toolkit::strip_hinting_tables;
 #[cfg(feature = "advanced-fonts")]
 use font_toolkit::subsetter::subset_font_core;
 use layout_types::{FontStyle, FontWeight};
@@ -36,6 +37,8 @@ pub struct PDFFontRegistry {
     /// Google Fonts font bytes cache
     /// Key format: "family:weight:is_italic" (e.g., "Roboto:400:false")
     font_bytes: HashMap<String, Vec<u8>>,
+    /// Text content for font subsetting (all text that will be rendered)
+    text_content: String,
 }
 
 impl PDFFontRegistry {
@@ -43,12 +46,21 @@ impl PDFFontRegistry {
     pub fn new() -> Self {
         Self {
             font_bytes: HashMap::new(),
+            text_content: String::new(),
         }
     }
 
     /// Sets cached Google Fonts font bytes for embedding
     pub fn set_font_bytes(&mut self, font_bytes: HashMap<String, Vec<u8>>) {
         self.font_bytes = font_bytes;
+    }
+
+    /// Sets the text content for font subsetting
+    ///
+    /// Call this before `register_fonts()` with all text that will be rendered.
+    /// The subsetter will only include glyphs for characters in this text.
+    pub fn set_text_content(&mut self, text: String) {
+        self.text_content = text;
     }
 
     /// Collect unique fonts used in a layout structure
@@ -236,22 +248,33 @@ impl PDFFontRegistry {
         );
 
         #[cfg(feature = "advanced-fonts")]
-        let subsetted_bytes = match subset_font_core(font_bytes, None, "", false) {
-            Ok((bytes, _)) => {
+        let (subsetted_bytes, cid_to_new_gid): (
+            Vec<u8>,
+            std::collections::BTreeMap<u32, u16>,
+        ) = match subset_font_core(font_bytes, None, &self.text_content, true) {
+            Ok((bytes, Some(metrics))) => {
                 eprintln!(
-                    "[PDF] Subsetted {}: {} bytes -> {} bytes",
+                    "[PDF] Subsetted {}: {} bytes -> {} bytes ({:.1}% reduction)",
                     family,
                     font_bytes.len(),
-                    bytes.len()
+                    bytes.len(),
+                    (1.0 - bytes.len() as f64 / font_bytes.len() as f64) * 100.0
                 );
-                bytes
+                (bytes, metrics.cid_to_new_gid)
+            }
+            Ok((bytes, None)) => {
+                eprintln!(
+                    "WARNING: Subsetting succeeded but no metrics for {}. Using empty mapping.",
+                    family
+                );
+                (bytes, std::collections::BTreeMap::new())
             }
             Err(e) => {
                 eprintln!(
                     "WARNING: Font subsetting failed for {}: {}. Using full font.",
                     family, e
                 );
-                font_bytes.clone()
+                (font_bytes.clone(), std::collections::BTreeMap::new())
             }
         };
 
@@ -264,12 +287,38 @@ impl PDFFontRegistry {
             font_bytes.clone()
         };
 
-        match embed_truetype_font(doc, &subsetted_bytes, family, weight, is_italic) {
+        // Strip hinting tables (not needed for PDF, saves ~14% per font)
+        let optimized_bytes = strip_hinting_tables(&subsetted_bytes);
+        if optimized_bytes.len() < subsetted_bytes.len() {
+            eprintln!(
+                "[PDF] Stripped hinting tables: {} -> {} bytes ({:.1}% reduction)",
+                subsetted_bytes.len(),
+                optimized_bytes.len(),
+                (1.0 - optimized_bytes.len() as f64 / subsetted_bytes.len() as f64) * 100.0
+            );
+        }
+
+        // Embed the font (with mapping if subsetted)
+        #[cfg(feature = "advanced-fonts")]
+        let embed_result = embed_truetype_font(
+            doc,
+            &optimized_bytes,
+            family,
+            weight,
+            is_italic,
+            Some(&cid_to_new_gid),
+        );
+
+        #[cfg(not(feature = "advanced-fonts"))]
+        let embed_result =
+            embed_truetype_font(doc, &optimized_bytes, family, weight, is_italic, None);
+
+        match embed_result {
             Ok(embedded) => {
                 eprintln!(
                     "[PDF] Successfully embedded {}: {} bytes",
                     family,
-                    subsetted_bytes.len()
+                    optimized_bytes.len()
                 );
                 Some(embedded)
             }

@@ -93,6 +93,7 @@ pub enum FontStyle {
 
 pub mod embedding;
 pub mod mapper;
+pub mod optimizer;
 #[cfg(feature = "advanced-fonts")]
 pub mod subsetter;
 pub mod truetype;
@@ -105,6 +106,7 @@ pub use mapper::{
     is_google_font, map_web_safe_font, select_font_from_fallback_chain, select_font_variant,
     GOOGLE_FONTS,
 };
+pub use optimizer::strip_hinting_tables;
 #[cfg(feature = "advanced-fonts")]
 pub use subsetter::{subset_font_core, SubsetError, SubsetMetrics};
 pub use woff::{decompress_woff, WoffError};
