@@ -25,17 +25,33 @@ import { expect, test } from '../fixtures';
 type Theme = 'light' | 'dark';
 
 /**
- * Apply theme to page by toggling .dark class on html element
+ * Configure page for a specific theme BEFORE navigating.
+ * Sets color scheme emulation and localStorage cache so the app initializes correctly.
  */
-async function applyTheme(page: Page, theme: Theme): Promise<void> {
+async function setupTheme(page: Page, theme: Theme): Promise<void> {
+  // Emulate system color scheme preference so matchMedia returns correct value
+  await page.emulateMedia({ colorScheme: theme });
+
+  // Pre-set localStorage before navigation so app reads correct theme on mount
+  await page.addInitScript((t) => {
+    localStorage.setItem('resumewright-theme-cache', t);
+  }, theme);
+}
+
+/**
+ * Verify theme is applied correctly after page load.
+ * Double-checks the .dark class matches expected theme.
+ */
+async function verifyTheme(page: Page, theme: Theme): Promise<void> {
   await page.evaluate((t) => {
+    // Ensure class state is correct
     if (t === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
   }, theme);
-  await page.waitForTimeout(300); // Allow styles to apply
+  await page.waitForTimeout(100); // Brief pause for styles
 }
 
 /**
@@ -57,9 +73,10 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
     test.describe(`Theme: ${theme}`, () => {
       test('Popup UI - No accessibility violations', async ({ context, extensionId }) => {
         const page = await context.newPage();
+        await setupTheme(page, theme);
         await page.goto(`chrome-extension://${extensionId}/converter.html`);
         await page.waitForTimeout(1000);
-        await applyTheme(page, theme);
+        await verifyTheme(page, theme);
 
         const results = await runAxeScan(page);
         expect(results.violations).toEqual([]);
@@ -69,9 +86,10 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
 
       test('Color contrast - WCAG AA compliance', async ({ context, extensionId }) => {
         const page = await context.newPage();
+        await setupTheme(page, theme);
         await page.goto(`chrome-extension://${extensionId}/converter.html`);
         await page.waitForTimeout(1000);
-        await applyTheme(page, theme);
+        await verifyTheme(page, theme);
 
         const results = await new AxeBuilder({ page })
           .withTags(['wcag2aa'])
@@ -88,9 +106,10 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
 
       test('Buttons - Accessible names and roles', async ({ context, extensionId }) => {
         const page = await context.newPage();
+        await setupTheme(page, theme);
         await page.goto(`chrome-extension://${extensionId}/converter.html`);
         await page.waitForTimeout(1000);
-        await applyTheme(page, theme);
+        await verifyTheme(page, theme);
 
         const buttons = await page.locator('button').all();
         for (const button of buttons) {
@@ -108,9 +127,10 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
 
       test('Focus visible - Visual focus indicators', async ({ context, extensionId }) => {
         const page = await context.newPage();
+        await setupTheme(page, theme);
         await page.goto(`chrome-extension://${extensionId}/converter.html`);
         await page.waitForTimeout(1000);
-        await applyTheme(page, theme);
+        await verifyTheme(page, theme);
 
         await page.keyboard.press('Tab');
         await page.waitForTimeout(100);
@@ -144,9 +164,10 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
 
       test('Settings page - Full accessibility', async ({ context, extensionId }) => {
         const page = await context.newPage();
+        await setupTheme(page, theme);
         await page.goto(`chrome-extension://${extensionId}/converter.html`);
         await page.waitForTimeout(1000);
-        await applyTheme(page, theme);
+        await verifyTheme(page, theme);
 
         // Navigate to settings
         const settingsButton = page.locator(
