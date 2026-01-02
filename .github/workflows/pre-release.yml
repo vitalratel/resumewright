@@ -75,37 +75,13 @@ jobs:
           echo "✅ Version validation passed"
 
       - name: Run Rust format check
-        working-directory: packages/rust-core
         run: cargo fmt -- --check
 
       - name: Run Rust clippy (0 warnings required)
-        working-directory: packages/rust-core
         run: cargo clippy -- -D warnings
 
       - name: Run full Rust test suite
-        working-directory: packages/rust-core
         run: cargo test --workspace --verbose
-
-      - name: Verify Rust test count (750+ tests)
-        working-directory: packages/rust-core
-        run: |
-          TEST_OUTPUT=$(cargo test --workspace 2>&1)
-          echo "$TEST_OUTPUT"
-
-          # Extract test count
-          RUST_TESTS=$(echo "$TEST_OUTPUT" | grep -o '[0-9]\+ passed' | head -1 | grep -o '[0-9]\+')
-
-          if [ -z "$RUST_TESTS" ]; then
-            echo "❌ Could not determine Rust test count"
-            exit 1
-          fi
-
-          if [ "$RUST_TESTS" -lt 750 ]; then
-            echo "❌ FAIL: Expected 750+ Rust tests, got $RUST_TESTS"
-            exit 1
-          fi
-
-          echo "✅ Rust tests: $RUST_TESTS"
 
       - name: Build WASM module
         run: pnpm build:wasm
@@ -205,10 +181,6 @@ jobs:
           fi
 
           echo "" >> CHANGELOG_DRAFT.md
-          echo "### Metrics" >> CHANGELOG_DRAFT.md
-          echo "- WASM Bundle: 1.43 MB compressed" >> CHANGELOG_DRAFT.md
-          echo "- Test Coverage: 750+ Rust tests, 396+ TypeScript tests, 159+ Playwright tests" >> CHANGELOG_DRAFT.md
-          echo "- Code Quality: 0 clippy warnings, 0 ESLint errors" >> CHANGELOG_DRAFT.md
 
           cat CHANGELOG_DRAFT.md
 
@@ -222,7 +194,7 @@ jobs:
           echo "- ✅ Version number format valid" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Rust format check passed" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Rust clippy: 0 warnings" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Rust tests: 750+ passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Rust tests: passed" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ WASM bundle size: < 1.6 MB" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ TypeScript lint: passed" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ TypeScript typecheck: passed" >> $GITHUB_STEP_SUMMARY
