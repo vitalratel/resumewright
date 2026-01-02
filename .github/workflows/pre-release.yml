@@ -147,10 +147,10 @@ jobs:
         run: pnpm exec playwright install-deps chromium
 
       - name: Run E2E tests
-        run: xvfb-run --auto-servernum pnpm --filter extension test:e2e --project=chromium
+        run: xvfb-run --auto-servernum pnpm --filter extension test:e2e --project=extension-chrome
 
       - name: Run visual regression tests (smoke test)
-        run: xvfb-run --auto-servernum pnpm --filter extension test:visual --project=chromium --shard=1/1
+        run: xvfb-run --auto-servernum pnpm --filter extension test:visual --project=extension-chrome --shard=1/1
         continue-on-error: true  # Visual tests may have minor diffs
 
       - name: Run accessibility tests
