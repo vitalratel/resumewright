@@ -314,9 +314,6 @@ cargo test --workspace
 # E2E tests
 pnpm test:e2e
 
-# Visual regression tests
-pnpm test:visual
-
 # Specific crate
 cargo test -p tsx-parser
 

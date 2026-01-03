@@ -75,10 +75,6 @@ test-results/
 playwright-report/
 cobertura.xml
 
-# Visual regression test output (not baselines - those are committed)
-**/tests/visual/**/*-actual.png
-**/tests/visual/**/*-diff.png
-
 # Generated ATS/test reports (excludes templates)
 **/tests/**/reports/*-results.md
 

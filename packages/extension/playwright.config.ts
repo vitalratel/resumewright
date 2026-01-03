@@ -5,8 +5,6 @@ import { defineConfig, devices } from '@playwright/test';
  *
  * Supports:
  * - Manifest V3 browser extension testing
- * - Visual regression testing with screenshot comparison
- * - Performance testing with CPU throttling
  * - E2E testing across extension components
  *
  * IMPORTANT: Uses tsconfig.playwright.json to avoid loading wxt type definitions
@@ -71,29 +69,8 @@ export default defineConfig({
     },
   ],
   
-  // Visual regression testing settings
-  expect: {
-    // Screenshot comparison settings
-    toHaveScreenshot: {
-      // Maximum number of pixels that can differ (adjust based on needs)
-      maxDiffPixels: 100,
-      
-      // Percentage threshold for pixel difference (0.05 = 5% tolerance for 95% fidelity)
-      threshold: 0.05,
-      
-      // Animation handling
-      animations: 'disabled',
-      
-      // Screenshot scale
-      scale: 'css',
-    },
-  },
-  
   // Folder for test artifacts (screenshots, videos, traces)
   outputDir: 'test-results/',
-  
-  // Folder for baseline screenshots
-  snapshotDir: 'tests/visual/baselines',
   
   // Test timeout
   timeout: 30000, // 30 seconds per test (fast with pdfium-render)

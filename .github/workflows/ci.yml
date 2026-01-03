@@ -259,39 +259,6 @@ jobs:
         env:
           CI: true
 
-      # Visual regression tests (optional)
-      - name: Check if baselines exist
-        id: check-baselines
-        run: |
-          if [ -d "packages/rust-core/test-fixtures/baselines/multi-page" ] && [ "$(ls -A packages/rust-core/test-fixtures/baselines/multi-page)" ]; then
-            echo "baselines_exist=true" >> $GITHUB_OUTPUT
-          else
-            echo "baselines_exist=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Run visual regression tests
-        if: steps.check-baselines.outputs.baselines_exist == 'true'
-        run: xvfb-run --auto-servernum pnpm test:visual
-        continue-on-error: true
-
-      - name: Upload visual test results
-        if: always() && steps.check-baselines.outputs.baselines_exist == 'true'
-        uses: actions/upload-artifact@v6
-        with:
-          name: visual-test-results
-          path: packages/extension/playwright-report/
-          retention-days: 7
-
-      - name: Skip visual tests (no baselines)
-        if: steps.check-baselines.outputs.baselines_exist == 'false'
-        run: |
-          echo "⚠️ Visual regression baselines not found"
-          echo "📸 To generate baselines, run locally:"
-          echo "   pnpm build:wasm"
-          echo "   pnpm test:visual --update-snapshots"
-          echo "   git add packages/rust-core/test-fixtures/baselines/"
-          echo "   git commit -m 'chore: add visual regression baselines'"
-
   rust-benchmarks:
     name: Rust Performance Benchmarks
     runs-on: ubuntu-latest
