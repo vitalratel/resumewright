@@ -175,25 +175,6 @@ pnpm test:e2e:headed      # With visible browser
 pnpm test:e2e:debug       # Debug mode
 ```
 
-### Visual Regression Tests
-
-**Prerequisites:**
-```bash
-# Download pdfium library (one-time setup)
-bash scripts/download-pdfium-linux.sh
-export LD_LIBRARY_PATH=/home/dev/resumewright/lib:$LD_LIBRARY_PATH
-
-# Build PDF-to-PNG converter
-cd packages/rust-core
-cargo build --release --bin pdf-to-png
-```
-
-**Run tests:**
-```bash
-pnpm build:test-fixtures  # Transpile TSX fixtures
-pnpm test:visual          # Run visual tests
-```
-
 ---
 
 ## Building for Production

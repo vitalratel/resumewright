@@ -277,32 +277,6 @@ cargo clean
 pnpm build:wasm
 ```
 
-## Visual Regression Test Issues
-
-### pdfium library not found
-
-```bash
-# Download pdfium library (one-time setup)
-bash scripts/download-pdfium-linux.sh
-
-# Set library path
-export LD_LIBRARY_PATH=/home/dev/resumewright/lib:$LD_LIBRARY_PATH
-
-# Build pdf-to-png tool
-cd packages/rust-core
-cargo build --release --bin pdf-to-png
-```
-
-### Test fixtures out of date
-
-```bash
-# Transpile TSX fixtures before running visual tests
-pnpm build:test-fixtures
-
-# Then run visual tests
-pnpm test:visual
-```
-
 ## Getting Help
 
 If none of these solutions work:

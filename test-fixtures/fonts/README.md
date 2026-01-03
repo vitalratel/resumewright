@@ -58,11 +58,4 @@ Both fonts are open-source and safe for testing purposes.
 
 ## Test Usage
 
-These fonts are used by:
-- `tests/visual/custom-fonts-ui.spec.ts` - UI component visual tests
-- `src/__tests__/integration/custom-fonts-pdf.test.ts` - PDF generation integration tests
-
-Tests can now be run with all fixtures available:
-```bash
-pnpm test:visual
-```
+These fonts are used by PDF generation integration tests.
