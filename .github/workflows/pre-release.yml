@@ -199,7 +199,7 @@ jobs:
           echo "- ✅ Extension build: successful" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📦 Build Artifacts" >> $GITHUB_STEP_SUMMARY
-          echo "- Chrome extension: .output/" >> $GITHUB_STEP_SUMMARY
+          echo "- Chrome extension: .output/chrome-mv3/" >> $GITHUB_STEP_SUMMARY
           echo "- WASM module: packages/rust-core/wasm-bridge/pkg/" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📝 Next Steps" >> $GITHUB_STEP_SUMMARY
@@ -212,7 +212,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: extension-build-v${{ github.event.inputs.version }}
-          path: packages/extension/.output/
+          path: packages/extension/.output/chrome-mv3/
           retention-days: 90
 
       - name: Upload WASM module
