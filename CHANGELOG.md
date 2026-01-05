@@ -7,21 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.0] - 2024-12-16
+## [0.2.0] - 2026-01-05
 
 ### Added
-- Inline rich text support with styled segments (bold/italic within text lines)
+- Inline rich text support with styled segments (bold/italic within text)
 
 ### Fixed
-- Prevent H2 section headers from being orphaned without H3 content
-- Refined orphan prevention and standardized font sizing
-- Improved dark mode color contrast for WCAG AA compliance
-- Dark overlay for header buttons to meet WCAG AA contrast
+- Orphan prevention for section headers
+- Dark mode color contrast for WCAG AA compliance
 
-### Refactored
-- Replaced hardcoded Tailwind colors with semantic design tokens
+### Changed
+- Semantic design tokens replace hardcoded colors
 
-## [0.1.0] - 2024-12-04
+## [0.1.0] - 2025-12-04
 
 Initial beta release.
 
