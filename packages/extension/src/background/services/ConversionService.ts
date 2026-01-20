@@ -6,7 +6,10 @@ import { DEFAULT_CONVERSION_CONFIG } from '@/shared/domain/settings/defaults';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { loadSettings } from '@/shared/infrastructure/settings/SettingsStore';
 import { convertTsxToPdfWithFonts } from '../../shared/application/pdf/converter';
-import { ExponentialBackoffRetryPolicy } from '../../shared/infrastructure/retry/ExponentialBackoffRetryPolicy';
+import {
+  executeWithRetry,
+  retryPresets,
+} from '../../shared/infrastructure/retry/ExponentialBackoffRetryPolicy';
 import type { ConversionRequestPayload } from '../../shared/types/messages';
 import type { ConversionConfig } from '../../shared/types/models';
 import { generateFilename } from '../../shared/utils/filenameSanitization';
@@ -161,8 +164,9 @@ export async function convertToPdf(
     });
   };
 
-  const pdfBytes = await ExponentialBackoffRetryPolicy.presets.default.execute(
+  const pdfBytes = await executeWithRetry(
     async () => convertTsxToPdfWithFonts(tsxContent, config, onProgress, onFontFetch),
+    retryPresets.default,
     onRetry,
   );
 

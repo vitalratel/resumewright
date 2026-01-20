@@ -5,7 +5,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetLogger, setLogger } from '@/shared/infrastructure/logging/instance';
-import type { Logger } from '@/shared/infrastructure/logging/logger';
+import type { ILogger } from '@/shared/infrastructure/logging/logger';
 import { logBackgroundError, logBackgroundWarning } from '../errorLogging';
 
 describe('errorLogging', () => {
@@ -23,7 +23,7 @@ describe('errorLogging', () => {
       warn: mockWarn,
       info: mockInfo,
       debug: mockDebug,
-    } as unknown as Logger;
+    } as unknown as ILogger;
 
     setLogger(mockLogger);
   });

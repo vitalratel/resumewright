@@ -10,7 +10,7 @@ import { onMessage, sendMessage } from '@/shared/messaging';
 import type { TsxToPdfConverter } from '../shared/domain/pdf/types';
 import { validateTsxSyntax } from '../shared/domain/pdf/validation';
 import { convert } from './services/ConversionService';
-import { ProgressTracker } from './services/ProgressTracker';
+import { createProgressTracker } from './services/ProgressTracker';
 import { parseConversionError } from './utils/errorParser';
 import { getWasmStatus, retryWasmInit } from './wasmInit';
 
@@ -19,7 +19,7 @@ import { getWasmStatus, retryWasmInit } from './wasmInit';
  * Uses @webext-core/messaging for type-safe message passing
  */
 export function setupMessageHandler(): void {
-  const progressTracker = new ProgressTracker();
+  const progressTracker = createProgressTracker();
   const getConverterInstance: () => TsxToPdfConverter = createConverterInstance;
 
   // === WASM Status Handlers ===

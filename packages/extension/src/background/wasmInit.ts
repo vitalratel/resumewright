@@ -7,7 +7,7 @@
 
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { createWasmInitError } from '../shared/errors/factory/wasmErrors';
-import { ExponentialBackoffRetryPolicy } from '../shared/infrastructure/retry/ExponentialBackoffRetryPolicy';
+import { executeWithRetry } from '../shared/infrastructure/retry/ExponentialBackoffRetryPolicy';
 import { initWASM } from '../shared/infrastructure/wasm/loader';
 import { showBadgeError, showBadgeSuccess } from './services/badgeManager';
 import type { WasmStatusInfo } from './services/wasmState';
@@ -38,16 +38,15 @@ export async function initializeWASM(): Promise<void> {
 
   try {
     // Retry WASM initialization with exponential backoff
-    const retryPolicy = new ExponentialBackoffRetryPolicy({
-      maxAttempts: MAX_INIT_RETRIES,
-      baseDelayMs: RETRY_DELAY_BASE,
-      maxDelayMs: MAX_RETRY_DELAY,
-    });
-
-    await retryPolicy.execute(
+    await executeWithRetry(
       async () => {
         getLogger().info('WasmInit', 'Attempting initialization');
         await initWASM();
+      },
+      {
+        maxAttempts: MAX_INIT_RETRIES,
+        baseDelayMs: RETRY_DELAY_BASE,
+        maxDelayMs: MAX_RETRY_DELAY,
       },
       (attempt: number, _delay: number, error: Error) => {
         // Use shared error factory for consistent error handling

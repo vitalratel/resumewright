@@ -1,25 +1,19 @@
-/**
- * Logger Singleton Instance
- *
- * Injectable logger for testing flexibility
- *
- * Provides both a global logger instance (for production) and
- * a way to inject custom loggers (for testing).
- */
+// ABOUTME: Logger singleton instance for global access.
+// ABOUTME: Provides getLogger/setLogger for dependency injection in tests.
 
-import { Logger } from './logger';
+import { createLogger, type ILogger } from './logger';
 
 /**
  * Global logger instance
  * Replaces all console.log usage
  */
-let _logger = new Logger();
+let _logger = createLogger();
 
 /**
  * Get the current logger instance
  * Allows dependency injection for testing
  */
-export function getLogger(): Logger {
+export function getLogger(): ILogger {
   return _logger;
 }
 
@@ -30,7 +24,7 @@ export function getLogger(): Logger {
  * @param customLogger - Custom logger instance to use
  * @returns The previous logger instance (for restoration)
  */
-export function setLogger(customLogger: Logger): Logger {
+export function setLogger(customLogger: ILogger): ILogger {
   const previous = _logger;
   _logger = customLogger;
   return previous;
@@ -41,5 +35,5 @@ export function setLogger(customLogger: Logger): Logger {
  * Helper for test cleanup
  */
 export function resetLogger(): void {
-  _logger = new Logger();
+  _logger = createLogger();
 }

@@ -1,8 +1,8 @@
-// ABOUTME: Tests for Logger class functionality.
+// ABOUTME: Tests for createLogger factory function.
 // ABOUTME: Verifies log levels, formatting, and extension boundary handling.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Logger, LogLevel } from '../logger';
+import { createLogger, LogLevel } from '../logger';
 
 // Mock browser API using vi.hoisted for proper hoisting
 const mocks = vi.hoisted(() => ({
@@ -25,7 +25,7 @@ const mockConsole = {
   error: vi.fn(),
 };
 
-describe('Logger', () => {
+describe('createLogger', () => {
   let originalConsole: typeof console;
 
   beforeEach(() => {
@@ -49,15 +49,15 @@ describe('Logger', () => {
     global.console = originalConsole;
   });
 
-  describe('Constructor & Configuration', () => {
+  describe('Factory & Configuration', () => {
     it('should create logger with default config', () => {
-      const logger = new Logger();
+      const logger = createLogger();
 
       expect(logger.getLevel()).toBeDefined();
     });
 
     it('should create logger with custom config', () => {
-      const logger = new Logger({
+      const logger = createLogger({
         level: LogLevel.WARN,
         prefix: '[TestApp]',
       });
@@ -66,7 +66,7 @@ describe('Logger', () => {
     });
 
     it('should set log level at runtime', () => {
-      const logger = new Logger({ level: LogLevel.INFO });
+      const logger = createLogger({ level: LogLevel.INFO });
 
       logger.setLevel(LogLevel.DEBUG);
 
@@ -83,12 +83,11 @@ describe('Logger', () => {
       });
 
       // Should not throw when creating logger - error is caught silently in isExtensionDevMode()
-      expect(() => new Logger()).not.toThrow();
+      expect(() => createLogger()).not.toThrow();
 
       // Logger should be created successfully with default level
-      const logger = new Logger();
+      const logger = createLogger();
       expect(logger.getLevel()).toBeDefined();
-      expect(logger).toBeInstanceOf(Logger);
     });
 
     it('should handle browser API failure gracefully - TypeError', () => {
@@ -99,11 +98,10 @@ describe('Logger', () => {
       });
 
       // Should not throw, should handle gracefully
-      expect(() => new Logger()).not.toThrow();
+      expect(() => createLogger()).not.toThrow();
 
-      const logger = new Logger();
+      const logger = createLogger();
       expect(logger.getLevel()).toBeDefined();
-      expect(logger).toBeInstanceOf(Logger);
     });
 
     it('should handle browser API failure gracefully - null/undefined', () => {
@@ -113,9 +111,9 @@ describe('Logger', () => {
       });
 
       // Should not throw
-      expect(() => new Logger()).not.toThrow();
+      expect(() => createLogger()).not.toThrow();
 
-      const logger = new Logger();
+      const logger = createLogger();
       expect(logger.getLevel()).toBeDefined();
     });
 
@@ -129,16 +127,19 @@ describe('Logger', () => {
       mocks.getManifest.mockReturnValue(manifest);
 
       // Should successfully create logger without errors
-      const logger = new Logger();
+      const logger = createLogger();
 
-      expect(logger).toBeInstanceOf(Logger);
       expect(logger.getLevel()).toBeDefined();
+      expect(typeof logger.debug).toBe('function');
+      expect(typeof logger.info).toBe('function');
+      expect(typeof logger.warn).toBe('function');
+      expect(typeof logger.error).toBe('function');
     });
   });
 
   describe('Log Levels', () => {
     it('should respect log level - DEBUG logs everything', () => {
-      const logger = new Logger({ level: LogLevel.DEBUG });
+      const logger = createLogger({ level: LogLevel.DEBUG });
 
       logger.debug('Test', 'Debug message');
       logger.info('Test', 'Info message');
@@ -152,7 +153,7 @@ describe('Logger', () => {
     });
 
     it('should respect log level - INFO skips debug', () => {
-      const logger = new Logger({ level: LogLevel.INFO });
+      const logger = createLogger({ level: LogLevel.INFO });
 
       logger.debug('Test', 'Debug message');
       logger.info('Test', 'Info message');
@@ -166,7 +167,7 @@ describe('Logger', () => {
     });
 
     it('should respect log level - WARN skips debug and info', () => {
-      const logger = new Logger({ level: LogLevel.WARN });
+      const logger = createLogger({ level: LogLevel.WARN });
 
       logger.debug('Test', 'Debug message');
       logger.info('Test', 'Info message');
@@ -180,7 +181,7 @@ describe('Logger', () => {
     });
 
     it('should respect log level - ERROR only logs errors', () => {
-      const logger = new Logger({ level: LogLevel.ERROR });
+      const logger = createLogger({ level: LogLevel.ERROR });
 
       logger.debug('Test', 'Debug message');
       logger.info('Test', 'Info message');
@@ -194,7 +195,7 @@ describe('Logger', () => {
     });
 
     it('should respect log level - NONE logs nothing', () => {
-      const logger = new Logger({ level: LogLevel.NONE });
+      const logger = createLogger({ level: LogLevel.NONE });
 
       logger.debug('Test', 'Debug message');
       logger.info('Test', 'Info message');
@@ -210,7 +211,7 @@ describe('Logger', () => {
 
   describe('Log Formatting', () => {
     it('should include prefix in log messages', () => {
-      const logger = new Logger({ level: LogLevel.INFO, prefix: '[TestApp]' });
+      const logger = createLogger({ level: LogLevel.INFO, prefix: '[TestApp]' });
 
       logger.info('Test', 'Test message');
 
@@ -218,7 +219,7 @@ describe('Logger', () => {
     });
 
     it('should include context when provided', () => {
-      const logger = new Logger({ level: LogLevel.INFO, includeContext: true });
+      const logger = createLogger({ level: LogLevel.INFO, includeContext: true });
 
       logger.info('ComponentName', 'Test message');
 
@@ -226,7 +227,7 @@ describe('Logger', () => {
     });
 
     it('should exclude context when includeContext is false', () => {
-      const logger = new Logger({ level: LogLevel.INFO, includeContext: false });
+      const logger = createLogger({ level: LogLevel.INFO, includeContext: false });
 
       logger.info('ComponentName', 'Test message');
 
@@ -235,7 +236,7 @@ describe('Logger', () => {
     });
 
     it('should include timestamp when enabled', () => {
-      const logger = new Logger({ level: LogLevel.INFO, includeTimestamp: true });
+      const logger = createLogger({ level: LogLevel.INFO, includeTimestamp: true });
 
       logger.info('Test', 'Test message');
 
@@ -246,7 +247,7 @@ describe('Logger', () => {
     });
 
     it('should log with context, message, and data', () => {
-      const logger = new Logger({ level: LogLevel.INFO, includeContext: true });
+      const logger = createLogger({ level: LogLevel.INFO, includeContext: true });
       const data = { key: 'value' };
 
       logger.info('Context', 'Test message', data);
@@ -260,7 +261,7 @@ describe('Logger', () => {
 
   describe('Log Methods', () => {
     it('should log debug messages with data', () => {
-      const logger = new Logger({ level: LogLevel.DEBUG });
+      const logger = createLogger({ level: LogLevel.DEBUG });
       const data = { debug: true };
 
       logger.debug('Test', 'Debug message', data);
@@ -269,7 +270,7 @@ describe('Logger', () => {
     });
 
     it('should log warn messages with data', () => {
-      const logger = new Logger({ level: LogLevel.WARN });
+      const logger = createLogger({ level: LogLevel.WARN });
       const data = { warning: true };
 
       logger.warn('Test', 'Warning message', data);
@@ -278,7 +279,7 @@ describe('Logger', () => {
     });
 
     it('should log error messages with error object', () => {
-      const logger = new Logger({ level: LogLevel.ERROR });
+      const logger = createLogger({ level: LogLevel.ERROR });
       const error = new Error('Test error');
 
       logger.error('Test', 'Error occurred', error);
@@ -287,7 +288,7 @@ describe('Logger', () => {
     });
 
     it('should log error messages without error object', () => {
-      const logger = new Logger({ level: LogLevel.ERROR });
+      const logger = createLogger({ level: LogLevel.ERROR });
 
       logger.error('Test', 'Error occurred');
 

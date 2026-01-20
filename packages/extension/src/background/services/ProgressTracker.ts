@@ -25,36 +25,79 @@ interface ActiveConversion {
 }
 
 /**
- * Progress Tracker Service
+ * Progress Tracker Interface
  *
+ * Provides methods to track conversion progress and synchronize with UI.
+ */
+export interface IProgressTracker {
+  /**
+   * Starts tracking a new conversion job
+   */
+  startTracking: (jobId: string) => void;
+
+  /**
+   * Creates a throttled progress callback for a conversion job
+   */
+  createProgressCallback: (jobId: string) => (stage: string, percentage: number) => void;
+
+  /**
+   * Sends retry progress update to UI
+   */
+  sendRetryProgress: (
+    jobId: string,
+    attempt: number,
+    maxAttempts: number,
+    delay: number,
+    error: Error,
+  ) => void;
+
+  /**
+   * Synchronizes current progress to newly opened popup
+   */
+  synchronizeProgress: () => Promise<void>;
+
+  /**
+   * Stops tracking a conversion job
+   */
+  stopTracking: (jobId: string) => void;
+}
+
+/**
+ * Maps conversion stage to user-friendly operation description
+ */
+function getOperationDescription(stage: string): string {
+  const descriptions: Record<string, string> = {
+    queued: 'Preparing conversion...',
+    parsing: 'Parsing TSX code...',
+    rendering: 'Rendering React components...',
+    layout: 'Calculating layout...',
+    'pdf-generation': 'Generating PDF...',
+    complete: 'Complete!',
+  };
+  return descriptions[stage] || `Processing (${stage})...`;
+}
+
+/**
+ * Create a Progress Tracker
+ *
+ * Factory function that creates an IProgressTracker implementation.
  * Encapsulates all progress tracking and UI update logic.
- * Designed for dependency injection and testability.
  *
  * @example
  * ```ts
- * const tracker = new ProgressTracker();
+ * const tracker = createProgressTracker();
  * tracker.startTracking(jobId);
  * const onProgress = tracker.createProgressCallback(jobId);
  * await convertToPdf(tsx, config, onProgress);
  * tracker.stopTracking(jobId);
  * ```
  */
-export class ProgressTracker {
-  /**
-   * Active conversions map - tracks in-progress conversion jobs
-   * Allows progress synchronization when popup reopens during conversion
-   */
-  private readonly conversions = new Map<string, ActiveConversion>();
+export function createProgressTracker(): IProgressTracker {
+  // Private state - tracks in-progress conversion jobs
+  const conversions = new Map<string, ActiveConversion>();
 
-  /**
-   * Starts tracking a new conversion job
-   *
-   * Initializes active conversion state for progress synchronization.
-   *
-   * @param jobId - Unique conversion job identifier
-   */
-  startTracking(jobId: string): void {
-    this.conversions.set(jobId, {
+  function startTracking(jobId: string): void {
+    conversions.set(jobId, {
       jobId,
       startTime: Date.now(),
       currentProgress: {
@@ -65,29 +108,17 @@ export class ProgressTracker {
     });
   }
 
-  /**
-   * Creates a throttled progress callback for a conversion job
-   *
-   * Returns a callback that:
-   * - Updates active conversion state
-   * - Sends throttled progress updates to UI (max every 100ms)
-   *
-   * Fire-and-forget pattern for message sending - errors are logged but don't block progress.
-   *
-   * @param jobId - Unique conversion job identifier
-   * @returns Progress callback function for conversion pipeline
-   */
-  createProgressCallback(jobId: string): (stage: string, percentage: number) => void {
+  function createProgressCallback(jobId: string): (stage: string, percentage: number) => void {
     // Create throttled progress sender to avoid overwhelming UI with updates
     const throttledProgressSend = throttleProgress((stage: string, percentage: number) => {
       const progress: ConversionProgress = {
         stage: stage as ConversionStatus,
         percentage,
-        currentOperation: this.getOperationDescription(stage),
+        currentOperation: getOperationDescription(stage),
       };
 
       // Update active conversion state for popup synchronization
-      const activeConv = this.conversions.get(jobId);
+      const activeConv = conversions.get(jobId);
       if (activeConv) {
         activeConv.currentProgress = progress;
       }
@@ -101,19 +132,7 @@ export class ProgressTracker {
     return throttledProgressSend;
   }
 
-  /**
-   * Updates retry progress state and sends to UI
-   *
-   * Fire-and-forget delivery - errors are logged but not thrown.
-   * Prevents retry logic from being blocked by messaging failures.
-   *
-   * @param jobId - Unique conversion job identifier
-   * @param attempt - Current retry attempt number
-   * @param maxAttempts - Maximum retry attempts
-   * @param delay - Delay in milliseconds before next retry
-   * @param error - Error that caused retry
-   */
-  sendRetryProgress(
+  function sendRetryProgress(
     jobId: string,
     attempt: number,
     maxAttempts: number,
@@ -129,7 +148,7 @@ export class ProgressTracker {
     };
 
     // Update active conversion state
-    const activeConv = this.conversions.get(jobId);
+    const activeConv = conversions.get(jobId);
     if (activeConv) {
       activeConv.currentProgress = retryProgress;
     }
@@ -140,17 +159,9 @@ export class ProgressTracker {
     });
   }
 
-  /**
-   * Synchronizes current progress to newly opened popup
-   *
-   * Sends progress updates for all active conversions in parallel.
-   * Allows popup to display progress for conversions started before it opened.
-   *
-   * @returns Promise resolving when all progress messages sent
-   */
-  async synchronizeProgress(): Promise<void> {
+  async function synchronizeProgress(): Promise<void> {
     await Promise.all(
-      Array.from(this.conversions.entries()).map(async ([jobId, conversion]) => {
+      Array.from(conversions.entries()).map(async ([jobId, conversion]) => {
         await sendMessage('conversionProgress', {
           jobId,
           progress: conversion.currentProgress,
@@ -159,33 +170,15 @@ export class ProgressTracker {
     );
   }
 
-  /**
-   * Stops tracking a conversion job
-   *
-   * Removes job from active conversions map.
-   * Call this after conversion completes or fails to prevent memory leaks.
-   *
-   * @param jobId - Unique conversion job identifier
-   */
-  stopTracking(jobId: string): void {
-    this.conversions.delete(jobId);
+  function stopTracking(jobId: string): void {
+    conversions.delete(jobId);
   }
 
-  /**
-   * Maps conversion stage to user-friendly operation description
-   *
-   * @param stage - Internal conversion stage identifier
-   * @returns Human-readable operation description for UI display
-   */
-  private getOperationDescription(stage: string): string {
-    const descriptions: Record<string, string> = {
-      queued: 'Preparing conversion...',
-      parsing: 'Parsing TSX code...',
-      rendering: 'Rendering React components...',
-      layout: 'Calculating layout...',
-      'pdf-generation': 'Generating PDF...',
-      complete: 'Complete!',
-    };
-    return descriptions[stage] || `Processing (${stage})...`;
-  }
+  return {
+    startTracking,
+    createProgressCallback,
+    sendRetryProgress,
+    synchronizeProgress,
+    stopTracking,
+  };
 }

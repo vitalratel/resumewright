@@ -1,18 +1,14 @@
-/**
- * PDF Converter Module
- *
- * Core PDF conversion functions with full TSX-to-PDF pipeline.
- * Refactored to use dependency injection following Clean Architecture.
- */
+// ABOUTME: Core PDF conversion with full TSX-to-PDF pipeline.
+// ABOUTME: Handles font detection, fetching, and WASM-based PDF generation.
 
 import { FontCollection, FontData as WasmFontData } from '@pkg/wasm_bridge';
-import { FontFetchOrchestrator } from '../../application/fonts/FontFetchOrchestrator';
+import { fetchFontsFromRequirements } from '../../application/fonts/FontFetchOrchestrator';
 import type { IFontRepository } from '../../domain/fonts/IFontRepository';
 import type { FontData, FontRequirement } from '../../domain/fonts/types';
 import { convertConfigToRust } from '../../domain/pdf/config';
 import { parseWasmError } from '../../domain/pdf/errors';
 import { validatePdfBytes, validateProgressParams } from '../../domain/pdf/wasmSchemas';
-import { GoogleFontsRepository } from '../../infrastructure/fonts/GoogleFontsRepository';
+import { createGoogleFontsRepository } from '../../infrastructure/fonts/GoogleFontsRepository';
 import { getLogger } from '../../infrastructure/logging/instance';
 import type { ILogger } from '../../infrastructure/logging/logger';
 import { detectFonts } from '../../infrastructure/pdf/fonts';
@@ -55,14 +51,41 @@ export async function convertTsxToPdfWithFonts(
 ): Promise<Uint8Array> {
   // Resolve dependencies with defaults (composition root)
   const logger = dependencies?.logger ?? getLogger();
-  const fontRepository = dependencies?.fontRepository ?? new GoogleFontsRepository();
+  const fontRepository = dependencies?.fontRepository ?? createGoogleFontsRepository();
 
-  // Create orchestrator with injected dependencies
-  const orchestrator = new FontFetchOrchestrator(fontRepository, logger);
+  validateTsxInput(tsx);
 
-  // Delegate to service
-  const service = new PdfConverterService(orchestrator, logger);
-  return service.convertWithFonts(tsx, config, onProgress, onFontFetch);
+  try {
+    const startTime = performance.now();
+    logger.debug('PdfConverter', 'Starting two-step conversion...');
+
+    // Step 1: Detect fonts
+    const fontRequirements = await detectFontsStep(tsx, onProgress, logger);
+
+    // Step 2: Fetch fonts
+    const fontData = await fetchFontsStep(
+      fontRequirements,
+      fontRepository,
+      logger,
+      onProgress,
+      onFontFetch,
+    );
+
+    // Step 3: Convert to PDF
+    const pdfBytes = await convertToPdfStep(tsx, config, fontData, onProgress, logger);
+
+    const duration = performance.now() - startTime;
+    logger.info('PdfConverter', 'Conversion completed', {
+      duration: duration.toFixed(0),
+      pdfSize: pdfBytes.length,
+    });
+
+    return pdfBytes;
+  } catch (error) {
+    logger.error('PdfConverter', 'Conversion failed', error);
+    const conversionError = parseWasmError(error);
+    throw new Error(conversionError.message);
+  }
 }
 
 /**
@@ -140,138 +163,82 @@ function validateTsxInput(tsx: string): void {
 }
 
 /**
- * PDF Converter Service (Internal)
- *
- * Application service for PDF conversion using dependency injection.
- * Follows Clean Architecture: depends only on domain interfaces.
- *
- * Not exported - use convertTsxToPdfWithFonts() for public API.
- *
- * @internal
+ * Step 1: Detect font requirements from TSX
  */
-class PdfConverterService {
-  constructor(
-    private readonly fontOrchestrator: FontFetchOrchestrator,
-    private readonly logger: ILogger,
-  ) {}
+async function detectFontsStep(
+  tsx: string,
+  onProgress: ((stage: string, percentage: number) => void) | undefined,
+  logger: ILogger,
+): Promise<FontRequirement[]> {
+  onProgress?.(PROGRESS_STAGES.DETECTING_FONTS.stage, PROGRESS_STAGES.DETECTING_FONTS.percentage);
 
-  /**
-   * Convert TSX to PDF with automatic font detection and fetching
-   *
-   * High-level orchestration:
-   * 1. Validate input
-   * 2. Detect fonts (WASM)
-   * 3. Fetch fonts (network/storage)
-   * 4. Build font collection
-   * 5. Convert to PDF (WASM)
-   */
-  async convertWithFonts(
-    tsx: string,
-    config: ConversionConfig,
-    onProgress?: (stage: string, percentage: number) => void,
-    onFontFetch?: (current: number, total: number, fontFamily: string) => void,
-  ): Promise<Uint8Array> {
-    validateTsxInput(tsx);
+  const fontRequirements = await detectFonts(tsx);
 
-    try {
-      const startTime = performance.now();
-      this.logger.debug('PdfConverter', 'Starting two-step conversion...');
+  logger.debug('PdfConverter', 'Step 1: Detected fonts', {
+    count: fontRequirements.length,
+  });
 
-      // Step 1: Detect fonts
-      const fontRequirements = await this.detectFontsStep(tsx, onProgress);
+  return fontRequirements;
+}
 
-      // Step 2: Fetch fonts
-      const fontData = await this.fetchFontsStep(fontRequirements, onProgress, onFontFetch);
+/**
+ * Step 2: Fetch required fonts from repositories
+ */
+async function fetchFontsStep(
+  fontRequirements: FontRequirement[],
+  fontRepository: IFontRepository,
+  logger: ILogger,
+  onProgress: ((stage: string, percentage: number) => void) | undefined,
+  onFontFetch: ((current: number, total: number, fontFamily: string) => void) | undefined,
+): Promise<FontData[]> {
+  onProgress?.(PROGRESS_STAGES.FETCHING_FONTS.stage, PROGRESS_STAGES.FETCHING_FONTS.percentage);
 
-      // Step 3: Convert to PDF
-      const pdfBytes = await this.convertToPdfStep(tsx, config, fontData, onProgress);
+  const fontData = await fetchFontsFromRequirements(
+    fontRequirements,
+    fontRepository,
+    logger,
+    onFontFetch,
+  );
 
-      const duration = performance.now() - startTime;
-      this.logger.info('PdfConverter', 'Conversion completed', {
-        duration: duration.toFixed(0),
-        pdfSize: pdfBytes.length,
-      });
+  logger.debug('PdfConverter', 'Step 2: Fetched fonts', { count: fontData.length });
 
-      return pdfBytes;
-    } catch (error) {
-      this.logger.error('PdfConverter', 'Conversion failed', error);
-      const conversionError = parseWasmError(error);
-      throw new Error(conversionError.message);
-    }
-  }
+  return fontData;
+}
 
-  /**
-   * Step 1: Detect font requirements from TSX
-   */
-  private async detectFontsStep(
-    tsx: string,
-    onProgress?: (stage: string, percentage: number) => void,
-  ): Promise<FontRequirement[]> {
-    onProgress?.(PROGRESS_STAGES.DETECTING_FONTS.stage, PROGRESS_STAGES.DETECTING_FONTS.percentage);
+/**
+ * Step 3: Convert TSX to PDF with fonts
+ */
+async function convertToPdfStep(
+  tsx: string,
+  config: ConversionConfig,
+  fontData: FontData[],
+  onProgress: ((stage: string, percentage: number) => void) | undefined,
+  logger: ILogger,
+): Promise<Uint8Array> {
+  onProgress?.(PROGRESS_STAGES.PARSING.stage, PROGRESS_STAGES.PARSING.percentage);
 
-    const fontRequirements = await detectFonts(tsx);
+  // Build WASM font collection
+  const fontCollection = buildFontCollection(fontData);
 
-    this.logger.debug('PdfConverter', 'Step 1: Detected fonts', {
-      count: fontRequirements.length,
-    });
+  // Prepare WASM config
+  const wasmConfig = convertConfigToRust(config, logger);
 
-    return fontRequirements;
-  }
+  // Create progress wrapper
+  const progressCallback = createProgressWrapper(onProgress, logger);
 
-  /**
-   * Step 2: Fetch required fonts from repositories
-   */
-  private async fetchFontsStep(
-    fontRequirements: FontRequirement[],
-    onProgress?: (stage: string, percentage: number) => void,
-    onFontFetch?: (current: number, total: number, fontFamily: string) => void,
-  ): Promise<FontData[]> {
-    onProgress?.(PROGRESS_STAGES.FETCHING_FONTS.stage, PROGRESS_STAGES.FETCHING_FONTS.percentage);
-
-    const fontData = await this.fontOrchestrator.fetchFontsFromRequirements(
-      fontRequirements,
-      onFontFetch,
+  // Convert with WASM
+  const converterInstance = createConverterInstance();
+  try {
+    const pdfBytes = converterInstance.convert_tsx_to_pdf(
+      tsx,
+      wasmConfig,
+      fontCollection,
+      progressCallback,
     );
 
-    this.logger.debug('PdfConverter', 'Step 2: Fetched fonts', { count: fontData.length });
-
-    return fontData;
-  }
-
-  /**
-   * Step 3: Convert TSX to PDF with fonts
-   */
-  private async convertToPdfStep(
-    tsx: string,
-    config: ConversionConfig,
-    fontData: FontData[],
-    onProgress?: (stage: string, percentage: number) => void,
-  ): Promise<Uint8Array> {
-    onProgress?.(PROGRESS_STAGES.PARSING.stage, PROGRESS_STAGES.PARSING.percentage);
-
-    // Build WASM font collection
-    const fontCollection = buildFontCollection(fontData);
-
-    // Prepare WASM config
-    const wasmConfig = convertConfigToRust(config, this.logger);
-
-    // Create progress wrapper
-    const progressCallback = createProgressWrapper(onProgress, this.logger);
-
-    // Convert with WASM
-    const converterInstance = createConverterInstance();
-    try {
-      const pdfBytes = converterInstance.convert_tsx_to_pdf(
-        tsx,
-        wasmConfig,
-        fontCollection,
-        progressCallback,
-      );
-
-      // Validate PDF output
-      return validatePdfBytes(pdfBytes);
-    } finally {
-      converterInstance.free();
-    }
+    // Validate PDF output
+    return validatePdfBytes(pdfBytes);
+  } finally {
+    converterInstance.free();
   }
 }

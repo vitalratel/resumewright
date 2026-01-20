@@ -43,17 +43,17 @@ vi.mock('../../domain/pdf/wasmSchemas', () => ({
   validateProgressParams: vi.fn(),
 }));
 
-// Mock FontFetchOrchestrator and GoogleFontsRepository
-const mockFetchFontsFromRequirements = vi.fn();
+// Mock fetchFontsFromRequirements function and createGoogleFontsRepository
+const { mockFetchFontsFromRequirements } = vi.hoisted(() => ({
+  mockFetchFontsFromRequirements: vi.fn(),
+}));
 
 vi.mock('../fonts/FontFetchOrchestrator', () => ({
-  FontFetchOrchestrator: class MockFontFetchOrchestrator {
-    fetchFontsFromRequirements = mockFetchFontsFromRequirements;
-  },
+  fetchFontsFromRequirements: mockFetchFontsFromRequirements,
 }));
 
 vi.mock('../../infrastructure/fonts/GoogleFontsRepository', () => ({
-  GoogleFontsRepository: class MockGoogleFontsRepository {},
+  createGoogleFontsRepository: () => ({}),
 }));
 
 vi.mock('../../infrastructure/logging', () => ({
@@ -190,8 +190,11 @@ describe('PDF Converter', () => {
     it('should fetch fonts from requirements', async () => {
       await convertTsxToPdfWithFonts(validTsx, validConfig);
 
+      // Function signature: (requirements, fontRepository, logger, progressCallback)
       expect(mockFetchFontsFromRequirements).toHaveBeenCalledWith(
         [{ family: 'Roboto', weight: 400 as FontWeight, style: 'normal', source: 'google' }],
+        expect.any(Object), // fontRepository
+        expect.any(Object), // logger
         undefined,
       );
     });
@@ -201,7 +204,13 @@ describe('PDF Converter', () => {
 
       await convertTsxToPdfWithFonts(validTsx, validConfig, undefined, onFontFetch);
 
-      expect(mockFetchFontsFromRequirements).toHaveBeenCalledWith(expect.any(Array), onFontFetch);
+      // Function signature: (requirements, fontRepository, logger, progressCallback)
+      expect(mockFetchFontsFromRequirements).toHaveBeenCalledWith(
+        expect.any(Array),
+        expect.any(Object), // fontRepository
+        expect.any(Object), // logger
+        onFontFetch,
+      );
     });
 
     it('should create FontCollection and add fonts', async () => {

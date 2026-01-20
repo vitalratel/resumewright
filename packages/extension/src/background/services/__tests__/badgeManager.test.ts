@@ -8,7 +8,7 @@
 import { fakeBrowser } from '@webext-core/fake-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetLogger, setLogger } from '@/shared/infrastructure/logging/instance';
-import { Logger, LogLevel } from '@/shared/infrastructure/logging/logger';
+import { createLogger, LogLevel } from '@/shared/infrastructure/logging/logger';
 import { showBadgeError, showBadgeSuccess } from '../badgeManager';
 
 // Mock dependencies
@@ -24,7 +24,7 @@ describe('Badge Manager Functions', () => {
     vi.spyOn(fakeBrowser.storage.local, 'set').mockResolvedValue(undefined);
 
     // Suppress logger output during tests
-    const silentLogger = new Logger({ level: LogLevel.NONE });
+    const silentLogger = createLogger({ level: LogLevel.NONE });
     setLogger(silentLogger);
   });
 
