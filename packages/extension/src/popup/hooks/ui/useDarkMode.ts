@@ -1,8 +1,8 @@
 // ABOUTME: Dark mode hook with system detection and persistence.
-// ABOUTME: Uses localStorage cache for instant load, settingsStore for persistence.
+// ABOUTME: Uses localStorage cache for instant load, settings functions for persistence.
 
 import { useEffect, useState } from 'react';
-import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
+import { loadSettings, saveSettings } from '@/shared/infrastructure/settings/SettingsStore';
 import { getCachedTheme, setCachedTheme } from '@/shared/infrastructure/settings/themeCache';
 
 type Theme = 'light' | 'dark' | 'auto';
@@ -35,10 +35,10 @@ export function useDarkMode() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Sync with settingsStore on mount (in case cache is stale)
+  // Sync with settings on mount (in case cache is stale)
   useEffect(() => {
     const cachedTheme = getCachedTheme();
-    settingsStore.loadSettings().then((settings) => {
+    loadSettings().then((settings) => {
       if (settings.theme !== cachedTheme) {
         setTheme(settings.theme);
         setCachedTheme(settings.theme);
@@ -50,9 +50,9 @@ export function useDarkMode() {
     setTheme(newTheme);
     setCachedTheme(newTheme);
 
-    // Persist to settingsStore (async, source of truth)
-    settingsStore.loadSettings().then((settings) => {
-      settingsStore.saveSettings({ ...settings, theme: newTheme });
+    // Persist to storage (async, source of truth)
+    loadSettings().then((settings) => {
+      saveSettings({ ...settings, theme: newTheme });
     });
   };
 

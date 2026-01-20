@@ -1,8 +1,8 @@
-// ABOUTME: Tests for ExtensionAPI service.
+// ABOUTME: Tests for extensionAPI messaging functions.
 // ABOUTME: Verifies TSX validation, conversion requests, and message subscriptions.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { extensionAPI } from '../extensionAPI';
+import { onError, onProgress, onSuccess, requestConversion, validateTsx } from '../extensionAPI';
 
 // Mock messaging using vi.hoisted for proper hoisting
 const mocks = vi.hoisted(() => ({
@@ -25,7 +25,7 @@ vi.mock('@/shared/infrastructure/logging', () => ({
   })),
 }));
 
-describe('ExtensionAPI', () => {
+describe('extensionAPI', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.sendMessage.mockReset();
@@ -36,9 +36,7 @@ describe('ExtensionAPI', () => {
     it('should validate valid TSX', async () => {
       mocks.sendMessage.mockResolvedValue({ valid: true });
 
-      const result = await extensionAPI.validateTsx(
-        'export default function CV() { return <div>Test</div>; }',
-      );
+      const result = await validateTsx('export default function CV() { return <div>Test</div>; }');
 
       expect(result).toBe(true);
       expect(mocks.sendMessage).toHaveBeenCalledWith('validateTsx', {
@@ -49,7 +47,7 @@ describe('ExtensionAPI', () => {
     it('should return false for invalid TSX', async () => {
       mocks.sendMessage.mockResolvedValue({ valid: false });
 
-      const result = await extensionAPI.validateTsx('invalid tsx');
+      const result = await validateTsx('invalid tsx');
 
       expect(result).toBe(false);
     });
@@ -57,9 +55,7 @@ describe('ExtensionAPI', () => {
     it('should handle validation errors', async () => {
       mocks.sendMessage.mockRejectedValue(new Error('Service worker not responding'));
 
-      const result = await extensionAPI.validateTsx(
-        'export default function CV() { return <div>Test</div>; }',
-      );
+      const result = await validateTsx('export default function CV() { return <div>Test</div>; }');
 
       expect(result).toBe(false);
     });
@@ -67,19 +63,19 @@ describe('ExtensionAPI', () => {
     it('should handle empty TSX content', async () => {
       mocks.sendMessage.mockResolvedValue({ valid: false });
 
-      const result = await extensionAPI.validateTsx('');
+      const result = await validateTsx('');
 
       expect(result).toBe(false);
     });
   });
 
-  describe('startConversion', () => {
+  describe('requestConversion', () => {
     it('should start conversion with valid input', async () => {
       mocks.sendMessage
         .mockResolvedValueOnce({ pong: true }) // ping
         .mockResolvedValueOnce({ success: true }); // startConversion
 
-      const result = await extensionAPI.startConversion(
+      const result = await requestConversion(
         'export default function CV() { return <div>Test</div>; }',
         'test.tsx',
       );
@@ -92,7 +88,7 @@ describe('ExtensionAPI', () => {
         .mockRejectedValueOnce(new Error('No receiver')) // ping fails
         .mockResolvedValueOnce({ success: true }); // But conversion succeeds
 
-      const result = await extensionAPI.startConversion(
+      const result = await requestConversion(
         'export default function CV() { return <div>Test</div>; }',
         'test.tsx',
       );
@@ -106,10 +102,7 @@ describe('ExtensionAPI', () => {
         .mockRejectedValueOnce(new Error('Conversion failed')); // startConversion fails
 
       await expect(
-        extensionAPI.startConversion(
-          'export default function CV() { return <div>Test</div>; }',
-          'test.tsx',
-        ),
+        requestConversion('export default function CV() { return <div>Test</div>; }', 'test.tsx'),
       ).rejects.toThrow('Conversion failed');
     });
 
@@ -118,7 +111,7 @@ describe('ExtensionAPI', () => {
         .mockResolvedValueOnce({ pong: true })
         .mockResolvedValueOnce({ success: true });
 
-      await extensionAPI.startConversion('content', 'file.tsx');
+      await requestConversion('content', 'file.tsx');
 
       expect(mocks.sendMessage).toHaveBeenNthCalledWith(1, 'ping', {});
       expect(mocks.sendMessage).toHaveBeenNthCalledWith(2, 'startConversion', {
@@ -132,9 +125,7 @@ describe('ExtensionAPI', () => {
         .mockResolvedValueOnce({ pong: true }) // ping succeeds
         .mockRejectedValueOnce('String error message'); // Non-Error exception
 
-      await expect(extensionAPI.startConversion('content', 'file.tsx')).rejects.toBe(
-        'String error message',
-      );
+      await expect(requestConversion('content', 'file.tsx')).rejects.toBe('String error message');
 
       expect(mocks.sendMessage).toHaveBeenCalledTimes(2);
     });
@@ -146,7 +137,7 @@ describe('ExtensionAPI', () => {
       mocks.onMessage.mockReturnValue(unsubscribeFn);
       const callback = vi.fn();
 
-      const unsubscribe = extensionAPI.onProgress(callback);
+      const unsubscribe = onProgress(callback);
 
       expect(mocks.onMessage).toHaveBeenCalledWith('conversionProgress', expect.any(Function));
       expect(unsubscribe).toBe(unsubscribeFn);
@@ -162,7 +153,7 @@ describe('ExtensionAPI', () => {
       });
 
       const callback = vi.fn();
-      extensionAPI.onProgress(callback);
+      onProgress(callback);
 
       // Simulate message from background
       handler!({
@@ -182,7 +173,7 @@ describe('ExtensionAPI', () => {
       mocks.onMessage.mockReturnValue(unsubscribeFn);
       const callback = vi.fn();
 
-      const unsubscribe = extensionAPI.onSuccess(callback);
+      const unsubscribe = onSuccess(callback);
 
       expect(mocks.onMessage).toHaveBeenCalledWith('conversionComplete', expect.any(Function));
       expect(unsubscribe).toBe(unsubscribeFn);
@@ -198,7 +189,7 @@ describe('ExtensionAPI', () => {
       });
 
       const callback = vi.fn();
-      extensionAPI.onSuccess(callback);
+      onSuccess(callback);
 
       handler!({
         data: { jobId: 'test', filename: 'test.pdf', fileSize: 1024, duration: 5000 },
@@ -219,7 +210,7 @@ describe('ExtensionAPI', () => {
       mocks.onMessage.mockReturnValue(unsubscribeFn);
       const callback = vi.fn();
 
-      const unsubscribe = extensionAPI.onError(callback);
+      const unsubscribe = onError(callback);
 
       expect(mocks.onMessage).toHaveBeenCalledWith('conversionError', expect.any(Function));
       expect(unsubscribe).toBe(unsubscribeFn);
@@ -235,7 +226,7 @@ describe('ExtensionAPI', () => {
       });
 
       const callback = vi.fn();
-      extensionAPI.onError(callback);
+      onError(callback);
 
       handler!({
         data: {

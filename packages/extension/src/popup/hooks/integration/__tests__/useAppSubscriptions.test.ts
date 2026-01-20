@@ -14,18 +14,16 @@ import type {
   ConversionProgressPayload,
 } from '../../../../shared/types/messages';
 import type { ConversionProgress } from '../../../../shared/types/models';
-import { extensionAPI } from '../../../services/extensionAPI';
+import { onError, onProgress, onSuccess } from '../../../services/extensionAPI';
 import { usePopupStore } from '../../../store';
 import { useProgressStore } from '../../../store/progressStore';
 import { useAppSubscriptions } from '../useAppSubscriptions';
 
-// Mock extensionAPI
+// Mock extensionAPI functions
 vi.mock('../../../services/extensionAPI', () => ({
-  extensionAPI: {
-    onProgress: vi.fn(),
-    onSuccess: vi.fn(),
-    onError: vi.fn(),
-  },
+  onProgress: vi.fn(),
+  onSuccess: vi.fn(),
+  onError: vi.fn(),
 }));
 
 // Mock downloadPDF
@@ -59,17 +57,17 @@ describe('useAppSubscriptions', () => {
     unsubError = vi.fn<() => void>();
 
     // Mock extensionAPI subscriptions to capture callbacks
-    vi.mocked(extensionAPI.onProgress).mockImplementation((cb) => {
+    vi.mocked(onProgress).mockImplementation((cb) => {
       progressCallback = cb;
       return unsubProgress;
     });
 
-    vi.mocked(extensionAPI.onSuccess).mockImplementation((cb) => {
+    vi.mocked(onSuccess).mockImplementation((cb) => {
       successCallback = cb;
       return unsubSuccess;
     });
 
-    vi.mocked(extensionAPI.onError).mockImplementation((cb) => {
+    vi.mocked(onError).mockImplementation((cb) => {
       errorCallback = cb;
       return unsubError;
     });
@@ -83,9 +81,9 @@ describe('useAppSubscriptions', () => {
     it('should set up all three message subscriptions on mount', () => {
       renderHook(() => useAppSubscriptions());
 
-      expect(extensionAPI.onProgress).toHaveBeenCalledTimes(1);
-      expect(extensionAPI.onSuccess).toHaveBeenCalledTimes(1);
-      expect(extensionAPI.onError).toHaveBeenCalledTimes(1);
+      expect(onProgress).toHaveBeenCalledTimes(1);
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+      expect(onError).toHaveBeenCalledTimes(1);
       expect(progressCallback).not.toBeNull();
       expect(successCallback).not.toBeNull();
       expect(errorCallback).not.toBeNull();
@@ -346,17 +344,17 @@ describe('useAppSubscriptions', () => {
     it('should not recreate subscriptions on re-render', () => {
       const { rerender } = renderHook(() => useAppSubscriptions());
 
-      expect(extensionAPI.onProgress).toHaveBeenCalledTimes(1);
-      expect(extensionAPI.onSuccess).toHaveBeenCalledTimes(1);
-      expect(extensionAPI.onError).toHaveBeenCalledTimes(1);
+      expect(onProgress).toHaveBeenCalledTimes(1);
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+      expect(onError).toHaveBeenCalledTimes(1);
 
       // Force re-render
       rerender();
 
       // Subscriptions should not be recreated (empty dependency array)
-      expect(extensionAPI.onProgress).toHaveBeenCalledTimes(1);
-      expect(extensionAPI.onSuccess).toHaveBeenCalledTimes(1);
-      expect(extensionAPI.onError).toHaveBeenCalledTimes(1);
+      expect(onProgress).toHaveBeenCalledTimes(1);
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+      expect(onError).toHaveBeenCalledTimes(1);
     });
   });
 });

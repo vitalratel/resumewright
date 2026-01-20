@@ -11,28 +11,38 @@
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
+import {
+  loadSettings,
+  resetSettings,
+  saveSettings,
+} from '@/shared/infrastructure/settings/SettingsStore';
 import { Settings } from '../settings/Settings';
 
-// Mock settingsStore
+// Mock settings functions
 vi.mock('@/shared/infrastructure/settings/SettingsStore', () => ({
-  settingsStore: {
-    loadSettings: vi.fn(),
-    saveSettings: vi.fn(),
-    resetSettings: vi.fn(),
-  },
+  loadSettings: vi.fn(),
+  saveSettings: vi.fn(),
+  resetSettings: vi.fn(),
 }));
 
 const mockSettings = {
+  theme: 'auto' as const,
   defaultConfig: {
     pageSize: 'Letter' as const,
     margin: { top: 0.5, right: 0.5, bottom: 0.5, left: 0.5 },
     fontSize: 12,
     fontFamily: 'Arial',
+    filename: 'resume.pdf',
     compress: false,
+    atsOptimization: true,
     includeMetadata: true,
   },
-  customFonts: [],
+  autoDetectCV: true,
+  showConvertButtons: true,
+  telemetryEnabled: false,
+  retentionDays: 30,
+  settingsVersion: 1,
+  lastUpdated: Date.now(),
 };
 
 describe('Unsaved Changes Protection', () => {
@@ -40,9 +50,9 @@ describe('Unsaved Changes Protection', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (settingsStore.loadSettings as ReturnType<typeof vi.fn>).mockResolvedValue(mockSettings);
-    (settingsStore.saveSettings as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
-    (settingsStore.resetSettings as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    vi.mocked(loadSettings).mockResolvedValue(mockSettings);
+    vi.mocked(saveSettings).mockResolvedValue(undefined);
+    vi.mocked(resetSettings).mockResolvedValue(undefined);
   });
 
   describe('Dirty State Detection', () => {
@@ -67,7 +77,7 @@ describe('Unsaved Changes Protection', () => {
 
       // Should trigger auto-save (verifies change was detected)
       await waitFor(() => {
-        expect(settingsStore.saveSettings).toHaveBeenCalled();
+        expect(saveSettings).toHaveBeenCalled();
       });
     });
 
@@ -88,7 +98,7 @@ describe('Unsaved Changes Protection', () => {
 
       // Should trigger auto-save (verifies change was detected)
       await waitFor(() => {
-        expect(settingsStore.saveSettings).toHaveBeenCalled();
+        expect(saveSettings).toHaveBeenCalled();
       });
     });
 
@@ -105,7 +115,7 @@ describe('Unsaved Changes Protection', () => {
 
       // Wait for auto-save to complete
       await waitFor(() => {
-        expect(settingsStore.saveSettings).toHaveBeenCalled();
+        expect(saveSettings).toHaveBeenCalled();
       });
 
       // Should show success message after save completes
@@ -164,7 +174,7 @@ describe('Unsaved Changes Protection', () => {
       // Auto-save should be triggered after debounce (500ms)
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalled();
+          expect(saveSettings).toHaveBeenCalled();
         },
         { timeout: 2000 },
       );
@@ -184,7 +194,7 @@ describe('Unsaved Changes Protection', () => {
       // Wait for auto-save to complete
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalled();
+          expect(saveSettings).toHaveBeenCalled();
         },
         { timeout: 2000 },
       );
@@ -224,11 +234,11 @@ describe('Unsaved Changes Protection', () => {
 
       // Wait for auto-save to complete first
       await waitFor(() => {
-        expect(settingsStore.saveSettings).toHaveBeenCalled();
+        expect(saveSettings).toHaveBeenCalled();
       });
 
       // Clear mock to track navigation save separately
-      vi.mocked(settingsStore.saveSettings).mockClear();
+      vi.mocked(saveSettings).mockClear();
 
       // Make another change to create dirty state
       const letterButton = screen.getByRole('radio', { name: /Letter/i });
@@ -240,7 +250,7 @@ describe('Unsaved Changes Protection', () => {
 
       // Should auto-save immediately and then navigate
       await waitFor(() => {
-        expect(settingsStore.saveSettings).toHaveBeenCalled();
+        expect(saveSettings).toHaveBeenCalled();
         expect(mockOnBack).toHaveBeenCalled();
       });
     });
@@ -264,16 +274,14 @@ describe('Unsaved Changes Protection', () => {
 
       // Should auto-save immediately (canceling debounced save) and navigate
       await waitFor(() => {
-        expect(settingsStore.saveSettings).toHaveBeenCalled();
+        expect(saveSettings).toHaveBeenCalled();
         expect(mockOnBack).toHaveBeenCalled();
       });
     });
 
     it('should remain on page if save fails during navigation', async () => {
       // Mock save to fail
-      (settingsStore.saveSettings as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-        new Error('Save failed'),
-      );
+      vi.mocked(saveSettings).mockRejectedValueOnce(new Error('Save failed'));
 
       render(<Settings onBack={mockOnBack} />);
 
@@ -291,7 +299,7 @@ describe('Unsaved Changes Protection', () => {
 
       // Should try to save but stay on page when save fails
       await waitFor(() => {
-        expect(settingsStore.saveSettings).toHaveBeenCalled();
+        expect(saveSettings).toHaveBeenCalled();
       });
 
       // Should NOT navigate
@@ -311,7 +319,7 @@ describe('Unsaved Changes Protection', () => {
 
       // Should navigate without saving
       expect(mockOnBack).toHaveBeenCalled();
-      expect(settingsStore.saveSettings).not.toHaveBeenCalled();
+      expect(saveSettings).not.toHaveBeenCalled();
     });
   });
 });

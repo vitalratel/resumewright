@@ -11,7 +11,7 @@
  *
  * ONLY mocks:
  * - Browser APIs (webextension-polyfill)
- * - External services (settingsStore, extensionAPI)
+ * - External services (extensionAPI, messaging)
  * - WASM compatibility check
  */
 
@@ -85,39 +85,13 @@ vi.mock('wxt/browser', async () => {
   };
 });
 
-// Mock extensionAPI (external service - message passing)
+// Mock extensionAPI functions (external service - message passing)
 vi.mock('./services/extensionAPI', () => ({
-  extensionAPI: {
-    queryWasmStatus: vi.fn().mockResolvedValue({
-      success: true,
-      data: {
-        initialized: true,
-        error: null,
-      },
-    }),
-    onProgress: vi.fn(() => vi.fn()), // Returns unsubscribe function
-    onSuccess: vi.fn(() => vi.fn()),
-    onError: vi.fn(() => vi.fn()),
-    requestConversion: vi.fn(),
-  },
-}));
-
-// Mock settingsStore (external service - browser storage)
-vi.mock('../shared/services/settingsStore', () => ({
-  settingsStore: {
-    loadSettings: vi.fn().mockResolvedValue({
-      defaultConfig: {
-        pageSize: 'Letter',
-        margin: { top: 0.5, right: 0.5, bottom: 0.5, left: 0.5 },
-        fontFamily: 'Inter',
-        fontSize: 10,
-        lineHeight: 1.5,
-        color: '#000000',
-      },
-    }),
-    saveSettings: vi.fn().mockResolvedValue(undefined),
-    resetSettings: vi.fn().mockResolvedValue(undefined),
-  },
+  onProgress: vi.fn(() => vi.fn()), // Returns unsubscribe function
+  onSuccess: vi.fn(() => vi.fn()),
+  onError: vi.fn(() => vi.fn()),
+  requestConversion: vi.fn(),
+  validateTsx: vi.fn(),
 }));
 
 // Mock WASM compatibility checker (external check)

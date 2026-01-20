@@ -5,7 +5,11 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
-import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
+import {
+  loadSettings,
+  resetSettings,
+  saveSettings,
+} from '@/shared/infrastructure/settings/SettingsStore';
 import { Settings } from '../Settings';
 
 /**
@@ -16,13 +20,11 @@ const switchToTab = (tabName: string) => {
   fireEvent.click(tab);
 };
 
-// Mock settingsStore
+// Mock settings functions
 vi.mock('@/shared/infrastructure/settings/SettingsStore', () => ({
-  settingsStore: {
-    loadSettings: vi.fn(),
-    saveSettings: vi.fn(),
-    resetSettings: vi.fn(),
-  },
+  loadSettings: vi.fn(),
+  saveSettings: vi.fn(),
+  resetSettings: vi.fn(),
 }));
 
 describe('Settings - Auto-Save ', () => {
@@ -30,9 +32,9 @@ describe('Settings - Auto-Save ', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(settingsStore.loadSettings).mockResolvedValue(DEFAULT_USER_SETTINGS);
-    vi.mocked(settingsStore.saveSettings).mockResolvedValue(undefined);
-    vi.mocked(settingsStore.resetSettings).mockResolvedValue(undefined);
+    vi.mocked(loadSettings).mockResolvedValue(DEFAULT_USER_SETTINGS);
+    vi.mocked(saveSettings).mockResolvedValue(undefined);
+    vi.mocked(resetSettings).mockResolvedValue(undefined);
   });
 
   afterEach(async () => {
@@ -56,7 +58,7 @@ describe('Settings - Auto-Save ', () => {
       await new Promise((resolve) => setTimeout(resolve, 600));
 
       // Should not save on initial load
-      expect(settingsStore.saveSettings).not.toHaveBeenCalled();
+      expect(saveSettings).not.toHaveBeenCalled();
     });
 
     it('should auto-save after 500ms when page size changes', async () => {
@@ -72,12 +74,12 @@ describe('Settings - Auto-Save ', () => {
       await user.click(a4Button);
 
       // Should NOT save immediately
-      expect(settingsStore.saveSettings).not.toHaveBeenCalled();
+      expect(saveSettings).not.toHaveBeenCalled();
 
       // Wait for debounce (500ms + buffer)
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalledTimes(1);
+          expect(saveSettings).toHaveBeenCalledTimes(1);
         },
         { timeout: 1000 },
       );
@@ -96,12 +98,12 @@ describe('Settings - Auto-Save ', () => {
       await user.click(incrementButton);
 
       // Should NOT save immediately
-      expect(settingsStore.saveSettings).not.toHaveBeenCalled();
+      expect(saveSettings).not.toHaveBeenCalled();
 
       // Wait for debounce
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalledTimes(1);
+          expect(saveSettings).toHaveBeenCalledTimes(1);
         },
         { timeout: 1000 },
       );
@@ -119,7 +121,7 @@ describe('Settings - Auto-Save ', () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Clear any calls from initial render/load
-      vi.mocked(settingsStore.saveSettings).mockClear();
+      vi.mocked(saveSettings).mockClear();
 
       // Make multiple changes quickly
       const incrementButton = screen.getByRole('button', { name: /increase top margin/i });
@@ -136,14 +138,14 @@ describe('Settings - Auto-Save ', () => {
       // (testing that multiple rapid changes result in a single debounced save)
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalledTimes(1);
+          expect(saveSettings).toHaveBeenCalledTimes(1);
         },
         { timeout: 2000 },
       );
 
       // Verify no additional saves occur after the debounced save
       await new Promise((resolve) => setTimeout(resolve, 200));
-      expect(settingsStore.saveSettings).toHaveBeenCalledTimes(1);
+      expect(saveSettings).toHaveBeenCalledTimes(1);
     }, 15000); // Increase test timeout to 15s
   });
 
@@ -166,7 +168,7 @@ describe('Settings - Auto-Save ', () => {
 
       // Should save immediately without debounce
       await waitFor(() => {
-        expect(settingsStore.saveSettings).toHaveBeenCalledTimes(1);
+        expect(saveSettings).toHaveBeenCalledTimes(1);
         expect(mockOnBack).toHaveBeenCalledTimes(1);
       });
     });
@@ -198,7 +200,7 @@ describe('Settings - Auto-Save ', () => {
 
       // Should reset immediately (without debounce)
       await waitFor(() => {
-        expect(settingsStore.resetSettings).toHaveBeenCalledTimes(1);
+        expect(resetSettings).toHaveBeenCalledTimes(1);
       });
     });
 
@@ -215,7 +217,7 @@ describe('Settings - Auto-Save ', () => {
       await user.click(backButton);
 
       // Should navigate without saving
-      expect(settingsStore.saveSettings).not.toHaveBeenCalled();
+      expect(saveSettings).not.toHaveBeenCalled();
       expect(mockOnBack).toHaveBeenCalledTimes(1);
     });
   });
@@ -236,7 +238,7 @@ describe('Settings - Auto-Save ', () => {
       // Wait for auto-save
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalled();
+          expect(saveSettings).toHaveBeenCalled();
         },
         { timeout: 1000 },
       );
@@ -262,7 +264,7 @@ describe('Settings - Auto-Save ', () => {
 
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalled();
+          expect(saveSettings).toHaveBeenCalled();
         },
         { timeout: 1000 },
       );
@@ -286,7 +288,7 @@ describe('Settings - Auto-Save ', () => {
       const user = userEvent.setup();
 
       // Make saveSettings fail
-      vi.mocked(settingsStore.saveSettings).mockRejectedValueOnce(new Error('Network error'));
+      vi.mocked(saveSettings).mockRejectedValueOnce(new Error('Network error'));
 
       render(<Settings onBack={mockOnBack} />);
 
@@ -301,7 +303,7 @@ describe('Settings - Auto-Save ', () => {
       // Wait for auto-save attempt
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalled();
+          expect(saveSettings).toHaveBeenCalled();
         },
         { timeout: 1000 },
       );
@@ -316,7 +318,7 @@ describe('Settings - Auto-Save ', () => {
       const user = userEvent.setup();
 
       // First save fails, second succeeds
-      vi.mocked(settingsStore.saveSettings)
+      vi.mocked(saveSettings)
         .mockRejectedValueOnce(new Error('Network error'))
         .mockResolvedValueOnce(undefined);
 
@@ -332,7 +334,7 @@ describe('Settings - Auto-Save ', () => {
 
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalledTimes(1);
+          expect(saveSettings).toHaveBeenCalledTimes(1);
         },
         { timeout: 1000 },
       );
@@ -349,7 +351,7 @@ describe('Settings - Auto-Save ', () => {
       // Should save successfully
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalledTimes(2);
+          expect(saveSettings).toHaveBeenCalledTimes(2);
         },
         { timeout: 1000 },
       );
@@ -359,7 +361,7 @@ describe('Settings - Auto-Save ', () => {
       const user = userEvent.setup();
 
       // Make saveSettings fail
-      vi.mocked(settingsStore.saveSettings).mockRejectedValueOnce(new Error('Save failed'));
+      vi.mocked(saveSettings).mockRejectedValueOnce(new Error('Save failed'));
 
       render(<Settings onBack={mockOnBack} />);
 
@@ -377,7 +379,7 @@ describe('Settings - Auto-Save ', () => {
 
       // Should attempt save
       await waitFor(() => {
-        expect(settingsStore.saveSettings).toHaveBeenCalled();
+        expect(saveSettings).toHaveBeenCalled();
       });
 
       // Should show error
@@ -407,7 +409,7 @@ describe('Settings - Auto-Save ', () => {
       // Success message should have role="status" (implicit aria-live="polite")
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalled();
+          expect(saveSettings).toHaveBeenCalled();
           const status = screen.getByRole('status');
           expect(status).toBeInTheDocument();
           expect(status).toHaveTextContent(/settings saved/i);
@@ -419,7 +421,7 @@ describe('Settings - Auto-Save ', () => {
     it('should announce save errors to screen readers', async () => {
       const user = userEvent.setup();
 
-      vi.mocked(settingsStore.saveSettings).mockRejectedValueOnce(new Error('Save failed'));
+      vi.mocked(saveSettings).mockRejectedValueOnce(new Error('Save failed'));
 
       render(<Settings onBack={mockOnBack} />);
 
@@ -433,7 +435,7 @@ describe('Settings - Auto-Save ', () => {
 
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalled();
+          expect(saveSettings).toHaveBeenCalled();
         },
         { timeout: 1000 },
       );
@@ -461,7 +463,7 @@ describe('Settings - Auto-Save ', () => {
 
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalledTimes(1);
+          expect(saveSettings).toHaveBeenCalledTimes(1);
         },
         { timeout: 1000 },
       );
@@ -473,7 +475,7 @@ describe('Settings - Auto-Save ', () => {
       // Should save again (settings changed, even if back to original)
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalledTimes(2);
+          expect(saveSettings).toHaveBeenCalledTimes(2);
         },
         { timeout: 1000 },
       );
@@ -500,7 +502,7 @@ describe('Settings - Auto-Save ', () => {
       // Wait for debounce - should save only once (final state)
       await waitFor(
         () => {
-          expect(settingsStore.saveSettings).toHaveBeenCalledTimes(1);
+          expect(saveSettings).toHaveBeenCalledTimes(1);
         },
         { timeout: 1000 },
       );

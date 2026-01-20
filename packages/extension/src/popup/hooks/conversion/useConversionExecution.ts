@@ -9,7 +9,7 @@ import { useCallback } from 'react';
 import { ErrorCode } from '@/shared/errors/codes';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { ERROR_MESSAGES, FILE_SIZE_THRESHOLDS } from '../../constants/app';
-import { extensionAPI } from '../../services/extensionAPI';
+import { requestConversion } from '../../services/extensionAPI';
 import { useProgressStore } from '../../store/progressStore';
 import type { AppState } from '../integration/useAppState';
 
@@ -75,7 +75,7 @@ export function useConversionExecution({
         contentLength: importedFile.content.length,
         fileName: importedFile.name,
       });
-      await extensionAPI.startConversion(importedFile.content, importedFile.name);
+      await requestConversion(importedFile.content, importedFile.name);
       getLogger().info('ConversionExecution', 'Conversion request sent successfully');
     } catch (err) {
       getLogger().error('ConversionExecution', 'Conversion request failed', err);

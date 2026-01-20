@@ -1,7 +1,7 @@
 /**
- * WASM State Manager Tests
+ * WASM State Tests
  *
- * Comprehensive tests for WasmStateManager service.
+ * Comprehensive tests for WASM state management functions.
  * Coverage: State transitions, validation, storage operations, error handling
  * Uses fakeBrowser for real storage behavior.
  */
@@ -11,18 +11,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetLogger, setLogger } from '@/shared/infrastructure/logging/instance';
 import { Logger, LogLevel } from '@/shared/infrastructure/logging/logger';
 import { localExtStorage } from '@/shared/infrastructure/storage/typedStorage';
-import { WasmStateManager } from '../wasmState';
+import {
+  getWasmStatus,
+  isWasmReady,
+  setWasmFailed,
+  setWasmInitializing,
+  setWasmSuccess,
+} from '../wasmState';
 
-describe('WasmStateManager', () => {
-  let stateManager: WasmStateManager;
-
+describe('WASM State Functions', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
     // Clear storage before each test
     await fakeBrowser.storage.local.clear();
-
-    stateManager = new WasmStateManager();
 
     // Suppress logger output during tests
     const silentLogger = new Logger({ level: LogLevel.NONE });
@@ -34,22 +36,22 @@ describe('WasmStateManager', () => {
     resetLogger();
   });
 
-  describe('setInitializing', () => {
+  describe('setWasmInitializing', () => {
     it('should set status to initializing', async () => {
-      await stateManager.setInitializing();
+      await setWasmInitializing();
 
       const status = await localExtStorage.getItem('wasmStatus');
       expect(status).toBe('initializing');
     });
 
     it('should complete without throwing', async () => {
-      await expect(stateManager.setInitializing()).resolves.toBeUndefined();
+      await expect(setWasmInitializing()).resolves.toBeUndefined();
     });
   });
 
-  describe('setSuccess', () => {
+  describe('setWasmSuccess', () => {
     it('should set status to success', async () => {
-      await stateManager.setSuccess();
+      await setWasmSuccess();
 
       const status = await localExtStorage.getItem('wasmStatus');
       expect(status).toBe('success');
@@ -57,7 +59,7 @@ describe('WasmStateManager', () => {
 
     it('should set initialization timestamp', async () => {
       const beforeTime = Date.now();
-      await stateManager.setSuccess();
+      await setWasmSuccess();
       const afterTime = Date.now();
 
       const timestamp = await localExtStorage.getItem('wasmInitTime');
@@ -69,34 +71,34 @@ describe('WasmStateManager', () => {
       // Set an error first
       await localExtStorage.setItem('wasmInitError', 'Previous error');
 
-      await stateManager.setSuccess();
+      await setWasmSuccess();
 
       const error = await localExtStorage.getItem('wasmInitError');
       expect(error).toBeNull();
     });
 
     it('should complete without throwing', async () => {
-      await expect(stateManager.setSuccess()).resolves.toBeUndefined();
+      await expect(setWasmSuccess()).resolves.toBeUndefined();
     });
   });
 
-  describe('setFailed', () => {
+  describe('setWasmFailed', () => {
     it('should set status to failed', async () => {
-      await stateManager.setFailed('Test error');
+      await setWasmFailed('Test error');
 
       const status = await localExtStorage.getItem('wasmStatus');
       expect(status).toBe('failed');
     });
 
     it('should store error message', async () => {
-      await stateManager.setFailed('Specific error message');
+      await setWasmFailed('Specific error message');
 
       const error = await localExtStorage.getItem('wasmInitError');
       expect(error).toBe('Specific error message');
     });
 
     it('should handle empty error message', async () => {
-      await stateManager.setFailed('');
+      await setWasmFailed('');
 
       const error = await localExtStorage.getItem('wasmInitError');
       expect(error).toBe('');
@@ -105,22 +107,22 @@ describe('WasmStateManager', () => {
     it('should handle long error message', async () => {
       const longError = 'Error: '.repeat(100);
 
-      await stateManager.setFailed(longError);
+      await setWasmFailed(longError);
 
       const error = await localExtStorage.getItem('wasmInitError');
       expect(error).toBe(longError);
     });
 
     it('should complete without throwing', async () => {
-      await expect(stateManager.setFailed('Error')).resolves.toBeUndefined();
+      await expect(setWasmFailed('Error')).resolves.toBeUndefined();
     });
   });
 
-  describe('isReady', () => {
+  describe('isWasmReady', () => {
     it('should return true when status is success', async () => {
       await localExtStorage.setItem('wasmStatus', 'success');
 
-      const result = await stateManager.isReady();
+      const result = await isWasmReady();
 
       expect(result).toBe(true);
     });
@@ -128,7 +130,7 @@ describe('WasmStateManager', () => {
     it('should return false when status is initializing', async () => {
       await localExtStorage.setItem('wasmStatus', 'initializing');
 
-      const result = await stateManager.isReady();
+      const result = await isWasmReady();
 
       expect(result).toBe(false);
     });
@@ -136,7 +138,7 @@ describe('WasmStateManager', () => {
     it('should return false when status is failed', async () => {
       await localExtStorage.setItem('wasmStatus', 'failed');
 
-      const result = await stateManager.isReady();
+      const result = await isWasmReady();
 
       expect(result).toBe(false);
     });
@@ -144,18 +146,18 @@ describe('WasmStateManager', () => {
     it('should return false when status is undefined', async () => {
       // Storage is empty from beforeEach
 
-      const result = await stateManager.isReady();
+      const result = await isWasmReady();
 
       expect(result).toBe(false);
     });
   });
 
-  describe('getStatus', () => {
+  describe('getWasmStatus', () => {
     it('should return status and error for failed state', async () => {
       await localExtStorage.setItem('wasmStatus', 'failed');
       await localExtStorage.setItem('wasmInitError', 'Initialization failed');
 
-      const result = await stateManager.getStatus();
+      const result = await getWasmStatus();
 
       expect(result).toEqual({
         status: 'failed',
@@ -166,7 +168,7 @@ describe('WasmStateManager', () => {
     it('should return status without error for success state', async () => {
       await localExtStorage.setItem('wasmStatus', 'success');
 
-      const result = await stateManager.getStatus();
+      const result = await getWasmStatus();
 
       expect(result).toEqual({
         status: 'success',
@@ -177,7 +179,7 @@ describe('WasmStateManager', () => {
     it('should return status without error for initializing state', async () => {
       await localExtStorage.setItem('wasmStatus', 'initializing');
 
-      const result = await stateManager.getStatus();
+      const result = await getWasmStatus();
 
       expect(result).toEqual({
         status: 'initializing',
@@ -188,7 +190,7 @@ describe('WasmStateManager', () => {
     it('should return unknown status when no data exists', async () => {
       // Storage is empty from beforeEach
 
-      const result = await stateManager.getStatus();
+      const result = await getWasmStatus();
 
       expect(result).toEqual({
         status: 'unknown',
@@ -199,47 +201,47 @@ describe('WasmStateManager', () => {
 
   describe('state transitions', () => {
     it('should transition from initializing to success', async () => {
-      await stateManager.setInitializing();
+      await setWasmInitializing();
       const statusAfterInit = await localExtStorage.getItem('wasmStatus');
       expect(statusAfterInit).toBe('initializing');
 
-      await stateManager.setSuccess();
+      await setWasmSuccess();
       const statusAfterSuccess = await localExtStorage.getItem('wasmStatus');
       expect(statusAfterSuccess).toBe('success');
     });
 
     it('should transition from initializing to failed', async () => {
-      await stateManager.setInitializing();
+      await setWasmInitializing();
       const statusAfterInit = await localExtStorage.getItem('wasmStatus');
       expect(statusAfterInit).toBe('initializing');
 
-      await stateManager.setFailed('Error');
+      await setWasmFailed('Error');
       const statusAfterFailed = await localExtStorage.getItem('wasmStatus');
       expect(statusAfterFailed).toBe('failed');
     });
 
     it('should handle multiple failed transitions', async () => {
-      await stateManager.setFailed('Error 1');
+      await setWasmFailed('Error 1');
       const error1 = await localExtStorage.getItem('wasmInitError');
       expect(error1).toBe('Error 1');
 
-      await stateManager.setFailed('Error 2');
+      await setWasmFailed('Error 2');
       const error2 = await localExtStorage.getItem('wasmInitError');
       expect(error2).toBe('Error 2');
 
-      await stateManager.setFailed('Error 3');
+      await setWasmFailed('Error 3');
       const error3 = await localExtStorage.getItem('wasmInitError');
       expect(error3).toBe('Error 3');
     });
 
     it('should handle retry after failure (initializing again)', async () => {
-      await stateManager.setFailed('First error');
+      await setWasmFailed('First error');
       expect(await localExtStorage.getItem('wasmStatus')).toBe('failed');
 
-      await stateManager.setInitializing(); // Retry
+      await setWasmInitializing(); // Retry
       expect(await localExtStorage.getItem('wasmStatus')).toBe('initializing');
 
-      await stateManager.setSuccess();
+      await setWasmSuccess();
       expect(await localExtStorage.getItem('wasmStatus')).toBe('success');
     });
   });
@@ -247,37 +249,25 @@ describe('WasmStateManager', () => {
   describe('edge cases', () => {
     it('should handle concurrent state changes', async () => {
       // This tests that concurrent operations don't throw
-      await Promise.all([
-        stateManager.setInitializing(),
-        stateManager.setSuccess(),
-        stateManager.setFailed('Error'),
-      ]);
+      await Promise.all([setWasmInitializing(), setWasmSuccess(), setWasmFailed('Error')]);
 
       // Final state should be one of the valid states
       const status = await localExtStorage.getItem('wasmStatus');
       expect(['initializing', 'success', 'failed']).toContain(status);
     });
 
-    it('should handle rapid isReady calls', async () => {
+    it('should handle rapid isWasmReady calls', async () => {
       await localExtStorage.setItem('wasmStatus', 'success');
 
-      const results = await Promise.all([
-        stateManager.isReady(),
-        stateManager.isReady(),
-        stateManager.isReady(),
-      ]);
+      const results = await Promise.all([isWasmReady(), isWasmReady(), isWasmReady()]);
 
       expect(results).toEqual([true, true, true]);
     });
 
-    it('should handle rapid getStatus calls', async () => {
+    it('should handle rapid getWasmStatus calls', async () => {
       await localExtStorage.setItem('wasmStatus', 'initializing');
 
-      const results = await Promise.all([
-        stateManager.getStatus(),
-        stateManager.getStatus(),
-        stateManager.getStatus(),
-      ]);
+      const results = await Promise.all([getWasmStatus(), getWasmStatus(), getWasmStatus()]);
 
       expect(results).toEqual([
         { status: 'initializing', error: undefined },
@@ -289,7 +279,7 @@ describe('WasmStateManager', () => {
     it('should handle null storage values', async () => {
       await localExtStorage.setItem('wasmStatus', null);
 
-      const status = await stateManager.getStatus();
+      const status = await getWasmStatus();
 
       expect(status.status).toBe('unknown');
     });

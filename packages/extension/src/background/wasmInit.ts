@@ -9,31 +9,32 @@ import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { createWasmInitError } from '../shared/errors/factory/wasmErrors';
 import { ExponentialBackoffRetryPolicy } from '../shared/infrastructure/retry/ExponentialBackoffRetryPolicy';
 import { initWASM } from '../shared/infrastructure/wasm/loader';
-import { BadgeManager } from './services/badgeManager';
+import { showBadgeError, showBadgeSuccess } from './services/badgeManager';
 import type { WasmStatusInfo } from './services/wasmState';
-import { WasmStateManager } from './services/wasmState';
+import {
+  getWasmStatus as getWasmStatusFromStorage,
+  setWasmFailed,
+  setWasmInitializing,
+  setWasmSuccess,
+} from './services/wasmState';
 
 // WASM initialization configuration
 const MAX_INIT_RETRIES = 3;
 const RETRY_DELAY_BASE = 1000; // Start with 1s, exponential backoff
 const MAX_RETRY_DELAY = 5000; // Cap at 5s to prevent excessive delays
 
-// Service instances
-const badgeManager = new BadgeManager();
-const stateManager = new WasmStateManager();
-
 /**
  * Initialize WASM with retry mechanism
  *
  * Delegates to service layer for:
  * - Retry logic (retryWithBackoff)
- * - Badge updates (BadgeManager)
- * - State management (WasmStateManager)
+ * - Badge updates (showBadgeSuccess, showBadgeError)
+ * - State management (setWasmInitializing, setWasmSuccess, setWasmFailed)
  *
  * This function now focuses purely on orchestration.
  */
 export async function initializeWASM(): Promise<void> {
-  await stateManager.setInitializing();
+  await setWasmInitializing();
 
   try {
     // Retry WASM initialization with exponential backoff
@@ -71,8 +72,8 @@ ${error.stack}`
 
     // Success - update state and clear badge
     getLogger().info('WasmInit', 'Initialized successfully');
-    await stateManager.setSuccess();
-    await badgeManager.showSuccess();
+    await setWasmSuccess();
+    await showBadgeSuccess();
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
@@ -89,8 +90,8 @@ ${error.stack}`
     });
 
     // Update state and show error badge
-    await stateManager.setFailed(errorMessage);
-    await badgeManager.showError();
+    await setWasmFailed(errorMessage);
+    await showBadgeError();
 
     throw error;
   }
@@ -100,7 +101,7 @@ ${error.stack}`
  * Get detailed WASM status for error messages.
  */
 export async function getWasmStatus(): Promise<WasmStatusInfo> {
-  return stateManager.getStatus();
+  return getWasmStatusFromStorage();
 }
 
 /**

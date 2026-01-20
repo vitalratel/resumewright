@@ -2,14 +2,14 @@
 // ABOUTME: Registers typed message handlers for all popup ↔ background communication.
 
 import { getLogger } from '@/shared/infrastructure/logging/instance';
-import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
+import { loadSettings, saveSettings } from '@/shared/infrastructure/settings/SettingsStore';
 import { localExtStorage } from '@/shared/infrastructure/storage/typedStorage';
 import { createConverterInstance } from '@/shared/infrastructure/wasm/instance';
 import { isWASMInitialized } from '@/shared/infrastructure/wasm/loader';
 import { onMessage, sendMessage } from '@/shared/messaging';
 import type { TsxToPdfConverter } from '../shared/domain/pdf/types';
 import { validateTsxSyntax } from '../shared/domain/pdf/validation';
-import { ConversionService } from './services/ConversionService';
+import { convert } from './services/ConversionService';
 import { ProgressTracker } from './services/ProgressTracker';
 import { parseConversionError } from './utils/errorParser';
 import { getWasmStatus, retryWasmInit } from './wasmInit';
@@ -19,7 +19,6 @@ import { getWasmStatus, retryWasmInit } from './wasmInit';
  * Uses @webext-core/messaging for type-safe message passing
  */
 export function setupMessageHandler(): void {
-  const conversionService = new ConversionService();
   const progressTracker = new ProgressTracker();
   const getConverterInstance: () => TsxToPdfConverter = createConverterInstance;
 
@@ -127,7 +126,7 @@ export function setupMessageHandler(): void {
         progressTracker.sendRetryProgress(jobId, attempt, 3, delay, error);
       };
 
-      const result = await conversionService.convert(payload, onProgress, onRetry);
+      const result = await convert(payload, onProgress, onRetry);
       const duration = performance.now() - startTime;
 
       // Send completion broadcast
@@ -182,7 +181,7 @@ export function setupMessageHandler(): void {
 
   onMessage('getSettings', async () => {
     try {
-      const settings = await settingsStore.loadSettings();
+      const settings = await loadSettings();
       return { success: true, settings };
     } catch (error: unknown) {
       getLogger().error('MessageHandler', 'Failed to load settings', error);
@@ -195,9 +194,9 @@ export function setupMessageHandler(): void {
 
   onMessage('updateSettings', async ({ data: payload }) => {
     try {
-      const currentSettings = await settingsStore.loadSettings();
+      const currentSettings = await loadSettings();
       const updatedSettings = { ...currentSettings, ...payload.settings };
-      await settingsStore.saveSettings(updatedSettings);
+      await saveSettings(updatedSettings);
       return { success: true };
     } catch (error: unknown) {
       getLogger().error('MessageHandler', 'Failed to update settings', error);
