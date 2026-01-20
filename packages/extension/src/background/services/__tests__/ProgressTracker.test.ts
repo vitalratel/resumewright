@@ -1,8 +1,8 @@
-// ABOUTME: Tests for ProgressTracker service.
+// ABOUTME: Tests for createProgressTracker factory function.
 // ABOUTME: Verifies progress tracking, throttling, retry updates, and popup synchronization.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ProgressTracker } from '../ProgressTracker';
+import { createProgressTracker, type IProgressTracker } from '../ProgressTracker';
 
 // Mock sendMessage from @/shared/messaging using vi.hoisted for proper hoisting
 const mocks = vi.hoisted(() => ({
@@ -27,15 +27,15 @@ vi.mock('../../../shared/utils/progressThrottle', () => ({
   throttleProgress: vi.fn(<T extends (...args: unknown[]) => unknown>(callback: T): T => callback), // Pass through for testing
 }));
 
-describe('ProgressTracker', () => {
-  let tracker: ProgressTracker;
+describe('createProgressTracker', () => {
+  let tracker: IProgressTracker;
 
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.sendMessage.mockReset();
     mocks.sendMessage.mockResolvedValue(undefined);
 
-    tracker = new ProgressTracker();
+    tracker = createProgressTracker();
   });
 
   describe('startTracking', () => {

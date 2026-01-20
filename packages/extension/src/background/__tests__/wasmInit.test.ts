@@ -10,7 +10,7 @@
 import { fakeBrowser } from '@webext-core/fake-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetLogger, setLogger } from '@/shared/infrastructure/logging/instance';
-import { Logger, LogLevel } from '@/shared/infrastructure/logging/logger';
+import { createLogger, LogLevel } from '@/shared/infrastructure/logging/logger';
 import { setValidatedStorage } from '@/shared/infrastructure/storage/validation';
 import { initWASM } from '../../shared/infrastructure/wasm/loader';
 import { getWasmStatus, initializeWASM, retryWasmInit } from '../wasmInit';
@@ -50,7 +50,7 @@ describe('wasmInit - Integration Tests', () => {
     vi.spyOn(fakeBrowser.action, 'setBadgeBackgroundColor').mockResolvedValue(undefined);
     vi.useFakeTimers();
 
-    const silentLogger = new Logger({ level: LogLevel.NONE });
+    const silentLogger = createLogger({ level: LogLevel.NONE });
     setLogger(silentLogger);
   });
 

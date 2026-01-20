@@ -1,7 +1,5 @@
-/**
- * Logger Implementation
- * Structured logging with configurable levels
- */
+// ABOUTME: Structured logging with configurable levels.
+// ABOUTME: Provides createLogger factory function and ILogger interface.
 
 /**
  * Log levels in order of severity
@@ -17,7 +15,7 @@ export enum LogLevel {
 /**
  * Logger configuration
  */
-interface LoggerConfig {
+export interface LoggerConfig {
   level: LogLevel;
   prefix: string;
   includeTimestamp: boolean;
@@ -73,47 +71,40 @@ function getDefaultLogLevel(): LogLevel {
 }
 
 /**
- * Logger class with configurable levels and context
+ * Default logger configuration
  */
-export class Logger implements ILogger {
-  private config: LoggerConfig;
+const DEFAULT_CONFIG: LoggerConfig = {
+  level: getDefaultLogLevel(),
+  prefix: '[ResumeWright]',
+  includeTimestamp: false,
+  includeContext: true,
+};
 
-  constructor(config?: Partial<LoggerConfig>) {
-    this.config = {
-      level: getDefaultLogLevel(),
-      prefix: '[ResumeWright]',
-      includeTimestamp: false,
-      includeContext: true,
-      ...config,
-    };
-  }
+/**
+ * Create a logger with configurable levels and context
+ *
+ * Factory function that creates an ILogger implementation with:
+ * - Configurable log levels (DEBUG, INFO, WARN, ERROR, NONE)
+ * - Optional timestamp and context prefixes
+ * - Runtime level adjustment via setLevel
+ */
+export function createLogger(configOverrides?: Partial<LoggerConfig>): ILogger {
+  // Private mutable state
+  const config: LoggerConfig = {
+    ...DEFAULT_CONFIG,
+    ...configOverrides,
+  };
 
-  /**
-   * Set the log level at runtime
-   */
-  setLevel(level: LogLevel): void {
-    this.config.level = level;
-  }
+  // Helper function
+  function formatMessage(level: string, context: string, message: string): string {
+    const parts: string[] = [config.prefix];
 
-  /**
-   * Get current log level
-   */
-  getLevel(): LogLevel {
-    return this.config.level;
-  }
-
-  /**
-   * Format log message with optional timestamp and context
-   */
-  private formatMessage(level: string, context: string, message: string): string {
-    const parts: string[] = [this.config.prefix];
-
-    if (this.config.includeTimestamp) {
+    if (config.includeTimestamp) {
       const timestamp = new Date().toISOString();
       parts.push(`[${timestamp}]`);
     }
 
-    if (this.config.includeContext && context) {
+    if (config.includeContext && context) {
       parts.push(`[${context}]`);
     }
 
@@ -123,12 +114,18 @@ export class Logger implements ILogger {
     return parts.join(' ');
   }
 
-  /**
-   * Log debug message (development only)
-   */
-  debug(context: string, message: string, data?: unknown): void {
-    if (this.config.level <= LogLevel.DEBUG) {
-      const formatted = this.formatMessage('DEBUG', context, message);
+  // Public interface implementation
+  function setLevel(level: LogLevel): void {
+    config.level = level;
+  }
+
+  function getLevel(): LogLevel {
+    return config.level;
+  }
+
+  function debug(context: string, message: string, data?: unknown): void {
+    if (config.level <= LogLevel.DEBUG) {
+      const formatted = formatMessage('DEBUG', context, message);
       if (data !== undefined) {
         console.debug(formatted, data);
       } else {
@@ -137,12 +134,9 @@ export class Logger implements ILogger {
     }
   }
 
-  /**
-   * Log informational message
-   */
-  info(context: string, message: string, data?: unknown): void {
-    if (this.config.level <= LogLevel.INFO) {
-      const formatted = this.formatMessage('INFO', context, message);
+  function info(context: string, message: string, data?: unknown): void {
+    if (config.level <= LogLevel.INFO) {
+      const formatted = formatMessage('INFO', context, message);
       if (data !== undefined) {
         console.log(formatted, data);
       } else {
@@ -151,12 +145,9 @@ export class Logger implements ILogger {
     }
   }
 
-  /**
-   * Log warning message
-   */
-  warn(context: string, message: string, data?: unknown): void {
-    if (this.config.level <= LogLevel.WARN) {
-      const formatted = this.formatMessage('WARN', context, message);
+  function warn(context: string, message: string, data?: unknown): void {
+    if (config.level <= LogLevel.WARN) {
+      const formatted = formatMessage('WARN', context, message);
       if (data !== undefined) {
         console.warn(formatted, data);
       } else {
@@ -165,12 +156,9 @@ export class Logger implements ILogger {
     }
   }
 
-  /**
-   * Log error message (always logged except in NONE mode)
-   */
-  error(context: string, message: string, error?: unknown): void {
-    if (this.config.level <= LogLevel.ERROR) {
-      const formatted = this.formatMessage('ERROR', context, message);
+  function error(context: string, message: string, error?: unknown): void {
+    if (config.level <= LogLevel.ERROR) {
+      const formatted = formatMessage('ERROR', context, message);
       if (error !== undefined) {
         console.error(formatted, error);
       } else {
@@ -178,4 +166,13 @@ export class Logger implements ILogger {
       }
     }
   }
+
+  return {
+    setLevel,
+    getLevel,
+    debug,
+    info,
+    warn,
+    error,
+  };
 }
