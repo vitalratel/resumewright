@@ -84,10 +84,43 @@ vi.mock('@/shared/infrastructure/storage/typedStorage', () => ({
   },
 }));
 
+// Use vi.hoisted to create mock functions available at mock time
+const { mockLoadSettings, mockSaveSettings } = vi.hoisted(() => ({
+  mockLoadSettings: vi.fn(),
+  mockSaveSettings: vi.fn(),
+}));
+
+// Mock SettingsStore functions
+vi.mock('@/shared/infrastructure/settings/SettingsStore', () => ({
+  loadSettings: mockLoadSettings,
+  saveSettings: mockSaveSettings,
+}));
+
 describe('messageHandler', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     registeredHandlers.clear();
+
+    // Setup default mock for loadSettings
+    mockLoadSettings.mockResolvedValue({
+      theme: 'auto',
+      defaultConfig: {
+        pageSize: 'Letter',
+        margin: { top: 0, right: 0, bottom: 0, left: 0 },
+        fontSize: 11,
+        fontFamily: 'Helvetica',
+        filename: 'resume.pdf',
+        compress: true,
+        atsOptimization: false,
+        includeMetadata: true,
+      },
+      autoDetectCV: true,
+      showConvertButtons: true,
+      telemetryEnabled: false,
+      retentionDays: 30,
+      settingsVersion: 1,
+      lastUpdated: Date.now(),
+    });
 
     // Import and setup after mocks
     const { setupMessageHandler } = await import('../messageHandler');
@@ -136,11 +169,8 @@ describe('messageHandler', () => {
     });
 
     it('should handle settings load failure', async () => {
-      // Force settingsStore to throw
-      const { settingsStore } = await import('@/shared/infrastructure/settings/SettingsStore');
-      vi.spyOn(settingsStore, 'loadSettings').mockRejectedValueOnce(
-        new Error('Storage unavailable'),
-      );
+      // Force loadSettings to throw
+      mockLoadSettings.mockRejectedValueOnce(new Error('Storage unavailable'));
 
       const handler = registeredHandlers.get('getSettings');
       if (!handler) throw new Error('Handler not registered');

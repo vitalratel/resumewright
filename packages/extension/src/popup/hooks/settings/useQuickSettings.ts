@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
-import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
+import { loadSettings, saveSettings } from '@/shared/infrastructure/settings/SettingsStore';
 import type { UserSettings } from '@/shared/types/settings';
 import { MARGIN_PRESETS } from '../../constants/margins';
 
@@ -51,8 +51,7 @@ export function useQuickSettings(): UseQuickSettingsReturn {
     }, 2000);
 
     // Attempt to load settings
-    settingsStore
-      .loadSettings()
+    loadSettings()
       .then((loadedSettings) => {
         if (mounted) {
           clearTimeout(timeoutId);
@@ -75,7 +74,7 @@ export function useQuickSettings(): UseQuickSettingsReturn {
 
   // Reload settings (useful after closing settings view)
   const reloadSettings = useCallback(async () => {
-    const updatedSettings = await settingsStore.loadSettings();
+    const updatedSettings = await loadSettings();
     setSettings(updatedSettings);
   }, []);
 
@@ -92,7 +91,7 @@ export function useQuickSettings(): UseQuickSettingsReturn {
         },
       };
 
-      await settingsStore.saveSettings(updatedSettings);
+      await saveSettings(updatedSettings);
       setSettings(updatedSettings);
     },
     [settings],
@@ -112,7 +111,7 @@ export function useQuickSettings(): UseQuickSettingsReturn {
         },
       };
 
-      await settingsStore.saveSettings(updatedSettings);
+      await saveSettings(updatedSettings);
       setSettings(updatedSettings);
     },
     [settings],
@@ -138,7 +137,7 @@ export function useQuickSettings(): UseQuickSettingsReturn {
         },
       };
 
-      await settingsStore.saveSettings(updatedSettings);
+      await saveSettings(updatedSettings);
       setSettings(updatedSettings);
     },
     [settings],

@@ -1,4 +1,4 @@
-// ABOUTME: Tests for LifecycleManager lifecycle event handling.
+// ABOUTME: Tests for lifecycle event handling functions.
 // ABOUTME: Verifies onInstalled and onStartup event registration and initialization.
 
 import { fakeBrowser } from '@webext-core/fake-browser';
@@ -13,9 +13,7 @@ const mocks = vi.hoisted(() => ({
     warn: vi.fn(),
     error: vi.fn(),
   },
-  settingsStore: {
-    loadSettings: vi.fn(),
-  },
+  loadSettings: vi.fn(),
 }));
 
 // Mock logger with shared instance
@@ -23,12 +21,12 @@ vi.mock('../../shared/infrastructure/logging/instance', () => ({
   getLogger: () => mocks.logger,
 }));
 
-// Mock settingsStore with shared instance
+// Mock settings functions with shared instance
 vi.mock('@/shared/infrastructure/settings/SettingsStore', () => ({
-  settingsStore: mocks.settingsStore,
+  loadSettings: mocks.loadSettings,
 }));
 
-describe('LifecycleManager', () => {
+describe('setupLifecycleListeners', () => {
   let onStartupListener: (() => void) | null = null;
   let onInstalledListener:
     | ((details: { reason: string; previousVersion?: string }) => void)
@@ -60,7 +58,7 @@ describe('LifecycleManager', () => {
     vi.resetModules();
 
     // Set default mock implementation for settings
-    mocks.settingsStore.loadSettings.mockResolvedValue(mockSettings);
+    mocks.loadSettings.mockResolvedValue(mockSettings);
 
     // Clear storage
     await fakeBrowser.storage.local.clear();
@@ -78,59 +76,15 @@ describe('LifecycleManager', () => {
       },
     );
 
-    // Import to trigger constructor which registers listeners
-    await import('../lifecycleManager');
+    // Import to trigger setupLifecycleListeners via module execution
+    const { setupLifecycleListeners } = await import('../lifecycleManager');
+    setupLifecycleListeners();
   });
 
-  describe('initialization', () => {
+  describe('listener registration', () => {
     it('should register lifecycle event listeners', () => {
       expect(onInstalledListener).toBeDefined();
       expect(onStartupListener).toBeDefined();
-    });
-
-    it('should initialize default settings', async () => {
-      const { settingsStore } = await import('@/shared/infrastructure/settings/SettingsStore');
-      vi.mocked(settingsStore.loadSettings).mockResolvedValue(mockSettings);
-
-      const { LifecycleManager } = await import('../lifecycleManager');
-      const manager = new LifecycleManager();
-
-      await manager.initialize();
-
-      expect(settingsStore.loadSettings).toHaveBeenCalled();
-    });
-
-    it('should handle settings initialization failure gracefully', async () => {
-      const testError = new Error('Settings initialization failed');
-      mocks.settingsStore.loadSettings.mockRejectedValue(testError);
-
-      const { LifecycleManager } = await import('../lifecycleManager');
-      const manager = new LifecycleManager();
-
-      // Should not throw - error is caught and logged
-      await expect(manager.initialize()).resolves.not.toThrow();
-
-      // Verify error was logged
-      expect(mocks.logger.error).toHaveBeenCalledWith(
-        'LifecycleManager',
-        '[Lifecycle] Failed to initialize settings',
-        testError,
-      );
-    });
-
-    it('should log success when settings initialization succeeds', async () => {
-      mocks.settingsStore.loadSettings.mockResolvedValue(mockSettings);
-
-      const { LifecycleManager } = await import('../lifecycleManager');
-      const manager = new LifecycleManager();
-
-      await manager.initialize();
-
-      expect(mocks.logger.info).toHaveBeenCalledWith(
-        'LifecycleManager',
-        'Default settings initialized',
-      );
-      expect(mocks.logger.error).not.toHaveBeenCalled();
     });
   });
 
@@ -171,6 +125,38 @@ describe('LifecycleManager', () => {
         'LifecycleManager',
         'onStartup: Browser started',
       );
+    });
+
+    it('should handle settings initialization failure gracefully', async () => {
+      const testError = new Error('Settings initialization failed');
+      mocks.loadSettings.mockRejectedValue(testError);
+
+      // Trigger install event which calls initializeExtension
+      onInstalledListener?.({ reason: 'install' });
+
+      // Give async operations time to complete
+      await vi.waitFor(() => {
+        expect(mocks.logger.error).toHaveBeenCalledWith(
+          'LifecycleManager',
+          '[Lifecycle] Failed to initialize settings',
+          testError,
+        );
+      });
+    });
+
+    it('should log success when settings initialization succeeds', async () => {
+      mocks.loadSettings.mockResolvedValue(mockSettings);
+
+      // Trigger install event which calls initializeExtension
+      onInstalledListener?.({ reason: 'install' });
+
+      // Give async operations time to complete
+      await vi.waitFor(() => {
+        expect(mocks.logger.info).toHaveBeenCalledWith(
+          'LifecycleManager',
+          'Default settings initialized',
+        );
+      });
     });
   });
 });

@@ -7,7 +7,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
 import type { UserSettings } from '@/shared/types/settings';
-import { settingsStore } from '../SettingsStore';
+import {
+  loadSettings,
+  onSettingsChanged,
+  resetSettings,
+  saveSettings,
+  validateSettings,
+} from '../SettingsStore';
 
 // Use vi.hoisted to ensure mock functions are available when vi.mock factory runs
 const {
@@ -63,7 +69,7 @@ describe('SettingsStore', () => {
     it('returns default settings when storage is empty', async () => {
       mockSyncGet.mockResolvedValue({});
 
-      const settings = await settingsStore.loadSettings();
+      const settings = await loadSettings();
 
       expect(settings.defaultConfig.pageSize).toBe('Letter');
       expect(settings.defaultConfig.margin.top).toBe(0);
@@ -91,7 +97,7 @@ describe('SettingsStore', () => {
         'resumewright-settings': storedSettings,
       });
 
-      const settings = await settingsStore.loadSettings();
+      const settings = await loadSettings();
 
       expect(settings.defaultConfig.pageSize).toBe('A4');
       expect(settings.defaultConfig.margin.top).toBe(0.75);
@@ -103,7 +109,7 @@ describe('SettingsStore', () => {
         'resumewright-settings': DEFAULT_USER_SETTINGS,
       });
 
-      const settings = await settingsStore.loadSettings();
+      const settings = await loadSettings();
 
       expect(settings).toBeDefined();
       expect(mockLocalGet).toHaveBeenCalled();
@@ -121,7 +127,7 @@ describe('SettingsStore', () => {
           'resumewright-settings': invalidSettings,
         });
 
-        const settings = await settingsStore.loadSettings();
+        const settings = await loadSettings();
 
         // Should return defaults for invalid settings
         expect(settings).toEqual(DEFAULT_USER_SETTINGS);
@@ -133,7 +139,7 @@ describe('SettingsStore', () => {
         mockSyncGet.mockRejectedValue(new Error('Sync unavailable'));
         mockLocalGet.mockRejectedValue(new Error('Local storage access denied'));
 
-        const settings = await settingsStore.loadSettings();
+        const settings = await loadSettings();
 
         expect(settings).toEqual(DEFAULT_USER_SETTINGS);
       });
@@ -144,7 +150,7 @@ describe('SettingsStore', () => {
     it('saves valid settings to chrome.storage.sync', async () => {
       mockSyncSet.mockResolvedValue(undefined);
 
-      await settingsStore.saveSettings(DEFAULT_USER_SETTINGS);
+      await saveSettings(DEFAULT_USER_SETTINGS);
 
       expect(mockSyncSet).toHaveBeenCalledWith({
         'resumewright-settings': expect.objectContaining({
@@ -165,7 +171,7 @@ describe('SettingsStore', () => {
       mockSyncSet.mockResolvedValue(undefined);
       const beforeSave = Date.now();
 
-      await settingsStore.saveSettings(DEFAULT_USER_SETTINGS);
+      await saveSettings(DEFAULT_USER_SETTINGS);
 
       const savedSettings = mockSyncSet.mock.calls[0][0]['resumewright-settings'] as UserSettings;
       expect(savedSettings.lastUpdated).toBeGreaterThanOrEqual(beforeSave);
@@ -175,7 +181,7 @@ describe('SettingsStore', () => {
       mockSyncSet.mockRejectedValue(new Error('Sync storage unavailable'));
       mockLocalSet.mockResolvedValue(undefined);
 
-      await settingsStore.saveSettings(DEFAULT_USER_SETTINGS);
+      await saveSettings(DEFAULT_USER_SETTINGS);
 
       expect(mockLocalSet).toHaveBeenCalled();
     });
@@ -185,7 +191,7 @@ describe('SettingsStore', () => {
     it('resets settings to defaults', async () => {
       mockSyncSet.mockResolvedValue(undefined);
 
-      await settingsStore.resetSettings();
+      await resetSettings();
 
       expect(mockSyncSet).toHaveBeenCalledWith({
         'resumewright-settings': expect.objectContaining({
@@ -205,7 +211,7 @@ describe('SettingsStore', () => {
 
   describe('validateSettings', () => {
     it('validates correct settings as valid', () => {
-      const validation = settingsStore.validateSettings(DEFAULT_USER_SETTINGS);
+      const validation = validateSettings(DEFAULT_USER_SETTINGS);
 
       expect(validation.valid).toBe(true);
       expect(validation.errors).toHaveLength(0);
@@ -222,7 +228,7 @@ describe('SettingsStore', () => {
         },
       };
 
-      const validation = settingsStore.validateSettings(invalidSettings);
+      const validation = validateSettings(invalidSettings);
 
       expect(validation.valid).toBe(false);
       expect(validation.errors).toContainEqual({
@@ -245,7 +251,7 @@ describe('SettingsStore', () => {
         },
       };
 
-      const validation = settingsStore.validateSettings(invalidSettings);
+      const validation = validateSettings(invalidSettings);
 
       expect(validation.valid).toBe(false);
       // Verify improved error messages include actual value
@@ -269,7 +275,7 @@ describe('SettingsStore', () => {
         },
       };
 
-      const validation = settingsStore.validateSettings(invalidSettings);
+      const validation = validateSettings(invalidSettings);
 
       expect(validation.valid).toBe(false);
       // Verify improved error messages include actual value
@@ -293,7 +299,7 @@ describe('SettingsStore', () => {
         },
       };
 
-      const validation = settingsStore.validateSettings(invalidSettings);
+      const validation = validateSettings(invalidSettings);
 
       expect(validation.valid).toBe(false);
       expect(validation.errors).toContainEqual({
@@ -308,7 +314,7 @@ describe('SettingsStore', () => {
         settingsVersion: 0,
       };
 
-      const validation = settingsStore.validateSettings(invalidSettings);
+      const validation = validateSettings(invalidSettings);
 
       expect(validation.valid).toBe(false);
       expect(validation.errors).toContainEqual({
@@ -327,7 +333,7 @@ describe('SettingsStore', () => {
         },
       };
 
-      await expect(settingsStore.saveSettings(invalidSettings)).rejects.toThrow('Invalid settings');
+      await expect(saveSettings(invalidSettings)).rejects.toThrow('Invalid settings');
     });
   });
 
@@ -335,7 +341,7 @@ describe('SettingsStore', () => {
     it('registers listener for settings changes', () => {
       const callback = vi.fn();
 
-      const unsubscribe = settingsStore.onSettingsChanged(callback);
+      const unsubscribe = onSettingsChanged(callback);
 
       expect(mockAddListener).toHaveBeenCalled();
       expect(typeof unsubscribe).toBe('function');
@@ -344,7 +350,7 @@ describe('SettingsStore', () => {
     it('returns unsubscribe function', () => {
       const callback = vi.fn();
 
-      const unsubscribe = settingsStore.onSettingsChanged(callback);
+      const unsubscribe = onSettingsChanged(callback);
 
       // Verify unsubscribe is callable without error
       expect(() => unsubscribe()).not.toThrow();

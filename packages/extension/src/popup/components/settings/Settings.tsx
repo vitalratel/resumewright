@@ -33,7 +33,11 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
-import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
+import {
+  loadSettings,
+  resetSettings,
+  saveSettings,
+} from '@/shared/infrastructure/settings/SettingsStore';
 import type { UserSettings } from '@/shared/types/settings';
 import { DEBOUNCE_DELAYS, UI_DELAYS } from '../../constants/timings';
 import { useEvent } from '../../hooks/core/useEvent';
@@ -76,7 +80,7 @@ export function Settings({ onBack }: SettingsProps) {
   useEffect(() => {
     // Load settings on mount
     void (async () => {
-      const loaded = await settingsStore.loadSettings();
+      const loaded = await loadSettings();
       setSettings(loaded);
       setOriginalSettings(JSON.parse(JSON.stringify(loaded)) as UserSettings); // Deep copy
     })();
@@ -89,7 +93,7 @@ export function Settings({ onBack }: SettingsProps) {
       setErrors({});
 
       try {
-        await settingsStore.saveSettings(newSettings);
+        await saveSettings(newSettings);
         setOriginalSettings(JSON.parse(JSON.stringify(newSettings)) as UserSettings); // Update baseline
         setLastSaved(new Date());
         setShowSuccess(true);
@@ -176,8 +180,8 @@ export function Settings({ onBack }: SettingsProps) {
   const handleResetConfirm = useEvent(() => {
     void (async () => {
       setShowResetModal(false);
-      await settingsStore.resetSettings();
-      const defaults = await settingsStore.loadSettings();
+      await resetSettings();
+      const defaults = await loadSettings();
       setSettings(defaults);
       await saveImmediate(defaults);
     })();

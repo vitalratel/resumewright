@@ -4,7 +4,11 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
-import { settingsStore } from '@/shared/infrastructure/settings/SettingsStore';
+import {
+  loadSettings,
+  resetSettings,
+  saveSettings,
+} from '@/shared/infrastructure/settings/SettingsStore';
 import type { UserSettings } from '@/shared/types/settings';
 import { Settings } from '../Settings';
 
@@ -16,14 +20,12 @@ const switchToTab = (tabName: string) => {
   fireEvent.click(tab);
 };
 
-// Mock settingsStore
+// Mock settings functions
 vi.mock('@/shared/infrastructure/settings/SettingsStore', () => ({
-  settingsStore: {
-    loadSettings: vi.fn(),
-    saveSettings: vi.fn(),
-    resetSettings: vi.fn(),
-    validateSettings: vi.fn(),
-  },
+  loadSettings: vi.fn(),
+  saveSettings: vi.fn(),
+  resetSettings: vi.fn(),
+  validateSettings: vi.fn(),
 }));
 
 describe('Settings', () => {
@@ -32,9 +34,9 @@ describe('Settings', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Use vi.mocked() for proper typing
-    vi.mocked(settingsStore.loadSettings).mockResolvedValue(DEFAULT_USER_SETTINGS);
-    vi.mocked(settingsStore.saveSettings).mockResolvedValue(undefined);
-    vi.mocked(settingsStore.resetSettings).mockResolvedValue(undefined);
+    vi.mocked(loadSettings).mockResolvedValue(DEFAULT_USER_SETTINGS);
+    vi.mocked(saveSettings).mockResolvedValue(undefined);
+    vi.mocked(resetSettings).mockResolvedValue(undefined);
   });
 
   describe('Rendering', () => {
@@ -121,7 +123,7 @@ describe('Settings', () => {
           pageSize: 'A4',
         },
       };
-      vi.mocked(settingsStore.loadSettings).mockResolvedValue(a4Settings);
+      vi.mocked(loadSettings).mockResolvedValue(a4Settings);
 
       render(<Settings onBack={mockOnBack} />);
 
@@ -207,7 +209,7 @@ describe('Settings', () => {
       const cancelButton = screen.getByText('Cancel');
       fireEvent.click(cancelButton);
 
-      expect(settingsStore.resetSettings).not.toHaveBeenCalled();
+      expect(resetSettings).not.toHaveBeenCalled();
     });
 
     it('resets settings if user confirms', async () => {
@@ -229,7 +231,7 @@ describe('Settings', () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(settingsStore.resetSettings).toHaveBeenCalled();
+        expect(resetSettings).toHaveBeenCalled();
       });
     });
 
@@ -266,9 +268,9 @@ describe('Settings', () => {
       };
 
       // Initially load A4 settings
-      vi.mocked(settingsStore.loadSettings).mockResolvedValueOnce(a4Settings);
+      vi.mocked(loadSettings).mockResolvedValueOnce(a4Settings);
       // After reset, load Letter settings
-      vi.mocked(settingsStore.loadSettings).mockResolvedValueOnce(DEFAULT_USER_SETTINGS);
+      vi.mocked(loadSettings).mockResolvedValueOnce(DEFAULT_USER_SETTINGS);
 
       render(<Settings onBack={mockOnBack} />);
 

@@ -12,7 +12,7 @@ import { useEffect } from 'react';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { ErrorCode } from '../../../shared/errors/codes';
 import { downloadPDF } from '../../../shared/infrastructure/pdf/downloader';
-import { extensionAPI } from '../../services/extensionAPI';
+import { onError, onProgress, onSuccess } from '../../services/extensionAPI';
 import { usePopupStore } from '../../store';
 import { useProgressStore } from '../../store/progressStore';
 
@@ -25,13 +25,13 @@ export function useAppSubscriptions(): void {
     const { setSuccess, setError } = usePopupStore.getState();
 
     // Subscribe to progress updates
-    const unsubProgress = extensionAPI.onProgress((progressPayload) => {
+    const unsubProgress = onProgress((progressPayload) => {
       // Update progress store with the received progress data
       updateProgress(progressPayload.jobId, progressPayload.progress);
     });
 
     // Subscribe to conversion success
-    const unsubSuccess = extensionAPI.onSuccess((result) => {
+    const unsubSuccess = onSuccess((result) => {
       void (async () => {
         // Logging
         getLogger().debug('AppSubscriptions', 'Received CONVERSION_COMPLETE', {
@@ -88,7 +88,7 @@ export function useAppSubscriptions(): void {
     });
 
     // Subscribe to conversion errors
-    const unsubError = extensionAPI.onError((errorPayload) => {
+    const unsubError = onError((errorPayload) => {
       setError(errorPayload.error);
     });
 

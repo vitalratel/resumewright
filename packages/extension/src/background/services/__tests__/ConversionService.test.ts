@@ -1,11 +1,18 @@
-// ABOUTME: Tests for ConversionService business logic.
+// ABOUTME: Tests for ConversionService business logic functions.
 // ABOUTME: Mocks only true external boundaries (WASM, browser storage).
 
 import type { CVMetadata as WasmCVMetadata } from '@pkg/wasm_bridge';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DEFAULT_USER_SETTINGS } from '../../../shared/domain/settings/defaults';
 import type { ConversionRequestPayload } from '../../../shared/types/messages';
 import type { ConversionConfig } from '../../../shared/types/models';
-import { ConversionService } from '../ConversionService';
+import {
+  convert,
+  convertToPdf,
+  extractCVMetadata,
+  generateConversionFilename,
+  loadConversionConfig,
+} from '../ConversionService';
 
 /**
  * Creates a complete mock of the WASM CVMetadata class.
@@ -123,16 +130,31 @@ vi.mock('@/shared/infrastructure/logging', () => ({
   }),
 }));
 
-describe('ConversionService', () => {
-  let service: ConversionService;
+// Use vi.hoisted to create mock for loadSettings
+const { mockLoadSettings } = vi.hoisted(() => ({
+  mockLoadSettings: vi.fn(),
+}));
 
+// Mock SettingsStore functions to allow controlling return values in specific tests
+vi.mock('@/shared/infrastructure/settings/SettingsStore', async (importOriginal) => {
+  const original =
+    await importOriginal<typeof import('@/shared/infrastructure/settings/SettingsStore')>();
+  return {
+    ...original,
+    loadSettings: mockLoadSettings,
+  };
+});
+
+describe('ConversionService', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
-    service = new ConversionService();
 
     // Reset browser storage mock (uses hoisted mockBrowserInstance)
     mockBrowserInstance.storage.sync.get.mockResolvedValue({});
     mockBrowserInstance.storage.sync.set.mockResolvedValue(undefined);
+
+    // Setup default loadSettings mock to return DEFAULT_USER_SETTINGS
+    mockLoadSettings.mockResolvedValue(DEFAULT_USER_SETTINGS);
 
     // Setup default PDF converter mock
     const { convertTsxToPdfWithFonts } = await import('../../../shared/application/pdf/converter');
@@ -147,19 +169,19 @@ describe('ConversionService', () => {
         tsx: undefined as unknown as string,
       };
 
-      await expect(service.extractCVMetadata(payload)).rejects.toThrow('No TSX content found');
+      await expect(extractCVMetadata(payload)).rejects.toThrow('No TSX content found');
     });
 
     it('should reject empty TSX content', async () => {
       const payload: ConversionRequestPayload = { tsx: '' };
 
-      await expect(service.extractCVMetadata(payload)).rejects.toThrow('No TSX content found');
+      await expect(extractCVMetadata(payload)).rejects.toThrow('No TSX content found');
     });
 
     it('should reject whitespace-only TSX content', async () => {
       const payload: ConversionRequestPayload = { tsx: '   \n\t  ' };
 
-      await expect(service.extractCVMetadata(payload)).rejects.toThrow('No TSX content found');
+      await expect(extractCVMetadata(payload)).rejects.toThrow('No TSX content found');
     });
 
     it('should extract metadata from WASM parser', async () => {
@@ -181,7 +203,7 @@ describe('ConversionService', () => {
         tsx: 'export default function CV() { return <div>John Doe</div>; }',
       };
 
-      const result = await service.extractCVMetadata(payload);
+      const result = await extractCVMetadata(payload);
 
       expect(result.tsxContent).toBe(payload.tsx);
       expect(result.cvMetadata).toEqual({
@@ -201,7 +223,7 @@ describe('ConversionService', () => {
         fileName: 'Jane_Smith_Resume.tsx',
       };
 
-      const result = await service.extractCVMetadata(payload);
+      const result = await extractCVMetadata(payload);
 
       expect(result.cvMetadata).toEqual({ name: 'Jane Smith' });
     });
@@ -217,7 +239,7 @@ describe('ConversionService', () => {
         fileName: 'Bob_Wilson.tsx',
       };
 
-      const result = await service.extractCVMetadata(payload);
+      const result = await extractCVMetadata(payload);
 
       expect(result.cvMetadata).toEqual({ name: 'Bob Wilson' });
     });
@@ -233,7 +255,7 @@ describe('ConversionService', () => {
         fileName: undefined,
       };
 
-      const result = await service.extractCVMetadata(payload);
+      const result = await extractCVMetadata(payload);
 
       expect(result.cvMetadata).toBeNull();
     });
@@ -256,17 +278,17 @@ describe('ConversionService', () => {
         config: customConfig,
       };
 
-      const config = await service.loadConversionConfig(payload);
+      const config = await loadConversionConfig(payload);
 
       expect(config).toEqual(customConfig);
     });
 
     it('should fall back to settings default config when payload config missing', async () => {
-      // When no payload config, service uses settingsStore.loadSettings()
+      // When no payload config, loadConversionConfig uses loadSettings()
       // which returns DEFAULT_USER_SETTINGS when storage is empty
       const payload: ConversionRequestPayload = { tsx: 'test' };
 
-      const config = await service.loadConversionConfig(payload);
+      const config = await loadConversionConfig(payload);
 
       // DEFAULT_USER_SETTINGS.defaultConfig has Letter/11pt/Helvetica
       expect(config.pageSize).toBe('Letter');
@@ -278,8 +300,7 @@ describe('ConversionService', () => {
       // Test the fallback path when settings.defaultConfig is missing/invalid
       // This simulates corrupt storage or failed migration - defaultConfig should never be null
       // but we need to handle it gracefully
-      const { settingsStore } = await import('@/shared/infrastructure/settings/SettingsStore');
-      vi.spyOn(settingsStore, 'loadSettings').mockResolvedValueOnce({
+      mockLoadSettings.mockResolvedValueOnce({
         theme: 'auto',
         autoDetectCV: true,
         showConvertButtons: true,
@@ -293,7 +314,7 @@ describe('ConversionService', () => {
 
       const payload: ConversionRequestPayload = { tsx: 'test' };
 
-      const config = await service.loadConversionConfig(payload);
+      const config = await loadConversionConfig(payload);
 
       // Falls back to DEFAULT_CONVERSION_CONFIG from defaults.ts
       expect(config.pageSize).toBe('Letter');
@@ -302,11 +323,11 @@ describe('ConversionService', () => {
     });
   });
 
-  describe('generateFilename', () => {
+  describe('generateConversionFilename', () => {
     // These tests use the REAL generateFilename function - no mocking
 
     it('should generate filename from metadata name', () => {
-      const filename = service.generateFilename({
+      const filename = generateConversionFilename({
         name: 'John Doe',
         title: 'Engineer',
       });
@@ -316,19 +337,19 @@ describe('ConversionService', () => {
     });
 
     it('should handle null metadata', () => {
-      const filename = service.generateFilename(null);
+      const filename = generateConversionFilename(null);
 
       expect(filename).toMatch(/^Resume_\d{4}-\d{2}-\d{2}\.pdf$/);
     });
 
     it('should handle metadata without name', () => {
-      const filename = service.generateFilename({ title: 'Engineer' });
+      const filename = generateConversionFilename({ title: 'Engineer' });
 
       expect(filename).toMatch(/^Resume_\d{4}-\d{2}-\d{2}\.pdf$/);
     });
 
     it('should sanitize special characters in name', () => {
-      const filename = service.generateFilename({
+      const filename = generateConversionFilename({
         name: "José O'Brien",
         title: 'Developer',
       });
@@ -354,7 +375,7 @@ describe('ConversionService', () => {
         compress: false,
       };
 
-      const pdfBytes = await service.convertToPdf('tsx content', config);
+      const pdfBytes = await convertToPdf('tsx content', config);
 
       expect(convertTsxToPdfWithFonts).toHaveBeenCalledWith(
         'tsx content',
@@ -379,7 +400,7 @@ describe('ConversionService', () => {
       };
       const onProgress = vi.fn();
 
-      await service.convertToPdf('tsx content', config, onProgress);
+      await convertToPdf('tsx content', config, onProgress);
 
       // Verify converter was called with a progress callback
       const [, , progressArg] = vi.mocked(convertTsxToPdfWithFonts).mock.calls[0];
@@ -416,7 +437,7 @@ describe('ConversionService', () => {
         tsx: 'export default function CV() { return <div>Alice Johnson</div>; }',
       };
 
-      const result = await service.convert(payload);
+      const result = await convert(payload);
 
       expect(result.pdfBytes).toEqual(mockPdfBytes);
       // Real generateFilename produces actual filename
@@ -442,7 +463,7 @@ describe('ConversionService', () => {
         tsx: 'export default function CV() { return <div>Test</div>; }',
       };
 
-      const result = await service.convert(payload);
+      const result = await convert(payload);
 
       expect(result.pdfBytes).toEqual(mockPdfBytes);
       // Falls back to default filename

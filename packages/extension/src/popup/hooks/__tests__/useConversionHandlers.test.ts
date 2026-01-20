@@ -9,14 +9,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { validateTsxFile } from '@/shared/domain/pdf/validation';
 import { ErrorCode } from '@/shared/errors/codes';
 import { copyToClipboard } from '@/shared/errors/tracking/telemetry';
-import { extensionAPI } from '../../services/extensionAPI';
+import { requestConversion } from '../../services/extensionAPI';
 import { useProgressStore } from '../../store/progressStore';
 import { useConversionHandlers } from '../conversion/useConversionHandlers';
 import type { AppState } from '../integration/useAppState';
 import { createMockAppState } from './helpers';
 
 vi.mock('../../services/extensionAPI', () => ({
-  extensionAPI: { startConversion: vi.fn() },
+  requestConversion: vi.fn(),
 }));
 
 vi.mock('@/shared/domain/pdf/validation', async () => {
@@ -119,7 +119,7 @@ describe('useConversionHandlers', () => {
   describe('handleExportClick', () => {
     it('starts conversion with valid file', async () => {
       mockAppState.importedFile = { name: 'test.tsx', size: 1024, content: '<CV>Test</CV>' };
-      vi.mocked(extensionAPI.startConversion).mockResolvedValue({ success: true });
+      vi.mocked(requestConversion).mockResolvedValue({ success: true });
 
       const { result } = renderHook(() => useConversionHandlers(defaultProps()));
 
@@ -127,7 +127,7 @@ describe('useConversionHandlers', () => {
         await result.current.handleExportClick();
       });
       expect(mockAppState.startConversion).toHaveBeenCalled();
-      expect(extensionAPI.startConversion).toHaveBeenCalledWith('<CV>Test</CV>', 'test.tsx');
+      expect(requestConversion).toHaveBeenCalledWith('<CV>Test</CV>', 'test.tsx');
     });
 
     it('shows error when no file imported', async () => {
@@ -137,7 +137,7 @@ describe('useConversionHandlers', () => {
         await result.current.handleExportClick();
       });
       expect(mockAppState.setValidationError).toHaveBeenCalled();
-      expect(extensionAPI.startConversion).not.toHaveBeenCalled();
+      expect(requestConversion).not.toHaveBeenCalled();
     });
 
     it('handles WASM not initialized', async () => {
@@ -154,7 +154,7 @@ describe('useConversionHandlers', () => {
       expect(mockAppState.setError).toHaveBeenCalledWith(
         expect.objectContaining({ code: ErrorCode.CONVERSION_START_FAILED, recoverable: true }),
       );
-      expect(extensionAPI.startConversion).not.toHaveBeenCalled();
+      expect(requestConversion).not.toHaveBeenCalled();
     });
 
     it('handles large files correctly', async () => {
@@ -163,7 +163,7 @@ describe('useConversionHandlers', () => {
         size: 2 * 1024 * 1024,
         content: '<CV>Large</CV>',
       };
-      vi.mocked(extensionAPI.startConversion).mockResolvedValue({ success: true });
+      vi.mocked(requestConversion).mockResolvedValue({ success: true });
 
       const { result } = renderHook(() => useConversionHandlers(defaultProps()));
 
@@ -172,12 +172,12 @@ describe('useConversionHandlers', () => {
       });
 
       // Should start conversion successfully despite large size
-      expect(extensionAPI.startConversion).toHaveBeenCalled();
+      expect(requestConversion).toHaveBeenCalled();
     });
 
     it('handles conversion start failure', async () => {
       mockAppState.importedFile = { name: 'test.tsx', size: 1024, content: '<CV>Test</CV>' };
-      vi.mocked(extensionAPI.startConversion).mockRejectedValue(new Error('Failed to start'));
+      vi.mocked(requestConversion).mockRejectedValue(new Error('Failed to start'));
 
       const { result } = renderHook(() => useConversionHandlers(defaultProps()));
 
@@ -200,7 +200,7 @@ describe('useConversionHandlers', () => {
 
     it('updates progress store', async () => {
       mockAppState.importedFile = { name: 'test.tsx', size: 1024, content: '<CV>Test</CV>' };
-      vi.mocked(extensionAPI.startConversion).mockResolvedValue({ success: true });
+      vi.mocked(requestConversion).mockResolvedValue({ success: true });
 
       const { result } = renderHook(() => useConversionHandlers(defaultProps()));
 

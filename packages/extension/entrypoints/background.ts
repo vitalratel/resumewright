@@ -4,7 +4,7 @@
  * Handles WASM initialization, message routing, and extension lifecycle.
  */
 
-import { LifecycleManager } from '../src/background/lifecycleManager';
+import { setupLifecycleListeners } from '../src/background/lifecycleManager';
 import { setupMessageHandler } from '../src/background/messageHandler';
 // Track service worker start time
 import {
@@ -31,7 +31,7 @@ export default defineBackground({
     }
 
     // Initialize lifecycle event handlers (onInstalled, onStartup)
-    new LifecycleManager();
+    setupLifecycleListeners();
 
     // Setup message handler synchronously (before WASM)
     // Service workers can be terminated at any time, message handlers must be
