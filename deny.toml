@@ -12,6 +12,12 @@ db-path = "~/.cargo/advisory-db"
 db-urls = ["https://github.com/rustsec/advisory-db"]
 # How to handle yanked crates
 yanked = "warn"
+# Ignore specific advisories
+ignore = [
+    # bincode maintainers ceased development (not a security issue).
+    # v1.3.3 is considered "complete". Only used as build-dep via hyphenation.
+    "RUSTSEC-2025-0141",
+]
 
 [licenses]
 # Confidence threshold for license detection
