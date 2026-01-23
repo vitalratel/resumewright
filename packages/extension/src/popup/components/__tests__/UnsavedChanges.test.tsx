@@ -21,7 +21,7 @@ import {
 import { Settings } from '../settings/Settings';
 
 // Helper to create success ResultAsync for settings operations
-const okSettingsResult = () => ResultAsync.fromSafePromise(Promise.resolve(undefined as void));
+const okSettingsResult = () => ResultAsync.fromSafePromise(Promise.resolve(undefined as undefined));
 
 // Helper to create error ResultAsync for settings operations
 const errSettingsResult = (message: string) => {

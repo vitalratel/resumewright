@@ -37,7 +37,7 @@ vi.mock('../../shared/errors/factory/wasmErrors', () => ({
 
 // Helper to create success ResultAsync
 function okResult(): ReturnType<typeof initWASM> {
-  return ResultAsync.fromSafePromise(Promise.resolve(undefined as void));
+  return ResultAsync.fromSafePromise(Promise.resolve(undefined as undefined));
 }
 
 // Helper to create error ResultAsync
