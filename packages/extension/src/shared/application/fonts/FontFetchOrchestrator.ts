@@ -18,12 +18,13 @@ type FontFetchProgressCallback = (current: number, total: number, fontFamily: st
  * 2. Fetches Google Fonts via repository
  * 3. Returns FontData array ready for convert_tsx_to_pdf()
  *
+ * Note: Uses graceful degradation - missing fonts are logged but don't fail the pipeline.
+ *
  * @param requirements - Font requirements from WASM detect_fonts()
  * @param fontRepository - Repository for fetching fonts
  * @param logger - Logger instance
  * @param progressCallback - Optional callback for progress updates
  * @returns Promise resolving to array of FontData for WASM
- * @throws Error if any required fonts fail to fetch
  */
 export async function fetchFontsFromRequirements(
   requirements: FontRequirement[],
@@ -83,6 +84,7 @@ export async function fetchFontsFromRequirements(
 
 /**
  * Fetch Google Fonts recursively (internal helper)
+ * Uses Result pattern from repository - errors are logged but don't fail the pipeline.
  */
 async function fetchGoogleFontsRecursive(
   requirements: FontRequirement[],
@@ -102,32 +104,37 @@ async function fetchGoogleFontsRecursive(
   const current = currentOffset + index + 1;
   progressCallback?.(current, total, req.family);
 
-  try {
-    logger.debug(
-      'FontFetchOrchestrator',
-      `Fetching Google Font: ${req.family} ${req.weight} ${req.style}`,
-    );
+  logger.debug(
+    'FontFetchOrchestrator',
+    `Fetching Google Font: ${req.family} ${req.weight} ${req.style}`,
+  );
 
-    const bytes = await fontRepository.fetchGoogleFont(req.family, req.weight, req.style);
+  const result = await fontRepository.fetchGoogleFont(req.family, req.weight, req.style);
 
-    fontData.push({
-      family: req.family,
-      weight: req.weight,
-      style: req.style,
-      bytes,
-      format: 'ttf', // Google Fonts API returns TrueType
-    });
-
-    logger.debug('FontFetchOrchestrator', `✓ Fetched ${req.family} (${bytes.length} bytes)`);
-  } catch (error) {
-    logger.error('FontFetchOrchestrator', `✗ Failed to fetch Google Font ${req.family}:`, error);
-
-    // For MVP: Log warning but continue with fallback
-    logger.warn(
-      'FontFetchOrchestrator',
-      `Continuing without ${req.family} (will fallback to web-safe font)`,
-    );
-  }
+  result.match(
+    (bytes) => {
+      fontData.push({
+        family: req.family,
+        weight: req.weight,
+        style: req.style,
+        bytes,
+        format: 'ttf', // Google Fonts API returns TrueType
+      });
+      logger.debug('FontFetchOrchestrator', `✓ Fetched ${req.family} (${bytes.length} bytes)`);
+    },
+    (error) => {
+      logger.error(
+        'FontFetchOrchestrator',
+        `✗ Failed to fetch Google Font ${req.family}:`,
+        error.message,
+      );
+      // Graceful degradation: Log warning but continue with fallback
+      logger.warn(
+        'FontFetchOrchestrator',
+        `Continuing without ${req.family} (will fallback to web-safe font)`,
+      );
+    },
+  );
 
   return fetchGoogleFontsRecursive(
     requirements,

@@ -137,7 +137,13 @@ function createProgressWrapper(
 
   return (stage: string, percentage: number) => {
     // Validate progress callback params from WASM
-    validateProgressParams(stage, percentage);
+    const validationResult = validateProgressParams(stage, percentage);
+    if (validationResult.isErr()) {
+      logger.warn('PdfConverter', 'Invalid progress params', {
+        error: validationResult.error.message,
+      });
+      return;
+    }
 
     // Map WASM progress (0-100) to overall progress (15-100)
     const mappedPercentage =
@@ -237,7 +243,11 @@ async function convertToPdfStep(
     );
 
     // Validate PDF output
-    return validatePdfBytes(pdfBytes);
+    const validationResult = validatePdfBytes(pdfBytes);
+    if (validationResult.isErr()) {
+      throw new Error(validationResult.error.message);
+    }
+    return validationResult.value;
   } finally {
     converterInstance.free();
   }

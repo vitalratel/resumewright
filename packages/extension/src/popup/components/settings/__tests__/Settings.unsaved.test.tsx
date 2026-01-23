@@ -3,14 +3,25 @@
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { ResultAsync } from 'neverthrow';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
+import type { SettingsError } from '@/shared/errors/result';
 import {
   loadSettings,
   resetSettings,
   saveSettings,
 } from '@/shared/infrastructure/settings/SettingsStore';
 import { Settings } from '../Settings';
+
+// Helper to create success ResultAsync for settings operations
+const okSettingsResult = () => ResultAsync.fromSafePromise(Promise.resolve(undefined as undefined));
+
+// Helper to create error ResultAsync for settings operations
+const errSettingsResult = (message: string) => {
+  const error: SettingsError = { type: 'storage_failed', message };
+  return ResultAsync.fromPromise(Promise.reject(new Error(message)), () => error);
+};
 
 /**
  * Helper to switch to a specific settings tab
@@ -33,8 +44,8 @@ describe('Settings - Auto-Save ', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(loadSettings).mockResolvedValue(DEFAULT_USER_SETTINGS);
-    vi.mocked(saveSettings).mockResolvedValue(undefined);
-    vi.mocked(resetSettings).mockResolvedValue(undefined);
+    vi.mocked(saveSettings).mockReturnValue(okSettingsResult());
+    vi.mocked(resetSettings).mockReturnValue(okSettingsResult());
   });
 
   afterEach(async () => {
@@ -288,7 +299,7 @@ describe('Settings - Auto-Save ', () => {
       const user = userEvent.setup();
 
       // Make saveSettings fail
-      vi.mocked(saveSettings).mockRejectedValueOnce(new Error('Network error'));
+      vi.mocked(saveSettings).mockReturnValueOnce(errSettingsResult('Network error'));
 
       render(<Settings onBack={mockOnBack} />);
 
@@ -319,8 +330,8 @@ describe('Settings - Auto-Save ', () => {
 
       // First save fails, second succeeds
       vi.mocked(saveSettings)
-        .mockRejectedValueOnce(new Error('Network error'))
-        .mockResolvedValueOnce(undefined);
+        .mockReturnValueOnce(errSettingsResult('Network error'))
+        .mockReturnValueOnce(okSettingsResult());
 
       render(<Settings onBack={mockOnBack} />);
 
@@ -361,7 +372,7 @@ describe('Settings - Auto-Save ', () => {
       const user = userEvent.setup();
 
       // Make saveSettings fail
-      vi.mocked(saveSettings).mockRejectedValueOnce(new Error('Save failed'));
+      vi.mocked(saveSettings).mockReturnValueOnce(errSettingsResult('Save failed'));
 
       render(<Settings onBack={mockOnBack} />);
 
@@ -421,7 +432,7 @@ describe('Settings - Auto-Save ', () => {
     it('should announce save errors to screen readers', async () => {
       const user = userEvent.setup();
 
-      vi.mocked(saveSettings).mockRejectedValueOnce(new Error('Save failed'));
+      vi.mocked(saveSettings).mockReturnValueOnce(errSettingsResult('Save failed'));
 
       render(<Settings onBack={mockOnBack} />);
 

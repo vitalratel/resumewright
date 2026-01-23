@@ -189,13 +189,12 @@ export async function validateTsxSyntax(
   try {
     const fontsJson = converter.detect_fonts(tsx);
 
-    try {
-      const fonts = parseFontRequirements(fontsJson);
-      return Array.isArray(fonts);
-    } catch (parseError) {
-      logger.error('TsxValidation', 'Failed to parse/validate fonts from WASM', parseError);
+    const parseResult = parseFontRequirements(fontsJson);
+    if (parseResult.isErr()) {
+      logger.error('TsxValidation', 'Failed to parse/validate fonts from WASM', parseResult.error);
       return false;
     }
+    return Array.isArray(parseResult.value);
   } catch (error) {
     logger.error('TsxValidation', 'validateTsxSyntax failed', error);
     return false;

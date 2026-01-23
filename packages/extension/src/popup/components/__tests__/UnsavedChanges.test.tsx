@@ -10,13 +10,24 @@
  */
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { ResultAsync } from 'neverthrow';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { SettingsError } from '@/shared/errors/result';
 import {
   loadSettings,
   resetSettings,
   saveSettings,
 } from '@/shared/infrastructure/settings/SettingsStore';
 import { Settings } from '../settings/Settings';
+
+// Helper to create success ResultAsync for settings operations
+const okSettingsResult = () => ResultAsync.fromSafePromise(Promise.resolve(undefined as undefined));
+
+// Helper to create error ResultAsync for settings operations
+const errSettingsResult = (message: string) => {
+  const error: SettingsError = { type: 'storage_failed', message };
+  return ResultAsync.fromPromise(Promise.reject(new Error(message)), () => error);
+};
 
 // Mock settings functions
 vi.mock('@/shared/infrastructure/settings/SettingsStore', () => ({
@@ -51,8 +62,8 @@ describe('Unsaved Changes Protection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(loadSettings).mockResolvedValue(mockSettings);
-    vi.mocked(saveSettings).mockResolvedValue(undefined);
-    vi.mocked(resetSettings).mockResolvedValue(undefined);
+    vi.mocked(saveSettings).mockReturnValue(okSettingsResult());
+    vi.mocked(resetSettings).mockReturnValue(okSettingsResult());
   });
 
   describe('Dirty State Detection', () => {
@@ -281,7 +292,7 @@ describe('Unsaved Changes Protection', () => {
 
     it('should remain on page if save fails during navigation', async () => {
       // Mock save to fail
-      vi.mocked(saveSettings).mockRejectedValueOnce(new Error('Save failed'));
+      vi.mocked(saveSettings).mockReturnValueOnce(errSettingsResult('Save failed'));
 
       render(<Settings onBack={mockOnBack} />);
 

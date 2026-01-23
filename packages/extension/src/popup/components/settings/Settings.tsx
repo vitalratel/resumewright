@@ -92,29 +92,32 @@ export function Settings({ onBack }: SettingsProps) {
       setSaving(true);
       setErrors({});
 
-      try {
-        await saveSettings(newSettings);
-        setOriginalSettings(JSON.parse(JSON.stringify(newSettings)) as UserSettings); // Update baseline
-        setLastSaved(new Date());
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), UI_DELAYS.SUCCESS_MESSAGE);
-        return true; // Success
-      } catch {
-        // User-friendly error message
-        const errorMessage = 'Unable to save settings. Please try again or reload the extension.';
-        setErrors({ general: errorMessage });
-        return false; // Failure
-      } finally {
-        setSaving(false);
-      }
+      const result = await saveSettings(newSettings);
+
+      return result.match(
+        () => {
+          setOriginalSettings(JSON.parse(JSON.stringify(newSettings)) as UserSettings); // Update baseline
+          setLastSaved(new Date());
+          setShowSuccess(true);
+          setTimeout(() => setShowSuccess(false), UI_DELAYS.SUCCESS_MESSAGE);
+          return true; // Success
+        },
+        () => {
+          // User-friendly error message
+          const errorMessage = 'Unable to save settings. Please try again or reload the extension.';
+          setErrors({ general: errorMessage });
+          return false; // Failure
+        },
+      );
     })();
 
     pendingSavesRef.current.push(savePromise.then(() => {})); // Track as void promise
-    const result = await savePromise;
+    const success = await savePromise;
     pendingSavesRef.current = pendingSavesRef.current.filter(
       (p) => p !== savePromise.then(() => {}),
     );
-    return result;
+    setSaving(false);
+    return success;
   }, []);
 
   // Debounced auto-save function (500ms delay)
