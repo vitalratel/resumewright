@@ -1,14 +1,10 @@
-/**
- * WASM Initialization Integration Tests
- *
- * Tests the orchestration of WASM initialization services.
- * Unit tests for individual services are in services/__tests__/
- *
- * Focus: Integration, orchestration, public API contracts
- */
+// ABOUTME: Integration tests for WASM initialization orchestration.
+// ABOUTME: Tests retry logic, state management, and public API contracts.
 
 import { fakeBrowser } from '@webext-core/fake-browser';
+import { ResultAsync } from 'neverthrow';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { WasmError } from '@/shared/errors/result';
 import { resetLogger, setLogger } from '@/shared/infrastructure/logging/instance';
 import { createLogger, LogLevel } from '@/shared/infrastructure/logging/logger';
 import { setValidatedStorage } from '@/shared/infrastructure/storage/validation';
@@ -39,6 +35,20 @@ vi.mock('../../shared/errors/factory/wasmErrors', () => ({
   })),
 }));
 
+// Helper to create success ResultAsync
+function okResult(): ReturnType<typeof initWASM> {
+  return ResultAsync.fromSafePromise(Promise.resolve(undefined as void));
+}
+
+// Helper to create error ResultAsync
+function errResult(message: string): ReturnType<typeof initWASM> {
+  const wasmError: WasmError = {
+    type: 'init_failed',
+    message: `WASM initialization failed: ${message}`,
+  };
+  return ResultAsync.fromPromise(Promise.reject(new Error(message)), () => wasmError);
+}
+
 // webextension-polyfill is mocked globally with fakeBrowser
 
 describe('wasmInit - Integration Tests', () => {
@@ -62,7 +72,7 @@ describe('wasmInit - Integration Tests', () => {
 
   describe('initializeWASM - orchestration', () => {
     it('should initialize WASM successfully on first try', async () => {
-      vi.mocked(initWASM).mockResolvedValue(undefined);
+      vi.mocked(initWASM).mockReturnValue(okResult());
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       await initializeWASM();
@@ -78,7 +88,7 @@ describe('wasmInit - Integration Tests', () => {
     });
 
     it('should set status to initializing before starting', async () => {
-      vi.mocked(initWASM).mockResolvedValue(undefined);
+      vi.mocked(initWASM).mockReturnValue(okResult());
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       await initializeWASM();
@@ -92,7 +102,7 @@ describe('wasmInit - Integration Tests', () => {
     });
 
     it('should set status to success after initialization', async () => {
-      vi.mocked(initWASM).mockResolvedValue(undefined);
+      vi.mocked(initWASM).mockReturnValue(okResult());
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       await initializeWASM();
@@ -101,7 +111,7 @@ describe('wasmInit - Integration Tests', () => {
     });
 
     it('should store initialization timestamp', async () => {
-      vi.mocked(initWASM).mockResolvedValue(undefined);
+      vi.mocked(initWASM).mockReturnValue(okResult());
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       const beforeTime = Date.now();
@@ -124,7 +134,7 @@ describe('wasmInit - Integration Tests', () => {
     });
 
     it('should clear error state on success', async () => {
-      vi.mocked(initWASM).mockResolvedValue(undefined);
+      vi.mocked(initWASM).mockReturnValue(okResult());
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       await initializeWASM();
@@ -133,7 +143,7 @@ describe('wasmInit - Integration Tests', () => {
     });
 
     it('should clear badge on success', async () => {
-      vi.mocked(initWASM).mockResolvedValue(undefined);
+      vi.mocked(initWASM).mockReturnValue(okResult());
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       await initializeWASM();
@@ -145,8 +155,8 @@ describe('wasmInit - Integration Tests', () => {
   describe('initializeWASM - retry integration', () => {
     it('should retry on failure', async () => {
       vi.mocked(initWASM)
-        .mockRejectedValueOnce(new Error('Init failed'))
-        .mockResolvedValueOnce(undefined);
+        .mockReturnValueOnce(errResult('Init failed'))
+        .mockReturnValueOnce(okResult());
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       void initializeWASM();
@@ -157,7 +167,7 @@ describe('wasmInit - Integration Tests', () => {
     });
 
     it('should successfully retry after failure', async () => {
-      vi.mocked(initWASM).mockRejectedValueOnce(new Error('Fail')).mockResolvedValueOnce(undefined);
+      vi.mocked(initWASM).mockReturnValueOnce(errResult('Fail')).mockReturnValueOnce(okResult());
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       void initializeWASM();
@@ -169,9 +179,9 @@ describe('wasmInit - Integration Tests', () => {
 
     it('should only update badge on final result (not intermediate retries)', async () => {
       vi.mocked(initWASM)
-        .mockRejectedValueOnce(new Error('Fail 1'))
-        .mockRejectedValueOnce(new Error('Fail 2'))
-        .mockResolvedValueOnce(undefined);
+        .mockReturnValueOnce(errResult('Fail 1'))
+        .mockReturnValueOnce(errResult('Fail 2'))
+        .mockReturnValueOnce(okResult());
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       void initializeWASM();
@@ -184,8 +194,8 @@ describe('wasmInit - Integration Tests', () => {
   });
 
   describe('initializeWASM - error handling integration', () => {
-    it('should handle non-Error objects', async () => {
-      vi.mocked(initWASM).mockRejectedValue('String error');
+    it('should handle Result errors', async () => {
+      vi.mocked(initWASM).mockReturnValue(errResult('String error'));
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       const promise = initializeWASM().catch((e: unknown) => e);
@@ -194,18 +204,18 @@ describe('wasmInit - Integration Tests', () => {
       await vi.advanceTimersByTimeAsync(6000);
 
       const result = await promise;
-      expect(result).toBe('String error');
+      expect(result).toBeInstanceOf(Error);
 
       expect(setValidatedStorage).toHaveBeenCalledWith(
         'wasmInitError',
-        'Unknown error',
+        expect.stringContaining('WASM initialization failed'),
         expect.any(Object),
       );
     });
 
     it('should create structured errors using error factory', async () => {
       const { createWasmInitError } = await import('../../shared/errors/factory/wasmErrors');
-      vi.mocked(initWASM).mockRejectedValue(new Error('Init failed'));
+      vi.mocked(initWASM).mockReturnValue(errResult('Init failed'));
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       const promise = initializeWASM().catch((e: unknown) => e);
@@ -219,13 +229,13 @@ describe('wasmInit - Integration Tests', () => {
       expect(createWasmInitError).toHaveBeenCalled();
       expect(createWasmInitError).toHaveBeenCalledWith(
         'failed',
-        expect.stringContaining('Init failed'),
+        expect.stringContaining('WASM initialization failed'),
       );
     });
 
     it('should create error for max retries reached', async () => {
       const { createWasmInitError } = await import('../../shared/errors/factory/wasmErrors');
-      vi.mocked(initWASM).mockRejectedValue(new Error('Fail'));
+      vi.mocked(initWASM).mockReturnValue(errResult('Fail'));
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       const promise = initializeWASM().catch((e: unknown) => e);
@@ -245,7 +255,7 @@ describe('wasmInit - Integration Tests', () => {
 
   describe('retryWasmInit - public API', () => {
     it('should start fresh initialization', async () => {
-      vi.mocked(initWASM).mockResolvedValue(undefined);
+      vi.mocked(initWASM).mockReturnValue(okResult());
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       await retryWasmInit();
@@ -259,7 +269,7 @@ describe('wasmInit - Integration Tests', () => {
     });
 
     it('should handle retry failures', async () => {
-      vi.mocked(initWASM).mockRejectedValue(new Error('Retry failed'));
+      vi.mocked(initWASM).mockReturnValue(errResult('Retry failed'));
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       const promise = retryWasmInit().catch((e: unknown) => e);
@@ -269,11 +279,11 @@ describe('wasmInit - Integration Tests', () => {
 
       const result = await promise;
       expect(result).toBeInstanceOf(Error);
-      expect((result as Error).message).toBe('Retry failed');
+      expect((result as Error).message).toContain('WASM initialization failed');
     });
 
     it('should use same retry logic as initializeWASM', async () => {
-      vi.mocked(initWASM).mockRejectedValueOnce(new Error('Fail')).mockResolvedValueOnce(undefined);
+      vi.mocked(initWASM).mockReturnValueOnce(errResult('Fail')).mockReturnValueOnce(okResult());
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       void retryWasmInit();
@@ -298,7 +308,7 @@ describe('wasmInit - Integration Tests', () => {
 
   describe('edge cases', () => {
     it('should handle very fast initialization', async () => {
-      vi.mocked(initWASM).mockResolvedValue(undefined);
+      vi.mocked(initWASM).mockReturnValue(okResult());
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       const start = Date.now();
@@ -309,7 +319,7 @@ describe('wasmInit - Integration Tests', () => {
     });
 
     it('should handle concurrent initialization attempts', async () => {
-      vi.mocked(initWASM).mockResolvedValue(undefined);
+      vi.mocked(initWASM).mockReturnValue(okResult());
       vi.mocked(setValidatedStorage).mockResolvedValue(true);
 
       await Promise.all([initializeWASM(), initializeWASM(), initializeWASM()]);

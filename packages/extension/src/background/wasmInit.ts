@@ -1,9 +1,5 @@
-/**
- * WASM Initialization Module
- *
- * Orchestrates WASM initialization using service layer components.
- * Refactored for maintainability and separation of concerns.
- */
+// ABOUTME: Orchestrates WASM initialization using service layer components.
+// ABOUTME: Provides retry logic and state management for WASM module loading.
 
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { createWasmInitError } from '../shared/errors/factory/wasmErrors';
@@ -41,7 +37,12 @@ export async function initializeWASM(): Promise<void> {
     await executeWithRetry(
       async () => {
         getLogger().info('WasmInit', 'Attempting initialization');
-        await initWASM();
+        const result = await initWASM();
+
+        // Convert Result error to thrown error for retry mechanism
+        if (result.isErr()) {
+          throw new Error(result.error.message);
+        }
       },
       {
         maxAttempts: MAX_INIT_RETRIES,

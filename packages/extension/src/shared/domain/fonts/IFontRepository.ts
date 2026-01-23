@@ -1,6 +1,7 @@
 // ABOUTME: Domain interface for font data access.
 // ABOUTME: Implementations provide font fetching, caching, and validation.
 
+import type { AsyncResult, FontError } from '../../errors/result';
 import type { FontStyle, FontWeight } from './types';
 
 /**
@@ -24,9 +25,14 @@ export interface FontCacheStats {
  */
 export interface IFontRepository {
   /**
-   * Fetch a Google Font by family, weight, and style
+   * Fetch a Google Font by family, weight, and style.
+   * Returns Result with font bytes on success, or FontError on failure.
    */
-  fetchGoogleFont: (family: string, weight: FontWeight, style: FontStyle) => Promise<Uint8Array>;
+  fetchGoogleFont: (
+    family: string,
+    weight: FontWeight,
+    style: FontStyle,
+  ) => AsyncResult<Uint8Array, FontError>;
 
   /**
    * Get cached font if available

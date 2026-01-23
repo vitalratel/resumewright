@@ -323,7 +323,7 @@ describe('SettingsStore', () => {
       });
     });
 
-    it('throws error when saving invalid settings', async () => {
+    it('returns error result when saving invalid settings', async () => {
       const invalidSettings: UserSettings = {
         ...DEFAULT_USER_SETTINGS,
         defaultConfig: {
@@ -333,7 +333,12 @@ describe('SettingsStore', () => {
         },
       };
 
-      await expect(saveSettings(invalidSettings)).rejects.toThrow('Invalid settings');
+      const result = await saveSettings(invalidSettings);
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error.type).toBe('validation_failed');
+        expect(result.error.message).toContain('Invalid settings');
+      }
     });
   });
 

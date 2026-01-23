@@ -43,6 +43,7 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@webext-core/storage": "^1.2.0",
+    "neverthrow": "^8.2.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-error-boundary": "^6.1.0",

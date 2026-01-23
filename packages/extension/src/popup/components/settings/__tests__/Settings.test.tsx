@@ -2,6 +2,7 @@
 // ABOUTME: Tests rendering, page size, margins, reset, and keyboard navigation.
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { ResultAsync } from 'neverthrow';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
 import {
@@ -11,6 +12,9 @@ import {
 } from '@/shared/infrastructure/settings/SettingsStore';
 import type { UserSettings } from '@/shared/types/settings';
 import { Settings } from '../Settings';
+
+// Helper to create success ResultAsync for settings operations
+const okSettingsResult = () => ResultAsync.fromSafePromise(Promise.resolve(undefined as void));
 
 /**
  * Helper to switch to a specific settings tab
@@ -35,8 +39,8 @@ describe('Settings', () => {
     vi.clearAllMocks();
     // Use vi.mocked() for proper typing
     vi.mocked(loadSettings).mockResolvedValue(DEFAULT_USER_SETTINGS);
-    vi.mocked(saveSettings).mockResolvedValue(undefined);
-    vi.mocked(resetSettings).mockResolvedValue(undefined);
+    vi.mocked(saveSettings).mockReturnValue(okSettingsResult());
+    vi.mocked(resetSettings).mockReturnValue(okSettingsResult());
   });
 
   describe('Rendering', () => {
