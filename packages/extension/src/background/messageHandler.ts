@@ -196,7 +196,16 @@ export function setupMessageHandler(): void {
     try {
       const currentSettings = await loadSettings();
       const updatedSettings = { ...currentSettings, ...payload.settings };
-      await saveSettings(updatedSettings);
+      const result = await saveSettings(updatedSettings);
+
+      if (result.isErr()) {
+        getLogger().error('MessageHandler', 'Failed to update settings', result.error);
+        return {
+          success: false,
+          error: result.error.message,
+        };
+      }
+
       return { success: true };
     } catch (error: unknown) {
       getLogger().error('MessageHandler', 'Failed to update settings', error);
