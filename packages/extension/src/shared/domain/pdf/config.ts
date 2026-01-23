@@ -49,11 +49,10 @@ export function convertConfigToRust(config: ConversionConfig, logger: ILogger): 
   };
 
   // Validate config structure before sending to WASM
-  try {
-    validateWasmPdfConfig(wasmConfig);
-  } catch (error) {
-    logger.error('PdfConfig', 'Config validation failed', error);
-    throw error;
+  const validationResult = validateWasmPdfConfig(wasmConfig);
+  if (validationResult.isErr()) {
+    logger.error('PdfConfig', 'Config validation failed', validationResult.error);
+    throw new Error(validationResult.error.message);
   }
 
   logger.debug('PdfConfig', 'WASM config', { wasmConfig: JSON.stringify(wasmConfig, null, 2) });

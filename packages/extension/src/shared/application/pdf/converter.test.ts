@@ -16,6 +16,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ok } from '@/shared/errors/result';
 import type { FontWeight } from '../../domain/fonts/types';
 import type { WasmPdfConfig } from '../../domain/pdf/types';
 import type { ConversionConfig } from '../../types/models';
@@ -152,7 +153,8 @@ describe('PDF Converter', () => {
     validPdf[3] = 0x46; // F
 
     mockConverter.convert_tsx_to_pdf.mockReturnValue(validPdf);
-    mockValidatePdfBytes.mockReturnValue(validPdf);
+    mockValidatePdfBytes.mockReturnValue(ok(validPdf));
+    mockValidateProgressParams.mockReturnValue(ok(undefined));
   });
 
   afterEach(() => {

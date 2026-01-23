@@ -80,7 +80,11 @@ export async function detectFonts(tsx: string, useCache = true): Promise<FontReq
     const fontsJson = converter.detect_fonts(tsx);
 
     // Parse and validate JSON result (runtime type safety)
-    const fontRequirements = parseFontRequirements(fontsJson);
+    const parseResult = parseFontRequirements(fontsJson);
+    if (parseResult.isErr()) {
+      throw new Error(parseResult.error.message);
+    }
+    const fontRequirements = parseResult.value;
 
     getLogger().debug('FontService', 'Found font requirements', {
       count: fontRequirements.length,

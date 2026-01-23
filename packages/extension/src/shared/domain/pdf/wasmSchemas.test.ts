@@ -15,6 +15,7 @@
 import { safeParse } from 'valibot';
 import { describe, expect, it } from 'vitest';
 import type { FontWeight } from '@/shared/domain/fonts/types';
+import type { Result, ValidationError } from '@/shared/errors/result';
 import {
   FontRequirementSchema,
   FontSourceSchema,
@@ -28,6 +29,14 @@ import {
   validateWasmPdfConfig,
 } from './wasmSchemas';
 
+// Helper to extract error message from Result
+function getErrorMessage<T>(result: Result<T, ValidationError>): string {
+  if (result.isErr()) {
+    return result.error.message;
+  }
+  throw new Error('Expected error result');
+}
+
 describe('WASM Schema Validation', () => {
   describe('parseFontRequirements', () => {
     it('should parse valid font requirements JSON', () => {
@@ -38,19 +47,22 @@ describe('WASM Schema Validation', () => {
 
       const result = parseFontRequirements(json);
 
-      expect(result).toHaveLength(2);
-      expect(result[0]).toEqual({
-        family: 'Roboto',
-        weight: 400 as FontWeight,
-        style: 'normal',
-        source: 'google',
-      });
-      expect(result[1]).toEqual({
-        family: 'Inter',
-        weight: 700 as FontWeight,
-        style: 'italic',
-        source: 'google',
-      });
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(2);
+        expect(result.value[0]).toEqual({
+          family: 'Roboto',
+          weight: 400 as FontWeight,
+          style: 'normal',
+          source: 'google',
+        });
+        expect(result.value[1]).toEqual({
+          family: 'Inter',
+          weight: 700 as FontWeight,
+          style: 'italic',
+          source: 'google',
+        });
+      }
     });
 
     it('should parse empty array', () => {
@@ -58,7 +70,10 @@ describe('WASM Schema Validation', () => {
 
       const result = parseFontRequirements(json);
 
-      expect(result).toEqual([]);
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toEqual([]);
+      }
     });
 
     it('should handle custom font source', () => {
@@ -68,7 +83,10 @@ describe('WASM Schema Validation', () => {
 
       const result = parseFontRequirements(json);
 
-      expect(result[0].source).toBe('custom');
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value[0].source).toBe('custom');
+      }
     });
 
     it('should handle websafe font source', () => {
@@ -78,7 +96,10 @@ describe('WASM Schema Validation', () => {
 
       const result = parseFontRequirements(json);
 
-      expect(result[0].source).toBe('websafe');
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value[0].source).toBe('websafe');
+      }
     });
 
     it('should handle all valid font weights', () => {
@@ -94,101 +115,124 @@ describe('WASM Schema Validation', () => {
 
       const result = parseFontRequirements(json);
 
-      expect(result).toHaveLength(9);
-      result.forEach((req, idx) => {
-        expect(req.weight).toBe(weights[idx]);
-      });
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(9);
+        result.value.forEach((req, idx) => {
+          expect(req.weight).toBe(weights[idx]);
+        });
+      }
     });
 
-    it('should throw error for invalid JSON', () => {
+    it('should return error for invalid JSON', () => {
       const invalidJson = '{not valid json}';
 
-      expect(() => parseFontRequirements(invalidJson)).toThrow(
-        'Failed to parse font requirements JSON',
-      );
+      const result = parseFontRequirements(invalidJson);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Failed to parse font requirements JSON');
     });
 
-    it('should throw error for malformed JSON structure', () => {
+    it('should return error for malformed JSON structure', () => {
       const malformedJson = '{"not": "an array"}';
 
-      expect(() => parseFontRequirements(malformedJson)).toThrow(
-        'Invalid font requirements from WASM',
-      );
+      const result = parseFontRequirements(malformedJson);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid font requirements from WASM');
     });
 
-    it('should throw error for missing family field', () => {
+    it('should return error for missing family field', () => {
       const json = JSON.stringify([
         { weight: 400 as FontWeight, style: 'normal', source: 'google' },
       ]);
 
-      expect(() => parseFontRequirements(json)).toThrow('Invalid font requirements from WASM');
+      const result = parseFontRequirements(json);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid font requirements from WASM');
     });
 
-    it('should throw error for empty family name', () => {
+    it('should return error for empty family name', () => {
       const json = JSON.stringify([
         { family: '', weight: 400 as FontWeight, style: 'normal', source: 'google' },
       ]);
 
-      expect(() => parseFontRequirements(json)).toThrow('Font family cannot be empty');
+      const result = parseFontRequirements(json);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Font family cannot be empty');
     });
 
-    it('should throw error for invalid weight', () => {
+    it('should return error for invalid weight', () => {
       const json = JSON.stringify([
         { family: 'Test', weight: 450 as FontWeight, style: 'normal', source: 'google' },
       ]);
 
-      expect(() => parseFontRequirements(json)).toThrow('Invalid font requirements from WASM');
+      const result = parseFontRequirements(json);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid font requirements from WASM');
     });
 
-    it('should throw error for weight outside range', () => {
+    it('should return error for weight outside range', () => {
       const json = JSON.stringify([
         { family: 'Test', weight: 1000 as FontWeight, style: 'normal', source: 'google' },
       ]);
 
-      expect(() => parseFontRequirements(json)).toThrow('Invalid font requirements from WASM');
+      const result = parseFontRequirements(json);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid font requirements from WASM');
     });
 
-    it('should throw error for invalid style', () => {
+    it('should return error for invalid style', () => {
       const json = JSON.stringify([
         { family: 'Test', weight: 400 as FontWeight, style: 'oblique', source: 'google' },
       ]);
 
-      expect(() => parseFontRequirements(json)).toThrow('Invalid font requirements from WASM');
+      const result = parseFontRequirements(json);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid font requirements from WASM');
     });
 
-    it('should throw error for invalid source', () => {
+    it('should return error for invalid source', () => {
       const json = JSON.stringify([
         { family: 'Test', weight: 400 as FontWeight, style: 'normal', source: 'system' },
       ]);
 
-      expect(() => parseFontRequirements(json)).toThrow('Invalid font requirements from WASM');
+      const result = parseFontRequirements(json);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid font requirements from WASM');
     });
 
-    it('should throw error for missing required fields', () => {
+    it('should return error for missing required fields', () => {
       const json = JSON.stringify([{ family: 'Test', weight: 400 }]);
 
-      expect(() => parseFontRequirements(json)).toThrow('Invalid font requirements from WASM');
+      const result = parseFontRequirements(json);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid font requirements from WASM');
     });
 
     it('should use different error message format for syntax errors vs validation errors', () => {
       // SyntaxError should use "Failed to parse font requirements JSON:" prefix
-      expect(() => parseFontRequirements('{invalid json}')).toThrow(
-        'Failed to parse font requirements JSON:',
-      );
+      const syntaxResult = parseFontRequirements('{invalid json}');
+      expect(syntaxResult.isErr()).toBe(true);
+      expect(getErrorMessage(syntaxResult)).toContain('Failed to parse font requirements JSON:');
 
       // Validation errors should use "Invalid font requirements from WASM:" prefix
       // (not "Failed to parse font requirements JSON:")
       const validJson = JSON.stringify([
         { family: '', weight: 400, style: 'normal', source: 'google' },
       ]);
-      try {
-        parseFontRequirements(validJson);
-        expect.fail('Should have thrown');
-      } catch (error) {
-        const message = (error as Error).message;
-        expect(message).not.toContain('Failed to parse font requirements JSON');
-        expect(message).toContain('Invalid font requirements from WASM');
-      }
+      const validationResult = parseFontRequirements(validJson);
+      expect(validationResult.isErr()).toBe(true);
+      const message = getErrorMessage(validationResult);
+      expect(message).not.toContain('Failed to parse font requirements JSON');
+      expect(message).toContain('Invalid font requirements from WASM');
     });
 
     it('should include path in error message for nested validation failures', () => {
@@ -197,21 +241,21 @@ describe('WASM Schema Validation', () => {
         { family: 'Test', weight: 450, style: 'normal', source: 'google' },
       ]);
 
-      expect(() => parseFontRequirements(json)).toThrow('0.weight');
+      const result = parseFontRequirements(json);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('0.weight');
     });
 
     it('should join multiple errors with comma separator', () => {
       // Test that multiple validation errors are joined with ", "
       const json = JSON.stringify([{ family: '', weight: 450, style: 'invalid', source: 'bad' }]);
 
-      try {
-        parseFontRequirements(json);
-        expect.fail('Should have thrown');
-      } catch (error) {
-        const message = (error as Error).message;
-        // Should have multiple errors joined by ", "
-        expect(message).toContain(', ');
-      }
+      const result = parseFontRequirements(json);
+
+      expect(result.isErr()).toBe(true);
+      // Should have multiple errors joined by ", "
+      expect(getErrorMessage(result)).toContain(', ');
     });
   });
 
@@ -230,7 +274,10 @@ describe('WASM Schema Validation', () => {
     it('should validate valid PDF config', () => {
       const result = validateWasmPdfConfig(validConfig);
 
-      expect(result).toEqual(validConfig);
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toEqual(validConfig);
+      }
     });
 
     it('should handle null author', () => {
@@ -238,7 +285,10 @@ describe('WASM Schema Validation', () => {
 
       const result = validateWasmPdfConfig(config);
 
-      expect(result.author).toBeNull();
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.author).toBeNull();
+      }
     });
 
     it('should handle null keywords', () => {
@@ -246,7 +296,10 @@ describe('WASM Schema Validation', () => {
 
       const result = validateWasmPdfConfig(config);
 
-      expect(result.keywords).toBeNull();
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.keywords).toBeNull();
+      }
     });
 
     it('should validate A4 page size', () => {
@@ -254,7 +307,10 @@ describe('WASM Schema Validation', () => {
 
       const result = validateWasmPdfConfig(config);
 
-      expect(result.page_size).toBe('A4');
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.page_size).toBe('A4');
+      }
     });
 
     it('should validate Legal page size', () => {
@@ -262,8 +318,11 @@ describe('WASM Schema Validation', () => {
 
       const result = validateWasmPdfConfig(config);
 
-      expect(result.page_size).toBe('Legal');
-      expect(result.title).toBeTruthy();
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.page_size).toBe('Legal');
+        expect(result.value.title).toBeTruthy();
+      }
     });
 
     it('should validate PDFA1b standard', () => {
@@ -271,7 +330,10 @@ describe('WASM Schema Validation', () => {
 
       const result = validateWasmPdfConfig(config);
 
-      expect(result.standard).toBe('PDFA1b');
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.standard).toBe('PDFA1b');
+      }
     });
 
     it('should validate zero margins', () => {
@@ -282,50 +344,71 @@ describe('WASM Schema Validation', () => {
 
       const result = validateWasmPdfConfig(config);
 
-      expect(result.margin).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.margin).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+      }
     });
 
-    it('should throw error for invalid page size', () => {
+    it('should return error for invalid page size', () => {
       const config = { ...validConfig, page_size: 'Tabloid' };
 
-      expect(() => validateWasmPdfConfig(config)).toThrow('Invalid PDF config');
+      const result = validateWasmPdfConfig(config);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid PDF config');
     });
 
-    it('should throw error for negative margin', () => {
+    it('should return error for negative margin', () => {
       const config = {
         ...validConfig,
         margin: { top: -0.5, right: 0.5, bottom: 0.5, left: 0.5 },
       };
 
-      expect(() => validateWasmPdfConfig(config)).toThrow('Invalid PDF config');
+      const result = validateWasmPdfConfig(config);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid PDF config');
     });
 
-    it('should throw error for missing margin field', () => {
+    it('should return error for missing margin field', () => {
       const config = {
         ...validConfig,
         margin: { top: 0.5, right: 0.5, bottom: 0.5 },
       };
 
-      expect(() => validateWasmPdfConfig(config)).toThrow('Invalid PDF config');
+      const result = validateWasmPdfConfig(config);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid PDF config');
     });
 
-    it('should throw error for invalid standard', () => {
+    it('should return error for invalid standard', () => {
       const config = { ...validConfig, standard: 'PDF20' };
 
-      expect(() => validateWasmPdfConfig(config)).toThrow('Invalid PDF config');
+      const result = validateWasmPdfConfig(config);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid PDF config');
     });
 
-    it('should throw error for missing required field', () => {
+    it('should return error for missing required field', () => {
       const { title, ...incompleteConfig } = validConfig;
       void title; // Acknowledge unused variable
 
-      expect(() => validateWasmPdfConfig(incompleteConfig)).toThrow('Invalid PDF config');
+      const result = validateWasmPdfConfig(incompleteConfig);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid PDF config');
     });
 
-    it('should throw error for wrong field type', () => {
+    it('should return error for wrong field type', () => {
       const config = { ...validConfig, title: 123 };
 
-      expect(() => validateWasmPdfConfig(config)).toThrow('Invalid PDF config');
+      const result = validateWasmPdfConfig(config);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid PDF config');
     });
   });
 
@@ -350,8 +433,11 @@ describe('WASM Schema Validation', () => {
 
       const result = validatePdfBytes(pdfBytes);
 
-      expect(result).toBeInstanceOf(Uint8Array);
-      expect(result.length).toBe(100);
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toBeInstanceOf(Uint8Array);
+        expect(result.value.length).toBe(100);
+      }
     });
 
     it('should validate minimum size PDF (50 bytes)', () => {
@@ -359,7 +445,10 @@ describe('WASM Schema Validation', () => {
 
       const result = validatePdfBytes(pdfBytes);
 
-      expect(result.length).toBe(50);
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.length).toBe(50);
+      }
     });
 
     it('should validate large PDF', () => {
@@ -367,7 +456,10 @@ describe('WASM Schema Validation', () => {
 
       const result = validatePdfBytes(pdfBytes);
 
-      expect(result.length).toBe(1024 * 1024);
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.length).toBe(1024 * 1024);
+      }
     });
 
     it('should convert Array-like to Uint8Array', () => {
@@ -375,71 +467,93 @@ describe('WASM Schema Validation', () => {
 
       const result = validatePdfBytes(arrayLike);
 
-      expect(result).toBeInstanceOf(Uint8Array);
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toBeInstanceOf(Uint8Array);
+      }
     });
 
-    it('should throw error for bytes below minimum size', () => {
+    it('should return error for bytes below minimum size', () => {
       const tooSmall = createValidPdf(49);
 
-      expect(() => validatePdfBytes(tooSmall)).toThrow('PDF must be at least 50 bytes');
+      const result = validatePdfBytes(tooSmall);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('PDF must be at least 50 bytes');
     });
 
-    it('should throw error for bytes exceeding maximum size', () => {
+    it('should return error for bytes exceeding maximum size', () => {
       const tooLarge = createValidPdf(11 * 1024 * 1024); // 11MB
 
-      expect(() => validatePdfBytes(tooLarge)).toThrow('PDF cannot exceed 10MB');
+      const result = validatePdfBytes(tooLarge);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('PDF cannot exceed 10MB');
     });
 
-    it('should throw error for invalid PDF magic bytes', () => {
+    it('should return error for invalid PDF magic bytes', () => {
       const invalidPdf = new Uint8Array(100);
       invalidPdf[0] = 0x00; // Not %PDF
 
-      expect(() => validatePdfBytes(invalidPdf)).toThrow(
-        'Invalid PDF format: expected header "%PDF"',
-      );
+      const result = validatePdfBytes(invalidPdf);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid PDF format: expected header "%PDF"');
     });
 
-    it('should throw error for wrong header format', () => {
+    it('should return error for wrong header format', () => {
       const wrongHeader = new Uint8Array(100);
       wrongHeader[0] = 0x50; // P
       wrongHeader[1] = 0x44; // D
       wrongHeader[2] = 0x46; // F
       wrongHeader[3] = 0x00; // Missing %
 
-      expect(() => validatePdfBytes(wrongHeader)).toThrow(
-        'Invalid PDF format: expected header "%PDF"',
-      );
+      const result = validatePdfBytes(wrongHeader);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid PDF format: expected header "%PDF"');
     });
 
-    it('should throw error for null input', () => {
-      expect(() => validatePdfBytes(null)).toThrow('Invalid PDF bytes from WASM');
+    it('should return error for null input', () => {
+      const result = validatePdfBytes(null);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid PDF bytes from WASM');
     });
 
-    it('should throw error for undefined input', () => {
-      expect(() => validatePdfBytes(undefined)).toThrow('Invalid PDF bytes from WASM');
+    it('should return error for undefined input', () => {
+      const result = validatePdfBytes(undefined);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid PDF bytes from WASM');
     });
 
-    it('should throw error for non-array-like input', () => {
-      expect(() => validatePdfBytes('not an array')).toThrow('Invalid PDF bytes from WASM');
+    it('should return error for non-array-like input', () => {
+      const result = validatePdfBytes('not an array');
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid PDF bytes from WASM');
     });
 
-    it('should throw error for object without length', () => {
-      expect(() => validatePdfBytes({ data: [1, 2, 3] })).toThrow('Invalid PDF bytes from WASM');
+    it('should return error for object without length', () => {
+      const result = validatePdfBytes({ data: [1, 2, 3] });
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid PDF bytes from WASM');
     });
 
-    it('should throw error for object with non-number length property', () => {
+    it('should return error for object with non-number length property', () => {
       // With proper validation, this should fail at custom validator level
       // If typeof check is bypassed, it would fail at check() with different error
       const objWithStringLength = { length: 'not a number', 0: 0x25, 1: 0x50, 2: 0x44, 3: 0x46 };
-      try {
-        validatePdfBytes(objWithStringLength);
-        expect.fail('Should have thrown');
-      } catch (error) {
-        const message = (error as Error).message;
-        // Must fail at schema level (custom validator), not at size check level
-        expect(message).toContain('Invalid PDF bytes from WASM');
-        expect(message).not.toContain('at least 50 bytes');
-      }
+
+      const result = validatePdfBytes(objWithStringLength);
+
+      expect(result.isErr()).toBe(true);
+      const message = getErrorMessage(result);
+      // Must fail at schema level (custom validator), not at size check level
+      expect(message).toContain('Invalid PDF bytes from WASM');
+      expect(message).not.toContain('at least 50 bytes');
     });
 
     it('should validate PDF at exactly 10MB boundary', () => {
@@ -447,27 +561,39 @@ describe('WASM Schema Validation', () => {
 
       const result = validatePdfBytes(pdfBytes);
 
-      expect(result.length).toBe(10 * 1024 * 1024);
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.length).toBe(10 * 1024 * 1024);
+      }
     });
 
-    it('should reject PDF at 10MB + 1 byte', () => {
+    it('should return error for PDF at 10MB + 1 byte', () => {
       const pdfBytes = createValidPdf(10 * 1024 * 1024 + 1);
 
-      expect(() => validatePdfBytes(pdfBytes)).toThrow('PDF cannot exceed 10MB');
+      const result = validatePdfBytes(pdfBytes);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('PDF cannot exceed 10MB');
     });
   });
 
   describe('validateProgressParams', () => {
     it('should validate valid progress parameters', () => {
-      expect(() => validateProgressParams('parsing', 50)).not.toThrow();
+      const result = validateProgressParams('parsing', 50);
+
+      expect(result.isOk()).toBe(true);
     });
 
     it('should validate 0% progress', () => {
-      expect(() => validateProgressParams('queued', 0)).not.toThrow();
+      const result = validateProgressParams('queued', 0);
+
+      expect(result.isOk()).toBe(true);
     });
 
     it('should validate 100% progress', () => {
-      expect(() => validateProgressParams('completed', 100)).not.toThrow();
+      const result = validateProgressParams('completed', 100);
+
+      expect(result.isOk()).toBe(true);
     });
 
     it('should validate different stage names', () => {
@@ -481,44 +607,51 @@ describe('WASM Schema Validation', () => {
       ];
 
       stages.forEach((stage) => {
-        expect(() => validateProgressParams(stage, 50)).not.toThrow();
+        const result = validateProgressParams(stage, 50);
+        expect(result.isOk()).toBe(true);
       });
     });
 
-    it('should throw error for negative percentage', () => {
-      expect(() => validateProgressParams('parsing', -1)).toThrow(
-        'Progress percentage cannot be negative',
-      );
+    it('should return error for negative percentage', () => {
+      const result = validateProgressParams('parsing', -1);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Progress percentage cannot be negative');
     });
 
-    it('should throw error for percentage exceeding 100', () => {
-      expect(() => validateProgressParams('parsing', 101)).toThrow(
-        'Progress percentage cannot exceed 100',
-      );
+    it('should return error for percentage exceeding 100', () => {
+      const result = validateProgressParams('parsing', 101);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Progress percentage cannot exceed 100');
     });
 
-    it('should throw error for non-string stage', () => {
-      expect(() => validateProgressParams(123, 50)).toThrow(
-        'Invalid progress callback params from WASM',
-      );
+    it('should return error for non-string stage', () => {
+      const result = validateProgressParams(123, 50);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid progress callback params from WASM');
     });
 
-    it('should throw error for non-number percentage', () => {
-      expect(() => validateProgressParams('parsing', '50')).toThrow(
-        'Invalid progress callback params from WASM',
-      );
+    it('should return error for non-number percentage', () => {
+      const result = validateProgressParams('parsing', '50');
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid progress callback params from WASM');
     });
 
-    it('should throw error for null stage', () => {
-      expect(() => validateProgressParams(null, 50)).toThrow(
-        'Invalid progress callback params from WASM',
-      );
+    it('should return error for null stage', () => {
+      const result = validateProgressParams(null, 50);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid progress callback params from WASM');
     });
 
-    it('should throw error for undefined percentage', () => {
-      expect(() => validateProgressParams('parsing', undefined)).toThrow(
-        'Invalid progress callback params from WASM',
-      );
+    it('should return error for undefined percentage', () => {
+      const result = validateProgressParams('parsing', undefined);
+
+      expect(result.isErr()).toBe(true);
+      expect(getErrorMessage(result)).toContain('Invalid progress callback params from WASM');
     });
   });
 

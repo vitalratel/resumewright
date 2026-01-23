@@ -4,9 +4,11 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { err, ok } from '@/shared/errors/result';
 import type { ILogger } from '../../infrastructure/logging/logger';
 import type { ConversionConfig } from '../../types/models';
 import { convertConfigToRust } from './config';
+import type { WasmPdfConfig } from './types';
 
 import { validateWasmPdfConfig } from './wasmSchemas';
 
@@ -34,8 +36,8 @@ describe('PDF Config', () => {
     vi.clearAllMocks();
     // Setup default mock implementation for validateWasmPdfConfig
     const { validateWasmPdfConfig } = await import('./wasmSchemas');
-    vi.mocked(validateWasmPdfConfig).mockImplementation(
-      (config: unknown) => config as ReturnType<typeof validateWasmPdfConfig>,
+    vi.mocked(validateWasmPdfConfig).mockImplementation((config: unknown) =>
+      ok(config as WasmPdfConfig),
     );
 
     // Setup default mock implementation for getLogger
@@ -106,10 +108,9 @@ describe('PDF Config', () => {
 
     it('should handle config validation failure', () => {
       // Test error handler when validation fails
-      const validationError = new Error('Invalid page size');
-      vi.mocked(validateWasmPdfConfig).mockImplementationOnce(() => {
-        throw validationError;
-      });
+      vi.mocked(validateWasmPdfConfig).mockImplementationOnce(() =>
+        err({ type: 'schema_mismatch', message: 'Invalid page size' }),
+      );
 
       expect(() => convertConfigToRust(validConfig, mockLogger)).toThrow('Invalid page size');
     });
@@ -127,10 +128,11 @@ describe('PDF Config', () => {
       };
       vi.mocked(getLogger).mockReturnValue(localMockLogger as never);
 
-      const validationError = new Error('Config validation error');
-      vi.mocked(validateWasmPdfConfig).mockImplementationOnce(() => {
-        throw validationError;
-      });
+      const validationError = {
+        type: 'schema_mismatch' as const,
+        message: 'Config validation error',
+      };
+      vi.mocked(validateWasmPdfConfig).mockImplementationOnce(() => err(validationError));
 
       try {
         convertConfigToRust(validConfig, localMockLogger);
@@ -145,13 +147,13 @@ describe('PDF Config', () => {
       );
     });
 
-    it('should handle TypeError in validation', () => {
+    it('should handle validation error with schema_mismatch type', () => {
       // Test different error types
-      vi.mocked(validateWasmPdfConfig).mockImplementationOnce(() => {
-        throw new TypeError('Invalid type');
-      });
+      vi.mocked(validateWasmPdfConfig).mockImplementationOnce(() =>
+        err({ type: 'schema_mismatch', message: 'Invalid type' }),
+      );
 
-      expect(() => convertConfigToRust(validConfig, mockLogger)).toThrow(TypeError);
+      expect(() => convertConfigToRust(validConfig, mockLogger)).toThrow('Invalid type');
     });
 
     it('should set PDF/A-1b standard for ATS compatibility', () => {

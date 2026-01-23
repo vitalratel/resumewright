@@ -2,6 +2,7 @@
 // ABOUTME: Verifies file checks, WASM status polling, and syntax validation.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { err, ok } from '@/shared/errors/result';
 import type { ILogger } from '../../infrastructure/logging/logger';
 import type { TsxToPdfConverter } from './types';
 import { validateTsxFile, validateTsxSyntax } from './validation';
@@ -32,7 +33,7 @@ vi.mock('../../infrastructure/wasm', () => ({
 }));
 
 vi.mock('./wasmSchemas', () => ({
-  parseFontRequirements: vi.fn(() => []),
+  parseFontRequirements: vi.fn(() => ok([])),
 }));
 
 /** Create a mock TsxToPdfConverter with optional overrides */
@@ -345,9 +346,9 @@ describe('validation', () => {
 
     it('should handle font parsing errors', async () => {
       const { parseFontRequirements } = await import('./wasmSchemas');
-      vi.mocked(parseFontRequirements).mockImplementation(() => {
-        throw new Error('Parse error');
-      });
+      vi.mocked(parseFontRequirements).mockImplementation(() =>
+        err({ type: 'invalid_input', message: 'Parse error' }),
+      );
 
       const mockConverter = createMockConverter();
 

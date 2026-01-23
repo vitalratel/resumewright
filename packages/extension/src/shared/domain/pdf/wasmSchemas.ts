@@ -5,6 +5,7 @@ import {
   array,
   check,
   custom,
+  type InferOutput,
   literal,
   maxValue,
   minLength,
@@ -18,7 +19,9 @@ import {
   string,
   union,
 } from 'valibot';
+import { err, ok, type Result, type ValidationError } from '@/shared/errors/result';
 import { formatValidationIssues } from '../validation/utils';
+import type { WasmPdfConfig } from './types';
 
 /**
  * Font weight schema (100-900 in increments of 100)
@@ -63,41 +66,55 @@ export const FontRequirementSchema = object({
 const FontRequirementsArraySchema = array(FontRequirementSchema);
 
 /**
+ * Inferred type from FontRequirementsArraySchema
+ */
+export type FontRequirementsArray = InferOutput<typeof FontRequirementsArraySchema>;
+
+/**
  * Type-safe parser for WASM font detection response
  *
  * @param jsonString - JSON string from WASM detect_fonts()
- * @returns Validated FontRequirement array
- * @throws Error with detailed message if validation fails
+ * @returns Result containing validated FontRequirement array or ValidationError
  *
  * @example
  * ```typescript
  * const fontsJson = converter.detect_fonts(tsx);
- * const fonts = parseFontRequirements(fontsJson);
- * // fonts is now type-safe FontRequirement[]
+ * const result = parseFontRequirements(fontsJson);
+ * if (result.isOk()) {
+ *   const fonts = result.value; // type-safe FontRequirement[]
+ * }
  * ```
  */
-export function parseFontRequirements(jsonString: string) {
+export function parseFontRequirements(
+  jsonString: string,
+): Result<FontRequirementsArray, ValidationError> {
+  let parsed: unknown;
   try {
-    // Parse JSON
-    const parsed: unknown = JSON.parse(jsonString);
-
-    // Validate structure
-    const result = safeParse(FontRequirementsArraySchema, parsed);
-
-    if (!result.success) {
-      throw new Error(
-        `Invalid font requirements from WASM: ${formatValidationIssues(result.issues)}`,
-      );
-    }
-
-    return result.output;
+    parsed = JSON.parse(jsonString);
   } catch (error) {
     if (error instanceof SyntaxError) {
-      throw new Error(`Failed to parse font requirements JSON: ${error.message}`);
+      return err({
+        type: 'invalid_input',
+        message: `Failed to parse font requirements JSON: ${error.message}`,
+      });
     }
-
-    throw new Error(`Failed to parse font requirements: ${String(error)}`);
+    return err({
+      type: 'invalid_input',
+      message: `Failed to parse font requirements: ${String(error)}`,
+    });
   }
+
+  // Validate structure
+  const result = safeParse(FontRequirementsArraySchema, parsed);
+
+  if (!result.success) {
+    return err({
+      type: 'schema_mismatch',
+      message: `Invalid font requirements from WASM: ${formatValidationIssues(result.issues)}`,
+    });
+  }
+
+  return ok(result.output);
 }
 
 /**
@@ -123,17 +140,19 @@ const WasmPdfConfigSchema = object({
  * Validate WASM PDF config before sending to WASM
  *
  * @param config - Config object to validate
- * @returns Validated config
- * @throws Error if validation fails
+ * @returns Result containing validated config or ValidationError
  */
-export function validateWasmPdfConfig(config: unknown) {
+export function validateWasmPdfConfig(config: unknown): Result<WasmPdfConfig, ValidationError> {
   const result = safeParse(WasmPdfConfigSchema, config);
 
   if (!result.success) {
-    throw new Error(`Invalid PDF config: ${formatValidationIssues(result.issues)}`);
+    return err({
+      type: 'schema_mismatch',
+      message: `Invalid PDF config: ${formatValidationIssues(result.issues)}`,
+    });
   }
 
-  return result.output;
+  return ok(result.output);
 }
 
 // ============================================================================
@@ -173,21 +192,26 @@ export const ProgressCallbackParamsSchema = object({
  * Validate PDF bytes output from WASM
  *
  * @param bytes - Raw PDF bytes from WASM
- * @returns Validated Uint8Array
- * @throws Error if validation fails
+ * @returns Result containing validated Uint8Array or ValidationError
  *
  * @example
  * ```typescript
  * const pdfBytes = converter.convert_tsx_to_pdf(tsx, config, fonts);
- * const validatedPdf = validatePdfBytes(pdfBytes);
+ * const result = validatePdfBytes(pdfBytes);
+ * if (result.isOk()) {
+ *   const validatedPdf = result.value;
+ * }
  * ```
  */
-export function validatePdfBytes(bytes: unknown): Uint8Array {
+export function validatePdfBytes(bytes: unknown): Result<Uint8Array, ValidationError> {
   // Validate structure
   const result = safeParse(PdfBytesSchema, bytes);
 
   if (!result.success) {
-    throw new Error(`Invalid PDF bytes from WASM: ${formatValidationIssues(result.issues)}`);
+    return err({
+      type: 'schema_mismatch',
+      message: `Invalid PDF bytes from WASM: ${formatValidationIssues(result.issues)}`,
+    });
   }
 
   // Convert to Uint8Array
@@ -196,10 +220,13 @@ export function validatePdfBytes(bytes: unknown): Uint8Array {
   // Validate PDF magic bytes (PDF files start with "%PDF")
   const header = String.fromCharCode(...Array.from(pdfArray.slice(0, 4)));
   if (header !== '%PDF') {
-    throw new Error(`Invalid PDF format: expected header "%PDF", got "${header}"`);
+    return err({
+      type: 'invalid_input',
+      message: `Invalid PDF format: expected header "%PDF", got "${header}"`,
+    });
   }
 
-  return pdfArray;
+  return ok(pdfArray);
 }
 
 /**
@@ -207,22 +234,30 @@ export function validatePdfBytes(bytes: unknown): Uint8Array {
  *
  * @param stage - Conversion stage name
  * @param percentage - Progress percentage (0-100)
- * @throws Error if validation fails
+ * @returns Result indicating success or ValidationError
  *
  * @example
  * ```typescript
  * converter.convert_tsx_to_pdf(tsx, config, fonts, (stage, pct) => {
- *   validateProgressParams(stage, pct);
- *   onProgress(stage, pct);
+ *   const result = validateProgressParams(stage, pct);
+ *   if (result.isOk()) {
+ *     onProgress(stage, pct);
+ *   }
  * });
  * ```
  */
-export function validateProgressParams(stage: unknown, percentage: unknown): void {
+export function validateProgressParams(
+  stage: unknown,
+  percentage: unknown,
+): Result<void, ValidationError> {
   const result = safeParse(ProgressCallbackParamsSchema, { stage, percentage });
 
   if (!result.success) {
-    throw new Error(
-      `Invalid progress callback params from WASM: ${formatValidationIssues(result.issues)}`,
-    );
+    return err({
+      type: 'schema_mismatch',
+      message: `Invalid progress callback params from WASM: ${formatValidationIssues(result.issues)}`,
+    });
   }
+
+  return ok(undefined);
 }
