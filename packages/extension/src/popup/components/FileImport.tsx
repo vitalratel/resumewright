@@ -2,7 +2,7 @@
 // ABOUTME: Validates file type, size, content and provides user-friendly error messages.
 
 import { DocumentTextIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FILE_SIZE_LIMITS, validateFileExtension } from '@/shared/domain/pdf/validation';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { useEvent } from '../hooks/core/useEvent';
@@ -33,31 +33,32 @@ export function FileImport({ onFileValidated, onClearFile, importedFile }: FileI
 
   // Success feedback state
   const [showSuccess, setShowSuccess] = useState(false);
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Confirm dialog state for clear file action
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  // Show success feedback when file is validated
-  useEffect(() => {
-    if (
-      importedFile !== null &&
-      importedFile !== undefined &&
-      (validationError === null || validationError === undefined || validationError === '') &&
-      !isValidating
-    ) {
-      // Defer setState to avoid synchronous call in effect
-      queueMicrotask(() => {
-        setShowSuccess(true);
-      });
-      const timer = setTimeout(() => {
-        queueMicrotask(() => {
-          setShowSuccess(false);
-        });
-      }, 3000);
-      return () => clearTimeout(timer);
+  // Show success with auto-hide timer (called from event handlers, not effects)
+  const showSuccessFeedback = useCallback(() => {
+    // Clear any existing timer
+    if (successTimerRef.current) {
+      clearTimeout(successTimerRef.current);
     }
-    return undefined;
-  }, [importedFile, validationError, isValidating]);
+    setShowSuccess(true);
+    successTimerRef.current = setTimeout(() => {
+      setShowSuccess(false);
+      successTimerRef.current = null;
+    }, 3000);
+  }, []);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (successTimerRef.current) {
+        clearTimeout(successTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleFile = async (file: File) => {
     // Helper to log validation errors to console and set local error state
@@ -156,7 +157,7 @@ export function FileImport({ onFileValidated, onClearFile, importedFile }: FileI
       try {
         await onFileValidated(content, file.name, file.size);
         setIsValidating(false);
-        // Success is shown via useEffect watching importedFile
+        showSuccessFeedback();
       } catch (error) {
         // Errors from onFileValidated (e.g., conversion errors)
         logAndSetError(
