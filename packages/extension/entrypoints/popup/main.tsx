@@ -3,14 +3,14 @@
  * ABOUTME: Shows brief feedback then opens converter in a new tab.
  */
 
-import { useEffect, useState } from 'react';
-import { createRoot } from 'react-dom/client';
+import { createSignal, onMount, Show } from 'solid-js';
+import { render } from 'solid-js/web';
 import './popup.css';
 
 function Popup() {
-  const [error, setError] = useState(false);
+  const [error, setError] = createSignal(false);
 
-  useEffect(() => {
+  onMount(() => {
     const openConverter = async () => {
       try {
         await browser.tabs.create({
@@ -26,17 +26,18 @@ function Popup() {
     };
 
     openConverter();
-  }, []);
-
-  if (error) {
-    return <div className="popup-error">Error opening converter. Please try again.</div>;
-  }
+  });
 
   return (
-    <div className="popup-container">
-      <div className="popup-message">Opening converter in new tab...</div>
-      <div className="popup-subtitle">You can close this popup</div>
-    </div>
+    <Show
+      when={!error()}
+      fallback={<div class="popup-error">Error opening converter. Please try again.</div>}
+    >
+      <div class="popup-container">
+        <div class="popup-message">Opening converter in new tab...</div>
+        <div class="popup-subtitle">You can close this popup</div>
+      </div>
+    </Show>
   );
 }
 
@@ -46,4 +47,4 @@ if (!root) {
   throw new Error('Root element not found');
 }
 
-createRoot(root).render(<Popup />);
+render(() => <Popup />, root);

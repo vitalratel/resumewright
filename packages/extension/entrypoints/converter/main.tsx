@@ -1,17 +1,11 @@
 /**
- * Full-Page Converter Entry Point
- *
- * This is the main conversion interface that opens in a new tab.
- * Provides a stable environment for file handling and conversion,
- * avoiding popup limitations (e.g., closing on file picker in Firefox).
- *
- * Story: Full-page workflow implementation
+ * ABOUTME: Converter entry point that opens the main conversion UI in a new tab.
+ * ABOUTME: Wraps the App component with error boundary for crash recovery.
  */
 
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { ErrorBoundary } from 'solid-js';
+import { render } from 'solid-js/web';
 import App from '../../src/popup/App';
-import { ErrorBoundary } from '../../src/popup/components/ErrorBoundary';
 import './base.converter.css';
 import '../../src/popup/index.css';
 
@@ -21,10 +15,11 @@ if (!root) {
   throw new Error('Root element not found');
 }
 
-ReactDOM.createRoot(root).render(
-  <React.StrictMode>
-    <ErrorBoundary>
+render(
+  () => (
+    <ErrorBoundary fallback={(err) => <div>Something went wrong: {err.message}</div>}>
       <App />
     </ErrorBoundary>
-  </React.StrictMode>,
+  ),
+  root,
 );

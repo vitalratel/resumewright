@@ -16,5 +16,8 @@ declare module '#imports' {
   export { defineWxtPlugin } from 'wxt/utils/define-wxt-plugin';
   export { injectScript, ScriptPublicPath, InjectScriptOptions } from 'wxt/utils/inject-script';
   export { InvalidMatchPattern, MatchPattern } from 'wxt/utils/match-patterns';
+  export { createSignal, createEffect, createMemo, createResource, onMount, onCleanup, onError, untrack, batch, on, createRoot, mergeProps, splitProps, useTransition, observable, mapArray, indexArray, createContext, useContext, children, lazy, createDeferred, createRenderEffect, createSelector, For, Show, Switch, Match, Index, ErrorBoundary, Suspense, SuspenseList } from 'solid-js';
+  export { createStore, produce, reconcile, createMutable } from 'solid-js/store';
+  export { Dynamic, hydrate, render, renderToString, renderToStringAsync, renderToStream, isServer, Portal } from 'solid-js/web';
   export { fakeBrowser } from 'wxt/testing';
 }

@@ -16,7 +16,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
 
     /* Linting */
     "strict": true,
@@ -39,7 +40,7 @@
     },
 
     /* Types */
-    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]
+    "types": ["vite/client", "vitest/globals"]
   },
   "include": ["src", "tests", "entrypoints", ".wxt/wxt.d.ts"],
   "exclude": [
