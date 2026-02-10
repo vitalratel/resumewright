@@ -1,62 +1,28 @@
 /**
- * AppContext Tests
- * Tests for AppProvider and useAppContext hook
+ * ABOUTME: Tests for AppContext provider and consumer.
+ * ABOUTME: Validates context provision, value access, and error on missing provider.
  */
 
-import { render, renderHook } from '@testing-library/react';
+import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
-import type { AppState } from '../../hooks/integration/useAppState';
+import type { AppContextValue } from '../AppContext';
 import { AppProvider, useAppContext } from '../AppContext';
 
 describe('AppContext', () => {
-  const mockAppState: AppState = {
-    // UI State
-    uiState: 'waiting_for_import',
-    validationError: null,
-    isValidating: false,
-    lastError: null,
-    lastFilename: null,
-
-    // Persisted Data
-    importedFile: null,
-
-    // Progress
-    getProgress: vi.fn(),
-
-    // UI Actions
-    setValidating: vi.fn(),
-    setValidationError: vi.fn(),
-    clearValidationError: vi.fn(),
-    startConversion: vi.fn(),
-    setSuccess: vi.fn(),
-    setError: vi.fn(),
-    setUIState: vi.fn(),
-
-    // Persisted Actions
-    setImportedFile: vi.fn(),
-    clearImportedFile: vi.fn(),
-
-    // Combined Actions
-    reset: vi.fn(),
-  };
-
-  const mockContextValue = {
-    appState: mockAppState,
+  const mockContextValue: AppContextValue = {
     currentJobId: 'test-job-id',
-    successRef: { current: null },
-    errorRef: { current: null },
     onOpenSettings: vi.fn(),
   };
 
   describe('AppProvider', () => {
     it('should render children', () => {
-      const { container } = render(
+      const { container } = render(() => (
         <AppProvider value={mockContextValue}>
           <div data-testid="child">Test Child</div>
-        </AppProvider>,
-      );
+        </AppProvider>
+      ));
 
-      expect(container.querySelector('[data-testid="child"]')).toBeInTheDocument();
+      expect(container.querySelector('[data-testid="child"]')).toBeTruthy();
     });
 
     it('should provide context value to children', () => {
@@ -65,11 +31,11 @@ describe('AppContext', () => {
         return <div data-testid="job-id">{context.currentJobId}</div>;
       };
 
-      const { getByTestId } = render(
+      const { getByTestId } = render(() => (
         <AppProvider value={mockContextValue}>
           <TestComponent />
-        </AppProvider>,
-      );
+        </AppProvider>
+      ));
 
       expect(getByTestId('job-id')).toHaveTextContent('test-job-id');
     });
@@ -77,57 +43,51 @@ describe('AppContext', () => {
 
   describe('useAppContext', () => {
     it('should return context value when used within provider', () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <AppProvider value={mockContextValue}>{children}</AppProvider>
-      );
+      let captured: AppContextValue | undefined;
 
-      const { result } = renderHook(() => useAppContext(), { wrapper });
+      render(() => (
+        <AppProvider value={mockContextValue}>
+          {(() => {
+            captured = useAppContext();
+            return <div />;
+          })()}
+        </AppProvider>
+      ));
 
-      expect(result.current).toEqual(mockContextValue);
-      expect(result.current.currentJobId).toBe('test-job-id');
-      expect(result.current.appState).toEqual(mockAppState);
+      expect(captured).toEqual(mockContextValue);
+      expect(captured!.currentJobId).toBe('test-job-id');
     });
 
     it('should throw error when used outside provider', () => {
-      // Test error handler at line 34
-      // Suppress console.error for this test since we expect an error
-      const originalError = console.error;
-      console.error = vi.fn();
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       expect(() => {
-        renderHook(() => useAppContext());
+        render(() => {
+          useAppContext();
+          return <div />;
+        });
       }).toThrow('useAppContext must be used within AppProvider');
 
-      // Restore console.error
-      console.error = originalError;
+      errorSpy.mockRestore();
     });
 
     it('should provide access to onOpenSettings callback', () => {
       const mockOnOpenSettings = vi.fn();
-      const customContextValue = {
-        ...mockContextValue,
-        onOpenSettings: mockOnOpenSettings,
-      };
+      const customValue = { ...mockContextValue, onOpenSettings: mockOnOpenSettings };
 
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <AppProvider value={customContextValue}>{children}</AppProvider>
-      );
+      let captured: AppContextValue | undefined;
 
-      const { result } = renderHook(() => useAppContext(), { wrapper });
+      render(() => (
+        <AppProvider value={customValue}>
+          {(() => {
+            captured = useAppContext();
+            return <div />;
+          })()}
+        </AppProvider>
+      ));
 
-      result.current.onOpenSettings();
+      captured!.onOpenSettings();
       expect(mockOnOpenSettings).toHaveBeenCalledOnce();
-    });
-
-    it('should provide access to refs', () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <AppProvider value={mockContextValue}>{children}</AppProvider>
-      );
-
-      const { result } = renderHook(() => useAppContext(), { wrapper });
-
-      expect(result.current.successRef).toBe(mockContextValue.successRef);
-      expect(result.current.errorRef).toBe(mockContextValue.errorRef);
     });
   });
 });

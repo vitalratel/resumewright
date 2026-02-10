@@ -1,28 +1,30 @@
 /**
- * Conversion Context
- * Context provider for ConversionHandlers to avoid prop drilling
- *
- * Provides conversion-related handlers to all components
+ * ABOUTME: Context for dependency injection of conversion handler functions.
+ * ABOUTME: Provides file validation, export, retry, and error recovery handlers.
  */
 
-import type React from 'react';
-import { createContext, use } from 'react';
-import type { ConversionHandlers } from '../hooks/conversion/useConversionHandlers';
+import { createContext, type JSX, useContext } from 'solid-js';
 
-const ConversionContext = createContext<ConversionHandlers | null>(null);
+export interface ConversionHandlers {
+  handleFileValidated: (content: string, fileName: string, fileSize: number) => Promise<void>;
+  handleExportClick: () => Promise<void>;
+  handleCancelConversion?: () => void;
+  handleRetry: () => void;
+  handleDismissError: () => void;
+  handleImportDifferent: () => void;
+  handleReportIssue: () => Promise<void>;
+}
 
-export function ConversionProvider({
-  children,
-  value,
-}: {
-  children: React.ReactNode;
-  value: ConversionHandlers;
-}) {
-  return <ConversionContext value={value}>{children}</ConversionContext>;
+const ConversionContext = createContext<ConversionHandlers>();
+
+export function ConversionProvider(props: { value: ConversionHandlers; children: JSX.Element }) {
+  return (
+    <ConversionContext.Provider value={props.value}>{props.children}</ConversionContext.Provider>
+  );
 }
 
 export function useConversion(): ConversionHandlers {
-  const context = use(ConversionContext);
+  const context = useContext(ConversionContext);
   if (!context) {
     throw new Error('useConversion must be used within ConversionProvider');
   }

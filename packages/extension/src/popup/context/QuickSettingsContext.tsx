@@ -1,12 +1,9 @@
 /**
- * QuickSettings Context
- * Context provider for QuickSettings to avoid prop drilling
- *
- * Provides quick settings state and handlers to all components
+ * ABOUTME: Context for dependency injection of quick settings state and handlers.
+ * ABOUTME: Provides page size, margin, and custom margin change handlers.
  */
 
-import type React from 'react';
-import { createContext, use } from 'react';
+import { createContext, type JSX, useContext } from 'solid-js';
 import type { UserSettings } from '@/shared/types/settings';
 
 interface QuickSettingsHandlers {
@@ -25,20 +22,21 @@ export interface QuickSettingsContextValue {
   handlers: QuickSettingsHandlers;
 }
 
-const QuickSettingsContext = createContext<QuickSettingsContextValue | null>(null);
+const QuickSettingsContext = createContext<QuickSettingsContextValue>();
 
-export function QuickSettingsProvider({
-  children,
-  value,
-}: {
-  children: React.ReactNode;
+export function QuickSettingsProvider(props: {
   value: QuickSettingsContextValue;
+  children: JSX.Element;
 }) {
-  return <QuickSettingsContext value={value}>{children}</QuickSettingsContext>;
+  return (
+    <QuickSettingsContext.Provider value={props.value}>
+      {props.children}
+    </QuickSettingsContext.Provider>
+  );
 }
 
 export function useQuickSettings(): QuickSettingsContextValue {
-  const context = use(QuickSettingsContext);
+  const context = useContext(QuickSettingsContext);
   if (!context) {
     throw new Error('useQuickSettings must be used within QuickSettingsProvider');
   }

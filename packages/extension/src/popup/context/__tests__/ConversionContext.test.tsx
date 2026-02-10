@@ -1,11 +1,11 @@
 /**
- * ConversionContext Tests
- * Tests for ConversionProvider and useConversion hook
+ * ABOUTME: Tests for ConversionContext provider and consumer.
+ * ABOUTME: Validates handler provision, value access, and error on missing provider.
  */
 
-import { render, renderHook } from '@testing-library/react';
+import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
-import type { ConversionHandlers } from '../../hooks/conversion/useConversionHandlers';
+import type { ConversionHandlers } from '../ConversionContext';
 import { ConversionProvider, useConversion } from '../ConversionContext';
 
 describe('ConversionContext', () => {
@@ -21,13 +21,13 @@ describe('ConversionContext', () => {
 
   describe('ConversionProvider', () => {
     it('should render children', () => {
-      const { container } = render(
+      const { container } = render(() => (
         <ConversionProvider value={mockHandlers}>
           <div data-testid="child">Test Child</div>
-        </ConversionProvider>,
-      );
+        </ConversionProvider>
+      ));
 
-      expect(container.querySelector('[data-testid="child"]')).toBeInTheDocument();
+      expect(container.querySelector('[data-testid="child"]')).toBeTruthy();
     });
 
     it('should provide handlers to children', () => {
@@ -40,11 +40,11 @@ describe('ConversionContext', () => {
         );
       };
 
-      const { getByText } = render(
+      const { getByText } = render(() => (
         <ConversionProvider value={mockHandlers}>
           <TestComponent />
-        </ConversionProvider>,
-      );
+        </ConversionProvider>
+      ));
 
       const button = getByText('Retry');
       button.click();
@@ -55,46 +55,54 @@ describe('ConversionContext', () => {
 
   describe('useConversion', () => {
     it('should return handlers when used within provider', () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ConversionProvider value={mockHandlers}>{children}</ConversionProvider>
-      );
+      let captured: ConversionHandlers | undefined;
 
-      const { result } = renderHook(() => useConversion(), { wrapper });
+      render(() => (
+        <ConversionProvider value={mockHandlers}>
+          {(() => {
+            captured = useConversion();
+            return <div />;
+          })()}
+        </ConversionProvider>
+      ));
 
-      expect(result.current).toEqual(mockHandlers);
-      expect(result.current.handleFileValidated).toBe(mockHandlers.handleFileValidated);
-      expect(result.current.handleExportClick).toBe(mockHandlers.handleExportClick);
+      expect(captured).toEqual(mockHandlers);
+      expect(captured!.handleFileValidated).toBe(mockHandlers.handleFileValidated);
+      expect(captured!.handleExportClick).toBe(mockHandlers.handleExportClick);
     });
 
     it('should throw error when used outside provider', () => {
-      // Test error handler at line 26
-      // Suppress console.error for this test since we expect an error
-      const originalError = console.error;
-      console.error = vi.fn();
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       expect(() => {
-        renderHook(() => useConversion());
+        render(() => {
+          useConversion();
+          return <div />;
+        });
       }).toThrow('useConversion must be used within ConversionProvider');
 
-      // Restore console.error
-      console.error = originalError;
+      errorSpy.mockRestore();
     });
 
     it('should provide access to all handler functions', () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ConversionProvider value={mockHandlers}>{children}</ConversionProvider>
-      );
+      let captured: ConversionHandlers | undefined;
 
-      const { result } = renderHook(() => useConversion(), { wrapper });
+      render(() => (
+        <ConversionProvider value={mockHandlers}>
+          {(() => {
+            captured = useConversion();
+            return <div />;
+          })()}
+        </ConversionProvider>
+      ));
 
-      // Verify all handlers are accessible
-      expect(typeof result.current.handleFileValidated).toBe('function');
-      expect(typeof result.current.handleExportClick).toBe('function');
-      expect(typeof result.current.handleCancelConversion).toBe('function');
-      expect(typeof result.current.handleRetry).toBe('function');
-      expect(typeof result.current.handleDismissError).toBe('function');
-      expect(typeof result.current.handleImportDifferent).toBe('function');
-      expect(typeof result.current.handleReportIssue).toBe('function');
+      expect(typeof captured!.handleFileValidated).toBe('function');
+      expect(typeof captured!.handleExportClick).toBe('function');
+      expect(typeof captured!.handleCancelConversion).toBe('function');
+      expect(typeof captured!.handleRetry).toBe('function');
+      expect(typeof captured!.handleDismissError).toBe('function');
+      expect(typeof captured!.handleImportDifferent).toBe('function');
+      expect(typeof captured!.handleReportIssue).toBe('function');
     });
 
     it('should support optional handleCancelConversion', () => {
@@ -103,13 +111,18 @@ describe('ConversionContext', () => {
         handleCancelConversion: undefined,
       };
 
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ConversionProvider value={handlersWithoutCancel}>{children}</ConversionProvider>
-      );
+      let captured: ConversionHandlers | undefined;
 
-      const { result } = renderHook(() => useConversion(), { wrapper });
+      render(() => (
+        <ConversionProvider value={handlersWithoutCancel}>
+          {(() => {
+            captured = useConversion();
+            return <div />;
+          })()}
+        </ConversionProvider>
+      ));
 
-      expect(result.current.handleCancelConversion).toBeUndefined();
+      expect(captured!.handleCancelConversion).toBeUndefined();
     });
   });
 });

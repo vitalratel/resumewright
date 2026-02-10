@@ -1,11 +1,12 @@
 /**
- * QuickSettingsContext Tests
- * Tests for QuickSettingsProvider and useQuickSettings hook
+ * ABOUTME: Tests for QuickSettingsContext provider and consumer.
+ * ABOUTME: Validates settings/handler provision, value access, and error on missing provider.
  */
 
-import { render, renderHook } from '@testing-library/react';
+import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import type { UserSettings } from '@/shared/types/settings';
+import type { QuickSettingsContextValue } from '../QuickSettingsContext';
 import { QuickSettingsProvider, useQuickSettings } from '../QuickSettingsContext';
 
 describe('QuickSettingsContext', () => {
@@ -35,20 +36,20 @@ describe('QuickSettingsContext', () => {
     handleCustomMarginChange: vi.fn(),
   };
 
-  const mockContextValue = {
+  const mockContextValue: QuickSettingsContextValue = {
     settings: mockSettings,
     handlers: mockHandlers,
   };
 
   describe('QuickSettingsProvider', () => {
     it('should render children', () => {
-      const { container } = render(
+      const { container } = render(() => (
         <QuickSettingsProvider value={mockContextValue}>
           <div data-testid="child">Test Child</div>
-        </QuickSettingsProvider>,
-      );
+        </QuickSettingsProvider>
+      ));
 
-      expect(container.querySelector('[data-testid="child"]')).toBeInTheDocument();
+      expect(container.querySelector('[data-testid="child"]')).toBeTruthy();
     });
 
     it('should provide context value to children', () => {
@@ -57,11 +58,11 @@ describe('QuickSettingsContext', () => {
         return <div data-testid="page-size">{settings?.defaultConfig.pageSize}</div>;
       };
 
-      const { getByTestId } = render(
+      const { getByTestId } = render(() => (
         <QuickSettingsProvider value={mockContextValue}>
           <TestComponent />
-        </QuickSettingsProvider>,
-      );
+        </QuickSettingsProvider>
+      ));
 
       expect(getByTestId('page-size')).toHaveTextContent('Letter');
     });
@@ -69,75 +70,93 @@ describe('QuickSettingsContext', () => {
 
   describe('useQuickSettings', () => {
     it('should return context value when used within provider', () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QuickSettingsProvider value={mockContextValue}>{children}</QuickSettingsProvider>
-      );
+      let captured: QuickSettingsContextValue | undefined;
 
-      const { result } = renderHook(() => useQuickSettings(), { wrapper });
+      render(() => (
+        <QuickSettingsProvider value={mockContextValue}>
+          {(() => {
+            captured = useQuickSettings();
+            return <div />;
+          })()}
+        </QuickSettingsProvider>
+      ));
 
-      expect(result.current).toEqual(mockContextValue);
-      expect(result.current.settings).toEqual(mockSettings);
-      expect(result.current.handlers).toEqual(mockHandlers);
+      expect(captured).toEqual(mockContextValue);
+      expect(captured!.settings).toEqual(mockSettings);
+      expect(captured!.handlers).toEqual(mockHandlers);
     });
 
     it('should throw error when used outside provider', () => {
-      // Test error handler at line 37
-      // Suppress console.error for this test since we expect an error
-      const originalError = console.error;
-      console.error = vi.fn();
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       expect(() => {
-        renderHook(() => useQuickSettings());
+        render(() => {
+          useQuickSettings();
+          return <div />;
+        });
       }).toThrow('useQuickSettings must be used within QuickSettingsProvider');
 
-      // Restore console.error
-      console.error = originalError;
+      errorSpy.mockRestore();
     });
 
     it('should provide access to all handler functions', () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QuickSettingsProvider value={mockContextValue}>{children}</QuickSettingsProvider>
-      );
+      let captured: QuickSettingsContextValue | undefined;
 
-      const { result } = renderHook(() => useQuickSettings(), { wrapper });
+      render(() => (
+        <QuickSettingsProvider value={mockContextValue}>
+          {(() => {
+            captured = useQuickSettings();
+            return <div />;
+          })()}
+        </QuickSettingsProvider>
+      ));
 
-      // Verify all handlers are accessible and are functions
-      expect(typeof result.current.handlers.handlePageSizeChange).toBe('function');
-      expect(typeof result.current.handlers.handleMarginsChange).toBe('function');
-      expect(typeof result.current.handlers.handleCustomMarginChange).toBe('function');
+      expect(typeof captured!.handlers.handlePageSizeChange).toBe('function');
+      expect(typeof captured!.handlers.handleMarginsChange).toBe('function');
+      expect(typeof captured!.handlers.handleCustomMarginChange).toBe('function');
     });
 
     it('should allow calling handlers', async () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QuickSettingsProvider value={mockContextValue}>{children}</QuickSettingsProvider>
-      );
+      let captured: QuickSettingsContextValue | undefined;
 
-      const { result } = renderHook(() => useQuickSettings(), { wrapper });
+      render(() => (
+        <QuickSettingsProvider value={mockContextValue}>
+          {(() => {
+            captured = useQuickSettings();
+            return <div />;
+          })()}
+        </QuickSettingsProvider>
+      ));
 
-      await result.current.handlers.handlePageSizeChange('A4');
+      await captured!.handlers.handlePageSizeChange('A4');
       expect(mockHandlers.handlePageSizeChange).toHaveBeenCalledWith('A4');
 
-      await result.current.handlers.handleMarginsChange('compact');
+      await captured!.handlers.handleMarginsChange('compact');
       expect(mockHandlers.handleMarginsChange).toHaveBeenCalledWith('compact');
 
-      await result.current.handlers.handleCustomMarginChange('top', 1.0);
+      await captured!.handlers.handleCustomMarginChange('top', 1.0);
       expect(mockHandlers.handleCustomMarginChange).toHaveBeenCalledWith('top', 1.0);
     });
 
     it('should support null settings', () => {
-      const contextWithNullSettings = {
+      const contextWithNullSettings: QuickSettingsContextValue = {
         settings: null,
         handlers: mockHandlers,
       };
 
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QuickSettingsProvider value={contextWithNullSettings}>{children}</QuickSettingsProvider>
-      );
+      let captured: QuickSettingsContextValue | undefined;
 
-      const { result } = renderHook(() => useQuickSettings(), { wrapper });
+      render(() => (
+        <QuickSettingsProvider value={contextWithNullSettings}>
+          {(() => {
+            captured = useQuickSettings();
+            return <div />;
+          })()}
+        </QuickSettingsProvider>
+      ));
 
-      expect(result.current.settings).toBeNull();
-      expect(result.current.handlers).toEqual(mockHandlers);
+      expect(captured!.settings).toBeNull();
+      expect(captured!.handlers).toEqual(mockHandlers);
     });
   });
 });

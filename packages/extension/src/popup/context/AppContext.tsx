@@ -1,36 +1,23 @@
 /**
- * App Context
- * Context provider for AppState to avoid prop drilling
- *
- * Provides app-level state and actions to all components
+ * ABOUTME: App-level context for dependency injection of shared state and callbacks.
+ * ABOUTME: Provides currentJobId and onOpenSettings to descendant components.
  */
 
-import type React from 'react';
-import { createContext, use } from 'react';
-import type { AppState } from '../hooks/integration/useAppState';
+import { createContext, type JSX, useContext } from 'solid-js';
 
 export interface AppContextValue {
-  appState: AppState;
   currentJobId: string;
-  successRef: React.RefObject<HTMLDivElement | null>;
-  errorRef: React.RefObject<HTMLDivElement | null>;
   onOpenSettings: () => void;
 }
 
-const AppContext = createContext<AppContextValue | null>(null);
+const AppContext = createContext<AppContextValue>();
 
-export function AppProvider({
-  children,
-  value,
-}: {
-  children: React.ReactNode;
-  value: AppContextValue;
-}) {
-  return <AppContext value={value}>{children}</AppContext>;
+export function AppProvider(props: { value: AppContextValue; children: JSX.Element }) {
+  return <AppContext.Provider value={props.value}>{props.children}</AppContext.Provider>;
 }
 
 export function useAppContext(): AppContextValue {
-  const context = use(AppContext);
+  const context = useContext(AppContext);
   if (!context) {
     throw new Error('useAppContext must be used within AppProvider');
   }
