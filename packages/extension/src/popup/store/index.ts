@@ -1,43 +1,53 @@
 /**
- * Unified Popup Store - Composable Slices Pattern
- * Refactor to composable stores pattern
- *
- * Single Zustand store combining multiple slices with selective persistence.
- * Only persisted slice data is saved to chrome.storage.local.
- *
- * Benefits:
- * - Single source of truth
- * - No duplicated reset/error handling logic
- * - Clear separation between persisted vs transient state
- * - Simpler component imports
+ * ABOUTME: Popup store combining persisted CV/file data with transient UI state.
+ * ABOUTME: Uses Solid createStore with Chrome storage persistence via debounced writes.
  */
 
-import {
-  boolean,
-  literal,
-  nullable,
-  number,
-  object,
-  optional,
-  safeParse,
-  string,
-  union,
-} from 'valibot';
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
-import { getLogger } from '../../shared/infrastructure/logging/instance';
-import { debounceAsync } from '../../shared/utils/debounce';
-import type { PersistedSlice } from './slices/persistedSlice';
-import { createPersistedSlice } from './slices/persistedSlice';
-import type { UISlice, UIState } from './slices/uiSlice';
-import { createUISlice } from './slices/uiSlice';
+import { createStore, reconcile } from 'solid-js/store';
+import { boolean, literal, nullable, number, object, optional, string, union } from 'valibot';
+import type { ConversionError } from '../../shared/types/models';
+import { loadPersistedState, setupPersistence } from './persistence';
 
-// Re-export UIState for external consumers
-export type { UIState };
+// --- Types ---
 
-// Import types from slices (CVMetadata comes from persistedSlice, not persistedStore)
+interface CVMetadata {
+  name?: string;
+  role?: string;
+  confidence: number;
+  estimatedPages: number;
+  layoutType: 'single-column' | 'two-column' | 'academic' | 'portfolio' | 'custom';
+  hasImages: boolean;
+}
 
-// Valibot schemas (duplicated from persistedStore for validation)
+export type UIState =
+  | 'waiting_for_import'
+  | 'file_validated'
+  | 'validation_error'
+  | 'converting'
+  | 'success'
+  | 'error';
+
+interface PopupState {
+  // Persisted fields
+  cvMetadata: CVMetadata | null;
+  importedFile: { name: string; size: number; content: string } | null;
+
+  // UI state (transient)
+  uiState: UIState;
+  validationError: string | null;
+  isValidating: boolean;
+  lastError: ConversionError | null;
+  lastFilename: string | null;
+
+  // Hydration state (transient)
+  hasHydrated: boolean;
+  hydrationError: Error | null;
+}
+
+// --- Validation schemas ---
+
+const STORAGE_KEY = 'resumewright-popup-state';
+
 const CVMetadataSchema = object({
   name: optional(string()),
   role: optional(string()),
@@ -59,137 +69,182 @@ const ImportedFileSchema = object({
   content: string(),
 });
 
-// Schema for persisted data (excludes UI state and action functions)
-const PopupStateSchema = object({
+const PersistedStateSchema = object({
   cvMetadata: nullable(CVMetadataSchema),
   importedFile: nullable(ImportedFileSchema),
 });
 
-// Combined store type
-type PopupStore = PersistedSlice &
-  UISlice & {
-    // Unified reset action
-    reset: () => void;
-  };
+// --- Initial state ---
 
-// Store debounced setter at module level so tests can cancel pending operations
-const debouncedStorageSet = debounceAsync(
-  async (data: Record<string, unknown>) => {
-    await browser.storage.local.set(data);
-  },
-  300, // 300ms debounce delay
-);
+const initialState: PopupState = {
+  cvMetadata: null,
+  importedFile: null,
+  uiState: 'waiting_for_import',
+  validationError: null,
+  isValidating: false,
+  lastError: null,
+  lastFilename: null,
+  hasHydrated: false,
+  hydrationError: null,
+};
 
-// Flush debounced writes when popup closes to prevent data loss
-// Ensure pending writes are flushed before popup closes
-if (typeof window !== 'undefined') {
-  window.addEventListener('beforeunload', () => {
-    void debouncedStorageSet.flush();
+// --- Store factory ---
+
+export function createPopupStore() {
+  const [state, setState] = createStore<PopupState>(structuredClone(initialState));
+
+  const persistence = setupPersistence({
+    state,
+    storageKey: STORAGE_KEY,
+    schema: PersistedStateSchema,
+    debounceMs: 300,
+    pick: (s) => ({
+      cvMetadata: s.cvMetadata,
+      importedFile: s.importedFile,
+    }),
   });
+
+  // --- Persisted state actions ---
+
+  function setCVDetected(metadata: CVMetadata) {
+    setState('cvMetadata', metadata);
+  }
+
+  function setNoCVDetected() {
+    setState('cvMetadata', null);
+  }
+
+  function setImportedFile(name: string, size: number, content: string) {
+    setState('importedFile', { name, size, content });
+  }
+
+  function clearImportedFile() {
+    setState('importedFile', null);
+  }
+
+  // --- UI state actions ---
+
+  function setUIState(uiState: UIState) {
+    setState('uiState', uiState);
+  }
+
+  function setValidationError(error: string) {
+    setState({
+      uiState: 'validation_error',
+      validationError: error,
+      isValidating: false,
+    });
+  }
+
+  function setValidating(isValidating: boolean) {
+    setState('isValidating', isValidating);
+  }
+
+  function clearValidationError() {
+    setState({
+      validationError: null,
+      isValidating: false,
+    });
+  }
+
+  function startConversion() {
+    setState({
+      uiState: 'converting',
+      lastError: null,
+    });
+  }
+
+  function setSuccess(filename?: string) {
+    setState({
+      uiState: 'success',
+      lastFilename: filename ?? null,
+      lastError: null,
+    });
+  }
+
+  function setError(error: ConversionError) {
+    setState({
+      uiState: 'error',
+      lastError: error,
+    });
+  }
+
+  function resetUI() {
+    setState({
+      uiState: 'waiting_for_import',
+      validationError: null,
+      isValidating: false,
+      lastError: null,
+      lastFilename: null,
+    });
+  }
+
+  // --- Hydration actions ---
+
+  function setHasHydrated(hydrated: boolean) {
+    setState('hasHydrated', hydrated);
+  }
+
+  function setHydrationError(error: Error | null) {
+    setState('hydrationError', error);
+  }
+
+  async function hydrate() {
+    try {
+      type PersistedData = {
+        cvMetadata: CVMetadata | null;
+        importedFile: { name: string; size: number; content: string } | null;
+      };
+      const persisted = await loadPersistedState<PersistedData>(STORAGE_KEY, PersistedStateSchema);
+      if (persisted) {
+        setState('cvMetadata', persisted.cvMetadata);
+        setState('importedFile', persisted.importedFile);
+      }
+    } catch (error) {
+      setHydrationError(error instanceof Error ? error : new Error(String(error)));
+    }
+    setHasHydrated(true);
+  }
+
+  // --- Unified reset ---
+
+  function reset() {
+    setState(reconcile(structuredClone(initialState)));
+  }
+
+  return {
+    state,
+
+    // Persisted state
+    setCVDetected,
+    setNoCVDetected,
+    setImportedFile,
+    clearImportedFile,
+
+    // UI state
+    setUIState,
+    setValidationError,
+    setValidating,
+    clearValidationError,
+    startConversion,
+    setSuccess,
+    setError,
+    resetUI,
+
+    // Hydration
+    setHasHydrated,
+    setHydrationError,
+    hydrate,
+
+    // Persistence control
+    savePersistence: persistence.save,
+    flushPersistence: persistence.flush,
+    cancelPersistence: persistence.cancel,
+
+    // Full reset
+    reset,
+  };
 }
 
-/**
- * Chrome Storage adapter for Zustand persist middleware
- * Uses chrome.storage.local for extension storage
- */
-const chromeStorage = createJSONStorage(() => {
-  return {
-    getItem: async (name: string): Promise<string | null> => {
-      const result = await browser.storage.local.get(name);
-      const value: unknown = result[name];
-      return value !== null && value !== undefined ? JSON.stringify(value) : null;
-    },
-    setItem: async (name: string, value: string): Promise<void> => {
-      // Use debounced setter to reduce write frequency
-      // Wrap JSON.parse for corrupted storage safety
-      try {
-        let parsed: unknown;
-        try {
-          parsed = JSON.parse(value);
-        } catch (parseError) {
-          getLogger().error('PopupStore', 'Failed to parse value for storage', parseError);
-          throw new Error('Failed to parse state for storage');
-        }
-
-        // Ensure we have the required keys (partialize should provide them)
-        const dataToValidate = {
-          cvMetadata: (parsed as Record<string, unknown>).cvMetadata ?? null,
-          importedFile: (parsed as Record<string, unknown>).importedFile ?? null,
-        };
-
-        // Validate with Valibot schema
-        const result = safeParse(PopupStateSchema, dataToValidate);
-        if (!result.success) {
-          getLogger().error('PopupStore', 'Validation failed', result.issues);
-          throw new Error('Invalid state structure for storage');
-        }
-
-        await debouncedStorageSet({ [name]: result.output });
-      } catch (error) {
-        getLogger().error('PopupStore', 'Failed to save storage', error);
-        throw error;
-      }
-    },
-    removeItem: async (name: string): Promise<void> => {
-      await browser.storage.local.remove(name);
-    },
-  };
-});
-
-/**
- * Unified Popup Store
- * Combines persisted and UI slices with selective persistence
- */
-export const usePopupStore = create<PopupStore>()(
-  persist(
-    (...a) => ({
-      // Merge slices
-      ...createPersistedSlice(...a),
-      ...createUISlice(...a),
-
-      // Unified reset action - resets both persisted and UI state
-      reset: () => {
-        const [set] = a;
-        set({
-          // Reset persisted slice
-          cvMetadata: null,
-          importedFile: null,
-
-          // Reset UI slice
-          uiState: 'waiting_for_import',
-          validationError: null,
-          isValidating: false,
-          lastError: null,
-          lastFilename: null,
-        });
-      },
-
-      // Note: resetPersisted() and resetUI() methods are available from slices
-      // for independent slice resets
-    }),
-    {
-      name: 'resumewright-popup-state',
-      storage: chromeStorage,
-      skipHydration: false,
-      // Selective persistence - only persist PersistedSlice fields
-      partialize: (state) => ({
-        cvMetadata: state.cvMetadata,
-        importedFile: state.importedFile,
-      }),
-      merge: (persistedState, currentState) => ({
-        ...currentState,
-        ...(persistedState as Partial<PopupStore>),
-      }),
-      onRehydrateStorage: () => {
-        return (state, error) => {
-          if (error !== null && error !== undefined) {
-            getLogger().error('PopupStore', 'Hydration error', error);
-            state?.setHydrationError(error instanceof Error ? error : new Error(String(error)));
-          }
-          // Always mark as hydrated (even on error, we use default state)
-          state?.setHasHydrated(true);
-        };
-      },
-    },
-  ),
-);
+// Module-level singleton for production use
+export const popupStore = createPopupStore();

@@ -9,19 +9,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { loadPersistedState, setupPersistence } from '../persistence';
 
-const mockLogger = {
-  debug: vi.fn(),
-  info: vi.fn(),
-  warn: vi.fn(),
-  error: vi.fn(),
-  setLevel: vi.fn(),
-  getLevel: vi.fn(() => 0),
-};
-
-vi.mock('../../../shared/infrastructure/logging/instance', () => ({
-  getLogger: () => mockLogger,
-}));
-
 const TestSchema = object({
   name: nullable(string()),
   count: number(),
@@ -57,17 +44,20 @@ describe('persistence', () => {
     });
 
     it('should return null for invalid stored data', async () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
       await fakeBrowser.storage.local.set({
         'test-key': { name: 123, count: 'invalid', active: 'nope' },
       });
 
       const result = await loadPersistedState('test-key', TestSchema);
       expect(result).toBeNull();
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        'Persistence',
-        'Validation failed for stored data',
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Validation failed'),
         expect.any(Array),
       );
+
+      errorSpy.mockRestore();
     });
 
     it('should return null when stored value is null', async () => {

@@ -6,7 +6,7 @@
 import { cleanup } from '@solidjs/testing-library';
 import { afterEach, beforeEach, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
-import { usePopupStore } from '@/popup/store/index';
+import { popupStore } from '@/popup/store/index';
 import { progressStore } from '@/popup/store/progressStore';
 
 /**
@@ -46,7 +46,7 @@ afterEach(() => {
   fakeBrowser.reset();
 
   // Reset stores to initial state
-  usePopupStore.getState().reset(); // TODO: Phase 1 — convert to Solid store
+  popupStore.reset();
   progressStore.reset();
 
   // Clear all timers (setTimeout, setInterval, etc.)
