@@ -39,7 +39,7 @@ anyhow = "1.0"
 
 
 # Regular expressions (unicode disabled for WASM size - saves ~200KB)
-regex = { version = "1.10", default-features = false, features = ["std", "perf"] }
+regex = { version = "1.12", default-features = false, features = ["std", "perf"] }
 once_cell = "1.19"
 
 # PDF generation
@@ -52,7 +52,7 @@ wasm-bindgen-test = "0.3.56"
 criterion = { version = "0.8", features = ["html_reports"] }
 
 # Property-based testing
-proptest = "1.9"
+proptest = "1.10"
 
 # Internal crates
 regex-utils = { path = "packages/rust-core/regex-utils" }
