@@ -38,6 +38,13 @@ export default defineConfig({
     testTimeout: 300000,
     teardownTimeout: 5000,
 
+    // Dependencies that need Vite transform (e.g. JSX compilation)
+    server: {
+      deps: {
+        inline: ['solid-icons'],
+      },
+    },
+
     coverage: {
       provider: 'v8',
       reporter: ['json', 'json-summary'],
