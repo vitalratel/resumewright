@@ -7,7 +7,7 @@ import { cleanup } from '@solidjs/testing-library';
 import { afterEach, beforeEach, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { usePopupStore } from '@/popup/store/index';
-import { useProgressStore } from '@/popup/store/progressStore';
+import { progressStore } from '@/popup/store/progressStore';
 
 /**
  * Mock IndexedDB for custom font storage tests
@@ -45,10 +45,9 @@ afterEach(() => {
   // Reset fakeBrowser state to prevent test pollution
   fakeBrowser.reset();
 
-  // Reset all Zustand stores to initial state
-  // TODO: Phase 1 — replace with Solid store resets
-  usePopupStore.getState().reset();
-  useProgressStore.getState().reset();
+  // Reset stores to initial state
+  usePopupStore.getState().reset(); // TODO: Phase 1 — convert to Solid store
+  progressStore.reset();
 
   // Clear all timers (setTimeout, setInterval, etc.)
   vi.clearAllTimers();

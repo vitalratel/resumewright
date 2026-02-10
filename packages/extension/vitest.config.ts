@@ -9,7 +9,7 @@
 
 import type { Plugin } from 'vite';
 import path from 'node:path';
-import react from '@vitejs/plugin-react';
+import solid from 'vite-plugin-solid';
 import wasm from 'vite-plugin-wasm';
 import { defineConfig } from 'vitest/config';
 import { WxtVitest } from 'wxt/testing/vitest-plugin';
@@ -17,7 +17,7 @@ import { WxtVitest } from 'wxt/testing/vitest-plugin';
 export default defineConfig({
   plugins: [
     WxtVitest(),
-    react(),
+    solid(),
     wasm(),
   ] as Plugin[],
   test: {

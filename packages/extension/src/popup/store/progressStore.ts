@@ -1,172 +1,108 @@
 /**
- * Progress Store
- *
- * Manages conversion progress state with ETA calculation, tracking active conversions,
- * start times, and progress histories for velocity-based time estimates.
+ * ABOUTME: Progress store tracking conversion progress, ETA calculations, and multi-job support.
+ * ABOUTME: Uses Solid's createStore for fine-grained reactive state management.
  */
 
-import { create } from 'zustand';
+import { createStore, reconcile } from 'solid-js/store';
 import type { ConversionProgress } from '../../shared/types/models';
 import { calculateETA } from '../../shared/utils/progressCalculations';
 
 interface ProgressState {
-  /** Active conversions record (jobId → progress) */
   activeConversions: Record<string, ConversionProgress>;
-
-  /** Start times for ETA calculation (jobId → timestamp) */
   startTimes: Record<string, number>;
-
-  /** Progress histories for velocity calculation (jobId → percentages[]) */
   progressHistories: Record<string, number[]>;
-
-  /** Actions */
-  startConversion: (jobId: string) => void;
-  updateProgress: (jobId: string, progress: ConversionProgress) => void;
-  completeConversion: (jobId: string) => void;
-  clearConversion: (jobId: string) => void;
-  reset: () => void;
-
-  /** Selectors */
-  getProgress: (jobId: string) => ConversionProgress | undefined;
-  getETA: (jobId: string) => number | undefined;
-  getActiveJobIds: () => string[];
 }
 
-export const useProgressStore = create<ProgressState>((set, get) => ({
+const initialState: ProgressState = {
   activeConversions: {},
   startTimes: {},
   progressHistories: {},
+};
 
-  startConversion: (jobId: string) => {
+export function createProgressStore() {
+  const [state, setState] = createStore<ProgressState>(structuredClone(initialState));
+
+  function startConversion(jobId: string) {
     const now = Date.now();
-    set((state) => ({
-      activeConversions: {
-        ...state.activeConversions,
-        [jobId]: {
-          stage: 'queued',
-          percentage: 0,
-          currentOperation: 'Starting conversion...',
-        },
-      },
-      startTimes: {
-        ...state.startTimes,
-        [jobId]: now,
-      },
-      progressHistories: {
-        ...state.progressHistories,
-        [jobId]: [0],
-      },
-    }));
-  },
-
-  updateProgress: (jobId: string, progress: ConversionProgress) => {
-    set((state) => {
-      const existing = state.activeConversions[jobId];
-      const startTime = state.startTimes[jobId];
-      const history = state.progressHistories[jobId] ?? [];
-
-      // Skip update if values haven't changed (prevents unnecessary re-renders)
-      // Compare all progress fields to ensure we only create new object when actually needed
-      if (existing != null) {
-        const isSameStage = existing.stage === progress.stage;
-        const isSamePercentage = existing.percentage === progress.percentage;
-        const isSameOperation = existing.currentOperation === progress.currentOperation;
-        const isSamePagesProcessed = existing.pagesProcessed === progress.pagesProcessed;
-        const isSameTotalPages = existing.totalPages === progress.totalPages;
-
-        // If all values identical, return existing state (same reference)
-        if (
-          isSameStage &&
-          isSamePercentage &&
-          isSameOperation &&
-          isSamePagesProcessed &&
-          isSameTotalPages
-        ) {
-          return state; // No change - prevents component re-render
-        }
-      }
-
-      // Calculate ETA for new progress
-      const updatedProgress = { ...progress };
-
-      if (startTime && progress.percentage > 0 && progress.percentage < 100) {
-        updatedProgress.estimatedTimeRemaining = calculateETA(
-          progress.percentage,
-          startTime,
-          history,
-        );
-      }
-
-      return {
-        activeConversions: {
-          ...state.activeConversions,
-          [jobId]: updatedProgress,
-        },
-        progressHistories: {
-          ...state.progressHistories,
-          [jobId]: [...history, progress.percentage].slice(-5),
-        },
-      };
+    setState('activeConversions', jobId, {
+      stage: 'queued',
+      percentage: 0,
+      currentOperation: 'Starting conversion...',
     });
-  },
+    setState('startTimes', jobId, now);
+    setState('progressHistories', jobId, [0]);
+  }
 
-  completeConversion: (jobId: string) => {
-    set((state) => {
-      const existing = state.activeConversions[jobId];
+  function updateProgress(jobId: string, progress: ConversionProgress) {
+    const startTime = state.startTimes[jobId];
+    const history = state.progressHistories[jobId] ?? [];
 
-      if (existing === null || existing === undefined) {
-        return state;
-      }
+    const updatedProgress = { ...progress };
 
-      return {
-        activeConversions: {
-          ...state.activeConversions,
-          [jobId]: {
-            ...existing,
-            stage: 'completed',
-            percentage: 100,
-            currentOperation: 'Conversion complete',
-            estimatedTimeRemaining: undefined,
-          },
-        },
-      };
+    if (startTime && progress.percentage > 0 && progress.percentage < 100) {
+      updatedProgress.estimatedTimeRemaining = calculateETA(
+        progress.percentage,
+        startTime,
+        history,
+      );
+    }
+
+    setState('activeConversions', jobId, updatedProgress);
+    setState('progressHistories', jobId, [...history, progress.percentage].slice(-5));
+  }
+
+  function completeConversion(jobId: string) {
+    const existing = state.activeConversions[jobId];
+    if (!existing) return;
+
+    setState('activeConversions', jobId, {
+      ...existing,
+      stage: 'completed' as const,
+      percentage: 100,
+      currentOperation: 'Conversion complete',
+      estimatedTimeRemaining: undefined,
     });
-  },
+  }
 
-  clearConversion: (jobId: string) => {
-    set((state) => {
-      const { [jobId]: _removedConversion, ...restConversions } = state.activeConversions;
+  function clearConversion(jobId: string) {
+    // Replace entire records without the cleared job
+    const { [jobId]: _, ...restConversions } = state.activeConversions;
+    const { [jobId]: __, ...restStartTimes } = state.startTimes;
+    const { [jobId]: ___, ...restHistories } = state.progressHistories;
 
-      const { [jobId]: _removedStartTime, ...restStartTimes } = state.startTimes;
+    setState('activeConversions', reconcile(restConversions));
+    setState('startTimes', reconcile(restStartTimes));
+    setState('progressHistories', reconcile(restHistories));
+  }
 
-      const { [jobId]: _removedHistory, ...restHistories } = state.progressHistories;
+  function getProgress(jobId: string): ConversionProgress | undefined {
+    return state.activeConversions[jobId];
+  }
 
-      return {
-        activeConversions: restConversions,
-        startTimes: restStartTimes,
-        progressHistories: restHistories,
-      };
-    });
-  },
+  function getETA(jobId: string): number | undefined {
+    return state.activeConversions[jobId]?.estimatedTimeRemaining;
+  }
 
-  getProgress: (jobId: string) => {
-    return get().activeConversions[jobId];
-  },
+  function getActiveJobIds(): string[] {
+    return Object.keys(state.activeConversions);
+  }
 
-  getETA: (jobId: string) => {
-    const progress = get().activeConversions[jobId];
-    return progress?.estimatedTimeRemaining;
-  },
+  function reset() {
+    setState(reconcile(structuredClone(initialState)));
+  }
 
-  getActiveJobIds: () => {
-    return Object.keys(get().activeConversions);
-  },
+  return {
+    state,
+    startConversion,
+    updateProgress,
+    completeConversion,
+    clearConversion,
+    getProgress,
+    getETA,
+    getActiveJobIds,
+    reset,
+  };
+}
 
-  reset: () => {
-    set({
-      activeConversions: {},
-      startTimes: {},
-      progressHistories: {},
-    });
-  },
-}));
+// Module-level singleton for production use
+export const progressStore = createProgressStore();
