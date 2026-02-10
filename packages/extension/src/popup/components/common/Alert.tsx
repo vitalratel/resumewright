@@ -1,8 +1,8 @@
 // ABOUTME: Standardized alert/message display with semantic variants.
 // ABOUTME: WCAG 2.1 AA compliant with proper ARIA roles and live regions.
 
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import type { ReactNode } from 'react';
+import { HiOutlineXMark } from 'solid-icons/hi';
+import { type JSX, Show } from 'solid-js';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 
 type AlertVariant = 'error' | 'success' | 'info' | 'warning';
@@ -11,9 +11,9 @@ interface AlertProps {
   /** Visual and semantic variant */
   variant: AlertVariant;
   /** Alert content */
-  children: ReactNode;
+  children: JSX.Element;
   /** Additional CSS classes */
-  className?: string;
+  class?: string;
   /**
    * Whether this is an error (assertive) or status (polite) announcement.
    * Defaults to assertive for errors, polite for others.
@@ -36,31 +36,12 @@ const variantClasses: Record<AlertVariant, string> = {
   warning: 'bg-warning/10 border-warning/20 text-warning-text',
 };
 
-/**
- * Alert component for displaying messages with semantic meaning
- *
- * @example
- * // Error alert (assertive live region)
- * <Alert variant="error">
- *   <p>Failed to process file</p>
- * </Alert>
- *
- * @example
- * // Success alert (polite live region)
- * <Alert variant="success">
- *   <p>File uploaded successfully</p>
- * </Alert>
- */
-export function Alert({
-  variant,
-  children,
-  className = '',
-  assertive = variant === 'error',
-  dismissible = false,
-  onDismiss,
-}: AlertProps) {
+export function Alert(props: AlertProps) {
+  const assertive = () => props.assertive ?? props.variant === 'error';
+  const dismissible = () => props.dismissible ?? false;
+
   // Warn if dismissible is true but onDismiss is not provided
-  if (import.meta.env.MODE !== 'production' && dismissible && !onDismiss) {
+  if (import.meta.env.MODE !== 'production' && dismissible() && !props.onDismiss) {
     getLogger().warn(
       'Alert',
       'dismissible=true but onDismiss is not provided. Button will not render.',
@@ -69,23 +50,22 @@ export function Alert({
 
   return (
     <div
-      role={assertive ? 'alert' : 'status'}
-      aria-live={assertive ? 'assertive' : 'polite'}
-      className={`p-3 border rounded-md text-sm ${variantClasses[variant]} ${dismissible ? 'flex items-start justify-between gap-3' : ''} ${className}`}
+      role={assertive() ? 'alert' : 'status'}
+      aria-live={assertive() ? 'assertive' : 'polite'}
+      class={`p-3 border rounded-md text-sm ${variantClasses[props.variant]} ${dismissible() ? 'flex items-start justify-between gap-3' : ''} ${props.class ?? ''}`}
     >
-      <div className={dismissible ? 'flex-1' : ''}>{children}</div>
+      <div class={dismissible() ? 'flex-1' : ''}>{props.children}</div>
 
-      {/* Dismissible button */}
-      {dismissible && onDismiss && (
+      <Show when={dismissible() && props.onDismiss}>
         <button
-          onClick={onDismiss}
-          className="shrink-0 hover:bg-muted rounded-md p-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset"
+          onClick={props.onDismiss}
+          class="shrink-0 hover:bg-muted rounded-md p-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset"
           aria-label="Dismiss alert"
           type="button"
         >
-          <XMarkIcon className="w-5 h-5" aria-hidden="true" />
+          <HiOutlineXMark class="w-5 h-5" aria-hidden="true" />
         </button>
-      )}
+      </Show>
     </div>
   );
 }
