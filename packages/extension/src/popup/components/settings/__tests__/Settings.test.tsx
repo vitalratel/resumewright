@@ -1,7 +1,7 @@
 // ABOUTME: Tests for Settings component with tabbed navigation.
 // ABOUTME: Tests rendering, page size, margins, reset, and keyboard navigation.
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@solidjs/testing-library';
 import { ResultAsync } from 'neverthrow';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
@@ -45,7 +45,7 @@ describe('Settings', () => {
 
   describe('Rendering', () => {
     it('renders with default values', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -61,13 +61,13 @@ describe('Settings', () => {
     });
 
     it('shows loading state while fetching settings', () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       expect(screen.getByText('Loading settings...')).toBeInTheDocument();
     });
 
     it('displays margin controls for all sides', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -80,7 +80,7 @@ describe('Settings', () => {
     });
 
     it('displays current margin values', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -94,7 +94,7 @@ describe('Settings', () => {
 
   describe('Page Size Selection', () => {
     it('highlights Letter by default', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -105,7 +105,7 @@ describe('Settings', () => {
     });
 
     it('updates selection when A4 is clicked', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -129,7 +129,7 @@ describe('Settings', () => {
       };
       vi.mocked(loadSettings).mockResolvedValue(a4Settings);
 
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         const a4Label = screen.getByText('A4 (210mm x 297mm)').closest('label');
@@ -140,7 +140,7 @@ describe('Settings', () => {
 
   describe('Margin Controls', () => {
     it('updates margin value when slider is moved', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -150,7 +150,7 @@ describe('Settings', () => {
       const topSlider = sliders.find((s) => s.getAttribute('aria-label')?.includes('top'));
       expect(topSlider).toBeDefined();
       if (!topSlider) throw new Error('Top slider not found');
-      fireEvent.change(topSlider, { target: { value: '0.75' } });
+      fireEvent.input(topSlider, { target: { value: '0.75' } });
 
       await waitFor(() => {
         const displays = screen.getAllByText('0.75"');
@@ -159,7 +159,7 @@ describe('Settings', () => {
     });
 
     it('displays updated margin values in real-time', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -170,7 +170,7 @@ describe('Settings', () => {
         .parentElement?.querySelector('input[type="range"]');
       expect(leftSlider).toBeDefined();
       if (!leftSlider) throw new Error('Left slider not found');
-      fireEvent.change(leftSlider, { target: { value: '1.0' } });
+      fireEvent.input(leftSlider, { target: { value: '1.0' } });
 
       await waitFor(() => {
         expect(screen.getByText('1.00"')).toBeInTheDocument();
@@ -180,7 +180,7 @@ describe('Settings', () => {
 
   describe('Reset to Defaults', () => {
     it('shows confirmation modal when Reset button is clicked', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -196,7 +196,7 @@ describe('Settings', () => {
     });
 
     it('does not reset if user cancels confirmation', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -217,7 +217,7 @@ describe('Settings', () => {
     });
 
     it('resets settings if user confirms', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -240,7 +240,7 @@ describe('Settings', () => {
     });
 
     it('shows success message after reset', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -276,7 +276,7 @@ describe('Settings', () => {
       // After reset, load Letter settings
       vi.mocked(loadSettings).mockResolvedValueOnce(DEFAULT_USER_SETTINGS);
 
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         // Page size options are <label> elements, not buttons
@@ -307,7 +307,7 @@ describe('Settings', () => {
 
   describe('Navigation', () => {
     it('calls onBack when back button is clicked', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -322,7 +322,7 @@ describe('Settings', () => {
 
   describe('Keyboard Navigation', () => {
     it('supports keyboard navigation through interactive elements', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();

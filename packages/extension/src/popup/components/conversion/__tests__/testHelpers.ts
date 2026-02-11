@@ -6,7 +6,7 @@
  */
 
 import type { ConversionProgress, ConversionStatus } from '@/shared/types/models';
-import { useProgressStore } from '../../../store/progressStore';
+import { progressStore as solidProgressStore } from '../../../store/progressStore';
 
 /**
  * Factory function to create ConversionProgress objects with defaults
@@ -56,7 +56,7 @@ export const progressFixtures = {
 
 /**
  * Concise helper API for progress store operations
- * Reduces verbosity of useProgressStore.getState() calls
+ * Reduces verbosity of direct progressStore singleton calls
  *
  * @example
  * progressStore.start(jobId);
@@ -64,11 +64,11 @@ export const progressFixtures = {
  * progressStore.reset();
  */
 export const progressStore = {
-  start: (jobId: string) => useProgressStore.getState().startConversion(jobId),
+  start: (jobId: string) => solidProgressStore.startConversion(jobId),
   update: (jobId: string, progress: ConversionProgress) =>
-    useProgressStore.getState().updateProgress(jobId, progress),
-  complete: (jobId: string) => useProgressStore.getState().completeConversion(jobId),
-  clear: (jobId: string) => useProgressStore.getState().clearConversion(jobId),
-  reset: () => useProgressStore.getState().reset(),
-  get: (jobId: string) => useProgressStore.getState().getProgress(jobId),
+    solidProgressStore.updateProgress(jobId, progress),
+  complete: (jobId: string) => solidProgressStore.completeConversion(jobId),
+  clear: (jobId: string) => solidProgressStore.clearConversion(jobId),
+  reset: () => solidProgressStore.reset(),
+  get: (jobId: string) => solidProgressStore.getProgress(jobId),
 };

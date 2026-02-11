@@ -1,7 +1,7 @@
 // ABOUTME: Tests for SettingsView component with tabbed navigation.
 // ABOUTME: Validates Page and General tab content, accessibility, and interactions.
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@solidjs/testing-library';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
 import { SettingsView } from '../SettingsView';
@@ -45,7 +45,7 @@ describe('SettingsView', () => {
 
   describe('Rendering', () => {
     it('renders settings UI with all elements', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       expect(screen.getByText('Settings')).toBeInTheDocument();
       expect(screen.getByLabelText('Back to main screen')).toBeInTheDocument();
@@ -55,14 +55,14 @@ describe('SettingsView', () => {
     });
 
     it('shows loading state when settings is null', () => {
-      render(<SettingsView {...defaultProps} settings={null} />);
+      render(() => <SettingsView {...defaultProps} settings={null} />);
 
       expect(screen.getByText('Loading settings...')).toBeInTheDocument();
       expect(screen.queryByText('Settings')).not.toBeInTheDocument();
     });
 
     it('displays margin controls for all sides', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       expect(screen.getByText('top')).toBeInTheDocument();
       expect(screen.getByText('bottom')).toBeInTheDocument();
@@ -71,7 +71,7 @@ describe('SettingsView', () => {
     });
 
     it('displays current margin values', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       // All margins set to 1.0"
       const marginDisplays = screen.getAllByText('1.00"');
@@ -79,13 +79,13 @@ describe('SettingsView', () => {
     });
 
     it('shows auto-save status indicator', () => {
-      render(<SettingsView {...defaultProps} showSuccess={true} />);
+      render(() => <SettingsView {...defaultProps} showSuccess={true} />);
 
       expect(screen.getByText('Settings saved!')).toBeInTheDocument();
     });
 
     it('renders tab navigation', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       expect(screen.getByRole('tablist')).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: 'Page' })).toBeInTheDocument();
@@ -93,7 +93,7 @@ describe('SettingsView', () => {
     });
 
     it('defaults to Page tab selected', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       const pageTab = screen.getByRole('tab', { name: 'Page' });
       expect(pageTab).toHaveAttribute('aria-selected', 'true');
@@ -102,14 +102,14 @@ describe('SettingsView', () => {
 
   describe('Dirty Indicator Visibility', () => {
     it('hides dirty indicator when isDirty is false', () => {
-      render(<SettingsView {...defaultProps} isDirty={false} />);
+      render(() => <SettingsView {...defaultProps} isDirty={false} />);
 
       expect(screen.queryByText('Unsaved changes')).not.toBeInTheDocument();
       expect(screen.queryByLabelText('Unsaved changes')).not.toBeInTheDocument();
     });
 
     it('shows dirty indicator dot when isDirty is true', () => {
-      render(<SettingsView {...defaultProps} isDirty={true} />);
+      render(() => <SettingsView {...defaultProps} isDirty={true} />);
 
       // The dot has title attribute and sr-only text for accessibility
       const backButton = screen.getByLabelText('Back to main screen');
@@ -118,7 +118,7 @@ describe('SettingsView', () => {
     });
 
     it('shows dirty indicator sr-only text when isDirty is true', () => {
-      render(<SettingsView {...defaultProps} isDirty={true} />);
+      render(() => <SettingsView {...defaultProps} isDirty={true} />);
 
       // sr-only text is combined in one span
       expect(
@@ -127,13 +127,13 @@ describe('SettingsView', () => {
     });
 
     it('shows dirty indicator banner when isDirty is true and not saving', () => {
-      render(<SettingsView {...defaultProps} isDirty={true} saving={false} />);
+      render(() => <SettingsView {...defaultProps} isDirty={true} saving={false} />);
 
       expect(screen.getByText('Unsaved changes (saving automatically...)')).toBeInTheDocument();
     });
 
     it('hides dirty banner when saving', () => {
-      render(<SettingsView {...defaultProps} isDirty={true} saving={true} />);
+      render(() => <SettingsView {...defaultProps} isDirty={true} saving={true} />);
 
       expect(
         screen.queryByText('Unsaved changes (saving automatically...)'),
@@ -141,7 +141,7 @@ describe('SettingsView', () => {
     });
 
     it('shows saving indicator when saving is true', () => {
-      render(<SettingsView {...defaultProps} saving={true} />);
+      render(() => <SettingsView {...defaultProps} saving={true} />);
 
       expect(screen.getByText('Saving changes...')).toBeInTheDocument();
     });
@@ -149,7 +149,7 @@ describe('SettingsView', () => {
 
   describe('Page Size Selection', () => {
     it('highlights selected page size', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       // Native radio inputs get their accessible name from the wrapping label
       const letterRadio = screen.getByRole('radio', { name: /Letter/ });
@@ -160,7 +160,7 @@ describe('SettingsView', () => {
     });
 
     it('calls onPageSizeChange when selecting different size', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       const a4Radio = screen.getByRole('radio', { name: /A4/ });
       fireEvent.click(a4Radio);
@@ -169,7 +169,7 @@ describe('SettingsView', () => {
     });
 
     it('calls onPageSizeChange for each page size option', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       // Note: Letter is already selected, so clicking it won't fire onChange
       // Test A4 and Legal which will trigger onChange
@@ -188,7 +188,7 @@ describe('SettingsView', () => {
     });
 
     it('displays all page size options with dimensions', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       expect(screen.getByText('Letter (8.5" x 11")')).toBeInTheDocument();
       expect(screen.getByText('A4 (210mm x 297mm)')).toBeInTheDocument();
@@ -198,7 +198,7 @@ describe('SettingsView', () => {
 
   describe('Margin Controls', () => {
     it('displays margin sliders for all sides', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       expect(screen.getByText('top')).toBeInTheDocument();
       expect(screen.getByText('bottom')).toBeInTheDocument();
@@ -207,7 +207,7 @@ describe('SettingsView', () => {
     });
 
     it('calls onMarginChange when adjusting margins', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       // RangeSlider uses buttons for increment/decrement, not direct input
       const increaseButton = screen.getByLabelText(/Increase top margin/i);
@@ -218,13 +218,13 @@ describe('SettingsView', () => {
     });
 
     it('displays margin range limits in help text', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       expect(screen.getByText(/In inches \(0 - 1\.5\)/i)).toBeInTheDocument();
     });
 
     it('shows margin preview', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       // MarginPreview component should be rendered
       // Check for its presence by looking for the component structure
@@ -235,7 +235,7 @@ describe('SettingsView', () => {
 
   describe('User Interactions', () => {
     it('calls onBack when back button clicked', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       const backButton = screen.getByLabelText('Back to main screen');
       fireEvent.click(backButton);
@@ -244,7 +244,7 @@ describe('SettingsView', () => {
     });
 
     it('back button is keyboard accessible', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       const backButton = screen.getByLabelText('Back to main screen');
       expect(backButton.tagName).toBe('BUTTON');
@@ -253,13 +253,15 @@ describe('SettingsView', () => {
 
   describe('Error Handling', () => {
     it('displays general error message when provided', () => {
-      render(<SettingsView {...defaultProps} errors={{ general: 'Failed to save settings' }} />);
+      render(() => (
+        <SettingsView {...defaultProps} errors={{ general: 'Failed to save settings' }} />
+      ));
 
       expect(screen.getByText('Failed to save settings')).toBeInTheDocument();
     });
 
     it('hides error message when errors object is empty', () => {
-      render(<SettingsView {...defaultProps} errors={{}} />);
+      render(() => <SettingsView {...defaultProps} errors={{}} />);
 
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
@@ -267,7 +269,7 @@ describe('SettingsView', () => {
 
   describe('Loading States', () => {
     it('shows skeleton when settings is null', () => {
-      render(<SettingsView {...defaultProps} settings={null} />);
+      render(() => <SettingsView {...defaultProps} settings={null} />);
 
       expect(screen.getByText('Loading settings...')).toBeInTheDocument();
       const container = screen.getByText('Loading settings...').closest('div');
@@ -276,7 +278,7 @@ describe('SettingsView', () => {
     });
 
     it('hides main content when loading', () => {
-      render(<SettingsView {...defaultProps} settings={null} />);
+      render(() => <SettingsView {...defaultProps} settings={null} />);
 
       expect(screen.queryByText('Settings')).not.toBeInTheDocument();
       expect(screen.queryByText('Page Size')).not.toBeInTheDocument();
@@ -285,7 +287,7 @@ describe('SettingsView', () => {
 
   describe('Accessibility', () => {
     it('has proper ARIA labels for page size radio group', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       // Radio inputs get accessible name from their wrapping label text
       const letterRadio = screen.getByRole('radio', { name: /Letter/ });
@@ -293,7 +295,7 @@ describe('SettingsView', () => {
     });
 
     it('has proper ARIA labels for margin controls group', () => {
-      render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       // Margins fieldset uses legend for accessible name and has help text via aria-describedby
       const marginsFieldset = screen.getByRole('group', { name: /margins/i });
@@ -305,7 +307,7 @@ describe('SettingsView', () => {
     });
 
     it('has screen reader text for dirty indicator', () => {
-      render(<SettingsView {...defaultProps} isDirty={true} />);
+      render(() => <SettingsView {...defaultProps} isDirty={true} />);
 
       // sr-only text is combined: "Unsaved changes - Your changes have not been saved yet"
       const srText = screen.getByText('Unsaved changes - Your changes have not been saved yet');
@@ -314,7 +316,7 @@ describe('SettingsView', () => {
     });
 
     it('dirty indicator banner has aria-live="polite"', () => {
-      render(<SettingsView {...defaultProps} isDirty={true} saving={false} />);
+      render(() => <SettingsView {...defaultProps} isDirty={true} saving={false} />);
 
       // <output> element has implicit role="status" and we add aria-live="polite"
       const banner = screen
@@ -327,21 +329,24 @@ describe('SettingsView', () => {
 
   describe('Props Validation', () => {
     it('renders with different page sizes', () => {
-      const { rerender } = render(<SettingsView {...defaultProps} />);
+      render(() => <SettingsView {...defaultProps} />);
 
       // Radio inputs get accessible name from label text
       const letterRadio = screen.getByRole('radio', { name: /Letter/ });
       expect(letterRadio).toBeChecked();
 
-      rerender(
+      // In Solid, we can't rerender - unmount and render again with different props
+      cleanup();
+
+      render(() => (
         <SettingsView
           {...defaultProps}
           settings={{
             ...mockSettings,
             defaultConfig: { ...mockSettings.defaultConfig, pageSize: 'A4' },
           }}
-        />,
-      );
+        />
+      ));
 
       const a4Radio = screen.getByRole('radio', { name: /A4/ });
       expect(a4Radio).toBeChecked();
@@ -357,7 +362,7 @@ describe('SettingsView', () => {
         },
       };
 
-      render(<SettingsView {...defaultProps} settings={customMargins} />);
+      render(() => <SettingsView {...defaultProps} settings={customMargins} />);
 
       // Check that different margin values are displayed (multiple elements may have same text)
       const halfInchMargins = screen.getAllByText('0.50"');
