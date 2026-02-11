@@ -1,15 +1,7 @@
-/**
- * Unsaved Changes Protection Tests
- * Unsaved Changes Protection
- *
- * Tests for Settings component with unsaved changes:
- * - Dirty state detection
- * - Visual indicators
- * - Warning modal
- * - Save/Discard/Cancel actions
- */
+// ABOUTME: Tests for Settings unsaved changes protection with auto-save flow.
+// ABOUTME: Covers dirty state detection, visual indicators, and navigation protection.
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@solidjs/testing-library';
 import { ResultAsync } from 'neverthrow';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SettingsError } from '@/shared/errors/result';
@@ -68,7 +60,7 @@ describe('Unsaved Changes Protection', () => {
 
   describe('Dirty State Detection', () => {
     it('should start with no unsaved changes', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.queryByText(/unsaved/i)).not.toBeInTheDocument();
@@ -76,7 +68,7 @@ describe('Unsaved Changes Protection', () => {
     });
 
     it('should detect changes when page size is modified', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -93,7 +85,7 @@ describe('Unsaved Changes Protection', () => {
     });
 
     it('should detect changes when margins are modified', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -105,7 +97,7 @@ describe('Unsaved Changes Protection', () => {
         s.getAttribute('aria-label')?.toLowerCase().includes('top'),
       );
       if (!topMarginSlider) throw new Error('Top margin slider not found');
-      fireEvent.change(topMarginSlider, { target: { value: '0.75' } });
+      fireEvent.input(topMarginSlider, { target: { value: '0.75' } });
 
       // Should trigger auto-save (verifies change was detected)
       await waitFor(() => {
@@ -114,7 +106,7 @@ describe('Unsaved Changes Protection', () => {
     });
 
     it('should clear dirty state after auto-save completes ', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -138,7 +130,7 @@ describe('Unsaved Changes Protection', () => {
 
   describe('Visual Indicators', () => {
     it('should show success feedback after auto-save completes', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -155,7 +147,7 @@ describe('Unsaved Changes Protection', () => {
     });
 
     it('should show "Unsaved changes" banner when dirty', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -172,7 +164,7 @@ describe('Unsaved Changes Protection', () => {
     });
 
     it('should trigger auto-save after changes ', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -192,7 +184,7 @@ describe('Unsaved Changes Protection', () => {
     });
 
     it('should show success message after auto-save completes ', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -218,7 +210,7 @@ describe('Unsaved Changes Protection', () => {
 
   describe('Navigation Protection (Auto-save on navigation)', () => {
     it('should navigate directly when no changes', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -233,7 +225,7 @@ describe('Unsaved Changes Protection', () => {
     });
 
     it('should auto-save and navigate when back is clicked with unsaved changes ', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -269,7 +261,7 @@ describe('Unsaved Changes Protection', () => {
 
   describe('Integration: Auto-Save Flow ', () => {
     it('should auto-save immediately when navigating with unsaved changes', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -294,7 +286,7 @@ describe('Unsaved Changes Protection', () => {
       // Mock save to fail
       vi.mocked(saveSettings).mockReturnValueOnce(errSettingsResult('Save failed'));
 
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();
@@ -318,7 +310,7 @@ describe('Unsaved Changes Protection', () => {
     });
 
     it('should navigate immediately when no unsaved changes', async () => {
-      render(<Settings onBack={mockOnBack} />);
+      render(() => <Settings onBack={mockOnBack} />);
 
       await waitFor(() => {
         expect(screen.getByText('Settings')).toBeInTheDocument();

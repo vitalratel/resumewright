@@ -1,48 +1,21 @@
-/**
- * AppRouter Component
- * Extracted from App.tsx to follow Single Responsibility Principle
- *
- * Handles view routing and modal management:
- * - Routes between main, settings, and help views
- * - Manages keyboard shortcuts modal state and rendering
- * - Applies focus trap to settings view for accessibility
- * - Provides consistent layout structure (container + header/footer for main view)
- *
- * This component is responsible for all view transitions and modal displays,
- * keeping routing logic separate from app orchestration and state management.
- *
- * Views:
- * - main: Main app flow with header, MainContent, footer
- * - settings: Settings page with focus trap
- * - help: Help page
- *
- * Modals (overlays on main view):
- * - Keyboard shortcuts modal: Shows available shortcuts
- *
- * @see {@link Settings} for settings view
- * @see {@link Help} for help view
- * @see {@link MainContent} for main view content
- * @see {@link KeyboardShortcutsModal} for shortcuts modal
- */
+// ABOUTME: View router for popup extension with lazy-loaded settings, help, and shortcuts modal.
+// ABOUTME: Provides context providers for main view and manages focus trap for settings.
 
-import type React from 'react';
-import { lazy, Suspense } from 'react';
+import { lazy, Match, Show, Suspense, Switch } from 'solid-js';
 import type { UserSettings } from '@/shared/types/settings';
 import { DEFAULT_JOB_ID, getContainerClass, getContentWrapperClass } from '../constants/app';
 import { AppProvider } from '../context/AppContext';
+import type { ConversionHandlers } from '../context/ConversionContext';
 import { ConversionProvider } from '../context/ConversionContext';
 import { QuickSettingsProvider } from '../context/QuickSettingsContext';
-import type { ConversionHandlers } from '../hooks/conversion/useConversionHandlers';
-import type { AppState } from '../hooks/integration/useAppState';
-import { useFocusTrap } from '../hooks/ui/useFocusManagement';
-import type { ShortcutConfig } from '../hooks/ui/useKeyboardShortcuts';
+import { createFocusTrap } from '../reactivity/focus';
+import type { ShortcutConfig } from '../reactivity/keyboard';
 import { ErrorBoundary } from './ErrorBoundary';
 import { AppFooter } from './layout/AppFooter';
 import { AppHeader } from './layout/AppHeader';
 import { MainContent } from './layout/MainContent';
 
 // Lazy load heavy components to reduce initial bundle size
-// Code splitting for Settings, Help, and modals (~150KB reduction)
 const Settings = lazy(async () =>
   import('./settings/Settings').then((m) => ({ default: m.Settings })),
 );
@@ -52,34 +25,14 @@ const KeyboardShortcutsModal = lazy(async () =>
 );
 
 interface AppRouterProps {
-  /** Current view to display */
   currentView: 'main' | 'settings' | 'help';
-
-  /** Callback when settings view should close */
   onCloseSettings: () => Promise<void>;
-
-  /** Callback when help view should close */
   onCloseHelp: () => void;
-
-  /** Callback to open settings view */
   onOpenSettings: () => void;
-
-  /** Callback to show help view */
   onShowHelp: () => void;
-
-  /** Whether shortcuts modal is visible */
   showShortcutsModal: boolean;
-
-  /** Callback when shortcuts modal close requested */
   onCloseShortcutsModal: () => void;
-
-  /** App state for main view */
-  appState: AppState;
-
-  /** Conversion handlers for main view */
   conversionHandlers: ConversionHandlers;
-
-  /** Quick settings API for main view */
   quickSettings: {
     settings: UserSettings | null;
     handlers: {
@@ -93,131 +46,82 @@ interface AppRouterProps {
       ) => Promise<void>;
     };
   };
-
-  /** Keyboard shortcuts for shortcuts modal */
   shortcuts: ShortcutConfig[];
-
-  /** Ref for success state focus management */
-  successRef: React.RefObject<HTMLDivElement | null>;
-
-  /** Ref for error state focus management */
-  errorRef: React.RefObject<HTMLDivElement | null>;
 }
 
-/**
- * App Router Component
- *
- * Routes between views and manages modals.
- *
- * @example
- * ```tsx
- * <AppRouter
- *   currentView="main"
- *   onCloseSettings={handleCloseSettings}
- *   onCloseHelp={handleCloseHelp}
- *   onOpenSettings={handleOpenSettings}
- *   onShowHelp={handleShowHelp}
- *   showShortcutsModal={false}
- *   onCloseShortcutsModal={() => setShowShortcutsModal(false)}
- *   appState={appState}
- *   conversionHandlers={conversionHandlers}
- *   quickSettings={quickSettings}
- *   shortcuts={shortcuts}
- *   successRef={successRef}
- *   errorRef={errorRef}
- * />
- * ```
- */
-export function AppRouter({
-  currentView,
-  onCloseSettings,
-  onCloseHelp,
-  onOpenSettings,
-  onShowHelp,
-  showShortcutsModal,
-  onCloseShortcutsModal,
-  appState,
-  conversionHandlers,
-  quickSettings,
-  shortcuts,
-  successRef,
-  errorRef,
-}: AppRouterProps): React.ReactElement {
+export function AppRouter(props: AppRouterProps) {
   // Focus trap for settings view (accessibility)
-  const settingsTrapRef = useFocusTrap(currentView === 'settings');
+  const settingsTrapRef = createFocusTrap(() => props.currentView === 'settings');
 
-  // Settings View
-  // Wrap Settings in ErrorBoundary to prevent crashes from propagating
-  // Lazy load Settings component to reduce initial bundle
-  if (currentView === 'settings') {
-    return (
-      <div className={getContainerClass()} ref={settingsTrapRef}>
-        <ErrorBoundary>
+  return (
+    <Switch>
+      {/* Settings View */}
+      <Match when={props.currentView === 'settings'}>
+        <div class={getContainerClass()} ref={settingsTrapRef}>
+          <ErrorBoundary>
+            <Suspense
+              fallback={
+                <div class="flex items-center justify-center h-full">
+                  <div class="text-muted-foreground">Loading settings...</div>
+                </div>
+              }
+            >
+              <Settings
+                onBack={() => {
+                  void props.onCloseSettings();
+                }}
+              />
+            </Suspense>
+          </ErrorBoundary>
+        </div>
+      </Match>
+
+      {/* Help View */}
+      <Match when={props.currentView === 'help'}>
+        <div class={getContainerClass()}>
           <Suspense
             fallback={
-              <div className="flex items-center justify-center h-full">
-                <div className="text-muted-foreground">Loading settings...</div>
+              <div class="flex items-center justify-center h-full">
+                <div class="text-muted-foreground">Loading help...</div>
               </div>
             }
           >
-            <Settings
-              onBack={() => {
-                void onCloseSettings();
-              }}
-            />
+            <Help onBack={props.onCloseHelp} />
           </Suspense>
-        </ErrorBoundary>
-      </div>
-    );
-  }
+        </div>
+      </Match>
 
-  // Help View
-  if (currentView === 'help') {
-    return (
-      <div className={getContainerClass()}>
-        <Suspense
-          fallback={
-            <div className="flex items-center justify-center h-full">
-              <div className="text-muted-foreground">Loading help...</div>
-            </div>
-          }
-        >
-          <Help onBack={onCloseHelp} />
-        </Suspense>
-      </div>
-    );
-  }
+      {/* Main View — State Machine */}
+      <Match when={props.currentView === 'main'}>
+        <div class={getContainerClass()}>
+          <div class={getContentWrapperClass()}>
+            <AppHeader onOpenSettings={props.onOpenSettings} onShowHelp={props.onShowHelp} />
+            <AppProvider
+              value={{ currentJobId: DEFAULT_JOB_ID, onOpenSettings: props.onOpenSettings }}
+            >
+              <ConversionProvider value={props.conversionHandlers}>
+                <QuickSettingsProvider value={props.quickSettings}>
+                  <MainContent />
+                </QuickSettingsProvider>
+              </ConversionProvider>
+            </AppProvider>
+            <AppFooter />
+          </div>
 
-  // Main View - State Machine
-  // Wrap MainContent with context providers to eliminate prop drilling
-  return (
-    <div className={getContainerClass()}>
-      <div className={getContentWrapperClass()}>
-        <AppHeader onOpenSettings={onOpenSettings} onShowHelp={onShowHelp} />
-        <AppProvider
-          value={{ appState, currentJobId: DEFAULT_JOB_ID, successRef, errorRef, onOpenSettings }}
-        >
-          <ConversionProvider value={conversionHandlers}>
-            <QuickSettingsProvider value={quickSettings}>
-              <MainContent />
-            </QuickSettingsProvider>
-          </ConversionProvider>
-        </AppProvider>
-        <AppFooter />
-      </div>
-
-      {/* Keyboard Shortcuts Help Modal */}
-      {showShortcutsModal && (
-        <ErrorBoundary>
-          <Suspense fallback={null}>
-            <KeyboardShortcutsModal
-              shortcuts={shortcuts}
-              isOpen={showShortcutsModal}
-              onClose={onCloseShortcutsModal}
-            />
-          </Suspense>
-        </ErrorBoundary>
-      )}
-    </div>
+          {/* Keyboard Shortcuts Help Modal */}
+          <Show when={props.showShortcutsModal}>
+            <ErrorBoundary>
+              <Suspense fallback={null}>
+                <KeyboardShortcutsModal
+                  shortcuts={props.shortcuts}
+                  isOpen={props.showShortcutsModal}
+                  onClose={props.onCloseShortcutsModal}
+                />
+              </Suspense>
+            </ErrorBoundary>
+          </Show>
+        </div>
+      </Match>
+    </Switch>
   );
 }
