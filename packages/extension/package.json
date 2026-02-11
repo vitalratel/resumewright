@@ -47,8 +47,7 @@
     "solid-icons": "^1.2.0",
     "solid-js": "^1.9.11",
     "transliteration": "^2.6.1",
-    "valibot": "^1.2.0",
-    "zustand": "5.0.11"
+    "valibot": "^1.2.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
