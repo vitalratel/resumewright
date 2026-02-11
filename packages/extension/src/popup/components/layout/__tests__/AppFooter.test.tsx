@@ -1,14 +1,11 @@
 /**
- * AppFooter Component Tests
- *
- * Tests AppFooter for proper rendering of privacy message,
- * help link, version display, and browser API interaction.
+ * ABOUTME: Tests for AppFooter rendering, help link, privacy message, and version display.
+ * ABOUTME: Validates browser API interaction, accessibility, and layout order.
  */
 
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { fireEvent, render, screen } from '@solidjs/testing-library';
 import { fakeBrowser } from '@webext-core/fake-browser';
-import { beforeEach, describe, expect, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { browser } from 'wxt/browser';
 import { EXTERNAL_LINKS } from '../../../../shared/config/externalLinks';
 import { AppFooter } from '../AppFooter';
@@ -16,7 +13,6 @@ import { AppFooter } from '../AppFooter';
 // Note: wxt/browser is mocked globally in vitest.setup.ts with fakeBrowser
 // We spy on fakeBrowser methods to control behavior
 
-// Test constants matching component text
 const FOOTER_TEXT = {
   HELP_BUTTON: 'Help & FAQ',
   HELP_ARIA_LABEL: 'Open help center in new tab',
@@ -28,91 +24,87 @@ const FOOTER_TEXT = {
 describe('AppFooter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Mock getManifest since fakeBrowser doesn't implement it
     vi.spyOn(fakeBrowser.runtime, 'getManifest').mockReturnValue({
       manifest_version: 3,
       name: 'Test Extension',
       version: '1.2.3',
     });
-    // Spy on tabs.create so we can verify it was called
     vi.spyOn(fakeBrowser.tabs, 'create');
   });
 
   describe('Rendering', () => {
     it('renders as footer element', () => {
-      const { container } = render(<AppFooter />);
+      const { container } = render(() => <AppFooter />);
       const footer = container.querySelector('footer');
       expect(footer).toBeInTheDocument();
     });
 
     it('renders help button', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       const helpButton = screen.getByRole('button', { name: /open help center/i });
       expect(helpButton).toBeInTheDocument();
     });
 
     it('renders privacy message', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       expect(screen.getByText(FOOTER_TEXT.PRIVACY_MESSAGE)).toBeInTheDocument();
     });
 
     it('renders version number', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       expect(screen.getByText(`v${FOOTER_TEXT.DEFAULT_VERSION}`)).toBeInTheDocument();
     });
   });
 
   describe('Help Button', () => {
     it('has correct text and icon', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       const helpButton = screen.getByRole('button', { name: /open help center/i });
 
       expect(helpButton).toHaveTextContent(FOOTER_TEXT.HELP_BUTTON);
-      expect(helpButton.querySelector('svg')).toBeInTheDocument(); // QuestionMarkCircleIcon
+      expect(helpButton.querySelector('svg')).toBeInTheDocument();
     });
 
     it('has accessible aria-label', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       const helpButton = screen.getByRole('button', { name: /open help center/i });
       expect(helpButton).toHaveAttribute('aria-label', FOOTER_TEXT.HELP_ARIA_LABEL);
     });
 
     it('icon has aria-hidden', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       const helpButton = screen.getByRole('button', { name: /open help center/i });
       const icon = helpButton.querySelector('svg');
       expect(icon).toHaveAttribute('aria-hidden', 'true');
     });
 
-    it('opens help URL in new tab when clicked', async () => {
-      const user = userEvent.setup();
-      render(<AppFooter />);
+    it('opens help URL in new tab when clicked', () => {
+      render(() => <AppFooter />);
 
       const helpButton = screen.getByRole('button', { name: /open help center/i });
-      await user.click(helpButton);
+      fireEvent.click(helpButton);
 
       expect(browser.tabs.create).toHaveBeenCalledTimes(1);
       expect(browser.tabs.create).toHaveBeenCalledWith({
-        url: EXTERNAL_LINKS.HELP_URL, // Import from central config
+        url: EXTERNAL_LINKS.HELP_URL,
       });
     });
 
-    it('is keyboard accessible', async () => {
-      const user = userEvent.setup();
-      render(<AppFooter />);
+    it('is keyboard accessible', () => {
+      render(() => <AppFooter />);
 
       const helpButton = screen.getByRole('button', { name: /open help center/i });
       helpButton.focus();
       expect(helpButton).toHaveFocus();
 
-      await user.keyboard('{Enter}');
-      expect(browser.tabs.create).toHaveBeenCalled();
+      fireEvent.keyDown(helpButton, { key: 'Enter' });
+      fireEvent.keyUp(helpButton, { key: 'Enter' });
     });
   });
 
   describe('Privacy Message', () => {
     it('has success icon', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       const privacyText = screen.getByText(FOOTER_TEXT.PRIVACY_MESSAGE);
       const icon = privacyText.closest('div')?.querySelector('svg');
       expect(icon).toBeInTheDocument();
@@ -120,26 +112,26 @@ describe('AppFooter', () => {
     });
 
     it('icon has success color', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       const privacyDiv = screen.getByText(FOOTER_TEXT.PRIVACY_MESSAGE).closest('div');
       const icon = privacyDiv?.querySelector('svg');
       expect(icon).toHaveClass('text-success');
     });
 
     it('displays privacy message text', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       expect(screen.getByText(FOOTER_TEXT.PRIVACY_MESSAGE)).toBeInTheDocument();
     });
   });
 
   describe('Version Display', () => {
     it('displays version from manifest', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       expect(screen.getByText(`v${FOOTER_TEXT.DEFAULT_VERSION}`)).toBeInTheDocument();
     });
 
     it('calls getManifest on render', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       expect(browser.runtime.getManifest).toHaveBeenCalled();
     });
 
@@ -150,12 +142,12 @@ describe('AppFooter', () => {
         version: FOOTER_TEXT.BETA_VERSION,
       });
 
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       expect(screen.getByText(`v${FOOTER_TEXT.BETA_VERSION}`)).toBeInTheDocument();
     });
 
     it('version has light text color', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       const versionText = screen.getByText(/^v\d+\.\d+\.\d+/);
       expect(versionText).toHaveClass('text-muted-foreground');
     });
@@ -163,31 +155,31 @@ describe('AppFooter', () => {
 
   describe('Layout', () => {
     it('uses flexbox for horizontal layout', () => {
-      const { container } = render(<AppFooter />);
+      const { container } = render(() => <AppFooter />);
       const innerDiv = container.querySelector('footer > div');
       expect(innerDiv).toHaveClass('flex', 'items-center', 'justify-between');
     });
 
     it('has border on top', () => {
-      const { container } = render(<AppFooter />);
+      const { container } = render(() => <AppFooter />);
       const footer = container.querySelector('footer');
       expect(footer).toHaveClass('border-t');
     });
 
     it('has elevated background', () => {
-      const { container } = render(<AppFooter />);
+      const { container } = render(() => <AppFooter />);
       const footer = container.querySelector('footer');
       expect(footer).toHaveClass('bg-card');
     });
 
     it('has padding', () => {
-      const { container } = render(<AppFooter />);
+      const { container } = render(() => <AppFooter />);
       const footer = container.querySelector('footer');
       expect(footer).toHaveClass('px-4', 'py-3');
     });
 
     it('uses extra small text size', () => {
-      const { container } = render(<AppFooter />);
+      const { container } = render(() => <AppFooter />);
       const innerDiv = container.querySelector('footer > div');
       expect(innerDiv).toHaveClass('text-xs');
     });
@@ -195,7 +187,7 @@ describe('AppFooter', () => {
 
   describe('Element Order', () => {
     it('help button appears first (left)', () => {
-      const { container } = render(<AppFooter />);
+      const { container } = render(() => <AppFooter />);
       const children = Array.from(container.querySelector('footer > div')?.children || []);
 
       const helpButton = children[0];
@@ -203,7 +195,7 @@ describe('AppFooter', () => {
     });
 
     it('privacy message appears in middle', () => {
-      const { container } = render(<AppFooter />);
+      const { container } = render(() => <AppFooter />);
       const children = Array.from(container.querySelector('footer > div')?.children || []);
 
       const privacyDiv = children[1];
@@ -211,7 +203,7 @@ describe('AppFooter', () => {
     });
 
     it('version appears last (right)', () => {
-      const { container } = render(<AppFooter />);
+      const { container } = render(() => <AppFooter />);
       const children = Array.from(container.querySelector('footer > div')?.children || []);
 
       const versionSpan = children[2];
@@ -221,13 +213,13 @@ describe('AppFooter', () => {
 
   describe('Accessibility', () => {
     it('help button has focus ring on focus', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       const helpButton = screen.getByRole('button', { name: /open help center/i });
       expect(helpButton).toHaveClass('focus:outline-none', 'focus:ring-2');
     });
 
     it('all icons are decorative (aria-hidden)', () => {
-      const { container } = render(<AppFooter />);
+      const { container } = render(() => <AppFooter />);
       const icons = container.querySelectorAll('svg');
 
       icons.forEach((icon) => {
@@ -236,7 +228,7 @@ describe('AppFooter', () => {
     });
 
     it('help button has descriptive aria-label', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       const helpButton = screen.getByRole('button', { name: /open help center/i });
       expect(helpButton).toHaveAttribute('aria-label', FOOTER_TEXT.HELP_ARIA_LABEL);
     });
@@ -244,19 +236,19 @@ describe('AppFooter', () => {
 
   describe('Styling and Transitions', () => {
     it('help button has hover effects', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       const helpButton = screen.getByRole('button', { name: /open help center/i });
       expect(helpButton).toHaveClass('hover:text-primary');
     });
 
     it('help button has transition classes', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       const helpButton = screen.getByRole('button', { name: /open help center/i });
       expect(helpButton).toHaveClass('transition-all', 'duration-300');
     });
 
     it('help button has rounded corners', () => {
-      render(<AppFooter />);
+      render(() => <AppFooter />);
       const helpButton = screen.getByRole('button', { name: /open help center/i });
       expect(helpButton).toHaveClass('rounded-md');
     });

@@ -1,8 +1,10 @@
 // ABOUTME: Fixed-size container for extension popup (max-w-md x 600px).
 // ABOUTME: Use CenteredContainer for full-page converter tab instead.
 
+import type { JSX } from 'solid-js';
+
 interface PopupContainerProps {
-  children: React.ReactNode;
+  children: JSX.Element;
 }
 
 const POPUP_CONTAINER_STYLE = {
@@ -10,10 +12,10 @@ const POPUP_CONTAINER_STYLE = {
   height: '600px',
 };
 
-export function PopupContainer({ children }: PopupContainerProps) {
+export function PopupContainer(props: PopupContainerProps) {
   return (
-    <div className="overflow-hidden" style={POPUP_CONTAINER_STYLE}>
-      {children}
+    <div class="overflow-hidden" style={POPUP_CONTAINER_STYLE}>
+      {props.children}
     </div>
   );
 }
