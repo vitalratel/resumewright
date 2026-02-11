@@ -61,7 +61,6 @@
     "@tailwindcss/postcss": "^4.1.18",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.1.5",
-    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^25.2.3",
     "@vitest/coverage-v8": "^4.0.18",
     "@webext-core/messaging": "^2.3.0",

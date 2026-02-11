@@ -43,20 +43,3 @@ export function validateWithSchema<
 
   return { success: true, data: parseResult.output };
 }
-
-/**
- * Parse JSON safely with error handling
- *
- * @param raw - Raw JSON string
- * @param logger - Logger instance
- * @param context - Context string for error messages
- * @returns Parsed value or null if parsing fails
- */
-export function safeJsonParse(raw: string, logger: ILogger, context: string): unknown | null {
-  try {
-    return JSON.parse(raw);
-  } catch (error) {
-    logger.error(context, 'Failed to parse JSON', error);
-    return null;
-  }
-}

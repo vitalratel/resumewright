@@ -16,10 +16,6 @@
     }
   },
   "ignoreDependencies": [
-    "@babel/core",
-    "@babel/preset-react",
-    "@babel/preset-typescript",
-    "@pkg/wasm_bridge",
     "prettier",
     "tailwindcss"
   ],
