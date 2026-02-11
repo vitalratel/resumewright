@@ -1,15 +1,11 @@
 /**
- * RangeSlider Component Tests
- *
- * Tests RangeSlider for rendering, accessibility, user interactions,
- * increment/decrement buttons, and locale-aware number formatting.
- *
- * Note: Tooltip behavior is implementation detail and not tested (per test-quality guidelines).
+ * ABOUTME: Tests for RangeSlider component with visual track fill and tooltip.
+ * ABOUTME: Validates rendering, accessibility, interactions, and number formatting.
  */
 
-import { fireEvent, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, vi } from 'vitest';
+import { fireEvent, render, screen } from '@solidjs/testing-library';
+import { createSignal } from 'solid-js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RangeSlider } from '../RangeSlider';
 
 describe('RangeSlider', () => {
@@ -29,14 +25,14 @@ describe('RangeSlider', () => {
 
   describe('Rendering', () => {
     it('renders slider with proper label and value display', () => {
-      render(<RangeSlider {...defaultProps} />);
+      render(() => <RangeSlider {...defaultProps} />);
 
       // Check slider is present with correct aria-label
       const slider = screen.getByRole('slider');
       expect(slider).toBeInTheDocument();
       expect(slider).toHaveAttribute('aria-label', 'margin in inches');
 
-      // Check label is present (using htmlFor since it has capitalize class)
+      // Check label is present
       const label = document.querySelector('label[for="test-slider"]');
       expect(label).toBeInTheDocument();
       expect(label).toHaveTextContent(/margin/i);
@@ -47,25 +43,22 @@ describe('RangeSlider', () => {
     });
 
     it('renders with custom unit', () => {
-      render(<RangeSlider {...defaultProps} unit="cm" />);
+      render(() => <RangeSlider {...defaultProps} unit="cm" />);
 
-      // Check value display with custom unit
       const valueDisplay = screen.getByText(/1[.,]00cm/, { selector: 'span[aria-hidden="true"]' });
       expect(valueDisplay).toBeInTheDocument();
     });
 
-    it('applies custom className', () => {
-      const { container } = render(<RangeSlider {...defaultProps} className="custom-class" />);
+    it('applies custom class', () => {
+      const { container } = render(() => <RangeSlider {...defaultProps} class="custom-class" />);
 
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper).toHaveClass('custom-class');
     });
 
     it('formats value with locale-aware number formatting', () => {
-      render(<RangeSlider {...defaultProps} value={1.5} />);
+      render(() => <RangeSlider {...defaultProps} value={1.5} />);
 
-      // Should use toLocaleString with 2 decimal places
-      // Regex matches both period and comma as decimal separator
       const valueDisplay = screen.getByText(/1[.,]50"/, { selector: 'span[aria-hidden="true"]' });
       expect(valueDisplay).toBeInTheDocument();
     });
@@ -73,7 +66,7 @@ describe('RangeSlider', () => {
 
   describe('Accessibility', () => {
     it('has proper ARIA attributes', () => {
-      render(<RangeSlider {...defaultProps} />);
+      render(() => <RangeSlider {...defaultProps} />);
 
       const slider = screen.getByRole('slider');
       expect(slider).toHaveAttribute('aria-valuemin', '0.5');
@@ -84,7 +77,7 @@ describe('RangeSlider', () => {
     });
 
     it('provides descriptive help text for screen readers', () => {
-      render(<RangeSlider {...defaultProps} />);
+      render(() => <RangeSlider {...defaultProps} />);
 
       const helpText = document.getElementById('test-slider-help');
       expect(helpText).toBeInTheDocument();
@@ -94,7 +87,7 @@ describe('RangeSlider', () => {
     });
 
     it('increment button has descriptive label', () => {
-      render(<RangeSlider {...defaultProps} />);
+      render(() => <RangeSlider {...defaultProps} />);
 
       const incrementButton = screen.getByRole('button', {
         name: /increase.*margin.*0\.1"/i,
@@ -103,7 +96,7 @@ describe('RangeSlider', () => {
     });
 
     it('decrement button has descriptive label', () => {
-      render(<RangeSlider {...defaultProps} />);
+      render(() => <RangeSlider {...defaultProps} />);
 
       const decrementButton = screen.getByRole('button', {
         name: /decrease.*margin.*0\.1"/i,
@@ -113,114 +106,113 @@ describe('RangeSlider', () => {
   });
 
   describe('User Interactions - Slider', () => {
-    it('calls onChange when slider value changes', async () => {
+    it('calls onChange when slider value changes', () => {
       const onChange = vi.fn();
-      render(<RangeSlider {...defaultProps} onChange={onChange} />);
+      render(() => <RangeSlider {...defaultProps} onChange={onChange} />);
 
       const slider = screen.getByRole('slider');
-      fireEvent.change(slider, { target: { value: '1.5' } });
+      fireEvent.input(slider, { target: { value: '1.5' } });
 
       expect(onChange).toHaveBeenCalledWith(1.5);
     });
 
     it('updates aria-valuenow when value changes', () => {
-      const { rerender } = render(<RangeSlider {...defaultProps} value={1.0} />);
+      const [value, setValue] = createSignal(1.0);
+
+      render(() => <RangeSlider {...defaultProps} value={value()} />);
 
       let slider = screen.getByRole('slider');
       expect(slider).toHaveAttribute('aria-valuenow', '1');
 
-      rerender(<RangeSlider {...defaultProps} value={1.5} />);
+      setValue(1.5);
       slider = screen.getByRole('slider');
       expect(slider).toHaveAttribute('aria-valuenow', '1.5');
     });
   });
 
   describe('User Interactions - Increment/Decrement Buttons', () => {
-    it('increments value when increment button clicked', async () => {
+    it('increments value when increment button clicked', () => {
       const onChange = vi.fn();
-      render(<RangeSlider {...defaultProps} value={1.0} onChange={onChange} />);
+      render(() => <RangeSlider {...defaultProps} value={1.0} onChange={onChange} />);
 
       const incrementButton = screen.getByRole('button', { name: /increase/i });
-      await userEvent.click(incrementButton);
+      fireEvent.click(incrementButton);
 
       expect(onChange).toHaveBeenCalledWith(1.1);
     });
 
-    it('decrements value when decrement button clicked', async () => {
+    it('decrements value when decrement button clicked', () => {
       const onChange = vi.fn();
-      render(<RangeSlider {...defaultProps} value={1.0} onChange={onChange} />);
+      render(() => <RangeSlider {...defaultProps} value={1.0} onChange={onChange} />);
 
       const decrementButton = screen.getByRole('button', { name: /decrease/i });
-      await userEvent.click(decrementButton);
+      fireEvent.click(decrementButton);
 
       expect(onChange).toHaveBeenCalledWith(0.9);
     });
 
     it('disables increment button when value is at maximum', () => {
-      render(<RangeSlider {...defaultProps} value={2.0} />);
+      render(() => <RangeSlider {...defaultProps} value={2.0} />);
 
       const incrementButton = screen.getByRole('button', { name: /increase/i });
       expect(incrementButton).toBeDisabled();
     });
 
     it('disables decrement button when value is at minimum', () => {
-      render(<RangeSlider {...defaultProps} value={0.5} />);
+      render(() => <RangeSlider {...defaultProps} value={0.5} />);
 
       const decrementButton = screen.getByRole('button', { name: /decrease/i });
       expect(decrementButton).toBeDisabled();
     });
 
-    it('does not call onChange when clicking disabled increment button', async () => {
+    it('does not call onChange when clicking disabled increment button', () => {
       const onChange = vi.fn();
-      render(<RangeSlider {...defaultProps} value={2.0} onChange={onChange} />);
+      render(() => <RangeSlider {...defaultProps} value={2.0} onChange={onChange} />);
 
       const incrementButton = screen.getByRole('button', { name: /increase/i });
-      await userEvent.click(incrementButton);
+      fireEvent.click(incrementButton);
 
       expect(onChange).not.toHaveBeenCalled();
     });
 
-    it('does not call onChange when clicking disabled decrement button', async () => {
+    it('does not call onChange when clicking disabled decrement button', () => {
       const onChange = vi.fn();
-      render(<RangeSlider {...defaultProps} value={0.5} onChange={onChange} />);
+      render(() => <RangeSlider {...defaultProps} value={0.5} onChange={onChange} />);
 
       const decrementButton = screen.getByRole('button', { name: /decrease/i });
-      await userEvent.click(decrementButton);
+      fireEvent.click(decrementButton);
 
       expect(onChange).not.toHaveBeenCalled();
     });
 
-    it('clamps increment to maximum value', async () => {
+    it('clamps increment to maximum value', () => {
       const onChange = vi.fn();
-      render(<RangeSlider {...defaultProps} value={1.95} onChange={onChange} />);
+      render(() => <RangeSlider {...defaultProps} value={1.95} onChange={onChange} />);
 
       const incrementButton = screen.getByRole('button', { name: /increase/i });
-      await userEvent.click(incrementButton);
+      fireEvent.click(incrementButton);
 
-      // Should clamp to max (2.0), not exceed it
       expect(onChange).toHaveBeenCalledWith(2.0);
     });
 
-    it('clamps decrement to minimum value', async () => {
+    it('clamps decrement to minimum value', () => {
       const onChange = vi.fn();
-      render(<RangeSlider {...defaultProps} value={0.55} onChange={onChange} />);
+      render(() => <RangeSlider {...defaultProps} value={0.55} onChange={onChange} />);
 
       const decrementButton = screen.getByRole('button', { name: /decrease/i });
-      await userEvent.click(decrementButton);
+      fireEvent.click(decrementButton);
 
-      // Should clamp to min (0.5), not go below
       expect(onChange).toHaveBeenCalledWith(0.5);
     });
   });
 
   describe('Value Formatting', () => {
     it('formats values consistently across display and ARIA', () => {
-      render(<RangeSlider {...defaultProps} value={1.5} />);
+      render(() => <RangeSlider {...defaultProps} value={1.5} />);
 
       const slider = screen.getByRole('slider');
       const ariaValueText = slider.getAttribute('aria-valuetext');
 
-      // Both should use same locale-aware formatting
       expect(ariaValueText).toMatch(/1[.,]50"/);
 
       const valueDisplay = screen.getByText(/1[.,]50"/, { selector: 'span[aria-hidden="true"]' });
@@ -230,7 +222,7 @@ describe('RangeSlider', () => {
 
   describe('Edge Cases', () => {
     it('handles zero value correctly', () => {
-      render(<RangeSlider {...defaultProps} min={0} value={0} />);
+      render(() => <RangeSlider {...defaultProps} min={0} value={0} />);
 
       const slider = screen.getByRole('slider');
       expect(slider).toHaveAttribute('aria-valuenow', '0');
@@ -240,14 +232,14 @@ describe('RangeSlider', () => {
     });
 
     it('handles very small step sizes', () => {
-      render(<RangeSlider {...defaultProps} step={0.01} value={1.23} />);
+      render(() => <RangeSlider {...defaultProps} step={0.01} value={1.23} />);
 
       const valueDisplay = screen.getByText(/1[.,]23"/, { selector: 'span[aria-hidden="true"]' });
       expect(valueDisplay).toBeInTheDocument();
     });
 
     it('handles negative values', () => {
-      render(<RangeSlider {...defaultProps} min={-1} max={1} value={-0.5} />);
+      render(() => <RangeSlider {...defaultProps} min={-1} max={1} value={-0.5} />);
 
       const slider = screen.getByRole('slider');
       expect(slider).toHaveAttribute('aria-valuenow', '-0.5');

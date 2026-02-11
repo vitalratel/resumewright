@@ -1,8 +1,7 @@
 // ABOUTME: Modal base component using native <dialog> for accessibility.
 // ABOUTME: Provides focus trapping, escape key handling, and backdrop click to close.
 
-import type { ReactNode } from 'react';
-import { useEffect, useRef } from 'react';
+import { createEffect, type JSX, onCleanup, onMount } from 'solid-js';
 
 interface ModalProps {
   /** Whether the modal is open */
@@ -10,18 +9,6 @@ interface ModalProps {
 
   /**
    * Callback when modal should close (Escape key or backdrop click)
-   *
-   * **Performance Note :** This callback should be memoized with useCallback
-   * to prevent unnecessary re-renders of the Modal component and its focus trap.
-   *
-   * @example
-   * ```tsx
-   * const handleClose = useCallback(() => {
-   *   setIsOpen(false);
-   * }, []);
-   *
-   * <Modal isOpen={isOpen} onClose={handleClose} />
-   * ```
    */
   onClose: () => void;
 
@@ -32,7 +19,7 @@ interface ModalProps {
   ariaDescribedBy?: string;
 
   /** Modal content */
-  children: ReactNode;
+  children: JSX.Element;
 
   /** Custom max width class (default: max-w-md) */
   maxWidth?: string;
@@ -44,56 +31,46 @@ interface ModalProps {
   closeOnEscape?: boolean;
 
   /** Additional CSS classes for modal container */
-  className?: string;
+  class?: string;
 }
 
-export function Modal({
-  isOpen,
-  onClose,
-  ariaLabelledBy,
-  ariaDescribedBy,
-  children,
-  maxWidth = 'max-w-md',
-  closeOnBackdropClick = true,
-  closeOnEscape = true,
-  className = '',
-}: ModalProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+export function Modal(props: ModalProps) {
+  let dialogRef: HTMLDialogElement | undefined;
+
+  const maxWidth = () => props.maxWidth ?? 'max-w-md';
+  const closeOnBackdropClick = () => props.closeOnBackdropClick ?? true;
+  const closeOnEscape = () => props.closeOnEscape ?? true;
 
   // Sync dialog open state with isOpen prop
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
+  createEffect(() => {
+    if (!dialogRef) return;
 
-    if (isOpen && !dialog.open) {
-      dialog.showModal();
-    } else if (!isOpen && dialog.open) {
-      dialog.close();
+    if (props.isOpen && !dialogRef.open) {
+      dialogRef.showModal();
+    } else if (!props.isOpen && dialogRef.open) {
+      dialogRef.close();
     }
-  }, [isOpen]);
+  });
 
   // Handle native cancel event (Escape key)
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
+  onMount(() => {
+    if (!dialogRef) return;
 
     const handleCancel = (e: Event) => {
-      if (closeOnEscape) {
-        e.preventDefault();
-        onClose();
-      } else {
-        e.preventDefault(); // Prevent close if disabled
+      e.preventDefault();
+      if (closeOnEscape()) {
+        props.onClose();
       }
     };
 
-    dialog.addEventListener('cancel', handleCancel);
-    return () => dialog.removeEventListener('cancel', handleCancel);
-  }, [closeOnEscape, onClose]);
+    dialogRef.addEventListener('cancel', handleCancel);
+    onCleanup(() => dialogRef?.removeEventListener('cancel', handleCancel));
+  });
 
   // Handle backdrop click (click on dialog element itself, not content)
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
-    if (closeOnBackdropClick && e.target === dialogRef.current) {
-      onClose();
+  const handleBackdropClick: JSX.EventHandler<HTMLDialogElement, MouseEvent> = (e) => {
+    if (closeOnBackdropClick() && e.target === dialogRef) {
+      props.onClose();
     }
   };
 
@@ -101,12 +78,12 @@ export function Modal({
     // biome-ignore lint/a11y/useKeyWithClickEvents: <dialog> is interactive per HTML spec; keyboard handled via native cancel event. See https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/issues/1000
     <dialog
       ref={dialogRef}
-      aria-labelledby={ariaLabelledBy}
-      aria-describedby={ariaDescribedBy}
+      aria-labelledby={props.ariaLabelledBy}
+      aria-describedby={props.ariaDescribedBy}
       onClick={handleBackdropClick}
-      className={`backdrop:bg-black/50 dark:backdrop:bg-black/60 bg-card rounded-lg shadow-xl dark:shadow-none border border-border ${maxWidth} w-full p-0 animate-fade-in ${className}`.trim()}
+      class={`backdrop:bg-black/50 dark:backdrop:bg-black/60 bg-card rounded-lg shadow-xl dark:shadow-none border border-border ${maxWidth()} w-full p-0 animate-fade-in ${props.class ?? ''}`.trim()}
     >
-      {children}
+      {props.children}
     </dialog>
   );
 }
