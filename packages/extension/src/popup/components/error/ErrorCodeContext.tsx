@@ -1,6 +1,8 @@
 // ABOUTME: Displays code context for parse errors with line numbers.
 // ABOUTME: Shows syntax-highlighted code snippet where error occurred.
 
+import { Show } from 'solid-js';
+
 interface ErrorCodeContextProps {
   /** Code context to display */
   codeContext: string;
@@ -10,23 +12,21 @@ interface ErrorCodeContextProps {
 }
 
 /**
- * ErrorCodeContext Component
- *
  * Displays the code snippet where a parse error occurred,
  * with syntax highlighting and line number context.
  */
-export function ErrorCodeContext({ codeContext, line }: ErrorCodeContextProps) {
+export function ErrorCodeContext(props: ErrorCodeContextProps) {
   return (
     <section
-      className="w-full max-w-md bg-popover text-popover-foreground p-4 rounded-lg font-mono text-sm overflow-x-auto focus:outline-none focus:ring-2 focus:ring-ring"
+      class="w-full max-w-md bg-popover text-popover-foreground p-4 rounded-lg font-mono text-sm overflow-x-auto focus:outline-none focus:ring-2 focus:ring-ring"
       // biome-ignore lint/a11y/noNoninteractiveTabindex: Scrollable content needs tabIndex for keyboard accessibility
       tabIndex={0}
       aria-label="Error code context"
     >
-      {line !== undefined && (
-        <div className="text-muted-foreground text-sm mb-3">Error on line {line}:</div>
-      )}
-      <pre className="text-sm leading-relaxed whitespace-pre-wrap">{codeContext}</pre>
+      <Show when={props.line !== undefined}>
+        <div class="text-muted-foreground text-sm mb-3">Error on line {props.line}:</div>
+      </Show>
+      <pre class="text-sm leading-relaxed whitespace-pre-wrap">{props.codeContext}</pre>
     </section>
   );
 }

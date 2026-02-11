@@ -10,7 +10,8 @@
  * - Content area calculations
  */
 
-import { render, screen } from '@testing-library/react';
+import { render, screen } from '@solidjs/testing-library';
+import { createSignal } from 'solid-js';
 import { describe, expect, it } from 'vitest';
 import { MarginPreview } from '../MarginPreview';
 
@@ -24,13 +25,13 @@ describe('MarginPreview', () => {
 
   describe('Rendering', () => {
     it('should render margin preview with title', () => {
-      render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
+      render(() => <MarginPreview pageSize="Letter" margins={defaultMargins} />);
 
       expect(screen.getByText('Margin Preview')).toBeInTheDocument();
     });
 
     it('should render all margin labels', () => {
-      render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
+      render(() => <MarginPreview pageSize="Letter" margins={defaultMargins} />);
 
       // Each margin value should appear exactly once in the preview
       const marginLabels = screen.getAllByText('1"');
@@ -38,16 +39,16 @@ describe('MarginPreview', () => {
     });
 
     it('should render legend with Top/Bottom and Left/Right labels', () => {
-      render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
+      render(() => <MarginPreview pageSize="Letter" margins={defaultMargins} />);
 
       expect(screen.getByText('Top/Bottom')).toBeInTheDocument();
       expect(screen.getByText('Left/Right')).toBeInTheDocument();
     });
 
-    it('should apply custom className', () => {
-      const { container } = render(
-        <MarginPreview pageSize="Letter" margins={defaultMargins} className="custom-test-class" />,
-      );
+    it('should apply custom class', () => {
+      const { container } = render(() => (
+        <MarginPreview pageSize="Letter" margins={defaultMargins} class="custom-test-class" />
+      ));
 
       const previewContainer = container.querySelector('.margin-preview');
       expect(previewContainer).toHaveClass('custom-test-class');
@@ -60,7 +61,7 @@ describe('MarginPreview', () => {
       { pageSize: 'A4' as const, width: 8.27, height: 11.69 },
       { pageSize: 'Legal' as const, width: 8.5, height: 14 },
     ])('should render $pageSize page with correct aspect ratio', ({ pageSize, width, height }) => {
-      render(<MarginPreview pageSize={pageSize} margins={defaultMargins} />);
+      render(() => <MarginPreview pageSize={pageSize} margins={defaultMargins} />);
 
       // Verify page size is mentioned in ARIA label
       const previewImage = screen.getByRole('img');
@@ -85,7 +86,7 @@ describe('MarginPreview', () => {
         left: 1.5,
       };
 
-      render(<MarginPreview pageSize="Letter" margins={customMargins} />);
+      render(() => <MarginPreview pageSize="Letter" margins={customMargins} />);
 
       expect(screen.getByText('0.5"')).toBeInTheDocument();
       expect(screen.getByText('0.75"')).toBeInTheDocument();
@@ -101,7 +102,7 @@ describe('MarginPreview', () => {
         left: 1.5,
       };
 
-      render(<MarginPreview pageSize="A4" margins={asymmetricMargins} />);
+      render(() => <MarginPreview pageSize="A4" margins={asymmetricMargins} />);
 
       expect(screen.getByText('2"')).toBeInTheDocument();
       expect(screen.getByText('0.5"')).toBeInTheDocument();
@@ -117,7 +118,7 @@ describe('MarginPreview', () => {
         left: 0.25,
       };
 
-      render(<MarginPreview pageSize="Letter" margins={minMargins} />);
+      render(() => <MarginPreview pageSize="Letter" margins={minMargins} />);
 
       const marginLabels = screen.getAllByText('0.25"');
       expect(marginLabels).toHaveLength(4);
@@ -131,7 +132,7 @@ describe('MarginPreview', () => {
         left: 2.0,
       };
 
-      render(<MarginPreview pageSize="Letter" margins={maxMargins} />);
+      render(() => <MarginPreview pageSize="Letter" margins={maxMargins} />);
 
       const marginLabels = screen.getAllByText('2"');
       expect(marginLabels).toHaveLength(4);
@@ -140,21 +141,21 @@ describe('MarginPreview', () => {
 
   describe('Content Area Calculations', () => {
     it('should calculate content area for Letter page with 1" margins', () => {
-      render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
+      render(() => <MarginPreview pageSize="Letter" margins={defaultMargins} />);
 
       // Letter: 8.5" × 11" - 1" margins all around = 6.5" × 9.0"
       expect(screen.getByTestId('dimension-label')).toHaveTextContent('6.50" × 9.00"');
     });
 
     it('should calculate content area for A4 page with 1" margins', () => {
-      render(<MarginPreview pageSize="A4" margins={defaultMargins} />);
+      render(() => <MarginPreview pageSize="A4" margins={defaultMargins} />);
 
       // A4: 8.27" × 11.69" - 1" margins all around = 6.27" × 9.69"
       expect(screen.getByTestId('dimension-label')).toHaveTextContent('6.27" × 9.69"');
     });
 
     it('should calculate content area for Legal page with 1" margins', () => {
-      render(<MarginPreview pageSize="Legal" margins={defaultMargins} />);
+      render(() => <MarginPreview pageSize="Legal" margins={defaultMargins} />);
 
       // Legal: 8.5" × 14" - 1" margins all around = 6.5" × 12.0"
       expect(screen.getByTestId('dimension-label')).toHaveTextContent('6.50" × 12.00"');
@@ -168,7 +169,7 @@ describe('MarginPreview', () => {
         left: 1.5,
       };
 
-      render(<MarginPreview pageSize="Letter" margins={customMargins} />);
+      render(() => <MarginPreview pageSize="Letter" margins={customMargins} />);
 
       // Letter: 8.5" × 11"
       // Width: 8.5 - 1.0 - 1.5 = 6.0"
@@ -179,7 +180,9 @@ describe('MarginPreview', () => {
 
   describe('Dark Mode Styling', () => {
     it('should use semantic classes on page container', () => {
-      const { container } = render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
+      const { container } = render(() => (
+        <MarginPreview pageSize="Letter" margins={defaultMargins} />
+      ));
 
       // Find the page container (has border-2 class)
       const pageContainer = container.querySelector('.border-2');
@@ -191,7 +194,9 @@ describe('MarginPreview', () => {
     });
 
     it('should use semantic classes on content area', () => {
-      const { container } = render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
+      const { container } = render(() => (
+        <MarginPreview pageSize="Letter" margins={defaultMargins} />
+      ));
 
       // Content area should use semantic background class
       const contentArea = container.querySelector('.p-1.overflow-hidden');
@@ -199,7 +204,9 @@ describe('MarginPreview', () => {
     });
 
     it('should use semantic classes on dimension label', () => {
-      const { container } = render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
+      const { container } = render(() => (
+        <MarginPreview pageSize="Letter" margins={defaultMargins} />
+      ));
 
       // Dimension label should use semantic background class
       const dimensionLabel = container.querySelector('[data-testid="dimension-label"]');
@@ -207,7 +214,9 @@ describe('MarginPreview', () => {
     });
 
     it('should use semantic color tokens for margin colors', () => {
-      const { container } = render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
+      const { container } = render(() => (
+        <MarginPreview pageSize="Letter" margins={defaultMargins} />
+      ));
 
       // Top/Bottom margins should have info colors
       const topMargin = container.querySelector('.bg-info\\/30');
@@ -223,7 +232,7 @@ describe('MarginPreview', () => {
 
   describe('Accessibility', () => {
     it('should have role="img" for screen readers', () => {
-      render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
+      render(() => <MarginPreview pageSize="Letter" margins={defaultMargins} />);
 
       const previewImage = screen.getByRole('img');
       expect(previewImage).toBeInTheDocument();
@@ -237,7 +246,7 @@ describe('MarginPreview', () => {
         left: 0.75,
       };
 
-      render(<MarginPreview pageSize="A4" margins={customMargins} />);
+      render(() => <MarginPreview pageSize="A4" margins={customMargins} />);
 
       const previewImage = screen.getByRole('img');
       const ariaLabel = previewImage.getAttribute('aria-label');
@@ -250,7 +259,9 @@ describe('MarginPreview', () => {
     });
 
     it('should mark decorative elements with aria-hidden', () => {
-      const { container } = render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
+      const { container } = render(() => (
+        <MarginPreview pageSize="Letter" margins={defaultMargins} />
+      ));
 
       // Margin overlays should be aria-hidden
       const marginOverlays = container.querySelectorAll('[aria-hidden="true"]');
@@ -262,7 +273,9 @@ describe('MarginPreview', () => {
 
   describe('Layout and Styling', () => {
     it('should have fixed preview dimensions', () => {
-      const { container } = render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
+      const { container } = render(() => (
+        <MarginPreview pageSize="Letter" margins={defaultMargins} />
+      ));
 
       const pageContainer = container.querySelector('.relative.border-2') as HTMLElement;
       expect(pageContainer).toBeInTheDocument();
@@ -278,7 +291,9 @@ describe('MarginPreview', () => {
     });
 
     it('should render simulated text lines in content area', () => {
-      const { container } = render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
+      const { container } = render(() => (
+        <MarginPreview pageSize="Letter" margins={defaultMargins} />
+      ));
 
       // Content lines should have h-1 class (height)
       const contentLines = container.querySelectorAll('.h-1.rounded');
@@ -288,26 +303,27 @@ describe('MarginPreview', () => {
     });
 
     it('should show shadow on page preview', () => {
-      const { container } = render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
+      const { container } = render(() => (
+        <MarginPreview pageSize="Letter" margins={defaultMargins} />
+      ));
 
       const pageContainer = container.querySelector('.shadow-md');
       expect(pageContainer).toBeInTheDocument();
     });
   });
 
-  describe('Re-render Behavior', () => {
-    it('should render without errors when props change', () => {
-      const { rerender } = render(<MarginPreview pageSize="Letter" margins={defaultMargins} />);
+  describe('Reactive Behavior', () => {
+    it('should update when props change', () => {
+      const [pageSize, setPageSize] = createSignal<'Letter' | 'A4' | 'Legal'>('Letter');
+      const [margins, setMargins] = createSignal(defaultMargins);
+
+      render(() => <MarginPreview pageSize={pageSize()} margins={margins()} />);
 
       expect(screen.getByText('Margin Preview')).toBeInTheDocument();
 
-      // Change all props to verify memo doesn't break re-renders
-      rerender(
-        <MarginPreview
-          pageSize="A4"
-          margins={{ top: 0.5, right: 0.75, bottom: 1.0, left: 1.25 }}
-        />,
-      );
+      // Change all props to verify reactivity
+      setPageSize('A4');
+      setMargins({ top: 0.5, right: 0.75, bottom: 1.0, left: 1.25 });
 
       expect(screen.getByText('Margin Preview')).toBeInTheDocument();
       expect(screen.getByText('0.5"')).toBeInTheDocument();
@@ -326,7 +342,7 @@ describe('MarginPreview', () => {
         left: 0.25,
       };
 
-      render(<MarginPreview pageSize="Letter" margins={tinyMargins} />);
+      render(() => <MarginPreview pageSize="Letter" margins={tinyMargins} />);
 
       // Should still render content area dimensions
       // Letter: 8.5 - 0.5 = 8.0" wide, 11 - 0.5 = 10.5" tall
@@ -341,7 +357,7 @@ describe('MarginPreview', () => {
         left: 2.0,
       };
 
-      render(<MarginPreview pageSize="Letter" margins={largeMargins} />);
+      render(() => <MarginPreview pageSize="Letter" margins={largeMargins} />);
 
       // Letter: 8.5 - 4.0 = 4.5" wide, 11 - 4.0 = 7.0" tall
       expect(screen.getByTestId('dimension-label')).toHaveTextContent('4.50" × 7.00"');
@@ -355,15 +371,17 @@ describe('MarginPreview', () => {
         left: 1.0,
       };
 
-      const { rerender } = render(<MarginPreview pageSize="Letter" margins={margins} />);
+      const [pageSize, setPageSize] = createSignal<'Letter' | 'A4' | 'Legal'>('Letter');
+
+      render(() => <MarginPreview pageSize={pageSize()} margins={margins} />);
 
       expect(screen.getByTestId('dimension-label')).toHaveTextContent('6.50" × 9.00"');
 
-      rerender(<MarginPreview pageSize="A4" margins={margins} />);
+      setPageSize('A4');
 
       expect(screen.getByTestId('dimension-label')).toHaveTextContent('6.27" × 9.69"');
 
-      rerender(<MarginPreview pageSize="Legal" margins={margins} />);
+      setPageSize('Legal');
 
       expect(screen.getByTestId('dimension-label')).toHaveTextContent('6.50" × 12.00"');
     });

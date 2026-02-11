@@ -1,6 +1,7 @@
 // ABOUTME: Displays line/column information for parse errors or file size for memory errors.
 // ABOUTME: Extracted from ErrorState for better component organization.
 
+import { Show } from 'solid-js';
 import { formatFileSize } from '../../utils/formatting';
 
 interface ErrorLocationInfoProps {
@@ -18,39 +19,32 @@ interface ErrorLocationInfoProps {
 }
 
 /**
- * ErrorLocationInfo Component
- *
  * Displays contextual information about where an error occurred:
  * - For parse errors: line and column numbers
  * - For memory errors: file size vs maximum size
  */
-export function ErrorLocationInfo({ line, column, fileSize, maxSize }: ErrorLocationInfoProps) {
-  // Don't render if no location info available
-  if (line === undefined && fileSize === undefined) {
-    return null;
-  }
-
+export function ErrorLocationInfo(props: ErrorLocationInfoProps) {
   return (
-    <div className="w-full max-w-md text-sm text-muted-foreground bg-info/10 p-3 rounded-lg border border-info/20">
-      {/* Parse error line/column */}
-      {line !== undefined && (
-        <p className="font-mono" data-testid="error-location">
-          Line {line}
-          {column !== undefined && `, Column ${column}`}
-        </p>
-      )}
+    <Show when={props.line !== undefined || props.fileSize !== undefined}>
+      <div class="w-full max-w-md text-sm text-muted-foreground bg-info/10 p-3 rounded-lg border border-info/20">
+        <Show when={props.line !== undefined}>
+          <p class="font-mono" data-testid="error-location">
+            Line {props.line}
+            <Show when={props.column !== undefined}>, Column {props.column}</Show>
+          </p>
+        </Show>
 
-      {/* File size information */}
-      {fileSize !== undefined && maxSize !== undefined && (
-        <p data-testid="error-size">
-          File size: <span className="font-semibold">{formatFileSize(fileSize)}</span>
-          {' / '}
-          <span className="text-muted-foreground">
-            max:
-            {formatFileSize(maxSize)}
-          </span>
-        </p>
-      )}
-    </div>
+        <Show when={props.fileSize !== undefined && props.maxSize !== undefined}>
+          <p data-testid="error-size">
+            File size: <span class="font-semibold">{formatFileSize(props.fileSize!)}</span>
+            {' / '}
+            <span class="text-muted-foreground">
+              max:
+              {formatFileSize(props.maxSize!)}
+            </span>
+          </p>
+        </Show>
+      </div>
+    </Show>
   );
 }

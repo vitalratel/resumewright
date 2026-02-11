@@ -7,14 +7,14 @@
  * - Accessibility attributes
  */
 
-import { render, screen } from '@testing-library/react';
+import { render, screen } from '@solidjs/testing-library';
 import { describe, expect, it } from 'vitest';
 import { Help } from '../Help';
 
 describe('Help', () => {
   describe('Link Accessibility', () => {
     it('should render all help links with default underline', () => {
-      render(<Help onBack={() => {}} />);
+      render(() => <Help onBack={() => {}} />);
 
       const links = screen.getAllByRole('link');
 
@@ -22,23 +22,23 @@ describe('Help', () => {
       expect(links.length).toBeGreaterThan(0);
 
       // All links should have underline class (not just hover:underline)
-      links.forEach((link) => {
+      for (const link of links) {
         expect(link.className).toMatch(/underline/);
-      });
+      }
     });
 
     it('should have proper focus styles on links', () => {
-      render(<Help onBack={() => {}} />);
+      render(() => <Help onBack={() => {}} />);
 
       const links = screen.getAllByRole('link');
 
       // Links should have focus styles (at least one link has focus:ring-2)
-      const hasForusStyles = links.some((link) => link.className.includes('focus:ring'));
-      expect(hasForusStyles).toBe(true);
+      const hasFocusStyles = links.some((link) => link.className.includes('focus:ring'));
+      expect(hasFocusStyles).toBe(true);
     });
 
     it('should have accessible link text', () => {
-      render(<Help onBack={() => {}} />);
+      render(() => <Help onBack={() => {}} />);
 
       // Verify specific help links exist
       expect(screen.getByRole('link', { name: /Getting Started/i })).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('Help', () => {
 
   describe('Rendering', () => {
     it('should render help content', () => {
-      render(<Help onBack={() => {}} />);
+      render(() => <Help onBack={() => {}} />);
 
       // Should have help links
       const links = screen.getAllByRole('link');
@@ -57,19 +57,19 @@ describe('Help', () => {
 
   describe('Accessibility', () => {
     it('should have keyboard navigable links', () => {
-      render(<Help onBack={() => {}} />);
+      render(() => <Help onBack={() => {}} />);
 
       const links = screen.getAllByRole('link');
 
       // All links should be focusable
-      links.forEach((link) => {
+      for (const link of links) {
         expect(link).toBeInTheDocument();
         expect(link.tagName).toBe('A');
-      });
+      }
     });
 
     it('should have proper focus outline', () => {
-      render(<Help onBack={() => {}} />);
+      render(() => <Help onBack={() => {}} />);
 
       const links = screen.getAllByRole('link');
 

@@ -8,7 +8,7 @@
  * - Retry warnings
  */
 
-import { render, screen } from '@testing-library/react';
+import { render, screen } from '@solidjs/testing-library';
 import { describe, expect, vi } from 'vitest';
 import { ErrorCode } from '../../../../shared/errors/codes';
 import { ErrorSuggestions } from '../ErrorSuggestions';
@@ -50,15 +50,15 @@ describe('ErrorSuggestions', () => {
         { text: 'Contact support' },
       ];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={suggestions}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByTestId('error-suggestions')).toBeInTheDocument();
       expect(screen.getByText('What you can try:')).toBeInTheDocument();
@@ -70,15 +70,15 @@ describe('ErrorSuggestions', () => {
     it('does not render suggestions section when empty', () => {
       const error = createError();
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={[]}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.queryByTestId('error-suggestions')).not.toBeInTheDocument();
     });
@@ -90,15 +90,15 @@ describe('ErrorSuggestions', () => {
         { text: 'Other suggestion' },
       ];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={suggestions}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       const badge = screen.getByText('Most likely');
       expect(badge).toBeInTheDocument();
@@ -110,15 +110,15 @@ describe('ErrorSuggestions', () => {
       const error = createError();
       const suggestions = [{ text: 'Regular suggestion' }];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={suggestions}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.queryByText('Most likely')).not.toBeInTheDocument();
     });
@@ -132,15 +132,15 @@ describe('ErrorSuggestions', () => {
         },
       ];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={suggestions}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByText(/Why:/)).toBeInTheDocument();
       expect(screen.getByText(/This often fixes the issue because/)).toBeInTheDocument();
@@ -154,15 +154,15 @@ describe('ErrorSuggestions', () => {
         { text: 'Third suggestion' },
       ];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={suggestions}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByText('1.')).toBeInTheDocument();
       expect(screen.getByText('2.')).toBeInTheDocument();
@@ -175,15 +175,15 @@ describe('ErrorSuggestions', () => {
       const error = createError();
       const suggestions = [{ text: 'Reduce file size to continue' }];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={suggestions}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       const link = screen.getByText('Learn about file limits');
       expect(link).toBeInTheDocument();
@@ -196,15 +196,15 @@ describe('ErrorSuggestions', () => {
       const error = createError();
       const suggestions = [{ text: 'Some other suggestion' }];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={suggestions}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.queryByRole('link')).not.toBeInTheDocument();
     });
@@ -213,15 +213,15 @@ describe('ErrorSuggestions', () => {
       const error = createError();
       const suggestions = [{ text: 'Reduce file size' }];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={suggestions}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       const link = screen.getByLabelText('Learn more: Learn about file limits');
       expect(link).toBeInTheDocument();
@@ -233,15 +233,15 @@ describe('ErrorSuggestions', () => {
       const error = createError({ code: ErrorCode.MEMORY_LIMIT_EXCEEDED });
       const suggestions = [{ text: 'Some suggestion' }];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={suggestions}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByText('Additional resources:')).toBeInTheDocument();
       expect(screen.getByText('Memory troubleshooting')).toBeInTheDocument();
@@ -251,15 +251,15 @@ describe('ErrorSuggestions', () => {
       const error = createError({ code: ErrorCode.WASM_EXECUTION_ERROR });
       const suggestions = [{ text: 'Some suggestion' }];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={suggestions}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.queryByText('Additional resources:')).not.toBeInTheDocument();
     });
@@ -274,15 +274,15 @@ describe('ErrorSuggestions', () => {
         'Simplify complex content',
       ];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={[]}
           isSizeError={true}
           sizeReductionTips={tips}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByText('How to reduce your CV size:')).toBeInTheDocument();
       expect(screen.getByText('Remove unnecessary images')).toBeInTheDocument();
@@ -294,15 +294,15 @@ describe('ErrorSuggestions', () => {
       const error = createError();
       const tips = ['Some tip'];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={[]}
           isSizeError={false}
           sizeReductionTips={tips}
-        />,
-      );
+        />
+      ));
 
       expect(screen.queryByText('How to reduce your CV size:')).not.toBeInTheDocument();
     });
@@ -310,15 +310,15 @@ describe('ErrorSuggestions', () => {
     it('does not render size section when tips array is empty', () => {
       const error = createError();
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={[]}
           isSizeError={true}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.queryByText('How to reduce your CV size:')).not.toBeInTheDocument();
     });
@@ -328,15 +328,15 @@ describe('ErrorSuggestions', () => {
     it('shows retry warning when retryAttempt >= 3', () => {
       const error = createError({ recoverable: true });
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={3}
           prioritizedSuggestions={[]}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByText('Multiple retry attempts detected')).toBeInTheDocument();
       expect(screen.getByText(/You've tried 3 times/)).toBeInTheDocument();
@@ -345,15 +345,15 @@ describe('ErrorSuggestions', () => {
     it('does not show retry warning when retryAttempt < 3', () => {
       const error = createError({ recoverable: true });
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={2}
           prioritizedSuggestions={[]}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.queryByText('Multiple retry attempts detected')).not.toBeInTheDocument();
     });
@@ -361,15 +361,15 @@ describe('ErrorSuggestions', () => {
     it('does not show retry warning when error is not recoverable', () => {
       const error = createError({ recoverable: false });
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={5}
           prioritizedSuggestions={[]}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.queryByText('Multiple retry attempts detected')).not.toBeInTheDocument();
     });
@@ -377,15 +377,15 @@ describe('ErrorSuggestions', () => {
     it('displays retry attempt count in warning', () => {
       const error = createError({ recoverable: true });
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={7}
           prioritizedSuggestions={[]}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByText(/You've tried 7 times/)).toBeInTheDocument();
     });
@@ -395,7 +395,7 @@ describe('ErrorSuggestions', () => {
     it('shows previous error when lastError is provided and retryAttempt > 0', () => {
       const error = createError();
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={2}
@@ -403,8 +403,8 @@ describe('ErrorSuggestions', () => {
           prioritizedSuggestions={[]}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByText('Previous attempt (#2):')).toBeInTheDocument();
       expect(screen.getByText('Previous error: WASM execution failed')).toBeInTheDocument();
@@ -413,7 +413,7 @@ describe('ErrorSuggestions', () => {
     it('does not show previous error when retryAttempt is 0', () => {
       const error = createError();
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
@@ -421,8 +421,8 @@ describe('ErrorSuggestions', () => {
           prioritizedSuggestions={[]}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.queryByText('Previous attempt')).not.toBeInTheDocument();
     });
@@ -430,15 +430,15 @@ describe('ErrorSuggestions', () => {
     it('does not show previous error when lastError is undefined', () => {
       const error = createError();
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={2}
           prioritizedSuggestions={[]}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.queryByText('Previous attempt')).not.toBeInTheDocument();
     });
@@ -448,15 +448,15 @@ describe('ErrorSuggestions', () => {
     it('handles empty suggestions array gracefully', () => {
       const error = createError();
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={[]}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       // Should render without crashing
       expect(screen.queryByTestId('error-suggestions')).not.toBeInTheDocument();
@@ -469,7 +469,7 @@ describe('ErrorSuggestions', () => {
       ];
       const tips = ['Remove images', 'Compress content'];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={5}
@@ -477,8 +477,8 @@ describe('ErrorSuggestions', () => {
           prioritizedSuggestions={suggestions}
           isSizeError={true}
           sizeReductionTips={tips}
-        />,
-      );
+        />
+      ));
 
       // All sections should be present
       expect(screen.getByText('What you can try:')).toBeInTheDocument();
@@ -492,15 +492,15 @@ describe('ErrorSuggestions', () => {
       const error = createError();
       const suggestions = [{ text: '' }];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={suggestions}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       // Should not crash
       expect(screen.getByTestId('error-suggestions')).toBeInTheDocument();
@@ -514,15 +514,15 @@ describe('ErrorSuggestions', () => {
         },
       ];
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={suggestions}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByText(/This is a very long suggestion/)).toBeInTheDocument();
     });
@@ -533,15 +533,15 @@ describe('ErrorSuggestions', () => {
       const error = createError();
       const suggestions = [{ text: 'First' }, { text: 'Second' }];
 
-      const { container } = render(
+      const { container } = render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={suggestions}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       const ol = container.querySelector('ol');
       expect(ol).toBeInTheDocument();
@@ -551,15 +551,15 @@ describe('ErrorSuggestions', () => {
       const error = createError();
       const tips = ['Tip 1', 'Tip 2'];
 
-      const { container } = render(
+      const { container } = render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={[]}
           isSizeError={true}
           sizeReductionTips={tips}
-        />,
-      );
+        />
+      ));
 
       const ul = container.querySelector('ul.list-disc');
       expect(ul).toBeInTheDocument();
@@ -568,15 +568,15 @@ describe('ErrorSuggestions', () => {
     it('warning icon has aria-hidden', () => {
       const error = createError({ recoverable: true });
 
-      const { container } = render(
+      const { container } = render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={5}
           prioritizedSuggestions={[]}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       const svg = container.querySelector('svg[aria-hidden="true"]');
       expect(svg).toBeInTheDocument();
@@ -590,24 +590,24 @@ describe('ErrorSuggestions', () => {
         suggestions: [],
       });
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={[]}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       // Find all links (from help resources)
       const links = screen.queryAllByRole('link');
 
       if (links.length > 0) {
         // All links should have underline class (not just hover:underline)
-        links.forEach((link) => {
+        for (const link of links) {
           expect(link.className).toMatch(/underline/);
-        });
+        }
       }
     });
 
@@ -617,26 +617,26 @@ describe('ErrorSuggestions', () => {
         suggestions: [],
       });
 
-      render(
+      render(() => (
         <ErrorSuggestions
           error={error}
           retryAttempt={0}
           prioritizedSuggestions={[]}
           isSizeError={false}
           sizeReductionTips={[]}
-        />,
-      );
+        />
+      ));
 
       const links = screen.queryAllByRole('link');
 
       if (links.length > 0) {
         // External links should have descriptive aria-labels
-        links.forEach((link) => {
+        for (const link of links) {
           const ariaLabel = link.getAttribute('aria-label');
           if (ariaLabel != null && ariaLabel !== '') {
             expect(ariaLabel).toMatch(/Learn more:/);
           }
-        });
+        }
       }
     });
   });
