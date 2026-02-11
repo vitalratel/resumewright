@@ -1,26 +1,23 @@
-/**
- * MainContent Component Tests
- *
- * Tests MainContent state machine renderer for correct view display
- * based on UI state and proper prop passing to child components.
- */
+// ABOUTME: Tests for MainContent state machine renderer.
+// ABOUTME: Tests correct view display based on UI state and proper handler passing.
 
-import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, vi } from 'vitest';
+import { fireEvent, render, screen } from '@solidjs/testing-library';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ErrorCode } from '@/shared/errors/codes';
 import { generateFilename } from '../../../../shared/utils/filenameSanitization';
-import type { AppContextValue } from '../../../context/AppContext';
-import type { ConversionHandlers } from '../../../hooks/conversion/useConversionHandlers';
-import { ErrorState } from '../../conversion/ErrorState';
-import { Success } from '../../conversion/Success';
-import { ErrorBoundary } from '../../ErrorBoundary';
-import { FileImport } from '../../FileImport';
+import type { ConversionHandlers } from '../../../context/ConversionContext';
+import { popupStore } from '../../../store';
 import { MainContent } from '../MainContent';
-import { createMockAppContext, createMockConversionContext } from './testHelpers';
+import { createMockConversionContext } from './testHelpers';
 
 // Mock child components
 vi.mock('../../FileImport', () => ({
-  FileImport: vi.fn(() => <div data-testid="file-import">FileImport Mock</div>),
+  FileImport: vi.fn((props: { importedFile?: { name: string } | null }) => (
+    <div data-testid="file-import">
+      FileImport Mock
+      {props.importedFile && <div>File: {props.importedFile.name}</div>}
+    </div>
+  )),
 }));
 
 vi.mock('../FileValidatedView', () => ({
@@ -34,14 +31,11 @@ vi.mock('../../conversion/ConvertingState', () => ({
 }));
 
 vi.mock('../../conversion/Success', () => ({
-  Success: vi.fn(({ filename, onExportAnother }) => (
+  Success: vi.fn((props: { filename: string; onExportAnother: () => void }) => (
     <div data-testid="success">
       <div>Success Mock</div>
-      <div>
-        Filename:
-        {filename}
-      </div>
-      <button type="button" onClick={onExportAnother}>
+      <div>Filename: {props.filename}</div>
+      <button type="button" onClick={props.onExportAnother}>
         Export Another
       </button>
     </div>
@@ -49,33 +43,40 @@ vi.mock('../../conversion/Success', () => ({
 }));
 
 vi.mock('../../conversion/ErrorState', () => ({
-  ErrorState: vi.fn(({ error, onRetry, onDismiss, onReportIssue, onImportDifferent }) => (
-    <div data-testid="error-state">
-      <div>ErrorState Mock</div>
-      <div>
-        Error:
-        {error.message}
+  ErrorState: vi.fn(
+    (props: {
+      error: { message: string };
+      onRetry: () => void;
+      onDismiss: () => void;
+      onReportIssue: () => void;
+      onImportDifferent: () => void;
+    }) => (
+      <div data-testid="error-state">
+        <div>ErrorState Mock</div>
+        <div>Error: {props.error.message}</div>
+        <button type="button" onClick={props.onRetry}>
+          Retry
+        </button>
+        <button type="button" onClick={props.onDismiss}>
+          Dismiss
+        </button>
+        <button type="button" onClick={props.onReportIssue}>
+          Report Issue
+        </button>
+        <button type="button" onClick={props.onImportDifferent}>
+          Import Different
+        </button>
       </div>
-      <button type="button" onClick={onRetry}>
-        Retry
-      </button>
-      <button type="button" onClick={onDismiss}>
-        Dismiss
-      </button>
-      <button type="button" onClick={onReportIssue}>
-        Report Issue
-      </button>
-      <button type="button" onClick={onImportDifferent}>
-        Import Different
-      </button>
-    </div>
-  )),
+    ),
+  ),
 }));
 
 vi.mock('../../ErrorBoundary', () => ({
-  ErrorBoundary: vi.fn(({ children }) => <div data-testid="error-boundary">{children}</div>),
-  SectionErrorBoundary: vi.fn(({ children }) => (
-    <div data-testid="section-error-boundary">{children}</div>
+  ErrorBoundary: vi.fn((props: { children: unknown }) => (
+    <div data-testid="error-boundary">{props.children}</div>
+  )),
+  SectionErrorBoundary: vi.fn((props: { children: unknown }) => (
+    <div data-testid="section-error-boundary">{props.children}</div>
   )),
 }));
 
@@ -83,20 +84,14 @@ vi.mock('../../../../shared/utils/filenameSanitization', () => ({
   generateFilename: vi.fn(() => 'generated-resume.pdf'),
 }));
 
-// Mock Context hooks
-const mockUseAppContext = vi.fn<() => AppContextValue>();
+// Mock ConversionContext hook
 const mockUseConversion = vi.fn<() => ConversionHandlers>();
-
-vi.mock('../../../context/AppContext', () => ({
-  useAppContext: () => mockUseAppContext(),
-}));
 
 vi.mock('../../../context/ConversionContext', () => ({
   useConversion: () => mockUseConversion(),
 }));
 
-// Create mock instances using shared factories
-const mockAppContext = createMockAppContext();
+// Create mock instances using shared factory
 const mockConversionContext = createMockConversionContext();
 
 // Test constants
@@ -125,17 +120,14 @@ const TEST_FILENAME = 'my-resume.pdf';
 describe('MainContent', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // Reset context mocks to default state
-    mockUseAppContext.mockReturnValue(mockAppContext);
+    popupStore.reset();
     mockUseConversion.mockReturnValue(mockConversionContext);
   });
 
   describe('Semantic HTML', () => {
     it('renders as main element with correct attributes', () => {
-      const { container } = render(<MainContent />);
+      const { container } = render(() => <MainContent />);
 
-      // <main> element has implicit role="main" per HTML spec
       const main = container.querySelector('main');
       expect(main).toBeInTheDocument();
       expect(main).toHaveAttribute('id', 'main-content');
@@ -143,7 +135,7 @@ describe('MainContent', () => {
     });
 
     it('applies correct layout classes', () => {
-      const { container } = render(<MainContent />);
+      const { container } = render(() => <MainContent />);
 
       const main = container.querySelector('main');
       expect(main).toHaveClass('flex-1', 'overflow-y-auto');
@@ -152,26 +144,13 @@ describe('MainContent', () => {
 
   describe('State: waiting_for_import', () => {
     it('renders FileImport component', () => {
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       expect(screen.getByTestId('file-import')).toBeInTheDocument();
     });
 
-    it('passes correct props to FileImport', () => {
-      render(<MainContent />);
-
-      const calls = vi.mocked(FileImport).mock.calls;
-      expect(calls.length).toBeGreaterThan(0);
-      const firstCall = calls[0][0];
-      expect(firstCall).toMatchObject({
-        onClearFile: mockAppContext.appState.clearImportedFile,
-        importedFile: mockAppContext.appState.importedFile,
-      });
-      expect(firstCall.onFileValidated).toBeDefined();
-    });
-
     it('does not render other views', () => {
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       expect(screen.queryByTestId('file-validated-view')).not.toBeInTheDocument();
       expect(screen.queryByTestId('converting-state')).not.toBeInTheDocument();
@@ -182,29 +161,17 @@ describe('MainContent', () => {
 
   describe('State: file_validated', () => {
     it('renders FileValidatedView component', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.VALIDATED,
-        },
-      });
+      popupStore.setUIState(UI_STATES.VALIDATED);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       expect(screen.getByTestId('file-validated-view')).toBeInTheDocument();
     });
 
     it('does not render other views', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.VALIDATED,
-        },
-      });
+      popupStore.setUIState(UI_STATES.VALIDATED);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       expect(screen.queryByTestId('file-import')).not.toBeInTheDocument();
       expect(screen.queryByTestId('converting-state')).not.toBeInTheDocument();
@@ -215,29 +182,17 @@ describe('MainContent', () => {
 
   describe('State: validation_error', () => {
     it('renders FileValidatedView component', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.VALIDATION_ERROR,
-        },
-      });
+      popupStore.setUIState(UI_STATES.VALIDATION_ERROR);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       expect(screen.getByTestId('file-validated-view')).toBeInTheDocument();
     });
 
     it('does not render other views', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.VALIDATION_ERROR,
-        },
-      });
+      popupStore.setUIState(UI_STATES.VALIDATION_ERROR);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       expect(screen.queryByTestId('file-import')).not.toBeInTheDocument();
       expect(screen.queryByTestId('converting-state')).not.toBeInTheDocument();
@@ -248,29 +203,17 @@ describe('MainContent', () => {
 
   describe('State: converting', () => {
     it('renders ConvertingState component', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.CONVERTING,
-        },
-      });
+      popupStore.startConversion();
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       expect(screen.getByTestId('converting-state')).toBeInTheDocument();
     });
 
     it('does not render other views', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.CONVERTING,
-        },
-      });
+      popupStore.startConversion();
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       expect(screen.queryByTestId('file-import')).not.toBeInTheDocument();
       expect(screen.queryByTestId('file-validated-view')).not.toBeInTheDocument();
@@ -281,136 +224,48 @@ describe('MainContent', () => {
 
   describe('State: success', () => {
     it('renders Success component with ErrorBoundary', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.SUCCESS,
-          lastFilename: TEST_FILENAME,
-        },
-      });
+      popupStore.setSuccess(TEST_FILENAME);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       expect(screen.getByTestId('error-boundary')).toBeInTheDocument();
       expect(screen.getByTestId('success')).toBeInTheDocument();
     });
 
     it('passes correct filename to Success', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.SUCCESS,
-          lastFilename: TEST_FILENAME,
-        },
-      });
+      popupStore.setSuccess(TEST_FILENAME);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
-      expect(
-        screen.getByText((_content, element) => {
-          return (
-            element?.textContent === `Filename: ${TEST_FILENAME}` ||
-            element?.textContent === `Filename:${TEST_FILENAME}`
-          );
-        }),
-      ).toBeInTheDocument();
+      expect(screen.getByText(`Filename: ${TEST_FILENAME}`)).toBeInTheDocument();
     });
 
     it('generates filename when lastFilename is null', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.SUCCESS,
-          lastFilename: null,
-        },
-      });
+      popupStore.setUIState(UI_STATES.SUCCESS);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       expect(generateFilename).toHaveBeenCalledWith(undefined);
-      expect(
-        screen.getByText((_content, element) => {
-          return (
-            element?.textContent === 'Filename: generated-resume.pdf' ||
-            element?.textContent === 'Filename:generated-resume.pdf'
-          );
-        }),
-      ).toBeInTheDocument();
+      expect(screen.getByText('Filename: generated-resume.pdf')).toBeInTheDocument();
     });
 
-    it('passes reset handler to Success', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.SUCCESS,
-          lastFilename: TEST_FILENAME,
-        },
-      });
+    it('resets state when Export Another clicked', () => {
+      popupStore.setImportedFile('resume.tsx', 2048, '// content');
+      popupStore.setSuccess(TEST_FILENAME);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
-      const calls = vi.mocked(Success).mock.calls;
-      expect(calls.length).toBeGreaterThan(0);
-      const firstCall = calls[0][0];
-      expect(firstCall).toMatchObject({
-        onExportAnother: mockAppContext.appState.reset,
-        filename: TEST_FILENAME,
-      });
-    });
+      const button = screen.getByText('Export Another');
+      fireEvent.click(button);
 
-    it('uses success ref', () => {
-      const successRef = { current: null };
-
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        successRef,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.SUCCESS,
-          lastFilename: TEST_FILENAME,
-        },
-      });
-
-      const { container } = render(<MainContent />);
-
-      // Find the div with fade-in animation that contains success
-      const successDiv = container.querySelector('[data-testid="error-boundary"]')?.parentElement;
-      expect(successDiv).toBe(successRef.current);
-    });
-
-    it('wraps Success in ErrorBoundary', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.SUCCESS,
-          lastFilename: TEST_FILENAME,
-        },
-      });
-
-      render(<MainContent />);
-
-      // Verify ErrorBoundary wraps Success component
-      expect(ErrorBoundary).toHaveBeenCalled();
-      const errorBoundaryProps = vi.mocked(ErrorBoundary).mock.calls[0][0];
-      expect(errorBoundaryProps.children).toBeDefined();
+      expect(popupStore.state.uiState).toBe('waiting_for_import');
+      expect(popupStore.state.importedFile).toBeNull();
     });
 
     it('does not render other views', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.SUCCESS,
-          lastFilename: TEST_FILENAME,
-        },
-      });
+      popupStore.setSuccess(TEST_FILENAME);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       expect(screen.queryByTestId('file-import')).not.toBeInTheDocument();
       expect(screen.queryByTestId('file-validated-view')).not.toBeInTheDocument();
@@ -421,97 +276,41 @@ describe('MainContent', () => {
 
   describe('State: error', () => {
     it('renders ErrorState component when error present', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.ERROR,
-          lastError: TEST_ERROR,
-        },
-      });
+      popupStore.setError(TEST_ERROR);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       expect(screen.getByTestId('error-state')).toBeInTheDocument();
-      expect(
-        screen.getByText((_content, element) => {
-          return (
-            element?.textContent === `Error: ${TEST_ERROR.message}` ||
-            element?.textContent === `Error:${TEST_ERROR.message}`
-          );
-        }),
-      ).toBeInTheDocument();
+      expect(screen.getByText(`Error: ${TEST_ERROR.message}`)).toBeInTheDocument();
     });
 
     it('does not render ErrorState when error is null', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.ERROR,
-          lastError: null,
-        },
-      });
+      popupStore.setUIState(UI_STATES.ERROR);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       expect(screen.queryByTestId('error-state')).not.toBeInTheDocument();
     });
 
-    it('passes correct props to ErrorState', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.ERROR,
-          lastError: TEST_ERROR,
-        },
-      });
+    it('passes conversion handlers to ErrorState', () => {
+      popupStore.setError(TEST_ERROR);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
-      const calls = vi.mocked(ErrorState).mock.calls;
-      expect(calls.length).toBeGreaterThan(0);
-      const firstCall = calls[0][0];
-      expect(firstCall).toMatchObject({
-        error: TEST_ERROR,
-        onRetry: mockConversionContext.handleRetry,
-        onDismiss: mockConversionContext.handleDismissError,
-        onReportIssue: mockConversionContext.handleReportIssue,
-        onImportDifferent: mockConversionContext.handleImportDifferent,
-      });
-    });
+      fireEvent.click(screen.getByText('Retry'));
+      expect(mockConversionContext.handleRetry).toHaveBeenCalledTimes(1);
 
-    it('uses error ref', () => {
-      const errorRef = { current: null };
+      fireEvent.click(screen.getByText('Dismiss'));
+      expect(mockConversionContext.handleDismissError).toHaveBeenCalledTimes(1);
 
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        errorRef,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.ERROR,
-          lastError: TEST_ERROR,
-        },
-      });
-
-      const { container } = render(<MainContent />);
-
-      const errorDiv = container.querySelector('[data-testid="error-state"]')?.parentElement;
-      expect(errorDiv).toBe(errorRef.current);
+      fireEvent.click(screen.getByText('Import Different'));
+      expect(mockConversionContext.handleImportDifferent).toHaveBeenCalledTimes(1);
     });
 
     it('does not render other views', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.ERROR,
-          lastError: TEST_ERROR,
-        },
-      });
+      popupStore.setError(TEST_ERROR);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       expect(screen.queryByTestId('file-import')).not.toBeInTheDocument();
       expect(screen.queryByTestId('file-validated-view')).not.toBeInTheDocument();
@@ -522,56 +321,36 @@ describe('MainContent', () => {
 
   describe('Animations', () => {
     it('applies fade-in animation to waiting_for_import view', () => {
-      render(<MainContent />);
+      render(() => <MainContent />);
 
-      // FileImport is now wrapped in SectionErrorBoundary, so fade-in is on grandparent
+      // FileImport is wrapped in SectionErrorBoundary, so fade-in is on grandparent
       const sectionBoundary = screen.getByTestId('file-import').parentElement;
       const wrapper = sectionBoundary?.parentElement;
       expect(wrapper?.className).toMatch(/fade.*in/i);
     });
 
     it('applies fade-in animation to converting view', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.CONVERTING,
-        },
-      });
+      popupStore.startConversion();
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       const wrapper = screen.getByTestId('converting-state').parentElement;
       expect(wrapper?.className).toMatch(/fade.*in/i);
     });
 
     it('applies fade-in animation to success view', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.SUCCESS,
-          lastFilename: TEST_FILENAME,
-        },
-      });
+      popupStore.setSuccess(TEST_FILENAME);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       const wrapper = screen.getByTestId('error-boundary').parentElement;
       expect(wrapper?.className).toMatch(/fade.*in/i);
     });
 
     it('applies fade-in animation to error view', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          uiState: UI_STATES.ERROR,
-          lastError: TEST_ERROR,
-        },
-      });
+      popupStore.setError(TEST_ERROR);
 
-      render(<MainContent />);
+      render(() => <MainContent />);
 
       const wrapper = screen.getByTestId('error-state').parentElement;
       expect(wrapper?.className).toMatch(/fade.*in/i);

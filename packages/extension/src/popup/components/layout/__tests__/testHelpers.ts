@@ -3,36 +3,15 @@
 
 import { vi } from 'vitest';
 import type { AppContextValue } from '../../../context/AppContext';
+import type { ConversionHandlers } from '../../../context/ConversionContext';
 import type { QuickSettingsContextValue } from '../../../context/QuickSettingsContext';
-import type { ConversionHandlers } from '../../../hooks/conversion/useConversionHandlers';
 
 /**
  * Factory for mock AppContextValue with sensible defaults
  */
 export function createMockAppContext(overrides?: Partial<AppContextValue>): AppContextValue {
   return {
-    appState: {
-      uiState: 'waiting_for_import' as const,
-      validationError: null,
-      isValidating: false,
-      lastError: null,
-      lastFilename: null,
-      importedFile: null,
-      getProgress: vi.fn(() => undefined),
-      setValidating: vi.fn(),
-      setValidationError: vi.fn(),
-      clearValidationError: vi.fn(),
-      startConversion: vi.fn(),
-      setSuccess: vi.fn(),
-      setError: vi.fn(),
-      setUIState: vi.fn(),
-      setImportedFile: vi.fn(),
-      clearImportedFile: vi.fn(),
-      reset: vi.fn(),
-    },
     currentJobId: '',
-    successRef: { current: null },
-    errorRef: { current: null },
     onOpenSettings: vi.fn(),
     ...overrides,
   };

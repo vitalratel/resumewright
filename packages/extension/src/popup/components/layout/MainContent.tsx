@@ -1,10 +1,10 @@
-// ABOUTME: State machine content renderer using Context API.
+// ABOUTME: State machine content renderer using popupStore.
 // ABOUTME: Renders different content based on UI state (import, converting, success, error).
 
-import { useTransition } from 'react';
+import { Match, Switch } from 'solid-js';
 import { generateFilename } from '../../../shared/utils/filenameSanitization';
-import { useAppContext } from '../../context/AppContext';
 import { useConversion } from '../../context/ConversionContext';
+import { popupStore } from '../../store';
 import { ConvertingState } from '../conversion/ConvertingState';
 import { ErrorState } from '../conversion/ErrorState';
 import { Success } from '../conversion/Success';
@@ -13,70 +13,74 @@ import { FileImport } from '../FileImport';
 import { FileValidatedView } from './FileValidatedView';
 
 export function MainContent() {
-  const { appState, successRef, errorRef } = useAppContext();
   const conversionHandlers = useConversion();
 
-  // React 19 pattern: useTransition for async state updates
-  const [, startTransition] = useTransition();
+  let successRef: HTMLDivElement | undefined;
+  let errorRef: HTMLDivElement | undefined;
 
-  const { uiState, lastError, lastFilename } = appState;
-  const {
-    handleFileValidated,
-    handleRetry,
-    handleDismissError,
-    handleReportIssue,
-    handleImportDifferent,
-  } = conversionHandlers;
+  const handleExportAnother = () => {
+    popupStore.clearImportedFile();
+    popupStore.resetUI();
+  };
 
   return (
-    <main id="main-content" className="flex-1 overflow-y-auto">
-      {uiState === 'waiting_for_import' && (
-        <div className="animate-fade-in">
-          <SectionErrorBoundary section="file-import" onReset={appState.clearImportedFile}>
-            <FileImport
-              onFileValidated={(content, fileName, fileSize) => {
-                startTransition(async () => {
-                  await handleFileValidated(content, fileName, fileSize);
-                });
-              }}
-              onClearFile={appState.clearImportedFile}
-              importedFile={appState.importedFile}
-            />
-          </SectionErrorBoundary>
-        </div>
-      )}
+    <main id="main-content" class="flex-1 overflow-y-auto">
+      <Switch>
+        <Match when={popupStore.state.uiState === 'waiting_for_import'}>
+          <div class="animate-fade-in">
+            <SectionErrorBoundary section="file-import" onReset={popupStore.clearImportedFile}>
+              <FileImport
+                onFileValidated={(content, fileName, fileSize) => {
+                  void conversionHandlers.handleFileValidated(content, fileName, fileSize);
+                }}
+                onClearFile={popupStore.clearImportedFile}
+                importedFile={popupStore.state.importedFile}
+              />
+            </SectionErrorBoundary>
+          </div>
+        </Match>
 
-      {(uiState === 'file_validated' || uiState === 'validation_error') && <FileValidatedView />}
+        <Match
+          when={
+            popupStore.state.uiState === 'file_validated' ||
+            popupStore.state.uiState === 'validation_error'
+          }
+        >
+          <FileValidatedView />
+        </Match>
 
-      {uiState === 'converting' && (
-        <div className="animate-fade-in">
-          <ConvertingState />
-        </div>
-      )}
+        <Match when={popupStore.state.uiState === 'converting'}>
+          <div class="animate-fade-in">
+            <ConvertingState />
+          </div>
+        </Match>
 
-      {uiState === 'success' && (
-        <div ref={successRef} className="animate-fade-in">
-          <ErrorBoundary key={`success-${appState.lastFilename}`}>
-            <Success
-              filename={lastFilename ?? generateFilename(undefined)}
-              autoCloseSeconds={20}
-              onExportAnother={appState.reset}
-            />
-          </ErrorBoundary>
-        </div>
-      )}
+        <Match when={popupStore.state.uiState === 'success'}>
+          <div ref={successRef} class="animate-fade-in">
+            <ErrorBoundary>
+              <Success
+                filename={popupStore.state.lastFilename ?? generateFilename(undefined)}
+                autoCloseSeconds={20}
+                onExportAnother={handleExportAnother}
+              />
+            </ErrorBoundary>
+          </div>
+        </Match>
 
-      {uiState === 'error' && lastError && (
-        <div ref={errorRef} className="animate-fade-in">
-          <ErrorState
-            error={lastError}
-            onRetry={handleRetry}
-            onDismiss={handleDismissError}
-            onReportIssue={handleReportIssue}
-            onImportDifferent={handleImportDifferent}
-          />
-        </div>
-      )}
+        <Match when={popupStore.state.uiState === 'error' ? popupStore.state.lastError : undefined}>
+          {(error) => (
+            <div ref={errorRef} class="animate-fade-in">
+              <ErrorState
+                error={error()}
+                onRetry={conversionHandlers.handleRetry}
+                onDismiss={conversionHandlers.handleDismissError}
+                onReportIssue={conversionHandlers.handleReportIssue}
+                onImportDifferent={conversionHandlers.handleImportDifferent}
+              />
+            </div>
+          )}
+        </Match>
+      </Switch>
     </main>
   );
 }

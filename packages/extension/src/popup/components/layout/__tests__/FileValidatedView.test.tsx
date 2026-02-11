@@ -1,16 +1,12 @@
-/**
- * FileValidatedView Component Tests
- *
- * Tests FileValidatedView for proper rendering with Context providers,
- * conditional display of export button and settings summary, and handler passing.
- */
+// ABOUTME: Tests for FileValidatedView component with Solid contexts and popupStore.
+// ABOUTME: Tests rendering, export button, settings summary, and handler passing.
 
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { fireEvent, render, screen } from '@solidjs/testing-library';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AppContextValue } from '../../../context/AppContext';
+import type { ConversionHandlers } from '../../../context/ConversionContext';
 import type { QuickSettingsContextValue } from '../../../context/QuickSettingsContext';
-import type { ConversionHandlers } from '../../../hooks/conversion/useConversionHandlers';
+import { popupStore } from '../../../store';
 import { FileValidatedView } from '../FileValidatedView';
 import {
   createMockAppContext,
@@ -39,10 +35,10 @@ vi.mock('../../../context/QuickSettingsContext', () => ({
 
 // Mock FileImport component
 vi.mock('../../FileImport', () => ({
-  FileImport: ({ importedFile }: { importedFile?: { name: string } | null }) => (
+  FileImport: (props: { importedFile?: { name: string } | null }) => (
     <div data-testid="file-import">
       FileImport Mock
-      {importedFile && <div>File: {importedFile.name}</div>}
+      {props.importedFile && <div>File: {props.importedFile.name}</div>}
     </div>
   ),
 }));
@@ -58,19 +54,14 @@ vi.mock('../../../utils/marginPresets', () => ({
 }));
 
 // Create mock instances using shared factories
-const mockAppContext = createMockAppContext({
-  appState: {
-    ...createMockAppContext().appState,
-    uiState: 'file_validated' as const,
-  },
-  currentJobId: 'test-job-id',
-});
+const mockAppContext = createMockAppContext();
 const mockConversionContext = createMockConversionContext();
 const mockQuickSettingsContext = createMockQuickSettingsContext();
 
 describe('FileValidatedView', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    popupStore.reset();
 
     // Reset context mocks to default state
     mockUseAppContext.mockReturnValue(mockAppContext);
@@ -78,24 +69,23 @@ describe('FileValidatedView', () => {
     mockUseQuickSettings.mockReturnValue(mockQuickSettingsContext);
   });
 
+  /** Helper to set imported file on popupStore */
+  const setImportedFile = () => {
+    popupStore.setImportedFile(TEST_FILE.name, TEST_FILE.size, TEST_FILE.content);
+  };
+
   describe('Rendering', () => {
     it('renders FileImport component', () => {
-      render(<FileValidatedView />);
+      render(() => <FileValidatedView />);
 
       expect(screen.getByTestId('file-import')).toBeInTheDocument();
       expect(screen.getByText('FileImport Mock')).toBeInTheDocument();
     });
 
     it('passes imported file to FileImport when present', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          importedFile: TEST_FILE,
-        },
-      });
+      setImportedFile();
 
-      render(<FileValidatedView />);
+      render(() => <FileValidatedView />);
 
       expect(screen.getByText(`File: ${TEST_FILE.name}`)).toBeInTheDocument();
     });
@@ -103,59 +93,39 @@ describe('FileValidatedView', () => {
 
   describe('Export Button', () => {
     it('does not show export button when no file imported', () => {
-      render(<FileValidatedView />);
+      render(() => <FileValidatedView />);
 
       expect(screen.queryByTestId('export-button')).not.toBeInTheDocument();
     });
 
     it('does not show export button when settings not loaded', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          importedFile: TEST_FILE,
-        },
-      });
+      setImportedFile();
 
-      render(<FileValidatedView />);
+      render(() => <FileValidatedView />);
 
       expect(screen.queryByTestId('export-button')).not.toBeInTheDocument();
     });
 
     it('shows export button when file imported and settings loaded', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          importedFile: TEST_FILE,
-        },
-      });
-
+      setImportedFile();
       mockUseQuickSettings.mockReturnValue({
         settings: TEST_SETTINGS,
         handlers: mockQuickSettingsContext.handlers,
       });
 
-      render(<FileValidatedView />);
+      render(() => <FileValidatedView />);
 
       expect(screen.getByTestId('export-button')).toBeInTheDocument();
     });
 
     it('export button has correct text and keyboard hint', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          importedFile: TEST_FILE,
-        },
-      });
-
+      setImportedFile();
       mockUseQuickSettings.mockReturnValue({
         settings: TEST_SETTINGS,
         handlers: mockQuickSettingsContext.handlers,
       });
 
-      render(<FileValidatedView />);
+      render(() => <FileValidatedView />);
 
       const button = screen.getByTestId('export-button');
       expect(button).toHaveTextContent('Export to PDF');
@@ -164,46 +134,30 @@ describe('FileValidatedView', () => {
     });
 
     it('export button has accessible aria-label and aria-keyshortcuts', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          importedFile: TEST_FILE,
-        },
-      });
-
+      setImportedFile();
       mockUseQuickSettings.mockReturnValue({
         settings: TEST_SETTINGS,
         handlers: mockQuickSettingsContext.handlers,
       });
 
-      render(<FileValidatedView />);
+      render(() => <FileValidatedView />);
 
       const button = screen.getByTestId('export-button');
       expect(button).toHaveAttribute('aria-label', 'Export to PDF');
       expect(button).toHaveAttribute('aria-keyshortcuts', 'Control+e');
     });
 
-    it('calls handleExportClick when export button clicked', async () => {
-      const user = userEvent.setup();
-
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          importedFile: TEST_FILE,
-        },
-      });
-
+    it('calls handleExportClick when export button clicked', () => {
+      setImportedFile();
       mockUseQuickSettings.mockReturnValue({
         settings: TEST_SETTINGS,
         handlers: mockQuickSettingsContext.handlers,
       });
 
-      render(<FileValidatedView />);
+      render(() => <FileValidatedView />);
 
       const button = screen.getByTestId('export-button');
-      await user.click(button);
+      fireEvent.click(button);
 
       expect(mockConversionContext.handleExportClick).toHaveBeenCalledTimes(1);
     });
@@ -211,40 +165,26 @@ describe('FileValidatedView', () => {
 
   describe('Settings Summary', () => {
     it('shows settings summary when file imported and settings loaded', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          importedFile: TEST_FILE,
-        },
-      });
-
+      setImportedFile();
       mockUseQuickSettings.mockReturnValue({
         settings: TEST_SETTINGS,
         handlers: mockQuickSettingsContext.handlers,
       });
 
-      render(<FileValidatedView />);
+      render(() => <FileValidatedView />);
 
       expect(screen.getByText(/Current settings:/)).toBeInTheDocument();
       expect(screen.getByText(/Letter, Normal margins/)).toBeInTheDocument();
     });
 
     it('shows Change link to open settings', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          importedFile: TEST_FILE,
-        },
-      });
-
+      setImportedFile();
       mockUseQuickSettings.mockReturnValue({
         settings: TEST_SETTINGS,
         handlers: mockQuickSettingsContext.handlers,
       });
 
-      render(<FileValidatedView />);
+      render(() => <FileValidatedView />);
 
       const changeButton = screen.getByText('Change');
       expect(changeButton).toBeInTheDocument();
@@ -254,39 +194,23 @@ describe('FileValidatedView', () => {
       );
     });
 
-    it('calls onOpenSettings when Change clicked', async () => {
-      const user = userEvent.setup();
-
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          importedFile: TEST_FILE,
-        },
-      });
-
+    it('calls onOpenSettings when Change clicked', () => {
+      setImportedFile();
       mockUseQuickSettings.mockReturnValue({
         settings: TEST_SETTINGS,
         handlers: mockQuickSettingsContext.handlers,
       });
 
-      render(<FileValidatedView />);
+      render(() => <FileValidatedView />);
 
       const changeButton = screen.getByText('Change');
-      await user.click(changeButton);
+      fireEvent.click(changeButton);
 
       expect(mockAppContext.onOpenSettings).toHaveBeenCalledTimes(1);
     });
 
     it('formats settings summary correctly for A4 paper', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          importedFile: TEST_FILE,
-        },
-      });
-
+      setImportedFile();
       mockUseQuickSettings.mockReturnValue({
         settings: {
           ...TEST_SETTINGS,
@@ -298,20 +222,13 @@ describe('FileValidatedView', () => {
         handlers: mockQuickSettingsContext.handlers,
       });
 
-      render(<FileValidatedView />);
+      render(() => <FileValidatedView />);
 
       expect(screen.getByText(/A4, Normal margins/)).toBeInTheDocument();
     });
 
     it('formats settings summary correctly for narrow margins', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          importedFile: TEST_FILE,
-        },
-      });
-
+      setImportedFile();
       mockUseQuickSettings.mockReturnValue({
         settings: {
           ...TEST_SETTINGS,
@@ -323,32 +240,21 @@ describe('FileValidatedView', () => {
         handlers: mockQuickSettingsContext.handlers,
       });
 
-      render(<FileValidatedView />);
+      render(() => <FileValidatedView />);
 
       expect(screen.getByText(/Letter, Narrow margins/)).toBeInTheDocument();
     });
   });
 
-  describe('Performance', () => {
-    it('uses memo to prevent unnecessary re-renders', () => {
-      mockUseAppContext.mockReturnValue({
-        ...mockAppContext,
-        appState: {
-          ...mockAppContext.appState,
-          importedFile: TEST_FILE,
-        },
-      });
-
+  describe('Rendering Stability', () => {
+    it('renders without errors with all data present', () => {
+      setImportedFile();
       mockUseQuickSettings.mockReturnValue({
         settings: TEST_SETTINGS,
         handlers: mockQuickSettingsContext.handlers,
       });
 
-      const { rerender } = render(<FileValidatedView />);
-
-      // Component uses React.memo for optimization
-      // Verify component renders without errors on re-render with same props
-      expect(() => rerender(<FileValidatedView />)).not.toThrow();
+      expect(() => render(() => <FileValidatedView />)).not.toThrow();
     });
   });
 });
