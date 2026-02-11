@@ -1,8 +1,8 @@
 import type { Plugin } from 'vite';
 import path from 'node:path';
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import solid from 'vite-plugin-solid';
 import wasm from 'vite-plugin-wasm';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [
@@ -24,17 +24,10 @@ export default defineConfig({
         }
       },
     } as Plugin,
-    react({
-      jsxRuntime: 'automatic',
-      // Use SWC for faster transpilation (4x speedup vs esbuild)
-      babel: undefined,
-    }),
+    solid(),
     wasm() as Plugin,
   ],
   esbuild: {
-    // Use SWC for TypeScript transpilation instead of esbuild
-    // Note: @vitejs/plugin-react already uses SWC by default
-    // This is just to ensure consistency
     tsconfigRaw: {
       compilerOptions: {
         useDefineForClassFields: true,
