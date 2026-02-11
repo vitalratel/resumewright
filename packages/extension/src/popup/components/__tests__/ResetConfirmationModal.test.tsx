@@ -1,16 +1,9 @@
 /**
- * ResetConfirmationModal Component Tests
- * Modal close on Escape
- * Show current values before reset
- *
- * Tests for ResetConfirmationModal component:
- * - Rendering with current settings preview
- * - Confirm/Cancel actions
- * - Keyboard interaction (Escape key)
- * - Backdrop click behavior
+ * ABOUTME: Tests for ResetConfirmationModal showing settings before reset.
+ * ABOUTME: Validates rendering, interactions, keyboard behavior, and accessibility.
  */
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@solidjs/testing-library';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UserSettings } from '@/shared/types/settings';
 import { ResetConfirmationModal } from '../ResetConfirmationModal';
@@ -48,55 +41,54 @@ describe('ResetConfirmationModal', () => {
 
   describe('Rendering', () => {
     it('should render as dialog modal', () => {
-      render(
+      render(() => (
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
       const dialog = screen.getByRole('dialog');
       expect(dialog).toBeInTheDocument();
-      // Native <dialog> has implicit aria-modal="true" when opened with showModal()
       expect(dialog.tagName).toBe('DIALOG');
       expect(dialog).toHaveAttribute('aria-labelledby', 'reset-modal-title');
     });
 
     it('should display warning title and description', () => {
-      render(
+      render(() => (
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByText('Reset Settings to Defaults?')).toBeInTheDocument();
       expect(screen.getByText(/This will discard your current settings/i)).toBeInTheDocument();
     });
 
     it('should display current page size', () => {
-      render(
+      render(() => (
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByText('Page Size:')).toBeInTheDocument();
       expect(screen.getByText('A4')).toBeInTheDocument();
     });
 
     it('should display all current margin values', () => {
-      render(
+      render(() => (
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByText('Margins:')).toBeInTheDocument();
       expect(screen.getByText('Top:')).toBeInTheDocument();
@@ -104,41 +96,37 @@ describe('ResetConfirmationModal', () => {
       expect(screen.getByText('Left:')).toBeInTheDocument();
       expect(screen.getByText('Right:')).toBeInTheDocument();
 
-      // All margins are 1.0"
       const marginValues = screen.getAllByText('1"');
       expect(marginValues.length).toBe(4);
     });
 
-    it('should display changed values with before/after comparison - P2-SETTINGS-009', () => {
-      render(
+    it('should display changed values with before/after comparison', () => {
+      render(() => (
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
-      // Should show that settings will change
       expect(screen.getByText(/Settings that will change/i)).toBeInTheDocument();
 
-      // Should show A4 → Letter for page size
       expect(screen.getByText('A4')).toBeInTheDocument();
       expect(screen.getByText('Letter')).toBeInTheDocument();
       expect(screen.getAllByText('→').length).toBeGreaterThan(0);
 
-      // Should show margin changes (1" → 0.5")
       expect(screen.getAllByText('1"').length).toBeGreaterThan(0);
       expect(screen.getAllByText('0.5"').length).toBeGreaterThan(0);
     });
 
     it('should render Cancel and Reset buttons', () => {
-      render(
+      render(() => (
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Reset to Defaults' })).toBeInTheDocument();
@@ -147,13 +135,13 @@ describe('ResetConfirmationModal', () => {
 
   describe('User Interactions', () => {
     it('should call onConfirm when Reset button is clicked', () => {
-      render(
+      render(() => (
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
       const resetButton = screen.getByRole('button', { name: 'Reset to Defaults' });
       fireEvent.click(resetButton);
@@ -163,13 +151,13 @@ describe('ResetConfirmationModal', () => {
     });
 
     it('should call onCancel when Cancel button is clicked', () => {
-      render(
+      render(() => (
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
       const cancelButton = screen.getByRole('button', { name: 'Cancel' });
       fireEvent.click(cancelButton);
@@ -179,32 +167,29 @@ describe('ResetConfirmationModal', () => {
     });
 
     it('should call onCancel when backdrop is clicked', () => {
-      const { container } = render(
+      render(() => (
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
-      // After backdrop is the outer div, dialog role is on inner content
-      const backdrop = container.firstChild as HTMLElement;
-      if (backdrop != null) {
-        fireEvent.click(backdrop);
-        expect(mockOnCancel).toHaveBeenCalledTimes(1);
-      }
+      const dialog = screen.getByRole('dialog');
+      fireEvent.click(dialog);
+
+      expect(mockOnCancel).toHaveBeenCalledTimes(1);
     });
 
     it('should NOT call onCancel when modal content is clicked', () => {
-      render(
+      render(() => (
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
-      // Click on inner content (title), not the dialog element itself
       const title = screen.getByText('Reset Settings to Defaults?');
       fireEvent.click(title);
 
@@ -213,17 +198,16 @@ describe('ResetConfirmationModal', () => {
     });
   });
 
-  describe('Keyboard Interaction - P2-ROOT-011', () => {
+  describe('Keyboard Interaction', () => {
     it('should call onCancel when Escape key is pressed', () => {
-      render(
+      render(() => (
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
-      // Native <dialog> handles Escape via 'cancel' event
       const dialog = screen.getByRole('dialog');
       fireEvent(dialog, new Event('cancel', { bubbles: true }));
 
@@ -232,13 +216,13 @@ describe('ResetConfirmationModal', () => {
     });
 
     it('should NOT call onCancel when other keys are pressed', () => {
-      render(
+      render(() => (
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
       fireEvent.keyDown(document, { key: 'Enter' });
       fireEvent.keyDown(document, { key: 'Space' });
@@ -249,24 +233,23 @@ describe('ResetConfirmationModal', () => {
     });
 
     it('should cleanup Escape listener on unmount', () => {
-      const { unmount } = render(
+      const { unmount } = render(() => (
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
       unmount();
 
-      // After unmount, Escape should not trigger onCancel
       fireEvent.keyDown(document, { key: 'Escape' });
       expect(mockOnCancel).not.toHaveBeenCalled();
     });
   });
 
-  describe('Settings Display - P2-UX-001', () => {
-    it('should show no changes when settings match defaults - P2-SETTINGS-009', () => {
+  describe('Settings Display', () => {
+    it('should show no changes when settings match defaults', () => {
       const defaultSettings: UserSettings = {
         ...mockSettings,
         defaultConfig: {
@@ -276,13 +259,13 @@ describe('ResetConfirmationModal', () => {
         },
       };
 
-      render(
+      render(() => (
         <ResetConfirmationModal
           currentSettings={defaultSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByText(/No custom settings to reset/i)).toBeInTheDocument();
     });
@@ -296,13 +279,13 @@ describe('ResetConfirmationModal', () => {
         },
       };
 
-      render(
+      render(() => (
         <ResetConfirmationModal
           currentSettings={legalSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByText('Legal')).toBeInTheDocument();
     });
@@ -321,15 +304,14 @@ describe('ResetConfirmationModal', () => {
         },
       };
 
-      render(
+      render(() => (
         <ResetConfirmationModal
           currentSettings={customMarginSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
-      // Check that different margin values are displayed (multiple elements may have same text)
       const halfInchMargins = screen.getAllByText('0.5"');
       const threeQuarterInchMargins = screen.getAllByText('0.75"');
 
@@ -340,13 +322,13 @@ describe('ResetConfirmationModal', () => {
 
   describe('Accessibility', () => {
     it('should have warning icon with aria-hidden', () => {
-      const { container } = render(
+      const { container } = render(() => (
         <ResetConfirmationModal
           currentSettings={mockSettings}
           onConfirm={mockOnConfirm}
           onCancel={mockOnCancel}
-        />,
-      );
+        />
+      ));
 
       const icon = container.querySelector('[aria-hidden="true"]');
       expect(icon).toBeInTheDocument();

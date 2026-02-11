@@ -1,49 +1,53 @@
 // ABOUTME: Tests for ProgressBar component functionality and accessibility.
 // ABOUTME: Covers rendering, variants, animation, and ARIA attributes.
 
-import { render, screen } from '@testing-library/react';
+import { render, screen } from '@solidjs/testing-library';
+import { createSignal } from 'solid-js';
 import { describe, expect, it } from 'vitest';
 import { ProgressBar } from '../ProgressBar';
 
 describe('ProgressBar', () => {
   describe('Rendering', () => {
     it('should render progress bar at 0%', () => {
-      const { container } = render(<ProgressBar percentage={0} />);
+      const { container } = render(() => <ProgressBar percentage={0} />);
       const progressBar = container.querySelector('[role="progressbar"]');
       expect(progressBar).toBeInTheDocument();
       expect(progressBar).toHaveAttribute('aria-valuenow', '0');
     });
 
     it('should render progress bar at 50%', () => {
-      const { container } = render(<ProgressBar percentage={50} />);
+      const { container } = render(() => <ProgressBar percentage={50} />);
       const progressBar = container.querySelector('[role="progressbar"]');
       expect(progressBar).toHaveAttribute('aria-valuenow', '50');
       expect(progressBar).toHaveStyle({ width: '50%' });
     });
 
     it('should render progress bar at 100%', () => {
-      const { container } = render(<ProgressBar percentage={100} />);
+      const { container } = render(() => <ProgressBar percentage={100} />);
       const progressBar = container.querySelector('[role="progressbar"]');
       expect(progressBar).toHaveAttribute('aria-valuenow', '100');
       expect(progressBar).toHaveStyle({ width: '100%' });
     });
 
     it('should display percentage text when >= 10%', () => {
-      render(<ProgressBar percentage={50} />);
+      render(() => <ProgressBar percentage={50} />);
       expect(screen.getByText('50%')).toBeInTheDocument();
     });
 
     it('should display percentage text even when < 10%', () => {
-      render(<ProgressBar percentage={5} />);
+      render(() => <ProgressBar percentage={5} />);
       expect(screen.getByText('5%')).toBeInTheDocument();
     });
 
     it('should clamp percentage to 0-100 range', () => {
-      const { container, rerender } = render(<ProgressBar percentage={-10} />);
+      const [percentage, setPercentage] = createSignal(-10);
+      const { container } = render(() => <ProgressBar percentage={percentage()} />);
+
       let progressBar = container.querySelector('[role="progressbar"]');
       expect(progressBar).toHaveAttribute('aria-valuenow', '0');
 
-      rerender(<ProgressBar percentage={150} />);
+      setPercentage(150);
+
       progressBar = container.querySelector('[role="progressbar"]');
       expect(progressBar).toHaveAttribute('aria-valuenow', '100');
     });
@@ -51,19 +55,19 @@ describe('ProgressBar', () => {
 
   describe('Variants', () => {
     it('should render default variant with primary background', () => {
-      const { container } = render(<ProgressBar percentage={50} variant="default" />);
+      const { container } = render(() => <ProgressBar percentage={50} variant="default" />);
       const progressBar = container.querySelector('[role="progressbar"]');
       expect(progressBar).toHaveClass('bg-primary');
     });
 
     it('should render success variant with success background', () => {
-      const { container } = render(<ProgressBar percentage={100} variant="success" />);
+      const { container } = render(() => <ProgressBar percentage={100} variant="success" />);
       const progressBar = container.querySelector('[role="progressbar"]');
       expect(progressBar).toHaveClass('bg-success');
     });
 
     it('should render error variant with error background', () => {
-      const { container } = render(<ProgressBar percentage={50} variant="error" />);
+      const { container } = render(() => <ProgressBar percentage={50} variant="error" />);
       const progressBar = container.querySelector('[role="progressbar"]');
       expect(progressBar).toHaveClass('bg-destructive');
     });
@@ -71,7 +75,7 @@ describe('ProgressBar', () => {
 
   describe('Animation', () => {
     it('should add transition classes by default', () => {
-      const { container } = render(<ProgressBar percentage={50} />);
+      const { container } = render(() => <ProgressBar percentage={50} />);
       const progressBar = container.querySelector('[role="progressbar"]');
       expect(progressBar).toHaveClass('transition-[width]');
       expect(progressBar).toHaveClass('duration-300');
@@ -79,7 +83,7 @@ describe('ProgressBar', () => {
     });
 
     it('should not add transition classes when animated=false', () => {
-      const { container } = render(<ProgressBar percentage={50} animated={false} />);
+      const { container } = render(() => <ProgressBar percentage={50} animated={false} />);
       const progressBar = container.querySelector('[role="progressbar"]');
       expect(progressBar).not.toHaveClass('transition-[width]');
     });
@@ -87,7 +91,7 @@ describe('ProgressBar', () => {
 
   describe('Accessibility', () => {
     it('should have correct ARIA attributes', () => {
-      const { container } = render(<ProgressBar percentage={50} />);
+      const { container } = render(() => <ProgressBar percentage={50} />);
       const progressBar = container.querySelector('[role="progressbar"]');
 
       expect(progressBar).toHaveAttribute('role', 'progressbar');

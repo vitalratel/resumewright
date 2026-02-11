@@ -1,8 +1,6 @@
 // ABOUTME: Horizontal progress bar with percentage text for accessibility.
 // ABOUTME: Supports visual variants (default, success, error) with smooth animations.
 
-import { useMemo } from 'react';
-
 interface ProgressBarProps {
   /** Progress percentage (0-100) */
   percentage: number;
@@ -26,33 +24,30 @@ const textColorClasses = {
   error: 'text-destructive-text',
 } as const;
 
-export function ProgressBar({
-  percentage,
-  animated = true,
-  variant = 'default',
-}: ProgressBarProps) {
-  const clampedPercentage = Math.min(100, Math.max(0, percentage));
-
-  const progressStyle = useMemo(() => ({ width: `${clampedPercentage}%` }), [clampedPercentage]);
+export function ProgressBar(props: ProgressBarProps) {
+  const animated = () => props.animated ?? true;
+  const variant = () => props.variant ?? 'default';
+  const clampedPercentage = () => Math.min(100, Math.max(0, props.percentage));
+  const progressStyle = () => ({ width: `${clampedPercentage()}%` });
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex-1 bg-muted rounded-full h-3 overflow-hidden">
+    <div class="flex items-center gap-3">
+      <div class="flex-1 bg-muted rounded-full h-3 overflow-hidden">
         <div
-          className={`${bgColorClasses[variant]} h-full ${animated ? 'transition-[width] duration-300 ease-out' : ''}`.trim()}
-          style={progressStyle}
+          class={`${bgColorClasses[variant()]} h-full ${animated() ? 'transition-[width] duration-300 ease-out' : ''}`.trim()}
+          style={progressStyle()}
           role="progressbar"
           aria-label="PDF conversion progress"
-          aria-valuenow={clampedPercentage}
+          aria-valuenow={clampedPercentage()}
           aria-valuemin={0}
           aria-valuemax={100}
         />
       </div>
       <span
-        className={`text-sm font-medium ${textColorClasses[variant]} min-w-[3ch] text-right`}
+        class={`text-sm font-medium ${textColorClasses[variant()]} min-w-[3ch] text-right`}
         aria-hidden="true"
       >
-        {Math.round(clampedPercentage)}%
+        {Math.round(clampedPercentage())}%
       </span>
     </div>
   );

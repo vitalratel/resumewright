@@ -1,22 +1,40 @@
-// ABOUTME: Tests for ErrorBoundary component error catching and recovery.
-// ABOUTME: Verifies fallback UI display and recovery/reload functionality.
+/**
+ * ABOUTME: Tests for ErrorBoundary component error catching and recovery.
+ * ABOUTME: Verifies fallback UI display and recovery/reload functionality.
+ */
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@solidjs/testing-library';
+import type { JSX } from 'solid-js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ErrorBoundary, SectionErrorBoundary } from '../ErrorBoundary';
 
-// Component that throws an error when shouldThrow is true
-function ThrowError({ shouldThrow }: { shouldThrow: boolean }) {
-  if (shouldThrow) {
+vi.mock('@/shared/infrastructure/logging/instance', () => ({
+  getLogger: vi.fn(() => ({
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  })),
+}));
+
+import { getLogger } from '@/shared/infrastructure/logging/instance';
+
+function ThrowError(props: { shouldThrow: boolean }): JSX.Element {
+  if (props.shouldThrow) {
     throw new Error('Test error');
   }
   return <div>No error</div>;
 }
 
 describe('ErrorBoundary', () => {
-  // Suppress console.error for these tests (React logs errors when boundaries catch)
   beforeEach(() => {
     vi.spyOn(globalThis.console, 'error').mockImplementation(() => {});
+    vi.mocked(getLogger).mockReturnValue({
+      error: vi.fn(),
+      warn: vi.fn(),
+      info: vi.fn(),
+      debug: vi.fn(),
+    });
   });
 
   afterEach(() => {
@@ -24,54 +42,53 @@ describe('ErrorBoundary', () => {
   });
 
   it('should render children when there is no error', () => {
-    render(
+    render(() => (
       <ErrorBoundary>
         <div>Child content</div>
-      </ErrorBoundary>,
-    );
+      </ErrorBoundary>
+    ));
 
     expect(screen.getByText('Child content')).toBeInTheDocument();
   });
 
   it('should catch errors and display fallback UI', () => {
-    render(
+    render(() => (
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
-    );
+      </ErrorBoundary>
+    ));
 
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     expect(screen.getByText(/The extension encountered an error/i)).toBeInTheDocument();
   });
 
   it('should display error icon', () => {
-    render(
+    const { container } = render(() => (
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
-    );
+      </ErrorBoundary>
+    ));
 
-    // Check for the error icon (via className or role)
-    const icon = document.querySelector('svg');
+    const icon = container.querySelector('svg');
     expect(icon).toBeInTheDocument();
   });
 
-  it('should display Try Again button', () => {
-    render(
+  it('should display Try to Recover button', () => {
+    render(() => (
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
-    );
+      </ErrorBoundary>
+    ));
 
     expect(screen.getByText('Try to Recover')).toBeInTheDocument();
   });
 
-  it('should display Reload Extension button', () => {
-    render(
+  it('should display Reload Popup button', () => {
+    render(() => (
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
-    );
+      </ErrorBoundary>
+    ));
 
     expect(screen.getByText('Reload Popup')).toBeInTheDocument();
   });
@@ -83,45 +100,52 @@ describe('ErrorBoundary', () => {
       writable: true,
     });
 
-    render(
+    render(() => (
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
-    );
+      </ErrorBoundary>
+    ));
 
     fireEvent.click(screen.getByText('Reload Popup'));
 
     expect(reloadMock).toHaveBeenCalled();
   });
 
-  it('should log error to console', () => {
-    const consoleErrorMock = vi.fn();
-    console.error = consoleErrorMock;
+  it('should log error via logger', () => {
+    const mockError = vi.fn();
+    vi.mocked(getLogger).mockReturnValue({
+      error: mockError,
+      warn: vi.fn(),
+      info: vi.fn(),
+      debug: vi.fn(),
+    });
 
-    render(
+    render(() => (
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
-    );
+      </ErrorBoundary>
+    ));
 
-    expect(consoleErrorMock).toHaveBeenCalled();
+    expect(mockError).toHaveBeenCalledWith(
+      'ErrorBoundary',
+      expect.stringContaining('error'),
+      expect.objectContaining({
+        error: expect.any(Error),
+      }),
+    );
   });
 
-  // Verify ErrorBoundary catches store initialization errors
   it('should catch store hook errors during render', () => {
-    // Component that throws an error in a hook (simulating store initialization failure)
-    function ComponentWithStoreError(): React.ReactElement {
-      // Simulate a Zustand store hook throwing an error
+    function ComponentWithStoreError(): JSX.Element {
       throw new Error('Store initialization failed: chrome.storage.local is unavailable');
     }
 
-    render(
+    render(() => (
       <ErrorBoundary>
         <ComponentWithStoreError />
-      </ErrorBoundary>,
-    );
+      </ErrorBoundary>
+    ));
 
-    // ErrorBoundary should catch the error and display fallback UI
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     expect(screen.getByText(/The extension encountered an error/i)).toBeInTheDocument();
     expect(screen.getByText('Try to Recover')).toBeInTheDocument();
@@ -133,11 +157,11 @@ describe('ErrorBoundary', () => {
       vi.stubEnv('PROD', false);
       vi.stubEnv('DEV', true);
 
-      render(
+      render(() => (
         <ErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </ErrorBoundary>,
-      );
+        </ErrorBoundary>
+      ));
 
       expect(screen.getByText('Error Details (Dev Only)')).toBeInTheDocument();
       expect(screen.getByText(/Test error/)).toBeInTheDocument();
@@ -149,35 +173,33 @@ describe('ErrorBoundary', () => {
       vi.stubEnv('PROD', true);
       vi.stubEnv('DEV', false);
 
-      render(
+      render(() => (
         <ErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </ErrorBoundary>,
-      );
+        </ErrorBoundary>
+      ));
 
       expect(screen.queryByText('Error Details (Dev Only)')).not.toBeInTheDocument();
 
       vi.unstubAllEnvs();
     });
 
-    it('should handle errorInfo with componentStack', () => {
+    it('should display error message in details', () => {
       vi.stubEnv('PROD', false);
       vi.stubEnv('DEV', true);
 
-      render(
+      render(() => (
         <ErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </ErrorBoundary>,
-      );
+        </ErrorBoundary>
+      ));
 
-      // Error details should be shown and componentStack is included via errorInfo
       const detailsElement = screen.getByText('Error Details (Dev Only)');
       expect(detailsElement).toBeInTheDocument();
 
-      // The error details should contain error information
       const preElement = detailsElement.parentElement?.querySelector('pre');
       expect(preElement).toBeInTheDocument();
-      expect(preElement?.textContent).toContain('Error: Test error');
+      expect(preElement?.textContent).toContain('Test error');
 
       vi.unstubAllEnvs();
     });
@@ -185,42 +207,42 @@ describe('ErrorBoundary', () => {
 
   describe('SectionErrorBoundary', () => {
     it('should render children when there is no error', () => {
-      render(
+      render(() => (
         <SectionErrorBoundary section="conversion">
           <div>Section content</div>
-        </SectionErrorBoundary>,
-      );
+        </SectionErrorBoundary>
+      ));
 
       expect(screen.getByText('Section content')).toBeInTheDocument();
     });
 
     it('should catch errors and display section-specific fallback', () => {
-      render(
+      render(() => (
         <SectionErrorBoundary section="conversion">
           <ThrowError shouldThrow={true} />
-        </SectionErrorBoundary>,
-      );
+        </SectionErrorBoundary>
+      ));
 
       expect(screen.getByText('Conversion Error')).toBeInTheDocument();
       expect(screen.getByText('Dismiss Error')).toBeInTheDocument();
     });
 
     it('should display correct message for file-import section', () => {
-      render(
+      render(() => (
         <SectionErrorBoundary section="file-import">
           <ThrowError shouldThrow={true} />
-        </SectionErrorBoundary>,
-      );
+        </SectionErrorBoundary>
+      ));
 
       expect(screen.getByText('File Import Error')).toBeInTheDocument();
     });
 
     it('should display correct message for settings section', () => {
-      render(
+      render(() => (
         <SectionErrorBoundary section="settings">
           <ThrowError shouldThrow={true} />
-        </SectionErrorBoundary>,
-      );
+        </SectionErrorBoundary>
+      ));
 
       expect(screen.getByText('Settings Error')).toBeInTheDocument();
     });
@@ -228,22 +250,22 @@ describe('ErrorBoundary', () => {
     it('should call onReset when Dismiss Error is clicked', () => {
       const onResetMock = vi.fn();
 
-      render(
+      render(() => (
         <SectionErrorBoundary section="conversion" onReset={onResetMock}>
           <ThrowError shouldThrow={true} />
-        </SectionErrorBoundary>,
-      );
+        </SectionErrorBoundary>
+      ));
 
       fireEvent.click(screen.getByText('Dismiss Error'));
       expect(onResetMock).toHaveBeenCalled();
     });
 
     it('should use custom fallback message when provided', () => {
-      render(
+      render(() => (
         <SectionErrorBoundary section="conversion" fallbackMessage="Custom error message">
           <ThrowError shouldThrow={true} />
-        </SectionErrorBoundary>,
-      );
+        </SectionErrorBoundary>
+      ));
 
       expect(screen.getByText('Custom error message')).toBeInTheDocument();
     });
