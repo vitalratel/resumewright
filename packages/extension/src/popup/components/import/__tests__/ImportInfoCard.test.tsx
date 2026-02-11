@@ -6,35 +6,26 @@
  * Focuses on user-visible behavior rather than implementation details.
  */
 
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { describe, expect, vi } from 'vitest';
+import { fireEvent, render, screen } from '@solidjs/testing-library';
+import { beforeEach, describe, expect, vi } from 'vitest';
 import { ImportInfoCard } from '../ImportInfoCard';
 
-// Mock useLocalStorage hook
-vi.mock('../../../hooks/integration/useLocalStorage', () => ({
-  useLocalStorage: vi.fn((key: string) => {
-    if (key === 'resumewright_info_card_minimized') {
-      return [false, vi.fn()];
-    }
-    if (key === 'resumewright_launch_count') {
-      return [0, vi.fn()];
-    }
-    return [null, vi.fn()];
-  }),
-}));
-
 describe('ImportInfoCard', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
   describe('Rendering - Expanded State', () => {
     it('renders expanded card with instructions', () => {
-      render(<ImportInfoCard />);
+      render(() => <ImportInfoCard />);
 
       expect(screen.getByText(/Get.*from Claude\.ai/i)).toBeInTheDocument();
       expect(screen.getByText(/Ask Claude to create your CV/i)).toBeInTheDocument();
     });
 
     it('renders all instruction steps', () => {
-      render(<ImportInfoCard />);
+      render(() => <ImportInfoCard />);
 
       expect(screen.getByText(/Ask Claude to create your CV in.*format/i)).toBeInTheDocument();
       expect(screen.getByText(/Copy the.*code from Claude's response/i)).toBeInTheDocument();
@@ -43,14 +34,14 @@ describe('ImportInfoCard', () => {
     });
 
     it('renders information icon', () => {
-      const { container } = render(<ImportInfoCard />);
+      const { container } = render(() => <ImportInfoCard />);
 
       const icon = container.querySelector('svg[aria-hidden="true"]');
       expect(icon).toBeInTheDocument();
     });
 
     it('renders minimize button', () => {
-      render(<ImportInfoCard />);
+      render(() => <ImportInfoCard />);
 
       const minimizeButton = screen.getByRole('button', {
         name: /hide instructions for getting tsx file from claude\.ai/i,
@@ -59,7 +50,7 @@ describe('ImportInfoCard', () => {
     });
 
     it('displays ordered list with steps', () => {
-      const { container } = render(<ImportInfoCard />);
+      const { container } = render(() => <ImportInfoCard />);
 
       const orderedList = container.querySelector('ol');
       expect(orderedList).toBeInTheDocument();
@@ -71,25 +62,23 @@ describe('ImportInfoCard', () => {
   });
 
   describe('User Interaction', () => {
-    it('minimize button is clickable', async () => {
-      const user = userEvent.setup();
-      render(<ImportInfoCard />);
+    it('clicking minimize button collapses the card', () => {
+      render(() => <ImportInfoCard />);
 
       const minimizeButton = screen.getByRole('button', {
         name: /hide instructions/i,
       });
 
-      // Button should be clickable without throwing
-      await user.click(minimizeButton);
+      fireEvent.click(minimizeButton);
 
-      // Button exists and was interactive
-      expect(minimizeButton).toBeInTheDocument();
+      // Card should now be in minimized state with expand button
+      expect(screen.getByRole('button', { name: /show instructions/i })).toBeInTheDocument();
     });
   });
 
   describe('Accessibility', () => {
     it('minimize button has accessible label', () => {
-      render(<ImportInfoCard />);
+      render(() => <ImportInfoCard />);
 
       const minimizeButton = screen.getByRole('button', {
         name: /hide instructions for getting tsx file from claude\.ai/i,
@@ -98,15 +87,14 @@ describe('ImportInfoCard', () => {
     });
 
     it('icons have aria-hidden attribute', () => {
-      const { container } = render(<ImportInfoCard />);
+      const { container } = render(() => <ImportInfoCard />);
 
       const icons = container.querySelectorAll('svg[aria-hidden="true"]');
       expect(icons.length).toBeGreaterThan(0);
     });
 
-    it('buttons are keyboard accessible', async () => {
-      const user = userEvent.setup();
-      render(<ImportInfoCard />);
+    it('buttons are keyboard accessible', () => {
+      render(() => <ImportInfoCard />);
 
       const minimizeButton = screen.getByRole('button', {
         name: /hide instructions/i,
@@ -115,21 +103,21 @@ describe('ImportInfoCard', () => {
       minimizeButton.focus();
       expect(minimizeButton).toHaveFocus();
 
-      await user.keyboard('{Enter}');
+      fireEvent.keyDown(minimizeButton, { key: 'Enter' });
       // Should not throw
     });
   });
 
   describe('Visual Styling', () => {
     it('expanded card has correct background and border', () => {
-      const { container } = render(<ImportInfoCard />);
+      const { container } = render(() => <ImportInfoCard />);
 
       const card = container.querySelector('.bg-muted.border-border');
       expect(card).toBeInTheDocument();
     });
 
     it('instruction list has small text and muted color', () => {
-      const { container } = render(<ImportInfoCard />);
+      const { container } = render(() => <ImportInfoCard />);
 
       const list = container.querySelector('ol');
       expect(list).toHaveClass('text-xs', 'text-muted-foreground');
@@ -138,7 +126,7 @@ describe('ImportInfoCard', () => {
 
   describe('Component Lifecycle', () => {
     it('does not cause memory leaks on unmount', () => {
-      const { unmount } = render(<ImportInfoCard />);
+      const { unmount } = render(() => <ImportInfoCard />);
 
       unmount();
 
@@ -147,7 +135,7 @@ describe('ImportInfoCard', () => {
     });
 
     it('renders without crashing', () => {
-      expect(() => render(<ImportInfoCard />)).not.toThrow();
+      expect(() => render(() => <ImportInfoCard />)).not.toThrow();
     });
   });
 });

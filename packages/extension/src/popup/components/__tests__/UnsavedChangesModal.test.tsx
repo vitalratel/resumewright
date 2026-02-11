@@ -11,7 +11,7 @@
  * - Focus management
  */
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@solidjs/testing-library';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UnsavedChangesModal } from '../UnsavedChangesModal';
 
@@ -32,7 +32,7 @@ describe('UnsavedChangesModal', () => {
 
   describe('Rendering', () => {
     it('should render as dialog modal', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       const dialog = screen.getByRole('dialog');
       expect(dialog).toBeInTheDocument();
@@ -43,7 +43,7 @@ describe('UnsavedChangesModal', () => {
     });
 
     it('should display warning title and description', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       expect(screen.getByText('You have unsaved changes')).toBeInTheDocument();
       expect(
@@ -52,7 +52,7 @@ describe('UnsavedChangesModal', () => {
     });
 
     it('should render all three action buttons', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       expect(screen.getByRole('button', { name: 'Save changes and go back' })).toBeInTheDocument();
       expect(
@@ -64,7 +64,7 @@ describe('UnsavedChangesModal', () => {
     });
 
     it('should display warning icon', () => {
-      const { container } = render(<UnsavedChangesModal {...defaultProps} />);
+      const { container } = render(() => <UnsavedChangesModal {...defaultProps} />);
 
       const icon = container.querySelector('[aria-hidden="true"]');
       expect(icon).toBeInTheDocument();
@@ -73,7 +73,7 @@ describe('UnsavedChangesModal', () => {
 
   describe('User Interactions', () => {
     it('should call onSave when Save & Continue button is clicked', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       const saveButton = screen.getByRole('button', { name: 'Save changes and go back' });
       fireEvent.click(saveButton);
@@ -84,7 +84,7 @@ describe('UnsavedChangesModal', () => {
     });
 
     it('should call onDiscard when Discard Changes button is clicked', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       const discardButton = screen.getByRole('button', { name: 'Discard changes and go back' });
       fireEvent.click(discardButton);
@@ -95,7 +95,7 @@ describe('UnsavedChangesModal', () => {
     });
 
     it('should call onCancel when Cancel button is clicked', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       const cancelButton = screen.getByRole('button', { name: 'Cancel and stay on settings' });
       fireEvent.click(cancelButton);
@@ -106,7 +106,7 @@ describe('UnsavedChangesModal', () => {
     });
 
     it('should call onCancel when backdrop is clicked', () => {
-      const { container } = render(<UnsavedChangesModal {...defaultProps} />);
+      const { container } = render(() => <UnsavedChangesModal {...defaultProps} />);
 
       // After backdrop is the outer div, dialog role is on inner content
       const backdrop = container.firstChild as HTMLElement | null;
@@ -117,7 +117,7 @@ describe('UnsavedChangesModal', () => {
     });
 
     it('should NOT call onCancel when modal content is clicked', () => {
-      const { container } = render(<UnsavedChangesModal {...defaultProps} />);
+      const { container } = render(() => <UnsavedChangesModal {...defaultProps} />);
 
       // The modal content is the inner div (child of dialog)
       const dialog = container.querySelector('[role="dialog"]');
@@ -132,7 +132,7 @@ describe('UnsavedChangesModal', () => {
 
   describe('Keyboard Interaction - P2-ROOT-011', () => {
     it('should call onCancel when Escape key is pressed', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       // Native <dialog> handles Escape via 'cancel' event
       const dialog = screen.getByRole('dialog');
@@ -144,7 +144,7 @@ describe('UnsavedChangesModal', () => {
     });
 
     it('should NOT call onCancel when other keys are pressed', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       fireEvent.keyDown(document, { key: 'Enter' });
       fireEvent.keyDown(document, { key: 'Space' });
@@ -156,7 +156,7 @@ describe('UnsavedChangesModal', () => {
     });
 
     it('should cleanup Escape listener on unmount', () => {
-      const { unmount } = render(<UnsavedChangesModal {...defaultProps} />);
+      const { unmount } = render(() => <UnsavedChangesModal {...defaultProps} />);
 
       unmount();
 
@@ -168,7 +168,7 @@ describe('UnsavedChangesModal', () => {
 
   describe('Focus Management - + P1-LAYOUT-001', () => {
     it('should use native dialog showModal() for focus management', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       // Native <dialog> with showModal() provides automatic focus management
       // JSDOM doesn't fully implement this, so we verify the dialog is open
@@ -180,7 +180,7 @@ describe('UnsavedChangesModal', () => {
 
   describe('Accessibility', () => {
     it('should have proper ARIA attributes', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       const dialog = screen.getByRole('dialog');
       // Native <dialog> has implicit aria-modal="true" when opened with showModal()
@@ -190,7 +190,7 @@ describe('UnsavedChangesModal', () => {
     });
 
     it('should have accessible button labels', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       const saveButton = screen.getByRole('button', { name: 'Save changes and go back' });
       const discardButton = screen.getByRole('button', { name: 'Discard changes and go back' });
@@ -202,21 +202,21 @@ describe('UnsavedChangesModal', () => {
     });
 
     it('should have warning icon with aria-hidden', () => {
-      const { container } = render(<UnsavedChangesModal {...defaultProps} />);
+      const { container } = render(() => <UnsavedChangesModal {...defaultProps} />);
 
       const icon = container.querySelector('[aria-hidden="true"]');
       expect(icon).toBeInTheDocument();
     });
 
     it('should have accessible title', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       const title = screen.getByText('You have unsaved changes');
       expect(title).toHaveAttribute('id', 'unsaved-modal-title');
     });
 
     it('should have accessible description', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       const description = screen.getByText('Do you want to save your settings before leaving?');
       expect(description).toHaveAttribute('id', 'unsaved-modal-description');
@@ -225,21 +225,21 @@ describe('UnsavedChangesModal', () => {
 
   describe('Button Hierarchy', () => {
     it('should have Save as primary action (green)', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       const saveButton = screen.getByRole('button', { name: 'Save changes and go back' });
       expect(saveButton.className).toContain('bg-success');
     });
 
     it('should have Discard as secondary action (bordered)', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       const discardButton = screen.getByRole('button', { name: 'Discard changes and go back' });
       expect(discardButton.className).toContain('border');
     });
 
     it('should have Cancel as tertiary action (text-only)', () => {
-      render(<UnsavedChangesModal {...defaultProps} />);
+      render(() => <UnsavedChangesModal {...defaultProps} />);
 
       const cancelButton = screen.getByRole('button', { name: 'Cancel and stay on settings' });
       // Verify it's styled as text-only (no background color)

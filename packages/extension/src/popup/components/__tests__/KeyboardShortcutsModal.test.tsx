@@ -11,9 +11,9 @@
  * - Accessibility (ARIA labels, focus management)
  */
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@solidjs/testing-library';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ShortcutConfig } from '../../hooks/ui/useKeyboardShortcuts';
+import type { ShortcutConfig } from '../../reactivity/keyboard';
 import { KeyboardShortcutsModal } from '../KeyboardShortcutsModal';
 
 describe('KeyboardShortcutsModal', () => {
@@ -58,9 +58,9 @@ describe('KeyboardShortcutsModal', () => {
 
   describe('Rendering', () => {
     it('should render as dialog modal when open', () => {
-      render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       const dialog = screen.getByRole('dialog');
       expect(dialog).toBeInTheDocument();
@@ -70,25 +70,25 @@ describe('KeyboardShortcutsModal', () => {
     });
 
     it('should not render when closed', () => {
-      render(
-        <KeyboardShortcutsModal isOpen={false} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      render(() => (
+        <KeyboardShortcutsModal isOpen={false} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
     it('should display modal title', () => {
-      render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       expect(screen.getByText('Keyboard Shortcuts')).toBeInTheDocument();
     });
 
     it('should display all enabled shortcuts', () => {
-      render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       expect(screen.getByText('Open settings')).toBeInTheDocument();
       expect(screen.getByText('Close modal or go back')).toBeInTheDocument();
@@ -98,9 +98,9 @@ describe('KeyboardShortcutsModal', () => {
     });
 
     it('should organize shortcuts by category', () => {
-      render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       // Should have category headers
       expect(screen.getByText('General')).toBeInTheDocument();
@@ -119,21 +119,21 @@ describe('KeyboardShortcutsModal', () => {
         },
       ];
 
-      render(
+      render(() => (
         <KeyboardShortcutsModal
           isOpen={true}
           onClose={mockOnClose}
           shortcuts={shortcutsWithDisabled}
-        />,
-      );
+        />
+      ));
 
       expect(screen.queryByText('Disabled shortcut')).not.toBeInTheDocument();
     });
 
     it('should render close button', () => {
-      render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       const closeButton = screen.getByRole('button', { name: /close/i });
       expect(closeButton).toBeInTheDocument();
@@ -142,9 +142,9 @@ describe('KeyboardShortcutsModal', () => {
 
   describe('User Interactions', () => {
     it('should call onClose when close button is clicked', () => {
-      render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       const closeButton = screen.getByRole('button', { name: /close/i });
       fireEvent.click(closeButton);
@@ -153,9 +153,9 @@ describe('KeyboardShortcutsModal', () => {
     });
 
     it('should call onClose when backdrop is clicked', () => {
-      const { container } = render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      const { container } = render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       // The backdrop is the outer div with onClick
       const backdrop = container.firstChild as HTMLElement;
@@ -165,9 +165,9 @@ describe('KeyboardShortcutsModal', () => {
     });
 
     it('should NOT call onClose when modal content is clicked', () => {
-      const { container } = render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      const { container } = render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       // The modal content has stopPropagation
       const modalContent = container.querySelector('[role="dialog"]');
@@ -180,9 +180,9 @@ describe('KeyboardShortcutsModal', () => {
 
   describe('Keyboard Interaction', () => {
     it('should call onClose when Escape key is pressed', () => {
-      render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       // Native <dialog> handles Escape via 'cancel' event
       const dialog = screen.getByRole('dialog');
@@ -192,9 +192,9 @@ describe('KeyboardShortcutsModal', () => {
     });
 
     it('should NOT call onClose when other keys are pressed', () => {
-      render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       fireEvent.keyDown(window, { key: 'Enter' });
       fireEvent.keyDown(window, { key: 'Space' });
@@ -204,9 +204,9 @@ describe('KeyboardShortcutsModal', () => {
     });
 
     it('should cleanup Escape listener on unmount', () => {
-      const { unmount } = render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      const { unmount } = render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       unmount();
 
@@ -216,9 +216,9 @@ describe('KeyboardShortcutsModal', () => {
     });
 
     it('should not add Escape listener when modal is closed', () => {
-      render(
-        <KeyboardShortcutsModal isOpen={false} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      render(() => (
+        <KeyboardShortcutsModal isOpen={false} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       fireEvent.keyDown(window, { key: 'Escape' });
       expect(mockOnClose).not.toHaveBeenCalled();
@@ -227,9 +227,9 @@ describe('KeyboardShortcutsModal', () => {
 
   describe('Focus Management', () => {
     it('should use native dialog showModal() for focus management', () => {
-      render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       // Native <dialog> with showModal() provides automatic focus management
       // JSDOM doesn't fully implement this, so we verify the dialog is open
@@ -241,9 +241,9 @@ describe('KeyboardShortcutsModal', () => {
 
   describe('Accessibility', () => {
     it('should have proper ARIA attributes', () => {
-      render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       const dialog = screen.getByRole('dialog');
       // Native <dialog> has implicit aria-modal="true" when opened with showModal()
@@ -252,9 +252,9 @@ describe('KeyboardShortcutsModal', () => {
     });
 
     it('should have accessible close button', () => {
-      render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />,
-      );
+      render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={mockShortcuts} />
+      ));
 
       const closeButton = screen.getByRole('button', { name: /close/i });
       expect(closeButton).toHaveAccessibleName();
@@ -263,7 +263,7 @@ describe('KeyboardShortcutsModal', () => {
 
   describe('Edge Cases', () => {
     it('should handle empty shortcuts array', () => {
-      render(<KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={[]} />);
+      render(() => <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={[]} />);
 
       expect(screen.getByRole('dialog')).toBeInTheDocument();
       expect(screen.getByText('Keyboard Shortcuts')).toBeInTheDocument();
@@ -279,9 +279,9 @@ describe('KeyboardShortcutsModal', () => {
         },
       ];
 
-      render(
-        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={specialShortcuts} />,
-      );
+      render(() => (
+        <KeyboardShortcutsModal isOpen={true} onClose={mockOnClose} shortcuts={specialShortcuts} />
+      ));
 
       expect(screen.getByText('Command palette')).toBeInTheDocument();
     });

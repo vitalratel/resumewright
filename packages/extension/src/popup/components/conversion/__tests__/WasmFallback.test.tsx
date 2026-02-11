@@ -13,7 +13,7 @@
  * - Accessibility
  */
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@solidjs/testing-library';
 import { fakeBrowser } from '@webext-core/fake-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { WasmFallback } from '../WasmFallback';
@@ -45,7 +45,7 @@ describe('WasmFallback', () => {
 
   describe('Rendering', () => {
     it('should render as alert with assertive aria-live', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       const alert = screen.getByRole('alert');
       expect(alert).toBeInTheDocument();
@@ -53,13 +53,13 @@ describe('WasmFallback', () => {
     });
 
     it('should display error icon', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       expect(screen.getByLabelText('Error')).toBeInTheDocument();
     });
 
     it('should display error title', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       expect(screen.getByText('Converter Initialization Failed')).toBeInTheDocument();
     });
@@ -71,7 +71,7 @@ describe('WasmFallback', () => {
         /Your browser does not meet the requirements to run the PDF converter./i,
       ],
     ])('should show appropriate message based on compatibility', (report, expectedMessage) => {
-      render(<WasmFallback report={report} />);
+      render(() => <WasmFallback report={report} />);
 
       expect(screen.getByText(expectedMessage)).toBeInTheDocument();
     });
@@ -79,19 +79,19 @@ describe('WasmFallback', () => {
 
   describe('Browser Information', () => {
     it('should display browser name, version, and platform', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       expect(screen.getByText(/Chrome 120.0/i)).toBeInTheDocument();
     });
 
     it('should display memory information when available', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       expect(screen.getByText(/Memory: 2048MB \/ 8192MB \(25%\)/i)).toBeInTheDocument();
     });
 
     it('should handle missing memory info gracefully', () => {
-      render(<WasmFallback report={reportWithoutMemory} />);
+      render(() => <WasmFallback report={reportWithoutMemory} />);
 
       expect(screen.getByText('Browser Information')).toBeInTheDocument();
       expect(screen.queryByText(/Memory:/i)).not.toBeInTheDocument();
@@ -100,7 +100,7 @@ describe('WasmFallback', () => {
 
   describe('Issues List', () => {
     it('should display issues when present', () => {
-      render(<WasmFallback report={incompatibleReport} />);
+      render(() => <WasmFallback report={incompatibleReport} />);
 
       expect(screen.getByText('Detected Issues:')).toBeInTheDocument();
       expect(screen.getByText('WebAssembly not supported')).toBeInTheDocument();
@@ -110,13 +110,13 @@ describe('WasmFallback', () => {
     });
 
     it('should not display issues section when no issues', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       expect(screen.queryByText('Detected Issues:')).not.toBeInTheDocument();
     });
 
     it.each(['ERROR', 'WARNING'])('should display %s severity badges', (severity) => {
-      render(<WasmFallback report={incompatibleReport} />);
+      render(() => <WasmFallback report={incompatibleReport} />);
 
       const badges = screen.getAllByText(severity);
       expect(badges.length).toBeGreaterThan(0);
@@ -125,7 +125,7 @@ describe('WasmFallback', () => {
 
   describe('Troubleshooting Steps - P2-CONV-007', () => {
     it('should display numbered troubleshooting steps', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       expect(screen.getByText('Troubleshooting Steps:')).toBeInTheDocument();
       expect(screen.getByText(/Update your browser/i)).toBeInTheDocument();
@@ -136,7 +136,7 @@ describe('WasmFallback', () => {
     });
 
     it('should include browser-specific update links', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       expect(
         screen.getByText(/chrome:\/\/settings\/help or edge:\/\/settings\/help/i),
@@ -145,7 +145,7 @@ describe('WasmFallback', () => {
     });
 
     it('should include WebAssembly verification link', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       const wasmLink = screen.getByRole('link', { name: /webassembly\.org/i });
       expect(wasmLink).toBeInTheDocument();
@@ -155,26 +155,26 @@ describe('WasmFallback', () => {
     });
 
     it('should include recommended browser versions', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       expect(screen.getByText(/Chrome 87\+, Firefox 89\+, or Edge 88\+/i)).toBeInTheDocument();
     });
 
     it('should show memory warning when usage > 75%', () => {
-      render(<WasmFallback report={lowMemoryReport} />);
+      render(() => <WasmFallback report={lowMemoryReport} />);
 
       expect(screen.getByText(/Free up memory/i)).toBeInTheDocument();
       expect(screen.getByText(/currently using.*85.*% of available memory/i)).toBeInTheDocument();
     });
 
     it('should NOT show memory warning when usage <= 75%', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       expect(screen.queryByText(/Free up memory/i)).not.toBeInTheDocument();
     });
 
     it('should show console debugging step', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       expect(
         screen.getByText(/Press F12 → Console tab for detailed error messages/i),
@@ -184,14 +184,14 @@ describe('WasmFallback', () => {
 
   describe('Action Buttons', () => {
     it('should display Clear Cache & Reload button', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       expect(screen.getByRole('button', { name: /Clear cache and reload/i })).toBeInTheDocument();
     });
 
     it('should call browser.runtime.reload on Clear Cache click', async () => {
       const { browser } = await import('wxt/browser');
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       const button = screen.getByRole('button', { name: /Clear cache and reload/i });
       fireEvent.click(button);
@@ -207,7 +207,7 @@ describe('WasmFallback', () => {
 
     it('should NOT display Copy Error Details in production', () => {
       vi.stubEnv('DEV', false);
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       expect(screen.queryByRole('button', { name: /Copy Error Details/i })).not.toBeInTheDocument();
       vi.unstubAllEnvs();
@@ -215,7 +215,7 @@ describe('WasmFallback', () => {
 
     it('should display Copy Error Details in dev mode', () => {
       vi.stubEnv('DEV', true);
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       expect(
         screen.getByRole('button', { name: /Copy error details and open GitHub issue template/i }),
@@ -227,7 +227,7 @@ describe('WasmFallback', () => {
       const { copyToClipboard } = await import('@/shared/errors/tracking/telemetry');
       vi.stubEnv('DEV', true);
 
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       const button = screen.getByRole('button', {
         name: /Copy error details and open GitHub issue template/i,
@@ -245,7 +245,7 @@ describe('WasmFallback', () => {
 
   describe('Technical Details', () => {
     it('should display collapsed technical details by default', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       const button = screen.getByRole('button', { name: /Technical Details/i });
       expect(button).toBeInTheDocument();
@@ -254,7 +254,7 @@ describe('WasmFallback', () => {
     });
 
     it('should expand and collapse technical details on click', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       const button = screen.getByRole('button', { name: /Technical Details/i });
 
@@ -273,35 +273,35 @@ describe('WasmFallback', () => {
 
   describe('Accessibility', () => {
     it('should have role="alert" with assertive aria-live', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       const alert = screen.getByRole('alert');
       expect(alert).toHaveAttribute('aria-live', 'assertive');
     });
 
     it('should have focusable container', () => {
-      const { container } = render(<WasmFallback report={compatibleReport} />);
+      const { container } = render(() => <WasmFallback report={compatibleReport} />);
 
       const alertDiv = container.querySelector('[role="alert"]');
       expect(alertDiv).toHaveAttribute('tabindex', '-1');
     });
 
     it('should have accessible button labels', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       const clearButton = screen.getByRole('button', { name: /Clear cache and reload/i });
       expect(clearButton).toHaveAccessibleName();
     });
 
     it('should have accessible external link', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       const wasmLink = screen.getByRole('link', { name: /webassembly\.org/i });
       expect(wasmLink).toHaveAttribute('rel', 'noopener noreferrer');
     });
 
     it('should have error icon with aria-label', () => {
-      render(<WasmFallback report={compatibleReport} />);
+      render(() => <WasmFallback report={compatibleReport} />);
 
       expect(screen.getByLabelText('Error')).toBeInTheDocument();
     });
@@ -309,10 +309,17 @@ describe('WasmFallback', () => {
 
   describe('Edge Cases', () => {
     it('should handle ref forwarding', () => {
-      const ref = { current: null };
-      render(<WasmFallback ref={ref} report={compatibleReport} />);
+      let refEl: HTMLDivElement | undefined;
+      render(() => (
+        <WasmFallback
+          ref={(el: HTMLDivElement) => {
+            refEl = el;
+          }}
+          report={compatibleReport}
+        />
+      ));
 
-      expect(ref.current).toBeInstanceOf(HTMLDivElement);
+      expect(refEl).toBeInstanceOf(HTMLDivElement);
     });
   });
 });

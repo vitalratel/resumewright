@@ -8,8 +8,7 @@
  * - Countdown timer display
  */
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { fireEvent, render, screen, waitFor } from '@solidjs/testing-library';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SuccessView } from '../SuccessView';
 
@@ -19,7 +18,7 @@ describe('SuccessView', () => {
     fileSize: '324 KB',
     apiAvailable: true,
     isAvailable: true,
-    countdown: undefined,
+    countdown: undefined as number | undefined,
     isPaused: false,
     onPause: vi.fn(),
     onResume: vi.fn(),
@@ -34,21 +33,21 @@ describe('SuccessView', () => {
 
   describe('Conditional Success Message', () => {
     it('should show "Downloaded Successfully" when apiAvailable and isAvailable', () => {
-      render(<SuccessView {...defaultProps} apiAvailable={true} isAvailable={true} />);
+      render(() => <SuccessView {...defaultProps} apiAvailable={true} isAvailable={true} />);
 
       const heading = screen.getByRole('heading', { level: 1 });
       expect(heading).toHaveTextContent('PDF Downloaded Successfully');
     });
 
     it('should show "PDF Ready" when API not available', () => {
-      render(<SuccessView {...defaultProps} apiAvailable={false} isAvailable={false} />);
+      render(() => <SuccessView {...defaultProps} apiAvailable={false} isAvailable={false} />);
 
       const heading = screen.getByRole('heading', { level: 1 });
       expect(heading).toHaveTextContent('PDF Ready');
     });
 
     it('should show "PDF Ready" when API available but download not available', () => {
-      render(<SuccessView {...defaultProps} apiAvailable={true} isAvailable={false} />);
+      render(() => <SuccessView {...defaultProps} apiAvailable={true} isAvailable={false} />);
 
       const heading = screen.getByRole('heading', { level: 1 });
       expect(heading).toHaveTextContent('PDF Ready');
@@ -57,7 +56,7 @@ describe('SuccessView', () => {
 
   describe('Download Button Rendering', () => {
     it('should show "Open Downloaded PDF" button when download available', () => {
-      render(<SuccessView {...defaultProps} apiAvailable={true} isAvailable={true} />);
+      render(() => <SuccessView {...defaultProps} apiAvailable={true} isAvailable={true} />);
 
       const button = screen.getByRole('button', { name: /Open downloaded/i });
       expect(button).toBeInTheDocument();
@@ -65,7 +64,7 @@ describe('SuccessView', () => {
     });
 
     it('should show success alert when download not available', () => {
-      render(<SuccessView {...defaultProps} apiAvailable={false} isAvailable={false} />);
+      render(() => <SuccessView {...defaultProps} apiAvailable={false} isAvailable={false} />);
 
       expect(screen.getByText('Downloaded to your computer')).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /Open/i })).not.toBeInTheDocument();
@@ -73,7 +72,7 @@ describe('SuccessView', () => {
 
     it('should call onOpenDownload when button clicked', () => {
       const onOpenDownload = vi.fn();
-      render(<SuccessView {...defaultProps} onOpenDownload={onOpenDownload} />);
+      render(() => <SuccessView {...defaultProps} onOpenDownload={onOpenDownload} />);
 
       const button = screen.getByRole('button', { name: /Open downloaded/i });
       fireEvent.click(button);
@@ -84,46 +83,54 @@ describe('SuccessView', () => {
 
   describe('Filename Display', () => {
     it('should render the filename', () => {
-      render(<SuccessView {...defaultProps} displayFilename="custom-resume.pdf" />);
+      render(() => <SuccessView {...defaultProps} displayFilename="custom-resume.pdf" />);
 
       expect(screen.getByText('custom-resume.pdf')).toBeInTheDocument();
     });
 
     it('should have copy button with aria-label', () => {
-      render(<SuccessView {...defaultProps} />);
+      render(() => <SuccessView {...defaultProps} />);
 
       const copyButton = screen.getByRole('button', { name: /Copy filename to clipboard/i });
       expect(copyButton).toBeInTheDocument();
     });
 
     it('should handle clipboard copy errors gracefully', async () => {
-      const user = userEvent.setup();
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       const mockWriteText = vi.fn().mockRejectedValue(new Error('Clipboard API not available'));
       Object.defineProperty(navigator, 'clipboard', {
         value: { writeText: mockWriteText },
         configurable: true,
       });
 
-      render(<SuccessView {...defaultProps} displayFilename="test.pdf" />);
+      render(() => <SuccessView {...defaultProps} displayFilename="test.pdf" />);
 
       const copyButton = screen.getByRole('button', { name: /Copy filename to clipboard/i });
-      await user.click(copyButton);
+      fireEvent.click(copyButton);
 
-      expect(mockWriteText).toHaveBeenCalledWith('test.pdf');
+      await waitFor(() => {
+        expect(mockWriteText).toHaveBeenCalledWith('test.pdf');
+      });
+
+      // Verify error was logged (captured to keep test output pristine)
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to copy filename'),
+        expect.any(Error),
+      );
+      consoleSpy.mockRestore();
     });
 
     it('should show copied feedback on successful clipboard copy', async () => {
-      const user = userEvent.setup();
       const mockWriteText = vi.fn().mockResolvedValue(undefined);
       Object.defineProperty(navigator, 'clipboard', {
         value: { writeText: mockWriteText },
         configurable: true,
       });
 
-      render(<SuccessView {...defaultProps} displayFilename="test.pdf" />);
+      render(() => <SuccessView {...defaultProps} displayFilename="test.pdf" />);
 
       const copyButton = screen.getByRole('button', { name: /Copy filename to clipboard/i });
-      await user.click(copyButton);
+      fireEvent.click(copyButton);
 
       await waitFor(() => {
         const copiedButton = screen.getByRole('button', { name: /Filename copied/i });
@@ -134,7 +141,7 @@ describe('SuccessView', () => {
 
   describe('File Size Display', () => {
     it('should render file size in details section', () => {
-      render(<SuccessView {...defaultProps} fileSize="512 KB" />);
+      render(() => <SuccessView {...defaultProps} fileSize="512 KB" />);
 
       expect(screen.getByText(/512 KB/)).toBeInTheDocument();
     });
@@ -142,32 +149,32 @@ describe('SuccessView', () => {
 
   describe('Countdown Timer', () => {
     it('should not render countdown when undefined', () => {
-      render(<SuccessView {...defaultProps} countdown={undefined} />);
+      render(() => <SuccessView {...defaultProps} countdown={undefined} />);
 
       expect(screen.queryByText(/Closing in/)).not.toBeInTheDocument();
     });
 
     it('should render countdown when provided', () => {
-      render(<SuccessView {...defaultProps} countdown={15} />);
+      render(() => <SuccessView {...defaultProps} countdown={15} />);
 
       expect(screen.getByText(/Closing in 15s/)).toBeInTheDocument();
     });
 
     it('should show (paused) when isPaused is true', () => {
-      render(<SuccessView {...defaultProps} countdown={10} isPaused={true} />);
+      render(() => <SuccessView {...defaultProps} countdown={10} isPaused={true} />);
 
       expect(screen.getByText(/Closing in 10s \(paused\)/)).toBeInTheDocument();
     });
 
     it('should have pause button when countdown active and not paused', () => {
-      render(<SuccessView {...defaultProps} countdown={10} isPaused={false} />);
+      render(() => <SuccessView {...defaultProps} countdown={10} isPaused={false} />);
 
       const pauseButton = screen.getByRole('button', { name: /Pause auto-close countdown/i });
       expect(pauseButton).toBeInTheDocument();
     });
 
     it('should have resume button when paused', () => {
-      render(<SuccessView {...defaultProps} countdown={10} isPaused={true} />);
+      render(() => <SuccessView {...defaultProps} countdown={10} isPaused={true} />);
 
       const resumeButton = screen.getByRole('button', { name: /Resume auto-close countdown/i });
       expect(resumeButton).toBeInTheDocument();
@@ -175,7 +182,9 @@ describe('SuccessView', () => {
 
     it('should call onPause when pause button clicked', () => {
       const onPause = vi.fn();
-      render(<SuccessView {...defaultProps} countdown={10} isPaused={false} onPause={onPause} />);
+      render(() => (
+        <SuccessView {...defaultProps} countdown={10} isPaused={false} onPause={onPause} />
+      ));
 
       const pauseButton = screen.getByRole('button', { name: /Pause auto-close countdown/i });
       fireEvent.click(pauseButton);
@@ -185,7 +194,9 @@ describe('SuccessView', () => {
 
     it('should call onResume when resume button clicked', () => {
       const onResume = vi.fn();
-      render(<SuccessView {...defaultProps} countdown={10} isPaused={true} onResume={onResume} />);
+      render(() => (
+        <SuccessView {...defaultProps} countdown={10} isPaused={true} onResume={onResume} />
+      ));
 
       const resumeButton = screen.getByRole('button', { name: /Resume auto-close countdown/i });
       fireEvent.click(resumeButton);
@@ -196,7 +207,7 @@ describe('SuccessView', () => {
 
   describe('Export Another Button', () => {
     it('should render export another button', () => {
-      render(<SuccessView {...defaultProps} />);
+      render(() => <SuccessView {...defaultProps} />);
 
       const button = screen.getByRole('button', { name: /Convert another/i });
       expect(button).toBeInTheDocument();
@@ -204,7 +215,7 @@ describe('SuccessView', () => {
 
     it('should call onExportAnother when clicked', () => {
       const onExportAnother = vi.fn();
-      render(<SuccessView {...defaultProps} onExportAnother={onExportAnother} />);
+      render(() => <SuccessView {...defaultProps} onExportAnother={onExportAnother} />);
 
       const button = screen.getByRole('button', { name: /Convert another/i });
       fireEvent.click(button);
@@ -215,21 +226,21 @@ describe('SuccessView', () => {
 
   describe('Accessibility', () => {
     it('should have proper heading hierarchy', () => {
-      render(<SuccessView {...defaultProps} />);
+      render(() => <SuccessView {...defaultProps} />);
 
       const heading = screen.getByRole('heading', { level: 1 });
       expect(heading).toBeInTheDocument();
     });
 
     it('should have accessible download button label', () => {
-      render(<SuccessView {...defaultProps} displayFilename="test.pdf" />);
+      render(() => <SuccessView {...defaultProps} displayFilename="test.pdf" />);
 
       const button = screen.getByRole('button', { name: /Open downloaded test\.pdf/i });
       expect(button).toBeInTheDocument();
     });
 
     it('should have aria-hidden on decorative icon', () => {
-      const { container } = render(<SuccessView {...defaultProps} />);
+      const { container } = render(() => <SuccessView {...defaultProps} />);
 
       // Success icon should be decorative (aria-hidden)
       const icons = container.querySelectorAll('[aria-hidden="true"]');

@@ -2,11 +2,11 @@
 // ABOUTME: Provides browser compatibility checks, troubleshooting steps, and cache clearing.
 
 import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline';
-import { type RefObject, useState } from 'react';
+  HiOutlineChevronDown,
+  HiOutlineChevronUp,
+  HiOutlineExclamationTriangle,
+} from 'solid-icons/hi';
+import { createSignal, For, Show } from 'solid-js';
 import { WEBASSEMBLY_URLS } from '@/shared/config/externalUrls';
 import { ErrorCategory, ErrorCode } from '@/shared/errors/codes';
 import {
@@ -17,7 +17,7 @@ import {
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 import type { WasmCompatibilityReport } from '@/shared/infrastructure/wasm/compatibility';
 import type { ConversionError } from '@/shared/types/models';
-import { useLoadingState } from '../../hooks/ui/useLoadingState';
+import { createLoadingState } from '../../reactivity/loading';
 import { Alert } from '../common/Alert';
 import { Button } from '../common/Button';
 import { WASM } from '../common/TechTerm';
@@ -31,19 +31,18 @@ interface WasmFallbackProps {
 
   /** Optional WASM initialization error */
   error?: ConversionError;
+
+  /** Optional ref for the root element */
+  ref?: HTMLDivElement | ((el: HTMLDivElement) => void);
 }
 
-export function WasmFallback({
-  ref,
-  report,
-  error,
-}: WasmFallbackProps & { ref?: RefObject<HTMLDivElement | null> }) {
-  const [showTechnical, setShowTechnical] = useState(false);
-  const [clearCacheError, setClearCacheError] = useState<string | null>(null);
+export function WasmFallback(props: WasmFallbackProps) {
+  const [showTechnical, setShowTechnical] = createSignal(false);
+  const [clearCacheError, setClearCacheError] = createSignal<string | null>(null);
   const isDevMode = import.meta.env.DEV;
 
-  // Use useLoadingState for consistent loading state management
-  const { loading: isReloading, execute: executeReload } = useLoadingState({
+  // Use createLoadingState for consistent loading state management
+  const { loading: isReloading, execute: executeReload } = createLoadingState({
     onError: (err) => {
       // Use logger instead of console.error for consistency
       getLogger().error('WasmFallback', 'Failed to clear cache', err);
@@ -69,7 +68,7 @@ export function WasmFallback({
 
   const handleReportIssue = async () => {
     // Create error object for reporting
-    const wasmError: ConversionError = error || {
+    const wasmError: ConversionError = props.error || {
       stage: 'queued',
       code: ErrorCode.WASM_INIT_FAILED,
       message: 'Failed to initialize WASM converter',
@@ -79,9 +78,9 @@ export function WasmFallback({
       category: ErrorCategory.SYSTEM,
       metadata: {
         type: 'wasm',
-        browserInfo: report.browserInfo,
-        wasmInfo: report.wasmInfo,
-        memoryInfo: report.memoryInfo,
+        browserInfo: props.report.browserInfo,
+        wasmInfo: props.report.wasmInfo,
+        memoryInfo: props.report.memoryInfo,
       },
     };
 
@@ -99,89 +98,91 @@ export function WasmFallback({
 
   return (
     <div
-      ref={ref}
+      ref={props.ref}
       tabIndex={-1}
-      className="w-full h-full bg-card p-4 flex flex-col items-center justify-start space-y-6 md:space-y-8 overflow-y-auto"
+      class="w-full h-full bg-card p-4 flex flex-col items-center justify-start space-y-6 md:space-y-8 overflow-y-auto"
       role="alert"
       aria-live="assertive"
     >
       {/* Warning Icon */}
-      <div className="shrink-0 w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
-        <ExclamationTriangleIcon className="w-10 h-10 text-destructive" aria-label="Error" />
+      <div class="shrink-0 w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
+        <HiOutlineExclamationTriangle class="w-10 h-10 text-destructive" aria-label="Error" />
       </div>
 
       {/* Error Title */}
-      <h1 className="text-2xl font-bold tracking-tight text-foreground text-center">
+      <h1 class="text-2xl font-bold tracking-tight text-foreground text-center">
         Converter Initialization Failed
       </h1>
 
       {/* Error Message */}
-      <p className="text-base text-foreground text-center max-w-md">
-        {report.compatible
+      <p class="text-base text-foreground text-center max-w-md">
+        {props.report.compatible
           ? 'The PDF converter failed to initialize. This may be a temporary issue.'
           : 'Your browser does not meet the requirements to run the PDF converter.'}
       </p>
 
       {/* Cache Clear Error Alert */}
-      {clearCacheError !== null && (
-        <div className="w-full max-w-md">
+      <Show when={clearCacheError() !== null}>
+        <div class="w-full max-w-md">
           <Alert variant="error" dismissible onDismiss={() => setClearCacheError(null)}>
-            <p>{clearCacheError}</p>
+            <p>{clearCacheError()}</p>
           </Alert>
         </div>
-      )}
+      </Show>
 
       {/* Browser Info */}
-      <div className="w-full max-w-md text-sm bg-muted p-3 rounded-lg">
-        <p className="font-semibold text-foreground mb-3">Browser Information</p>
-        <p className="text-muted-foreground">
-          {report.browserInfo.browserName} {report.browserInfo.browserVersion}
+      <div class="w-full max-w-md text-sm bg-muted p-3 rounded-lg">
+        <p class="font-semibold text-foreground mb-3">Browser Information</p>
+        <p class="text-muted-foreground">
+          {props.report.browserInfo.browserName} {props.report.browserInfo.browserVersion}
         </p>
-        {report.memoryInfo && (
-          <p className="text-muted-foreground mb-3">
-            Memory: {report.memoryInfo.usedMB}
-            MB / {report.memoryInfo.totalMB}
-            MB ({report.memoryInfo.percentUsed}
+        <Show when={props.report.memoryInfo}>
+          <p class="text-muted-foreground mb-3">
+            Memory: {props.report.memoryInfo!.usedMB}
+            MB / {props.report.memoryInfo!.totalMB}
+            MB ({props.report.memoryInfo!.percentUsed}
             %)
           </p>
-        )}
+        </Show>
       </div>
 
       {/* Issues List */}
-      {report.issues.length > 0 && (
-        <div className="w-full max-w-md">
-          <h2 className="text-sm font-semibold text-foreground mb-3">Detected Issues:</h2>
-          <ul className="gap-2">
-            {report.issues.map((issue) => (
-              <li key={`${issue.severity}-${issue.message}`} className="text-sm">
-                <div className="flex items-start gap-2">
-                  <span
-                    className={`px-2 py-0.5 text-xs font-semibold rounded-md ${
-                      issue.severity === 'error'
-                        ? 'bg-destructive/10 text-destructive'
-                        : 'bg-warning/10 text-warning'
-                    }`}
-                  >
-                    {issue.severity.toUpperCase()}
-                  </span>
-                  <div className="flex-1">
-                    <p className="text-foreground font-medium">{issue.message}</p>
-                    <p className="text-muted-foreground mb-3">{issue.recommendation}</p>
+      <Show when={props.report.issues.length > 0}>
+        <div class="w-full max-w-md">
+          <h2 class="text-sm font-semibold text-foreground mb-3">Detected Issues:</h2>
+          <ul class="gap-2">
+            <For each={props.report.issues}>
+              {(issue) => (
+                <li class="text-sm">
+                  <div class="flex items-start gap-2">
+                    <span
+                      class={`px-2 py-0.5 text-xs font-semibold rounded-md ${
+                        issue.severity === 'error'
+                          ? 'bg-destructive/10 text-destructive'
+                          : 'bg-warning/10 text-warning'
+                      }`}
+                    >
+                      {issue.severity.toUpperCase()}
+                    </span>
+                    <div class="flex-1">
+                      <p class="text-foreground font-medium">{issue.message}</p>
+                      <p class="text-muted-foreground mb-3">{issue.recommendation}</p>
+                    </div>
                   </div>
-                </div>
-              </li>
-            ))}
+                </li>
+              )}
+            </For>
           </ul>
         </div>
-      )}
+      </Show>
 
       {/* Troubleshooting Steps */}
-      <div className="w-full max-w-md">
-        <h2 className="text-sm font-semibold text-foreground mb-3">Troubleshooting Steps:</h2>
-        <ol className="list-decimal list-inside gap-2 text-sm text-foreground space-y-2">
+      <div class="w-full max-w-md">
+        <h2 class="text-sm font-semibold text-foreground mb-3">Troubleshooting Steps:</h2>
+        <ol class="list-decimal list-inside gap-2 text-sm text-foreground space-y-2">
           <li>
             <strong>Update your browser</strong> - Ensure you&apos;re using the latest version:
-            <ul className="list-disc list-inside ml-6 mt-1 text-muted-foreground">
+            <ul class="list-disc list-inside ml-6 mt-1 text-muted-foreground">
               <li>Chrome/Edge: chrome://settings/help or edge://settings/help</li>
               <li>Firefox: about:support → Check for updates</li>
             </ul>
@@ -196,7 +197,7 @@ export function WasmFallback({
               href={WEBASSEMBLY_URLS.ORG}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background rounded-md"
+              class="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background rounded-md"
             >
               webassembly.org
             </a>{' '}
@@ -207,12 +208,12 @@ export function WasmFallback({
             <strong>Clear cache and reload</strong> - Click &quot;Clear Cache & Reload&quot; button
             below
           </li>
-          {report.memoryInfo && report.memoryInfo.percentUsed > 75 && (
+          <Show when={props.report.memoryInfo && props.report.memoryInfo.percentUsed > 75}>
             <li>
               <strong>Free up memory</strong> - Close unused tabs (currently using
-              {report.memoryInfo.percentUsed}% of available memory)
+              {props.report.memoryInfo!.percentUsed}% of available memory)
             </li>
-          )}
+          </Show>
           <li>
             <strong>Check browser console</strong> - Press F12 → Console tab for detailed error
             messages
@@ -225,69 +226,70 @@ export function WasmFallback({
       </div>
 
       {/* Action Buttons */}
-      <div className="w-full max-w-md gap-2 pt-2">
+      <div class="w-full max-w-md gap-2 pt-2">
         <Button
           onClick={() => {
             void handleClearCache();
           }}
           variant="primary"
-          loading={isReloading}
+          loading={isReloading()}
           aria-label="Clear cache and reload"
         >
           Clear Cache & Reload
         </Button>
 
-        {isDevMode && (
+        <Show when={isDevMode}>
           <button
             type="button"
             onClick={() => {
               void handleReportIssue();
             }}
-            className="w-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
+            class="w-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
             aria-label="Copy error details and open GitHub issue template"
           >
             Copy Error Details
           </button>
-        )}
+        </Show>
       </div>
 
       {/* Technical Details (Collapsible) */}
-      <div className="w-full max-w-md border-t border-border pt-4">
+      <div class="w-full max-w-md border-t border-border pt-4">
         <button
           type="button"
-          onClick={() => setShowTechnical(!showTechnical)}
-          className="w-full flex items-center justify-between text-sm text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-colors"
-          aria-expanded={showTechnical}
+          onClick={() => setShowTechnical(!showTechnical())}
+          class="w-full flex items-center justify-between text-sm text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-colors"
+          aria-expanded={showTechnical()}
           aria-controls="technical-details"
         >
-          <span className="font-semibold">Technical Details</span>
-          {showTechnical ? (
-            <ChevronUpIcon className="w-6 h-6" aria-hidden="true" />
-          ) : (
-            <ChevronDownIcon className="w-6 h-6" aria-hidden="true" />
-          )}
+          <span class="font-semibold">Technical Details</span>
+          <Show
+            when={showTechnical()}
+            fallback={<HiOutlineChevronDown class="w-6 h-6" aria-hidden="true" />}
+          >
+            <HiOutlineChevronUp class="w-6 h-6" aria-hidden="true" />
+          </Show>
         </button>
 
-        {showTechnical && (
+        <Show when={showTechnical()}>
           <div
             id="technical-details"
-            className="mt-4 p-3 bg-muted rounded-lg text-xs font-mono overflow-x-auto"
+            class="mt-4 p-3 bg-muted rounded-lg text-xs font-mono overflow-x-auto"
           >
-            <pre className="whitespace-pre-wrap wrap-break-words">
+            <pre class="whitespace-pre-wrap wrap-break-words">
               {JSON.stringify(
                 {
-                  compatible: report.compatible,
-                  browserInfo: report.browserInfo,
-                  wasmInfo: report.wasmInfo,
-                  memoryInfo: report.memoryInfo,
-                  issues: report.issues,
+                  compatible: props.report.compatible,
+                  browserInfo: props.report.browserInfo,
+                  wasmInfo: props.report.wasmInfo,
+                  memoryInfo: props.report.memoryInfo,
+                  issues: props.report.issues,
                 },
                 null,
                 2,
               )}
             </pre>
           </div>
-        )}
+        </Show>
       </div>
     </div>
   );

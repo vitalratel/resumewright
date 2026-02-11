@@ -1,10 +1,9 @@
 // ABOUTME: Drag-and-drop file upload component for CV import.
 // ABOUTME: Provides visual feedback during drag operations and a browse button fallback.
 
-import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
-import type { ChangeEvent } from 'react';
-import { useRef } from 'react';
-import { useDragAndDrop } from '../../hooks/ui/useDragAndDrop';
+import { HiOutlineArrowUpTray } from 'solid-icons/hi';
+import { Show } from 'solid-js';
+import { createDragAndDrop } from '../../reactivity/file';
 import { TSX } from '../common/TechTerm';
 
 interface DragDropZoneProps {
@@ -14,47 +13,48 @@ interface DragDropZoneProps {
   isValidating: boolean;
 }
 
-export function DragDropZone({ onFileDrop, isValidating }: DragDropZoneProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { isDragging, dragHandlers } = useDragAndDrop(onFileDrop);
+export function DragDropZone(props: DragDropZoneProps) {
+  let fileInputRef: HTMLInputElement | undefined;
+  const { isDragging, dragHandlers } = createDragAndDrop((file) => props.onFileDrop(file));
 
-  const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
+  const handleFileInputChange = (e: Event) => {
+    const input = e.target as HTMLInputElement;
+    const files = input.files;
     if (files && files.length > 0) {
-      void onFileDrop(files[0]);
+      void props.onFileDrop(files[0]);
     }
   };
 
   const handleBrowseClick = () => {
-    fileInputRef.current?.click();
+    fileInputRef?.click();
   };
 
   return (
     <>
-      <label htmlFor="file-input" className="block text-sm font-medium text-foreground px-3">
+      <label for="file-input" class="block text-sm font-medium text-foreground px-3">
         Import Your CV File
       </label>
 
-      {isDragging && (
-        <output aria-live="assertive" className="sr-only">
+      <Show when={isDragging()}>
+        <output aria-live="assertive" class="sr-only">
           Drop zone active. Release to import file.
         </output>
-      )}
+      </Show>
 
       <div
         {...dragHandlers}
-        className={`border-2 border-dashed rounded-lg p-4 text-center transition-all duration-200 ${
-          isDragging
+        class={`border-2 border-dashed rounded-lg p-4 text-center transition-all duration-200 ${
+          isDragging()
             ? 'border-primary bg-primary/10 shadow-md'
             : 'border-primary/30 hover:border-primary/50 hover:bg-primary/5'
         }`}
       >
-        <ArrowUpTrayIcon
-          className={`w-16 h-16 mx-auto mb-2 ${isDragging ? 'text-primary' : 'text-primary/60'} transition-all duration-300`}
+        <HiOutlineArrowUpTray
+          class={`w-16 h-16 mx-auto mb-2 ${isDragging() ? 'text-primary' : 'text-primary/60'} transition-all duration-300`}
           aria-hidden="true"
         />
-        <p className="text-base text-muted-foreground mb-1">
-          {isDragging ? (
+        <p class="text-base text-muted-foreground mb-1">
+          {isDragging() ? (
             <>
               Release to import (
               <TSX /> files only)
@@ -63,48 +63,48 @@ export function DragDropZone({ onFileDrop, isValidating }: DragDropZoneProps) {
             'Drag & drop your CV file here'
           )}
         </p>
-        <p className="text-xs text-muted-foreground mt-3">
+        <p class="text-xs text-muted-foreground mt-3">
           Supports: <TSX /> files (up to 1MB)
         </p>
       </div>
 
-      <div className="mt-2 text-center">
+      <div class="mt-2 text-center">
         <button
           onClick={handleBrowseClick}
-          disabled={isValidating}
-          className={`px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset ${
-            isValidating
+          disabled={props.isValidating}
+          class={`px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-ring-offset ${
+            props.isValidating
               ? 'opacity-50 cursor-not-allowed'
               : 'bg-primary hover:bg-primary/90 text-primary-foreground'
           } flex items-center justify-center gap-2 mx-auto`}
           type="button"
           data-testid="browse-files-button"
-          aria-busy={isValidating}
+          aria-busy={props.isValidating}
         >
-          {isValidating && (
+          <Show when={props.isValidating}>
             <svg
-              className="animate-spin w-3 h-3"
+              class="animate-spin w-3 h-3"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
               aria-hidden="true"
             >
               <circle
-                className="opacity-25"
+                class="opacity-25"
                 cx="12"
                 cy="12"
                 r="10"
                 stroke="currentColor"
-                strokeWidth="4"
+                stroke-width="4"
               />
               <path
-                className="opacity-75"
+                class="opacity-75"
                 fill="currentColor"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-          )}
-          {isValidating ? 'Validating...' : 'Browse Files'}
+          </Show>
+          {props.isValidating ? 'Validating...' : 'Browse Files'}
         </button>
       </div>
 
@@ -114,7 +114,7 @@ export function DragDropZone({ onFileDrop, isValidating }: DragDropZoneProps) {
         type="file"
         accept=".tsx"
         onChange={handleFileInputChange}
-        className="hidden"
+        class="hidden"
         aria-label="File input for CV import"
         data-testid="file-input"
       />
