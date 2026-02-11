@@ -10,8 +10,7 @@
  * - Different metadata types
  */
 
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { fireEvent, render, screen, waitFor } from '@solidjs/testing-library';
 import { beforeEach, describe, expect, vi } from 'vitest';
 import type { ErrorCategory } from '@/shared/errors/codes';
 import { ErrorCode } from '@/shared/errors/codes';
@@ -51,14 +50,14 @@ describe('ErrorMetadata', () => {
 
   describe('Error Code Display', () => {
     it('displays error code', () => {
-      render(<ErrorMetadata {...baseProps} />);
+      render(() => <ErrorMetadata {...baseProps} />);
 
       expect(screen.getByText('Error Code:')).toBeInTheDocument();
       expect(screen.getByText(ErrorCode.WASM_EXECUTION_ERROR)).toBeInTheDocument();
     });
 
     it('renders error code in monospace font', () => {
-      render(<ErrorMetadata {...baseProps} />);
+      render(() => <ErrorMetadata {...baseProps} />);
 
       const errorCodeElement = screen.getByText(ErrorCode.WASM_EXECUTION_ERROR);
       expect(errorCodeElement).toHaveClass('font-mono');
@@ -70,7 +69,7 @@ describe('ErrorMetadata', () => {
       const timestamp = new Date('2025-11-03T10:30:45').getTime();
       mockFormatErrorTimestamp.mockReturnValue('Nov 3, 2025 at 10:30 AM');
 
-      render(<ErrorMetadata {...baseProps} timestamp={timestamp} />);
+      render(() => <ErrorMetadata {...baseProps} timestamp={timestamp} />);
 
       expect(screen.getByText('Time:')).toBeInTheDocument();
       expect(screen.getByText('Nov 3, 2025 at 10:30 AM')).toBeInTheDocument();
@@ -86,7 +85,7 @@ describe('ErrorMetadata', () => {
 
       testCases.forEach(({ timestamp, formatted }) => {
         mockFormatErrorTimestamp.mockReturnValue(formatted);
-        const { unmount } = render(<ErrorMetadata {...baseProps} timestamp={timestamp} />);
+        const { unmount } = render(() => <ErrorMetadata {...baseProps} timestamp={timestamp} />);
 
         expect(screen.getByText(formatted)).toBeInTheDocument();
         unmount();
@@ -96,7 +95,7 @@ describe('ErrorMetadata', () => {
 
   describe('Copy-to-Clipboard Functionality', () => {
     it('shows copy button with correct label', () => {
-      render(<ErrorMetadata {...baseProps} />);
+      render(() => <ErrorMetadata {...baseProps} />);
 
       const copyButton = screen.getByRole('button', { name: /copy error details to clipboard/i });
       expect(copyButton).toBeInTheDocument();
@@ -104,11 +103,10 @@ describe('ErrorMetadata', () => {
     });
 
     it('calls clipboard API when copy button clicked', async () => {
-      const user = userEvent.setup();
-      render(<ErrorMetadata {...baseProps} />);
+      render(() => <ErrorMetadata {...baseProps} />);
 
       const copyButton = screen.getByRole('button', { name: /copy error details to clipboard/i });
-      await user.click(copyButton);
+      fireEvent.click(copyButton);
 
       await waitFor(() => {
         expect(mockFormatErrorDetailsForClipboard).toHaveBeenCalledWith({
@@ -124,17 +122,16 @@ describe('ErrorMetadata', () => {
     });
 
     it('shows loading state during copy', async () => {
-      const user = userEvent.setup();
       let resolveCopy: ((value: boolean) => void) | undefined;
       const copyPromise = new Promise<boolean>((resolve) => {
         resolveCopy = resolve;
       });
       mockCopyToClipboard.mockReturnValue(copyPromise);
 
-      render(<ErrorMetadata {...baseProps} />);
+      render(() => <ErrorMetadata {...baseProps} />);
 
       const copyButton = screen.getByRole('button', { name: /copy error details to clipboard/i });
-      await user.click(copyButton);
+      fireEvent.click(copyButton);
 
       // Should show loading state
       await waitFor(() => {
@@ -153,11 +150,10 @@ describe('ErrorMetadata', () => {
     });
 
     it('shows success state after successful copy', async () => {
-      const user = userEvent.setup();
-      render(<ErrorMetadata {...baseProps} />);
+      render(() => <ErrorMetadata {...baseProps} />);
 
       const copyButton = screen.getByRole('button', { name: /copy error details to clipboard/i });
-      await user.click(copyButton);
+      fireEvent.click(copyButton);
 
       await waitFor(() => {
         expect(screen.getByText('Copied!')).toBeInTheDocument();
@@ -168,23 +164,22 @@ describe('ErrorMetadata', () => {
     // The important behavior is that success state shows after copy, not the exact timing
 
     it('prevents duplicate copy attempts', async () => {
-      const user = userEvent.setup();
       let resolveCopy: ((value: boolean) => void) | undefined;
       const copyPromise = new Promise<boolean>((resolve) => {
         resolveCopy = resolve;
       });
       mockCopyToClipboard.mockReturnValue(copyPromise);
 
-      render(<ErrorMetadata {...baseProps} />);
+      render(() => <ErrorMetadata {...baseProps} />);
 
       const copyButton = screen.getByRole('button', { name: /copy error details to clipboard/i });
 
       // Click multiple times rapidly
-      await user.click(copyButton);
-      await user.click(copyButton);
-      await user.click(copyButton);
+      fireEvent.click(copyButton);
+      fireEvent.click(copyButton);
+      fireEvent.click(copyButton);
 
-      // Should only call once
+      // Should only call once (button is disabled after first click)
       expect(mockCopyToClipboard).toHaveBeenCalledTimes(1);
 
       expect(resolveCopy).toBeDefined();
@@ -192,13 +187,12 @@ describe('ErrorMetadata', () => {
     });
 
     it('handles copy failure gracefully', async () => {
-      const user = userEvent.setup();
       mockCopyToClipboard.mockResolvedValue(false);
 
-      render(<ErrorMetadata {...baseProps} />);
+      render(() => <ErrorMetadata {...baseProps} />);
 
       const copyButton = screen.getByRole('button', { name: /copy error details to clipboard/i });
-      await user.click(copyButton);
+      fireEvent.click(copyButton);
 
       // Should not show success state
       await waitFor(() => {
@@ -209,7 +203,6 @@ describe('ErrorMetadata', () => {
 
   describe('Different Metadata Types', () => {
     it('includes parse error metadata when copying', async () => {
-      const user = userEvent.setup();
       const parseMetadata = {
         type: 'parse' as const,
         line: 42,
@@ -217,10 +210,10 @@ describe('ErrorMetadata', () => {
         codeContext: '<CV>Invalid TSX</CV>',
       };
 
-      render(<ErrorMetadata {...baseProps} metadata={parseMetadata} />);
+      render(() => <ErrorMetadata {...baseProps} metadata={parseMetadata} />);
 
       const copyButton = screen.getByRole('button', { name: /copy error details to clipboard/i });
-      await user.click(copyButton);
+      fireEvent.click(copyButton);
 
       await waitFor(() => {
         expect(mockFormatErrorDetailsForClipboard).toHaveBeenCalledWith(
@@ -232,17 +225,16 @@ describe('ErrorMetadata', () => {
     });
 
     it('includes size error metadata when copying', async () => {
-      const user = userEvent.setup();
       const sizeMetadata = {
         type: 'size' as const,
         fileSize: 5000000,
         maxSize: 2000000,
       };
 
-      render(<ErrorMetadata {...baseProps} metadata={sizeMetadata} />);
+      render(() => <ErrorMetadata {...baseProps} metadata={sizeMetadata} />);
 
       const copyButton = screen.getByRole('button', { name: /copy error details to clipboard/i });
-      await user.click(copyButton);
+      fireEvent.click(copyButton);
 
       await waitFor(() => {
         expect(mockFormatErrorDetailsForClipboard).toHaveBeenCalledWith(
@@ -254,17 +246,16 @@ describe('ErrorMetadata', () => {
     });
 
     it('includes WASM error metadata when copying', async () => {
-      const user = userEvent.setup();
       const wasmMetadata = {
         type: 'wasm' as const,
         wasmFunction: 'generate_pdf',
         rustStackTrace: 'Error at line 123',
       };
 
-      render(<ErrorMetadata {...baseProps} metadata={wasmMetadata} />);
+      render(() => <ErrorMetadata {...baseProps} metadata={wasmMetadata} />);
 
       const copyButton = screen.getByRole('button', { name: /copy error details to clipboard/i });
-      await user.click(copyButton);
+      fireEvent.click(copyButton);
 
       await waitFor(() => {
         expect(mockFormatErrorDetailsForClipboard).toHaveBeenCalledWith(
@@ -276,12 +267,10 @@ describe('ErrorMetadata', () => {
     });
 
     it('handles missing metadata gracefully', async () => {
-      const user = userEvent.setup();
-
-      render(<ErrorMetadata {...baseProps} metadata={undefined} />);
+      render(() => <ErrorMetadata {...baseProps} metadata={undefined} />);
 
       const copyButton = screen.getByRole('button', { name: /copy error details to clipboard/i });
-      await user.click(copyButton);
+      fireEvent.click(copyButton);
 
       await waitFor(() => {
         expect(mockFormatErrorDetailsForClipboard).toHaveBeenCalledWith(
@@ -295,7 +284,7 @@ describe('ErrorMetadata', () => {
 
   describe('Support Guidance', () => {
     it('displays help text about using error ID for support', () => {
-      render(<ErrorMetadata {...baseProps} />);
+      render(() => <ErrorMetadata {...baseProps} />);
 
       expect(
         screen.getByText(
@@ -307,24 +296,23 @@ describe('ErrorMetadata', () => {
 
   describe('Accessibility', () => {
     it('copy button has descriptive aria-label', () => {
-      render(<ErrorMetadata {...baseProps} />);
+      render(() => <ErrorMetadata {...baseProps} />);
 
       const copyButton = screen.getByLabelText('Copy error details to clipboard');
       expect(copyButton).toBeInTheDocument();
     });
 
     it('copy button aria-label updates during loading', async () => {
-      const user = userEvent.setup();
       let resolveCopy: ((value: boolean) => void) | undefined;
       const copyPromise = new Promise<boolean>((resolve) => {
         resolveCopy = resolve;
       });
       mockCopyToClipboard.mockReturnValue(copyPromise);
 
-      render(<ErrorMetadata {...baseProps} />);
+      render(() => <ErrorMetadata {...baseProps} />);
 
       const copyButton = screen.getByRole('button', { name: /copy error details to clipboard/i });
-      await user.click(copyButton);
+      fireEvent.click(copyButton);
 
       await waitFor(() => {
         expect(screen.getByLabelText('Copying error details...')).toBeInTheDocument();
@@ -335,17 +323,16 @@ describe('ErrorMetadata', () => {
     });
 
     it('copy button is disabled during copying', async () => {
-      const user = userEvent.setup();
       let resolveCopy: ((value: boolean) => void) | undefined;
       const copyPromise = new Promise<boolean>((resolve) => {
         resolveCopy = resolve;
       });
       mockCopyToClipboard.mockReturnValue(copyPromise);
 
-      render(<ErrorMetadata {...baseProps} />);
+      render(() => <ErrorMetadata {...baseProps} />);
 
       const copyButton = screen.getByRole('button', { name: /copy error details to clipboard/i });
-      await user.click(copyButton);
+      fireEvent.click(copyButton);
 
       await waitFor(() => {
         expect(copyButton).toBeDisabled();
@@ -362,13 +349,13 @@ describe('ErrorMetadata', () => {
 
   describe('Edge Cases', () => {
     it('handles missing optional props', () => {
-      render(
+      render(() => (
         <ErrorMetadata
           timestamp={Date.now()}
           code={ErrorCode.WASM_EXECUTION_ERROR}
           message="Test error"
-        />,
-      );
+        />
+      ));
 
       expect(screen.getByText(ErrorCode.WASM_EXECUTION_ERROR)).toBeInTheDocument();
       expect(screen.getByText('Copy Details')).toBeInTheDocument();
@@ -385,7 +372,7 @@ describe('ErrorMetadata', () => {
         },
       };
 
-      render(<ErrorMetadata {...allProps} />);
+      render(() => <ErrorMetadata {...allProps} />);
 
       expect(screen.getByText(baseProps.code)).toBeInTheDocument();
       expect(screen.getByText('Copy Details')).toBeInTheDocument();

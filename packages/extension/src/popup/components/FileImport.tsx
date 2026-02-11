@@ -1,12 +1,11 @@
 // ABOUTME: CV file upload component with drag-and-drop support and validation.
 // ABOUTME: Validates file type, size, content and provides user-friendly error messages.
 
-import { DocumentTextIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { HiOutlineDocumentText, HiOutlineXMark } from 'solid-icons/hi';
+import { createSignal, onCleanup, Show } from 'solid-js';
 import { FILE_SIZE_LIMITS, validateFileExtension } from '@/shared/domain/pdf/validation';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
-import { useEvent } from '../hooks/core/useEvent';
-import { useFileReader } from '../hooks/integration/useFileReader';
+import { readAsText } from '../reactivity/file';
 import { formatFileSize } from '../utils/formatting';
 import { ConfirmDialog } from './common/ConfirmDialog';
 import { DragDropZone } from './import/DragDropZone';
@@ -23,42 +22,39 @@ interface FileImportProps {
 const MAX_FILE_SIZE = FILE_SIZE_LIMITS.MAX_INPUT; // 1MB
 const ACCEPTED_EXTENSIONS = ['.tsx', '.ts', '.jsx', '.js'];
 
-export function FileImport({ onFileValidated, onClearFile, importedFile }: FileImportProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { readAsText } = useFileReader();
+export function FileImport(props: FileImportProps) {
+  let fileInputRef: HTMLInputElement | undefined;
 
-  // Local validation state (React 19 pattern - component manages own state)
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [isValidating, setIsValidating] = useState(false);
+  // Local validation state
+  const [validationError, setValidationError] = createSignal<string | null>(null);
+  const [isValidating, setIsValidating] = createSignal(false);
 
   // Success feedback state
-  const [showSuccess, setShowSuccess] = useState(false);
-  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showSuccess, setShowSuccess] = createSignal(false);
+  let successTimerRef: ReturnType<typeof setTimeout> | null = null;
 
   // Confirm dialog state for clear file action
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = createSignal(false);
 
-  // Show success with auto-hide timer (called from event handlers, not effects)
-  const showSuccessFeedback = useCallback(() => {
+  // Show success with auto-hide timer
+  const showSuccessFeedback = () => {
     // Clear any existing timer
-    if (successTimerRef.current) {
-      clearTimeout(successTimerRef.current);
+    if (successTimerRef) {
+      clearTimeout(successTimerRef);
     }
     setShowSuccess(true);
-    successTimerRef.current = setTimeout(() => {
+    successTimerRef = setTimeout(() => {
       setShowSuccess(false);
-      successTimerRef.current = null;
+      successTimerRef = null;
     }, 3000);
-  }, []);
+  };
 
   // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (successTimerRef.current) {
-        clearTimeout(successTimerRef.current);
-      }
-    };
-  }, []);
+  onCleanup(() => {
+    if (successTimerRef) {
+      clearTimeout(successTimerRef);
+    }
+  });
 
   const handleFile = async (file: File) => {
     // Helper to log validation errors to console and set local error state
@@ -153,9 +149,9 @@ export function FileImport({ onFileValidated, onClearFile, importedFile }: FileI
         return;
       }
 
-      // Call validation callback with content (React 19 pattern - properly await)
+      // Call validation callback with content
       try {
-        await onFileValidated(content, file.name, file.size);
+        await props.onFileValidated(content, file.name, file.size);
         setIsValidating(false);
         showSuccessFeedback();
       } catch (error) {
@@ -174,105 +170,108 @@ export function FileImport({ onFileValidated, onClearFile, importedFile }: FileI
     }
   };
 
-  const handleClearFile = useEvent(() => {
+  const handleClearFile = () => {
     // Confirmation before clearing file
     setShowClearConfirm(true);
-  });
+  };
 
-  const handleConfirmClear = useEvent(() => {
-    onClearFile();
+  const handleConfirmClear = () => {
+    props.onClearFile();
     // Hide success message when clearing file
     setShowSuccess(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    if (fileInputRef) {
+      fileInputRef.value = '';
     }
     setShowClearConfirm(false);
-  });
+  };
 
-  const handleDismissSuccess = useEvent(() => {
+  const handleDismissSuccess = () => {
     setShowSuccess(false);
-  });
+  };
 
   return (
-    <div className="space-y-4">
+    <div class="space-y-4">
       <ImportInfoCard />
 
-      {showSuccess && importedFile && (
+      <Show when={showSuccess() && props.importedFile}>
         <output
           aria-live="polite"
           aria-atomic="true"
-          className="px-3 py-1.5 bg-success/10 border border-success/30 rounded-md text-sm text-success-text flex items-center justify-between animate-fade-in"
+          class="px-3 py-1.5 bg-success/10 border border-success/30 rounded-md text-sm text-success-text flex items-center justify-between animate-fade-in"
         >
-          <div className="flex items-center gap-2">
+          <div class="flex items-center gap-2">
             <span>✓</span>
             CV validated successfully
           </div>
           <button
             type="button"
             onClick={handleDismissSuccess}
-            className="gap-2 hover:text-success-text focus:outline-none focus:ring-2 focus:ring-ring rounded-md"
+            class="gap-2 hover:text-success-text focus:outline-none focus:ring-2 focus:ring-ring rounded-md"
             aria-label="Dismiss success message"
           >
-            <XMarkIcon className="w-3 h-3" aria-hidden="true" />
+            <HiOutlineXMark class="w-3 h-3" aria-hidden="true" />
           </button>
         </output>
-      )}
+      </Show>
 
-      {importedFile ? (
-        <div className="border-2 border-success bg-success/10 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <DocumentTextIcon className="w-8 h-8 text-success" aria-hidden="true" />
+      <Show
+        when={props.importedFile}
+        fallback={<DragDropZone onFileDrop={handleFile} isValidating={isValidating()} />}
+      >
+        <div class="border-2 border-success bg-success/10 rounded-lg p-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <HiOutlineDocumentText class="w-8 h-8 text-success" aria-hidden="true" />
               <div>
-                <p className="text-sm font-medium text-success-text">{importedFile.name}</p>
-                <p className="text-xs text-success-text/80">{formatFileSize(importedFile.size)}</p>
+                <p class="text-sm font-medium text-success-text">{props.importedFile!.name}</p>
+                <p class="text-xs text-success-text/80">
+                  {formatFileSize(props.importedFile!.size)}
+                </p>
               </div>
             </div>
             <button
               type="button"
               onClick={handleClearFile}
-              className="text-success hover:text-success/80 p-2 rounded-md hover:bg-success/20 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background"
+              class="text-success hover:text-success/80 p-2 rounded-md hover:bg-success/20 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background"
               aria-label="Clear imported file"
             >
-              <XMarkIcon className="w-4 h-4" aria-hidden="true" />
+              <HiOutlineXMark class="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>
-      ) : (
-        <DragDropZone onFileDrop={handleFile} isValidating={isValidating} />
-      )}
+      </Show>
 
-      {validationError !== null && validationError !== undefined && validationError !== '' && (
+      <Show when={validationError()}>
         <div
           role="alert"
           data-testid="validation-error"
-          className="px-3 py-1.5 bg-destructive/10 border border-destructive/30 rounded-md text-sm text-destructive-text"
+          class="px-3 py-1.5 bg-destructive/10 border border-destructive/30 rounded-md text-sm text-destructive-text"
         >
-          {validationError}
+          {validationError()}
         </div>
-      )}
+      </Show>
 
-      {isValidating && (
+      <Show when={isValidating()}>
         <output
           aria-live="polite"
-          className="border-2 border-info/30 bg-info/10 rounded-lg p-4 animate-pulse block"
+          class="border-2 border-info/30 bg-info/10 rounded-lg p-4 animate-pulse block"
         >
-          <div className="flex items-center gap-3">
-            <div className="animate-spin rounded-full h-6 w-6 border-2 border-info/20 border-t-info"></div>
+          <div class="flex items-center gap-3">
+            <div class="animate-spin rounded-full h-6 w-6 border-2 border-info/20 border-t-info" />
 
-            <div className="flex-1 space-y-2">
-              <p className="text-sm font-medium text-info-text">Validating file...</p>
-              <div className="space-y-1">
-                <div className="h-2 bg-info/30 rounded-md w-3/4"></div>
-                <div className="h-2 bg-info/30 rounded-md w-1/2"></div>
+            <div class="flex-1 space-y-2">
+              <p class="text-sm font-medium text-info-text">Validating file...</p>
+              <div class="space-y-1">
+                <div class="h-2 bg-info/30 rounded-md w-3/4" />
+                <div class="h-2 bg-info/30 rounded-md w-1/2" />
               </div>
             </div>
           </div>
         </output>
-      )}
+      </Show>
 
       <ConfirmDialog
-        isOpen={showClearConfirm}
+        isOpen={showClearConfirm()}
         title="Clear File?"
         message="Clear this file? You can import it again if needed."
         confirmText="Clear"
