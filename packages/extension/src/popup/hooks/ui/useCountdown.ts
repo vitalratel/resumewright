@@ -1,60 +1,33 @@
-/**
- * useCountdown Hook
- *
- * Provides countdown timer functionality with auto-trigger callback
- * Useful for auto-close modals, toasts, or timed actions
- */
+// ABOUTME: Pausable countdown timer with completion callback.
+// ABOUTME: Used for auto-close modals and timed actions (WCAG 2.2.1 compliant).
 
-import { useCallback, useEffect, useState } from 'react';
+import type { Accessor } from 'solid-js';
+import { createEffect, createSignal, onCleanup, untrack } from 'solid-js';
 
 /**
- * Hook for countdown timer with completion callback
- * Added pause/resume functionality
+ * Countdown timer with pause/resume and completion callback
  *
  * @param initialSeconds - Initial countdown value in seconds (undefined = no countdown)
  * @param onComplete - Optional callback invoked when countdown reaches 0
- * @returns Object with countdown value, isPaused state, and pause/resume functions
- *
- * @example
- * const { countdown, isPaused, pause, resume } = useCountdown(5, () => {
- *   console.log('Countdown complete!');
- *   closeModal();
- * });
- *
- * {countdown !== undefined && (
- *   <div>
- *     <p>Closing in {countdown}s...</p>
- *     <button onClick={isPaused ? resume : pause}>
- *       {isPaused ? 'Resume' : 'Pause'}
- *     </button>
- *   </div>
- * )}
+ * @returns Object with countdown accessor, isPaused accessor, and pause/resume functions
  */
-export function useCountdown(
+export function createCountdown(
   initialSeconds: number | undefined,
   onComplete?: () => void,
 ): {
-  countdown: number | undefined;
-  isPaused: boolean;
+  countdown: Accessor<number | undefined>;
+  isPaused: Accessor<boolean>;
   pause: () => void;
   resume: () => void;
 } {
-  const [countdown, setCountdown] = useState(initialSeconds);
-  const [isPaused, setIsPaused] = useState(false);
-  const [lastInitialSeconds, setLastInitialSeconds] = useState(initialSeconds);
+  const [countdown, setCountdown] = createSignal(initialSeconds);
+  const [isPaused, setIsPaused] = createSignal(false);
 
-  // React 19 pattern: Render-phase setState to synchronize with prop changes
-  // This avoids cascading renders from setState in useEffect
-  if (initialSeconds !== lastInitialSeconds && initialSeconds !== undefined) {
-    setCountdown(initialSeconds);
-    setLastInitialSeconds(initialSeconds);
-  }
+  createEffect(() => {
+    if (isPaused()) return;
 
-  useEffect(() => {
-    if (countdown === undefined || countdown === 0) return;
-
-    // Only run timer when not paused
-    if (isPaused) return;
+    const current = untrack(() => countdown());
+    if (current === undefined || current === 0) return;
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
@@ -67,11 +40,13 @@ export function useCountdown(
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [countdown, isPaused, onComplete]);
+    onCleanup(() => clearInterval(timer));
+  });
 
-  const pause = useCallback(() => setIsPaused(true), []);
-  const resume = useCallback(() => setIsPaused(false), []);
-
-  return { countdown, isPaused, pause, resume };
+  return {
+    countdown,
+    isPaused,
+    pause: () => setIsPaused(true),
+    resume: () => setIsPaused(false),
+  };
 }

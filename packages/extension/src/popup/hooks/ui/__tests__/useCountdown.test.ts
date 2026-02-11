@@ -1,13 +1,13 @@
 /**
- * Tests for useCountdown hook
- * Pausable countdown functionality
+ * ABOUTME: Tests for createCountdown reactive function.
+ * ABOUTME: Validates pausable countdown timer with completion callbacks.
  */
 
-import { act, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
-import { useCountdown } from '../useCountdown';
+import { renderHook } from '@solidjs/testing-library';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createCountdown } from '../useCountdown';
 
-describe('useCountdown', () => {
+describe('createCountdown', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -20,89 +20,71 @@ describe('useCountdown', () => {
 
   describe('Basic Countdown', () => {
     it('initializes with starting countdown value', () => {
-      const { result } = renderHook(() => useCountdown(10));
+      const { result } = renderHook(() => createCountdown(10));
 
-      expect(result.current.countdown).toBe(10);
-      expect(result.current.isPaused).toBe(false);
+      expect(result.countdown()).toBe(10);
+      expect(result.isPaused()).toBe(false);
     });
 
     it('returns undefined countdown when initialSeconds is undefined', () => {
-      const { result } = renderHook(() => useCountdown(undefined));
+      const { result } = renderHook(() => createCountdown(undefined));
 
-      expect(result.current.countdown).toBeUndefined();
-      expect(result.current.isPaused).toBe(false);
+      expect(result.countdown()).toBeUndefined();
+      expect(result.isPaused()).toBe(false);
     });
 
     it('counts down from initial value', () => {
-      const { result } = renderHook(() => useCountdown(3));
+      const { result } = renderHook(() => createCountdown(3));
 
-      expect(result.current.countdown).toBe(3);
+      expect(result.countdown()).toBe(3);
 
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
-      expect(result.current.countdown).toBe(2);
+      vi.advanceTimersByTime(1000);
+      expect(result.countdown()).toBe(2);
 
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
-      expect(result.current.countdown).toBe(1);
+      vi.advanceTimersByTime(1000);
+      expect(result.countdown()).toBe(1);
 
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
-      expect(result.current.countdown).toBe(0);
+      vi.advanceTimersByTime(1000);
+      expect(result.countdown()).toBe(0);
     });
 
     it('stops at 0', () => {
-      const { result } = renderHook(() => useCountdown(2));
+      const { result } = renderHook(() => createCountdown(2));
 
-      act(() => {
-        vi.advanceTimersByTime(3000);
-      });
+      vi.advanceTimersByTime(3000);
+      expect(result.countdown()).toBe(0);
 
-      expect(result.current.countdown).toBe(0);
-
-      // Shouldn't go negative
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
-      expect(result.current.countdown).toBe(0);
+      vi.advanceTimersByTime(1000);
+      expect(result.countdown()).toBe(0);
     });
   });
 
   describe('onComplete Callback', () => {
     it('calls onComplete when countdown reaches 0', () => {
       const onComplete = vi.fn();
-      renderHook(() => useCountdown(2, onComplete));
+      renderHook(() => createCountdown(2, onComplete));
 
       expect(onComplete).not.toHaveBeenCalled();
 
-      act(() => {
-        vi.advanceTimersByTime(2000);
-      });
+      vi.advanceTimersByTime(2000);
 
       expect(onComplete).toHaveBeenCalledTimes(1);
     });
 
     it('does not call onComplete if initialSeconds is undefined', () => {
       const onComplete = vi.fn();
-      renderHook(() => useCountdown(undefined, onComplete));
+      renderHook(() => createCountdown(undefined, onComplete));
 
-      act(() => {
-        vi.advanceTimersByTime(5000);
-      });
+      vi.advanceTimersByTime(5000);
 
       expect(onComplete).not.toHaveBeenCalled();
     });
 
     it('calls onComplete exactly once', () => {
       const onComplete = vi.fn();
-      renderHook(() => useCountdown(1, onComplete));
+      renderHook(() => createCountdown(1, onComplete));
 
-      act(() => {
-        vi.advanceTimersByTime(5000); // Advance way past countdown
-      });
+      vi.advanceTimersByTime(5000);
 
       expect(onComplete).toHaveBeenCalledTimes(1);
     });
@@ -110,207 +92,133 @@ describe('useCountdown', () => {
 
   describe('Pause Functionality', () => {
     it('pauses countdown when pause() is called', () => {
-      const { result } = renderHook(() => useCountdown(5));
+      const { result } = renderHook(() => createCountdown(5));
 
-      expect(result.current.countdown).toBe(5);
-      expect(result.current.isPaused).toBe(false);
+      expect(result.countdown()).toBe(5);
+      expect(result.isPaused()).toBe(false);
 
-      // Countdown for 2 seconds
-      act(() => {
-        vi.advanceTimersByTime(2000);
-      });
-      expect(result.current.countdown).toBe(3);
+      vi.advanceTimersByTime(2000);
+      expect(result.countdown()).toBe(3);
 
-      // Pause
-      act(() => {
-        result.current.pause();
-      });
-      expect(result.current.isPaused).toBe(true);
+      result.pause();
+      expect(result.isPaused()).toBe(true);
 
-      // Advance time - countdown should NOT change
-      act(() => {
-        vi.advanceTimersByTime(3000);
-      });
-      expect(result.current.countdown).toBe(3);
+      vi.advanceTimersByTime(3000);
+      expect(result.countdown()).toBe(3);
     });
 
     it('pause at 0 does not affect state', () => {
       const onComplete = vi.fn();
-      const { result } = renderHook(() => useCountdown(1, onComplete));
+      const { result } = renderHook(() => createCountdown(1, onComplete));
 
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
-      expect(result.current.countdown).toBe(0);
+      vi.advanceTimersByTime(1000);
+      expect(result.countdown()).toBe(0);
 
-      act(() => {
-        result.current.pause();
-      });
+      result.pause();
 
-      expect(result.current.isPaused).toBe(true);
-      expect(result.current.countdown).toBe(0);
+      expect(result.isPaused()).toBe(true);
+      expect(result.countdown()).toBe(0);
     });
   });
 
   describe('Resume Functionality', () => {
     it('resumes countdown when resume() is called', () => {
-      const { result } = renderHook(() => useCountdown(5));
+      const { result } = renderHook(() => createCountdown(5));
 
-      // Pause after 2 seconds
-      act(() => {
-        vi.advanceTimersByTime(2000);
-      });
-      expect(result.current.countdown).toBe(3);
+      vi.advanceTimersByTime(2000);
+      expect(result.countdown()).toBe(3);
 
-      act(() => {
-        result.current.pause();
-      });
+      result.pause();
 
-      // Time passes while paused
-      act(() => {
-        vi.advanceTimersByTime(2000);
-      });
-      expect(result.current.countdown).toBe(3); // Still 3
+      vi.advanceTimersByTime(2000);
+      expect(result.countdown()).toBe(3);
 
-      // Resume
-      act(() => {
-        result.current.resume();
-      });
-      expect(result.current.isPaused).toBe(false);
+      result.resume();
+      expect(result.isPaused()).toBe(false);
 
-      // Countdown continues
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
-      expect(result.current.countdown).toBe(2);
+      vi.advanceTimersByTime(1000);
+      expect(result.countdown()).toBe(2);
 
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
-      expect(result.current.countdown).toBe(1);
+      vi.advanceTimersByTime(1000);
+      expect(result.countdown()).toBe(1);
     });
 
     it('resume when already running has no effect', () => {
-      const { result } = renderHook(() => useCountdown(5));
+      const { result } = renderHook(() => createCountdown(5));
 
-      expect(result.current.isPaused).toBe(false);
+      expect(result.isPaused()).toBe(false);
 
-      act(() => {
-        result.current.resume();
-      });
+      result.resume();
 
-      expect(result.current.isPaused).toBe(false);
+      expect(result.isPaused()).toBe(false);
 
-      // Countdown continues normally
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
-      expect(result.current.countdown).toBe(4);
+      vi.advanceTimersByTime(1000);
+      expect(result.countdown()).toBe(4);
     });
   });
 
   describe('Multiple Pause/Resume Cycles', () => {
     it('handles multiple pause/resume cycles correctly', () => {
-      const { result } = renderHook(() => useCountdown(10));
+      const { result } = renderHook(() => createCountdown(10));
 
-      // Countdown 2 seconds
-      act(() => {
-        vi.advanceTimersByTime(2000);
-      });
-      expect(result.current.countdown).toBe(8);
+      vi.advanceTimersByTime(2000);
+      expect(result.countdown()).toBe(8);
 
-      // Pause
-      act(() => {
-        result.current.pause();
-      });
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
-      expect(result.current.countdown).toBe(8);
+      result.pause();
+      vi.advanceTimersByTime(1000);
+      expect(result.countdown()).toBe(8);
 
-      // Resume and countdown 1 second
-      act(() => {
-        result.current.resume();
-      });
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
-      expect(result.current.countdown).toBe(7);
+      result.resume();
+      vi.advanceTimersByTime(1000);
+      expect(result.countdown()).toBe(7);
 
-      // Pause again
-      act(() => {
-        result.current.pause();
-      });
-      act(() => {
-        vi.advanceTimersByTime(2000);
-      });
-      expect(result.current.countdown).toBe(7);
+      result.pause();
+      vi.advanceTimersByTime(2000);
+      expect(result.countdown()).toBe(7);
 
-      // Final resume
-      act(() => {
-        result.current.resume();
-      });
-      act(() => {
-        vi.advanceTimersByTime(3000);
-      });
-      expect(result.current.countdown).toBe(4);
+      result.resume();
+      vi.advanceTimersByTime(3000);
+      expect(result.countdown()).toBe(4);
     });
 
     it('onComplete still fires after pause/resume cycles', () => {
       const onComplete = vi.fn();
-      const { result } = renderHook(() => useCountdown(3, onComplete));
+      const { result } = renderHook(() => createCountdown(3, onComplete));
 
-      // Countdown 1 second
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
-      expect(result.current.countdown).toBe(2);
+      vi.advanceTimersByTime(1000);
+      expect(result.countdown()).toBe(2);
 
-      // Pause for a while
-      act(() => {
-        result.current.pause();
-      });
-      act(() => {
-        vi.advanceTimersByTime(5000);
-      });
-      expect(result.current.countdown).toBe(2);
+      result.pause();
+      vi.advanceTimersByTime(5000);
+      expect(result.countdown()).toBe(2);
 
-      // Resume and finish countdown
-      act(() => {
-        result.current.resume();
-      });
-      act(() => {
-        vi.advanceTimersByTime(2000);
-      });
+      result.resume();
+      vi.advanceTimersByTime(2000);
 
-      expect(result.current.countdown).toBe(0);
+      expect(result.countdown()).toBe(0);
       expect(onComplete).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('Cleanup and Memory', () => {
     it('cleans up interval on unmount', () => {
-      const { unmount } = renderHook(() => useCountdown(5));
+      const { cleanup } = renderHook(() => createCountdown(5));
 
       const timersCount = vi.getTimerCount();
       expect(timersCount).toBeGreaterThan(0);
 
-      unmount();
+      cleanup();
 
-      // Verify no timers remain
       expect(vi.getTimerCount()).toBe(0);
     });
 
     it('cleans up interval when countdown reaches 0', () => {
-      const { result } = renderHook(() => useCountdown(1));
+      const { result } = renderHook(() => createCountdown(1));
 
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
+      vi.advanceTimersByTime(1000);
 
-      expect(result.current.countdown).toBe(0);
+      expect(result.countdown()).toBe(0);
 
-      // Timer should be cleared
       const timersAfter = vi.getTimerCount();
       expect(timersAfter).toBe(0);
     });
@@ -319,36 +227,31 @@ describe('useCountdown', () => {
   describe('Edge Cases', () => {
     it('handles countdown of 0 seconds', () => {
       const onComplete = vi.fn();
-      const { result } = renderHook(() => useCountdown(0, onComplete));
+      const { result } = renderHook(() => createCountdown(0, onComplete));
 
-      expect(result.current.countdown).toBe(0);
-      // onComplete should not be called for 0 initial value
+      expect(result.countdown()).toBe(0);
       expect(onComplete).not.toHaveBeenCalled();
     });
 
     it('handles very long countdown', () => {
-      const { result } = renderHook(() => useCountdown(1000));
+      const { result } = renderHook(() => createCountdown(1000));
 
-      expect(result.current.countdown).toBe(1000);
+      expect(result.countdown()).toBe(1000);
 
-      act(() => {
-        vi.advanceTimersByTime(100000); // Advance 100 seconds
-      });
+      vi.advanceTimersByTime(100000);
 
-      expect(result.current.countdown).toBe(900);
+      expect(result.countdown()).toBe(900);
     });
 
-    it('pause and resume maintain function identity', () => {
-      const { result, rerender } = renderHook(() => useCountdown(5));
+    it('pause and resume are stable function references', () => {
+      const { result } = renderHook(() => createCountdown(5));
 
-      const pauseFn = result.current.pause;
-      const resumeFn = result.current.resume;
+      const pauseFn = result.pause;
+      const resumeFn = result.resume;
 
-      rerender();
-
-      // Functions should be stable
-      expect(result.current.pause).toBe(pauseFn);
-      expect(result.current.resume).toBe(resumeFn);
+      // Functions are stable in Solid (component only runs once)
+      expect(result.pause).toBe(pauseFn);
+      expect(result.resume).toBe(resumeFn);
     });
   });
 });

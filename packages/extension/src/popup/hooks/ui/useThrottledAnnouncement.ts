@@ -1,66 +1,53 @@
+// ABOUTME: Throttles announcements based on value delta and time interval.
+// ABOUTME: Prevents screen reader announcements from firing too frequently.
+
+import type { Accessor } from 'solid-js';
+import { createEffect, createSignal } from 'solid-js';
+
 /**
- * useThrottledAnnouncement Hook
- * Extracted from ConvertingState for reusability
- *
  * Throttles announcements based on value delta and time interval.
- * Useful for screen reader announcements that shouldn't fire too frequently.
+ * Returns an accessor indicating whether to announce.
  *
- * @param value - The value to monitor (e.g., progress percentage)
- * @param threshold - Minimum change in value to trigger announcement (default: 10)
- * @param minInterval - Minimum time between announcements in ms (default: 5000)
- * @returns boolean indicating whether to announce
+ * @param value - Accessor for the value to monitor (e.g., progress percentage)
+ * @param threshold - Accessor for minimum change to trigger announcement (default: 10)
+ * @param minInterval - Accessor for minimum time between announcements in ms (default: 5000)
+ * @returns Accessor<boolean> indicating whether to announce
  */
+export function createThrottledAnnouncement(
+  value: Accessor<number>,
+  threshold: Accessor<number> = () => 10,
+  minInterval: Accessor<number> = () => 5000,
+): Accessor<boolean> {
+  let lastAnnouncedValue = 0;
+  let lastAnnouncedTime = Date.now();
 
-import { useEffect, useRef, useState } from 'react';
+  const [shouldAnnounce, setShouldAnnounce] = createSignal(true);
+  let initialized = false;
 
-export function useThrottledAnnouncement(
-  value: number,
-  threshold: number = 10,
-  minInterval: number = 5000,
-): boolean {
-  const lastValueRef = useRef(0);
-  // React 19 pattern: Use lazy initialization for impure functions like Date.now()
-  const [lastTime, setLastTime] = useState(() => Date.now());
-  const [shouldAnnounce, setShouldAnnounce] = useState(true);
+  createEffect(() => {
+    const currentValue = value();
+    const currentThreshold = threshold();
+    const currentMinInterval = minInterval();
 
-  // Track previous config to detect changes
-  const prevConfigRef = useRef({ threshold, minInterval });
-
-  // Reset when threshold or minInterval changes
-  useEffect(() => {
-    const prevConfig = prevConfigRef.current;
-    const configChanged =
-      prevConfig.threshold !== threshold || prevConfig.minInterval !== minInterval;
-
-    if (configChanged) {
-      lastValueRef.current = 0;
-      prevConfigRef.current = { threshold, minInterval };
-      const timer = setTimeout(() => setLastTime(Date.now()), 0);
-      return () => clearTimeout(timer);
+    // First run: keep initial announcement as true
+    if (!initialized) {
+      initialized = true;
+      lastAnnouncedValue = currentValue;
+      lastAnnouncedTime = Date.now();
+      return;
     }
-  }, [threshold, minInterval]);
 
-  useEffect(() => {
-    const valueDelta = Math.abs(value - lastValueRef.current);
-    const timeDelta = Date.now() - lastTime;
+    const valueDelta = Math.abs(currentValue - lastAnnouncedValue);
+    const timeDelta = Date.now() - lastAnnouncedTime;
 
-    // React 19 pattern: Use setTimeout to avoid synchronous setState in useEffect
-    // Assign to variable for proper cleanup
-    let timer: NodeJS.Timeout;
-    if (valueDelta >= threshold || timeDelta >= minInterval) {
-      lastValueRef.current = value;
-      const now = Date.now();
-      timer = setTimeout(() => {
-        setLastTime(now);
-        setShouldAnnounce(true);
-      }, 0);
+    if (valueDelta >= currentThreshold || timeDelta >= currentMinInterval) {
+      lastAnnouncedValue = currentValue;
+      lastAnnouncedTime = Date.now();
+      setShouldAnnounce(true);
     } else {
-      // Only update state if it changed to prevent unnecessary re-renders
-      timer = setTimeout(() => setShouldAnnounce((prev) => (prev ? false : prev)), 0);
+      setShouldAnnounce(false);
     }
-
-    return () => clearTimeout(timer);
-  }, [value, threshold, minInterval, lastTime]);
+  });
 
   return shouldAnnounce;
 }
