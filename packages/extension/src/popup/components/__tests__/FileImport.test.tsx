@@ -1,6 +1,6 @@
 /**
  * ABOUTME: Tests for FileImport component - file upload, validation, and drag-drop.
- * ABOUTME: Uses real hooks (no mocks) to test actual file handling behavior.
+ * ABOUTME: Uses real providers (no mocks) to test actual file handling behavior.
  */
 
 import { fireEvent, render, screen, waitFor } from '@solidjs/testing-library';
