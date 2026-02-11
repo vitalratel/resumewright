@@ -1,7 +1,7 @@
 // ABOUTME: Keyboard shortcut display utilities.
 // ABOUTME: Provides platform-specific shortcut formatting (Cmd on Mac, Ctrl elsewhere).
 
-import { getModifierKey } from '../hooks/ui/useKeyboardShortcuts';
+import { getModifierKey } from '../reactivity/keyboard';
 
 /**
  * Get the platform-specific shortcut display string

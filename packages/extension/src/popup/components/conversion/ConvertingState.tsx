@@ -4,7 +4,7 @@
 import { createSignal, onCleanup, Show } from 'solid-js';
 import { useAppContext } from '../../context/AppContext';
 import { useConversion } from '../../context/ConversionContext';
-import { createThrottledAnnouncement } from '../../hooks/ui/useThrottledAnnouncement';
+import { createThrottledAnnouncement } from '../../reactivity/throttledAnnouncement';
 import { popupStore } from '../../store';
 import { progressStore } from '../../store/progressStore';
 import { ConfirmDialog } from '../common/ConfirmDialog';

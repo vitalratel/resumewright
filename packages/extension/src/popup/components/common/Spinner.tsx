@@ -2,7 +2,7 @@
 // ABOUTME: Accessible with aria-hidden or aria-label for screen readers.
 
 import { Show } from 'solid-js';
-import { useDelayedSpinner } from '../../hooks/ui/useDelayedSpinner';
+import { useDelayedSpinner } from '../../reactivity/spinner';
 
 export type SpinnerSize = 'small' | 'medium' | 'large';
 

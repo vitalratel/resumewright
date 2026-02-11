@@ -2,7 +2,7 @@
 // ABOUTME: Handles browser download API, error recovery, and delegates to SuccessView.
 
 import { createSignal, Show } from 'solid-js';
-import { createCountdown } from '../../hooks/ui/useCountdown';
+import { createCountdown } from '../../reactivity/countdown';
 import { createBrowserDownloads } from '../../reactivity/downloads';
 import { Alert } from '../common/Alert';
 import { Button } from '../common/Button';

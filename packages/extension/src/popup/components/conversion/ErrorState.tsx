@@ -3,7 +3,7 @@
 
 import { HiOutlineExclamationTriangle, HiOutlineXCircle } from 'solid-icons/hi';
 import { Show } from 'solid-js';
-import { createErrorLogging } from '@/popup/hooks/ui/useErrorLogging';
+import { createErrorLogging } from '@/popup/reactivity/errorLogging';
 import { ErrorCategory, ErrorCode } from '@/shared/errors/codes';
 import { ERROR_MESSAGES } from '@/shared/errors/messages';
 import { ERROR_CATEGORIES } from '@/shared/errors/metadata';
