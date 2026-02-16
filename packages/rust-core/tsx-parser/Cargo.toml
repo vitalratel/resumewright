@@ -9,10 +9,10 @@ publish = false
 [dependencies]
 serde = { workspace = true }
 thiserror = { workspace = true }
-oxc_allocator = "0.113"
-oxc_parser = { version = "0.113", default-features = false }  # Disable regex parsing - not needed for TSX
-oxc_ast = "0.113"
-oxc_span = "0.113"
+oxc_allocator = "0.114"
+oxc_parser = { version = "0.114", default-features = false }  # Disable regex parsing - not needed for TSX
+oxc_ast = "0.114"
+oxc_span = "0.114"
 
 [dev-dependencies]
 criterion = { workspace = true }
