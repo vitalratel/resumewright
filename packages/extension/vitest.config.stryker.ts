@@ -3,7 +3,6 @@
 
 import type { Plugin } from 'vite';
 import path from 'node:path';
-import solid from 'vite-plugin-solid';
 import wasm from 'vite-plugin-wasm';
 import { defineConfig } from 'vitest/config';
 import { WxtVitest } from 'wxt/testing/vitest-plugin';
@@ -11,7 +10,6 @@ import { WxtVitest } from 'wxt/testing/vitest-plugin';
 export default defineConfig({
   plugins: [
     WxtVitest(),
-    solid(),
     wasm(),
   ] as Plugin[],
   test: {
