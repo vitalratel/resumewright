@@ -1,13 +1,10 @@
 /**
  * ABOUTME: Global test setup for the extension test suite.
- * ABOUTME: Configures browser mocks, store resets, and cleanup between tests.
+ * ABOUTME: Configures browser mocks and cleanup between tests.
  */
 
-import { cleanup } from '@solidjs/testing-library';
 import { afterEach, beforeEach, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
-import { popupStore } from '@/popup/store/index';
-import { progressStore } from '@/popup/store/progressStore';
 
 /**
  * Mock IndexedDB for custom font storage tests
@@ -39,15 +36,8 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
-  // Clean up Solid components
-  cleanup();
-
   // Reset fakeBrowser state to prevent test pollution
   fakeBrowser.reset();
-
-  // Reset stores to initial state
-  popupStore.reset();
-  progressStore.reset();
 
   // Clear all timers (setTimeout, setInterval, etc.)
   vi.clearAllTimers();

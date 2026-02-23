@@ -23,7 +23,6 @@
     "test:coverage": "NODE_OPTIONS='--expose-gc --max-old-space-size=4096' vitest run --coverage",
     "test:unit": "NODE_OPTIONS='--expose-gc --max-old-space-size=4096' vitest run",
     "test:unit:watch": "NODE_OPTIONS='--expose-gc --max-old-space-size=4096' vitest",
-    "test:unit:settings": "NODE_OPTIONS='--expose-gc --max-old-space-size=4096' vitest run --no-cache src/popup/components/__tests__/Settings",
     "test:clear-cache": "vitest --clearCache",
     "test:e2e": "playwright test tests/e2e",
     "test:e2e:file": "pnpm exec playwright test",
@@ -41,11 +40,8 @@
     "check:fix": "biome check --write"
   },
   "dependencies": {
-    "@solid-primitives/scheduled": "^1.5.2",
     "@webext-core/storage": "^1.2.0",
     "neverthrow": "^8.2.0",
-    "solid-icons": "^1.2.0",
-    "solid-js": "^1.9.11",
     "transliteration": "^2.6.1",
     "valibot": "^1.2.0"
   },
@@ -55,7 +51,6 @@
     "@fast-check/vitest": "^0.2.4",
     "@playwright/test": "^1.58.2",
     "@sgohlke/stryker-log-ignorer": "^2.0.6",
-    "@solidjs/testing-library": "^0.8.10",
     "@stryker-mutator/core": "^9.5.1",
     "@stryker-mutator/vitest-runner": "^9.5.1",
     "@tailwindcss/postcss": "^4.1.18",
@@ -64,7 +59,6 @@
     "@types/node": "^25.2.3",
     "@vitest/coverage-v8": "^4.0.18",
     "@webext-core/messaging": "^2.3.0",
-    "@wxt-dev/module-solid": "^1.1.4",
     "autoprefixer": "^10.4.24",
     "axe-core": "^4.11.1",
     "fake-indexeddb": "^6.2.5",
@@ -76,7 +70,6 @@
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
-    "vite-plugin-solid": "^2.11.10",
     "vite-plugin-wasm": "^3.3.0",
     "vitest": "^4.0.18"
   }

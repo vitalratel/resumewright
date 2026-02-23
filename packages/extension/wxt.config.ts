@@ -5,7 +5,7 @@ import { defineConfig } from 'wxt';
 
 export default defineConfig({
   // Custom modules
-  modules: ['@wxt-dev/module-solid', './modules/wasm-assets.ts'],
+  modules: ['./modules/wasm-assets.ts'],
 
   // Force MV3 for all browsers (Firefox included)
   manifestVersion: 3,

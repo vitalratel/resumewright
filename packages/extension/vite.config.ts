@@ -1,6 +1,5 @@
 import type { Plugin } from 'vite';
 import path from 'node:path';
-import solid from 'vite-plugin-solid';
 import wasm from 'vite-plugin-wasm';
 import { defineConfig } from 'vite';
 
@@ -24,7 +23,6 @@ export default defineConfig({
         }
       },
     } as Plugin,
-    solid(),
     wasm() as Plugin,
   ],
   esbuild: {
