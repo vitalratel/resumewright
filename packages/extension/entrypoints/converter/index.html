@@ -205,7 +205,7 @@
             </div>
 
             <button id="btn-cancel" type="button"
-              class="text-sm text-muted-foreground hover:text-link hover:underline mt-2 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring transition-colors rounded">
+              class="text-sm text-muted-foreground hover:text-primary hover:underline mt-2 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring transition-colors rounded">
               Cancel
             </button>
           </section>
@@ -282,7 +282,6 @@
           <section id="state-error" hidden
             data-testid="error-state"
             class="animate-fade-in flex flex-col items-center gap-4 py-8"
-            role="alert"
             aria-live="assertive"
             aria-atomic="true">
 
@@ -306,7 +305,7 @@
 
             <!-- Technical details (collapsible) -->
             <details id="error-details-container" class="w-full max-w-md text-sm hidden">
-              <summary class="text-sm text-muted-foreground cursor-pointer hover:text-link focus:outline-none focus:ring-2 focus:ring-ring rounded">
+              <summary class="text-sm text-muted-foreground cursor-pointer hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring rounded">
                 Technical details
               </summary>
               <pre id="error-technical" class="mt-2 text-xs text-muted-foreground bg-muted p-3 rounded-md overflow-x-auto border border-border font-mono whitespace-pre-wrap"></pre>
@@ -552,7 +551,7 @@
           <ol class="space-y-1 list-decimal list-inside">
             <li>Ask Claude.ai to write your CV as a React/TSX component</li>
             <li>Save the generated code as a <code class="text-xs bg-muted px-1 rounded">.tsx</code> file</li>
-            <li>Open the ResumeWright extension and drop your file</li>
+            <li>Open the extension and drop your file</li>
             <li>Click <strong>Export to PDF</strong> to generate your PDF</li>
           </ol>
         </section>

@@ -4,6 +4,7 @@
 import { formatFileSize } from '@/popup/utils/formatting';
 import { FILE_SIZE_LIMITS, validateFileExtension } from '@/shared/domain/pdf/validation';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
+import { sendMessage } from '@/shared/messaging';
 import type { UIState } from './converter';
 
 interface FileImportDeps {
@@ -155,6 +156,28 @@ async function processFile(file: File, deps: FileImportDeps): Promise<void> {
     return;
   }
 
+  // JSX tag balance check — catches unclosed elements
+  if (!hasBalancedJSXTags(content)) {
+    showValidationError(
+      'This file has mismatched JSX tags. Please make sure your CV file from Claude is complete and unmodified.',
+    );
+    return;
+  }
+
+  // TSX syntax check via WASM background worker
+  try {
+    const result = await sendMessage('validateTsx', { tsx: content });
+    if (!result.valid) {
+      showValidationError(
+        'This file has TSX syntax errors. Please make sure your CV file from Claude is complete and unmodified.',
+      );
+      return;
+    }
+  } catch {
+    // If background isn't ready, allow through — conversion will catch it
+    getLogger().warn('FileImport', 'TSX syntax check skipped (background unavailable)');
+  }
+
   // All checks passed
   importedFile = { name: file.name, size: file.size, content };
 
@@ -195,4 +218,53 @@ function readAsText(file: File): Promise<string> {
     reader.onerror = () => reject(reader.error);
     reader.readAsText(file);
   });
+}
+
+// ─── JSX tag balance check ────────────────────────────────────────────────────
+
+// Void elements never need a closing tag in HTML/JSX
+const VOID_ELEMENTS = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+]);
+
+/**
+ * Check that common HTML elements in JSX are properly opened and closed.
+ * Returns false if a closing tag is encountered that doesn't match the
+ * most-recently-opened tag — a clear sign of malformed JSX.
+ */
+function hasBalancedJSXTags(content: string): boolean {
+  // Match only lowercase HTML element tags (not React components)
+  const TAG_RE = /<(\/?)([a-z][a-z0-9]*)((?:\s[^>]*)?)(\/?)>/g;
+  const stack: string[] = [];
+
+  for (let match = TAG_RE.exec(content); match !== null; match = TAG_RE.exec(content)) {
+    const [, slash, tag, , selfClose] = match;
+
+    if (VOID_ELEMENTS.has(tag) || selfClose === '/') continue;
+
+    if (slash === '/') {
+      // Closing tag — must match top of stack
+      if (stack.length === 0 || stack[stack.length - 1] !== tag) {
+        return false;
+      }
+      stack.pop();
+    } else {
+      stack.push(tag);
+    }
+  }
+
+  return true; // extra unclosed tags are allowed (e.g. fragments, React components)
 }
