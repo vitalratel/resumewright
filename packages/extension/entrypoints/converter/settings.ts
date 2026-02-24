@@ -132,22 +132,6 @@ function switchTab(tab: 'page' | 'general'): void {
   generalPanel.hidden = isPage;
   pageTab.setAttribute('aria-selected', String(isPage));
   generalTab.setAttribute('aria-selected', String(!isPage));
-
-  // Active tab styling
-  const activeClass = ['bg-primary', 'text-primary-foreground'];
-  const inactiveClass = ['text-muted-foreground', 'hover:text-foreground'];
-
-  if (isPage) {
-    pageTab.classList.add(...activeClass);
-    pageTab.classList.remove(...inactiveClass);
-    generalTab.classList.remove(...activeClass);
-    generalTab.classList.add(...inactiveClass);
-  } else {
-    generalTab.classList.add(...activeClass);
-    generalTab.classList.remove(...inactiveClass);
-    pageTab.classList.remove(...activeClass);
-    pageTab.classList.add(...inactiveClass);
-  }
 }
 
 // ─── Form population ──────────────────────────────────────────────────────────
@@ -247,20 +231,8 @@ function applyTheme(theme: UserSettings['theme']): void {
 }
 
 function updateThemeButtons(theme: UserSettings['theme']): void {
-  const activeClass = ['border-primary', 'bg-primary/10', 'text-primary'];
-  const inactiveClass = ['border-border'];
-
   for (const id of ['light', 'dark', 'auto'] as const) {
-    const btn = document.getElementById(`theme-${id}`)!;
-    const isActive = theme === id;
-    btn.setAttribute('aria-pressed', String(isActive));
-    if (isActive) {
-      btn.classList.add(...activeClass);
-      btn.classList.remove(...inactiveClass);
-    } else {
-      btn.classList.remove(...activeClass);
-      btn.classList.add(...inactiveClass);
-    }
+    document.getElementById(`theme-${id}`)!.setAttribute('aria-pressed', String(theme === id));
   }
 }
 
