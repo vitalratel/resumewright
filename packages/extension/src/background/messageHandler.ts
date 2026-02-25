@@ -2,8 +2,6 @@
 // ABOUTME: Registers typed message handlers for all popup ↔ background communication.
 
 import { getLogger } from '@/shared/infrastructure/logging/instance';
-import { loadSettings, saveSettings } from '@/shared/infrastructure/settings/SettingsStore';
-import { localExtStorage } from '@/shared/infrastructure/storage/typedStorage';
 import { createConverterInstance } from '@/shared/infrastructure/wasm/instance';
 import { isWASMInitialized } from '@/shared/infrastructure/wasm/loader';
 import { onMessage, sendMessage } from '@/shared/messaging';
@@ -12,7 +10,7 @@ import { validateTsxSyntax } from '../shared/domain/pdf/validation';
 import { convert } from './services/ConversionService';
 import { createProgressTracker } from './services/ProgressTracker';
 import { parseConversionError } from './utils/errorParser';
-import { getWasmStatus, retryWasmInit } from './wasmInit';
+import { getWasmStatus } from './wasmInit';
 
 /**
  * Setup message handlers for extension communication
@@ -21,57 +19,6 @@ import { getWasmStatus, retryWasmInit } from './wasmInit';
 export function setupMessageHandler(): void {
   const progressTracker = createProgressTracker();
   const getConverterInstance: () => TsxToPdfConverter = createConverterInstance;
-
-  // === WASM Status Handlers ===
-
-  onMessage('getWasmStatus', async () => {
-    try {
-      const status = await localExtStorage.getItem('wasmStatus');
-      const initTime = await localExtStorage.getItem('wasmInitTime');
-      const error = await localExtStorage.getItem('wasmInitError');
-
-      if (status === null || status === 'failed') {
-        return {
-          initialized: false,
-          error: error ?? 'WASM initialization failed',
-        };
-      }
-
-      if (status === 'initializing') {
-        return { initialized: false };
-      }
-
-      if (status === 'success') {
-        return {
-          initialized: true,
-          initTime: initTime ?? undefined,
-        };
-      }
-
-      return {
-        initialized: false,
-        error: 'Invalid WASM status in storage',
-      };
-    } catch (error: unknown) {
-      return {
-        initialized: false,
-        error: error instanceof Error ? error.message : 'Failed to check WASM status',
-      };
-    }
-  });
-
-  onMessage('retryWasmInit', async () => {
-    try {
-      await retryWasmInit();
-      await localExtStorage.removeItem('wasmInitError');
-      return { initialized: true };
-    } catch (error: unknown) {
-      return {
-        initialized: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
-  });
 
   // === TSX Validation ===
 
@@ -175,60 +122,6 @@ export function setupMessageHandler(): void {
     } finally {
       progressTracker.stopTracking(jobId);
     }
-  });
-
-  // === Settings ===
-
-  onMessage('getSettings', async () => {
-    try {
-      const settings = await loadSettings();
-      return { success: true, settings };
-    } catch (error: unknown) {
-      getLogger().error('MessageHandler', 'Failed to load settings', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to load settings',
-      };
-    }
-  });
-
-  onMessage('updateSettings', async ({ data: payload }) => {
-    try {
-      const currentSettings = await loadSettings();
-      const updatedSettings = { ...currentSettings, ...payload.settings };
-      const result = await saveSettings(updatedSettings);
-
-      if (result.isErr()) {
-        getLogger().error('MessageHandler', 'Failed to update settings', result.error);
-        return {
-          success: false,
-          error: result.error.message,
-        };
-      }
-
-      return { success: true };
-    } catch (error: unknown) {
-      getLogger().error('MessageHandler', 'Failed to update settings', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to update settings',
-      };
-    }
-  });
-
-  // === Popup Lifecycle ===
-
-  onMessage('popupOpened', async ({ data: payload }) => {
-    if (payload.requestProgressUpdate) {
-      await progressTracker.synchronizeProgress();
-    }
-    return { success: true };
-  });
-
-  // === Health Check ===
-
-  onMessage('ping', () => {
-    return { pong: true };
   });
 
   getLogger().info('Background', 'Message handlers initialized');

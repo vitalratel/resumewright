@@ -61,26 +61,6 @@ export const retryPresets = {
   },
 
   /**
-   * WASM retry - Conservative retries for initialization failures
-   */
-  wasm: {
-    maxAttempts: 2,
-    baseDelayMs: 500,
-    maxDelayMs: 2000,
-    timeoutMs: 10000,
-  },
-
-  /**
-   * Storage retry - Quick retries for storage quota/lock issues
-   */
-  storage: {
-    maxAttempts: 3,
-    baseDelayMs: 200,
-    maxDelayMs: 1000,
-    timeoutMs: 5000,
-  },
-
-  /**
    * Default retry - Balanced configuration for general use
    */
   default: DEFAULT_CONFIG,

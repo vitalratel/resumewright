@@ -7,11 +7,7 @@ import type {
   ConversionErrorPayload,
   ConversionProgressPayload,
   ConversionRequestPayload,
-  PopupOpenedPayload,
-  UpdateSettingsPayload,
-  WasmStatusPayload,
 } from '../types/messages';
-import type { UserSettings } from '../types/settings';
 
 /**
  * Protocol map defining all message types with their request and response types.
@@ -19,34 +15,16 @@ import type { UserSettings } from '../types/settings';
  * Format: messageName: (requestData) => responseData
  */
 interface ProtocolMap {
-  // WASM status
-  getWasmStatus: (data: Record<string, never>) => WasmStatusPayload;
-  retryWasmInit: (data: Record<string, never>) => WasmStatusPayload;
-
   // TSX validation
   validateTsx: (data: { tsx: string }) => { valid: boolean };
 
   // Conversion (request/response)
   startConversion: (data: ConversionRequestPayload) => { success: boolean; error?: string };
 
-  // Conversion broadcasts (background → popup, no response expected)
+  // Conversion broadcasts (background → UI, no response expected)
   conversionProgress: (data: ConversionProgressPayload) => void;
   conversionComplete: (data: ConversionCompletePayload) => void;
   conversionError: (data: ConversionErrorPayload) => void;
-
-  // Settings
-  getSettings: (data: Record<string, never>) => {
-    success: boolean;
-    settings?: UserSettings;
-    error?: string;
-  };
-  updateSettings: (data: UpdateSettingsPayload) => { success: boolean; error?: string };
-
-  // Popup lifecycle
-  popupOpened: (data: PopupOpenedPayload) => { success: boolean };
-
-  // Ping for health check
-  ping: (data: Record<string, never>) => { pong: true };
 }
 
 // Destructuring is the documented API pattern for @webext-core/messaging.

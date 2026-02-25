@@ -14,26 +14,6 @@ vi.mock('@/shared/messaging', () => ({
   }),
 }));
 
-// Mock browser storage - true external boundary
-vi.mock('wxt/browser', () => ({
-  browser: {
-    storage: {
-      sync: {
-        get: vi.fn().mockResolvedValue({}),
-        set: vi.fn().mockResolvedValue(undefined),
-      },
-      local: {
-        get: vi.fn().mockResolvedValue({}),
-        set: vi.fn().mockResolvedValue(undefined),
-      },
-      onChanged: {
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-      },
-    },
-  },
-}));
-
 // Mock WASM - true external boundary
 vi.mock('@pkg/wasm_bridge', () => ({
   extract_cv_metadata: vi.fn(),
@@ -53,7 +33,6 @@ vi.mock('@/shared/infrastructure/wasm/loader', () => ({
 
 vi.mock('../wasmInit', () => ({
   getWasmStatus: vi.fn().mockResolvedValue({ status: 'success' }),
-  retryWasmInit: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../../shared/domain/pdf/validation', () => ({
@@ -75,52 +54,10 @@ vi.mock('@/shared/infrastructure/logging/instance', () => ({
   }),
 }));
 
-// Mock storage for settings
-vi.mock('@/shared/infrastructure/storage/typedStorage', () => ({
-  localExtStorage: {
-    getItem: vi.fn().mockResolvedValue('success'),
-    setItem: vi.fn().mockResolvedValue(undefined),
-    removeItem: vi.fn().mockResolvedValue(undefined),
-  },
-}));
-
-// Use vi.hoisted to create mock functions available at mock time
-const { mockLoadSettings, mockSaveSettings } = vi.hoisted(() => ({
-  mockLoadSettings: vi.fn(),
-  mockSaveSettings: vi.fn(),
-}));
-
-// Mock SettingsStore functions
-vi.mock('@/shared/infrastructure/settings/SettingsStore', () => ({
-  loadSettings: mockLoadSettings,
-  saveSettings: mockSaveSettings,
-}));
-
 describe('messageHandler', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     registeredHandlers.clear();
-
-    // Setup default mock for loadSettings
-    mockLoadSettings.mockResolvedValue({
-      theme: 'auto',
-      defaultConfig: {
-        pageSize: 'Letter',
-        margin: { top: 0, right: 0, bottom: 0, left: 0 },
-        fontSize: 11,
-        fontFamily: 'Helvetica',
-        filename: 'resume.pdf',
-        compress: true,
-        atsOptimization: false,
-        includeMetadata: true,
-      },
-      autoDetectCV: true,
-      showConvertButtons: true,
-      telemetryEnabled: false,
-      retentionDays: 30,
-      settingsVersion: 1,
-      lastUpdated: Date.now(),
-    });
 
     // Import and setup after mocks
     const { setupMessageHandler } = await import('../messageHandler');
@@ -129,65 +66,12 @@ describe('messageHandler', () => {
 
   describe('handler registration', () => {
     it('should register all expected message handlers', async () => {
-      const expectedHandlers = [
-        'getWasmStatus',
-        'retryWasmInit',
-        'validateTsx',
-        'startConversion',
-        'getSettings',
-        'updateSettings',
-        'popupOpened',
-        'ping',
-      ];
+      const expectedHandlers = ['validateTsx', 'startConversion'];
 
       for (const handler of expectedHandlers) {
         expect(registeredHandlers.has(handler)).toBe(true);
       }
-      expect(registeredHandlers.size).toBe(8);
-    });
-  });
-
-  describe('ping handler', () => {
-    it('should respond with pong', () => {
-      const pingHandler = registeredHandlers.get('ping');
-      if (!pingHandler) throw new Error('Handler not registered');
-
-      const result = pingHandler({ data: {} });
-      expect(result).toEqual({ pong: true });
-    });
-  });
-
-  describe('getSettings handler', () => {
-    it('should return settings successfully', async () => {
-      const handler = registeredHandlers.get('getSettings');
-      if (!handler) throw new Error('Handler not registered');
-
-      const result = await handler({ data: {} });
-
-      expect(result).toHaveProperty('success', true);
-      expect(result).toHaveProperty('settings');
-    });
-
-    it('should handle settings load failure', async () => {
-      // Force loadSettings to throw
-      mockLoadSettings.mockRejectedValueOnce(new Error('Storage unavailable'));
-
-      const handler = registeredHandlers.get('getSettings');
-      if (!handler) throw new Error('Handler not registered');
-      const result = await handler({ data: {} });
-
-      expect(result).toHaveProperty('success', false);
-      expect(result).toHaveProperty('error');
-    });
-  });
-
-  describe('popupOpened handler', () => {
-    it('should return success', async () => {
-      const handler = registeredHandlers.get('popupOpened');
-      if (!handler) throw new Error('Handler not registered');
-
-      const result = await handler({ data: { requestProgressUpdate: false } });
-      expect(result).toEqual({ success: true });
+      expect(registeredHandlers.size).toBe(2);
     });
   });
 
@@ -198,18 +82,6 @@ describe('messageHandler', () => {
 
       const result = await handler({ data: { tsx: '<div>Test</div>' } });
       expect(result).toEqual({ valid: true });
-    });
-  });
-
-  describe('getWasmStatus handler', () => {
-    it('should return WASM status from storage', async () => {
-      const handler = registeredHandlers.get('getWasmStatus');
-      if (!handler) throw new Error('Handler not registered');
-
-      const result = await handler({ data: {} });
-
-      // With mocked storage returning 'success'
-      expect(result).toHaveProperty('initialized', true);
     });
   });
 });
