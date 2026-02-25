@@ -202,7 +202,6 @@
             <div id="progress-status" data-testid="progress-status" class="text-center space-y-1">
               <p id="progress-percent" class="text-2xl font-bold text-foreground">0%</p>
               <p id="progress-stage" class="text-sm text-muted-foreground"></p>
-              <p id="progress-eta" class="text-xs text-muted-foreground"></p>
             </div>
 
             <button id="btn-cancel" type="button"
@@ -306,6 +305,12 @@
               <pre id="error-technical" class="mt-2 text-xs text-muted-foreground bg-muted p-3 rounded-md overflow-x-auto border border-border font-mono whitespace-pre-wrap"></pre>
             </details>
 
+            <!-- GitHub link -->
+            <a href="https://github.com/vitalratel/resumewright/issues" target="_blank" rel="noopener noreferrer"
+              class="text-sm text-primary underline hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded">
+              Need help? Report this issue on GitHub →
+            </a>
+
             <!-- Action buttons -->
             <div class="flex flex-wrap items-center justify-center gap-3 mt-2">
               <button id="btn-retry" type="button" hidden
@@ -319,7 +324,7 @@
               </button>
               <button id="btn-report-issue" type="button"
                 class="btn-ghost px-4 py-2 text-sm">
-                Report Issue
+                Copy Error Details
               </button>
             </div>
           </section>
@@ -502,10 +507,11 @@
            ═══════════════════════════════════════════════════════════ -->
       <footer class="w-full border-t border-border">
         <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between text-xs text-muted-foreground">
-          <button id="footer-help" type="button" class="btn-ghost flex items-center gap-1.5">
+          <a id="footer-help" href="https://resumewright.com/#faq" target="_blank" rel="noopener noreferrer"
+            class="btn-ghost flex items-center gap-1.5">
             <svg width="12" height="12" aria-hidden="true"><use href="#icon-help"/></svg>
             Help &amp; FAQ
-          </button>
+          </a>
           <span class="flex items-center gap-1.5">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="text-success">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
@@ -562,6 +568,15 @@
           <h3 class="text-sm font-semibold text-foreground mb-2">Troubleshooting</h3>
           <p><strong>File rejected?</strong> Make sure it's a <code class="code-inline">.tsx</code> file under 1MB containing a React component with <code class="code-inline">export default</code>.</p>
           <p class="mt-1"><strong>Conversion failed?</strong> Check that your TSX has valid JSX syntax and no unclosed tags.</p>
+        </section>
+        <section class="pt-2 border-t border-border">
+          <h3 class="text-sm font-semibold text-foreground mb-2">Need More Help?</h3>
+          <p>For bug reports and feature requests, open an issue on
+            <a href="https://github.com/vitalratel/resumewright/issues" target="_blank" rel="noopener noreferrer"
+              class="text-primary underline hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded">
+              GitHub Issues
+            </a>.
+          </p>
         </section>
       </div>
     </dialog>

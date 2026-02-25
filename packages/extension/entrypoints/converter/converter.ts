@@ -59,7 +59,6 @@ function initNav(): void {
     .getElementById('btn-change-settings')!
     .addEventListener('click', () => showView('settings'));
   document.getElementById('btn-help')!.addEventListener('click', openHelp);
-  document.getElementById('footer-help')!.addEventListener('click', openHelp);
 
   // Help dialog
   const helpDialog = document.getElementById('help-dialog') as HTMLDialogElement;

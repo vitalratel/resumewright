@@ -6,8 +6,11 @@
 @source "../lib/";
 @source "../../entrypoints/";
 
-/* Enable class-based dark mode (toggled via .dark class on html element) */
-@custom-variant dark (&:where(.dark, .dark *));
+/* Dark mode: system preference by default, overridden by .dark/.light class */
+@custom-variant dark (
+  @media (prefers-color-scheme: dark) { &:not(:where(.light, .light *)) },
+  &:where(.dark, .dark *)
+);
 
 /* Custom theme extensions - non-semantic values */
 @theme {

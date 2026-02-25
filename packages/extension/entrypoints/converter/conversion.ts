@@ -165,14 +165,6 @@ function handleProgress(payload: ConversionProgressPayload): void {
   document.getElementById('progress-bar-container')!.setAttribute('aria-valuenow', String(pct));
   document.getElementById('progress-percent')!.textContent = `${pct}%`;
   document.getElementById('progress-stage')!.textContent = progress.currentOperation;
-
-  if (progress.estimatedTimeRemaining != null) {
-    const secs = Math.ceil(progress.estimatedTimeRemaining / 1000);
-    document.getElementById('progress-eta')!.textContent =
-      secs > 0 ? `About ${secs}s remaining` : '';
-  } else {
-    document.getElementById('progress-eta')!.textContent = '';
-  }
 }
 
 function resetProgressUI(): void {
@@ -180,7 +172,6 @@ function resetProgressUI(): void {
   document.getElementById('progress-bar-container')!.setAttribute('aria-valuenow', '0');
   document.getElementById('progress-percent')!.textContent = '0%';
   document.getElementById('progress-stage')!.textContent = '';
-  document.getElementById('progress-eta')!.textContent = '';
 }
 
 // ─── Complete handler ─────────────────────────────────────────────────────────
@@ -194,7 +185,7 @@ async function handleComplete(
 
   // Trigger download
   try {
-    const blob = new Blob([payload.pdfBytes], { type: 'application/pdf' });
+    const blob = new Blob([payload.pdfBytes as BlobPart], { type: 'application/pdf' });
     const blobUrl = URL.createObjectURL(blob);
     await browser.downloads.download({ url: blobUrl, filename, saveAs: false });
     URL.revokeObjectURL(blobUrl);
@@ -233,14 +224,23 @@ function showConversionError(payload: ConversionErrorPayload, deps: ConversionDe
   document.getElementById('error-category')!.textContent = error.category ?? '';
   document.getElementById('error-message')!.textContent = error.message;
 
-  // Suggestions list
+  // Suggestions list — first item is the most likely fix
   const ul = document.getElementById('error-suggestions')!;
   ul.innerHTML = '';
-  for (const suggestion of error.suggestions) {
+  error.suggestions.forEach((suggestion, i) => {
     const li = document.createElement('li');
-    li.textContent = suggestion;
+    if (i === 0) {
+      const badge = document.createElement('span');
+      badge.textContent = 'Most likely';
+      badge.className =
+        'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-success/10 text-success border border-success/20 mr-2';
+      li.appendChild(badge);
+      li.appendChild(document.createTextNode(suggestion));
+    } else {
+      li.textContent = suggestion;
+    }
     ul.appendChild(li);
-  }
+  });
 
   // Technical details
   const detailsContainer = document.getElementById('error-details-container')!;

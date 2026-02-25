@@ -221,12 +221,13 @@ function applyTheme(theme: UserSettings['theme']): void {
   const html = document.documentElement;
   if (theme === 'dark') {
     html.classList.add('dark');
+    html.classList.remove('light');
   } else if (theme === 'light') {
+    html.classList.add('light');
     html.classList.remove('dark');
   } else {
-    // auto: follow system
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    html.classList.toggle('dark', prefersDark);
+    // auto: remove both classes, CSS media query handles it natively
+    html.classList.remove('dark', 'light');
   }
 }
 
