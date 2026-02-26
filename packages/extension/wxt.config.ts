@@ -21,6 +21,10 @@ export default defineConfig({
     name: 'ResumeWright',
     version: '0.2.0',
     description: 'Export Claude-generated CVs to professional PDFs',
+    background: {
+      service_worker: 'gleam/background.mjs',
+      type: 'module',
+    },
     permissions: ['storage', 'downloads'],
     icons: {
       16: '/icons/icon-16.png',

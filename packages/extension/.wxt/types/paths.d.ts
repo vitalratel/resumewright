@@ -5,9 +5,9 @@ declare module "wxt/browser" {
   export type PublicPath =
     | ""
     | "/"
-    | "/background.js"
     | "/converter.html"
     | "/gleam/app_gleam.js"
+    | "/gleam/background.mjs"
     | "/help/error-recovery.md"
     | "/help/troubleshooting.md"
     | "/help/tsx-syntax-guide.md"
