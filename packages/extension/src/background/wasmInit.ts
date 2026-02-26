@@ -2,7 +2,7 @@
 // ABOUTME: Provides retry logic and state management for WASM module loading.
 
 import { getLogger } from '@/shared/infrastructure/logging/instance';
-import { createWasmInitError } from '../shared/errors/factory/wasmErrors';
+import { ErrorCode } from '../shared/errors/codes';
 import { executeWithRetry } from '../shared/infrastructure/retry/ExponentialBackoffRetryPolicy';
 import { initWASM } from '../shared/infrastructure/wasm/loader';
 import { showBadgeError, showBadgeSuccess } from './services/badgeManager';
@@ -37,12 +37,7 @@ export async function initializeWASM(): Promise<void> {
     await executeWithRetry(
       async () => {
         getLogger().info('WasmInit', 'Attempting initialization');
-        const result = await initWASM();
-
-        // Convert Result error to thrown error for retry mechanism
-        if (result.isErr()) {
-          throw new Error(result.error.message);
-        }
+        await initWASM();
       },
       {
         maxAttempts: MAX_INIT_RETRIES,
@@ -50,22 +45,11 @@ export async function initializeWASM(): Promise<void> {
         maxDelayMs: MAX_RETRY_DELAY,
       },
       (attempt: number, _delay: number, error: Error) => {
-        // Use shared error factory for consistent error handling
-        const technicalDetails =
-          error instanceof Error
-            ? `${error.message}
-${error.stack}`
-            : String(error);
-        const conversionError = createWasmInitError('failed', technicalDetails);
-
-        // Log retry attempts with structured data
         getLogger().error('WasmInit', 'WASM initialization failed, retrying', {
-          code: conversionError.code,
+          code: ErrorCode.WASM_INIT_FAILED,
           attempt,
           maxRetries: MAX_INIT_RETRIES,
-          browserInfo: {
-            userAgent: navigator.userAgent,
-          },
+          error: error instanceof Error ? error.message : String(error),
         });
       },
     );
@@ -77,14 +61,8 @@ ${error.stack}`
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-    // Use shared error factory for max retries error
-    const maxRetriesError = createWasmInitError(
-      'failed',
-      `Failed after ${MAX_INIT_RETRIES} initialization attempts`,
-    );
-
     getLogger().error('WasmInit', 'Max retries reached', {
-      code: maxRetriesError.code,
+      code: ErrorCode.WASM_INIT_FAILED,
       finalAttempt: MAX_INIT_RETRIES,
       permanentFailure: true,
     });

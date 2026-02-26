@@ -8,7 +8,6 @@ import type { ILogger } from '../../infrastructure/logging/logger';
 import type { ConversionConfig } from '../../types/models';
 import { DEFAULT_PDF_CONFIG, PDF_STANDARDS } from './constants';
 import type { WasmPdfConfig } from './types';
-import { validateWasmPdfConfig } from './wasmSchemas';
 
 /**
  * Convert ConversionConfig to WASM-compatible format
@@ -47,13 +46,6 @@ export function convertConfigToRust(config: ConversionConfig, logger: ILogger): 
     keywords: null,
     creator: DEFAULT_PDF_CONFIG.creator,
   };
-
-  // Validate config structure before sending to WASM
-  const validationResult = validateWasmPdfConfig(wasmConfig);
-  if (validationResult.isErr()) {
-    logger.error('PdfConfig', 'Config validation failed', validationResult.error);
-    throw new Error(validationResult.error.message);
-  }
 
   logger.debug('PdfConfig', 'WASM config', { wasmConfig: JSON.stringify(wasmConfig, null, 2) });
   return wasmConfig;

@@ -6,7 +6,6 @@
  */
 
 import type { FontRequirement } from '../../domain/fonts/types';
-import { parseFontRequirements } from '../../domain/pdf/wasmSchemas';
 import { getLogger } from '../../infrastructure/logging/instance';
 import { createConverterInstance } from '../wasm/instance';
 
@@ -78,13 +77,7 @@ export async function detectFonts(tsx: string, useCache = true): Promise<FontReq
 
     // WASM function returns JSON string with font requirements
     const fontsJson = converter.detect_fonts(tsx);
-
-    // Parse and validate JSON result (runtime type safety)
-    const parseResult = parseFontRequirements(fontsJson);
-    if (parseResult.isErr()) {
-      throw new Error(parseResult.error.message);
-    }
-    const fontRequirements = parseResult.value;
+    const fontRequirements = JSON.parse(fontsJson) as FontRequirement[];
 
     getLogger().debug('FontService', 'Found font requirements', {
       count: fontRequirements.length,

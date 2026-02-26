@@ -6,6 +6,7 @@ import { DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 import type { UserSettings } from '@/shared/types/settings';
 import type { UIView } from './converter';
+import { getElement } from './dom';
 
 interface SettingsDeps {
   showView: (view: UIView) => void;
@@ -29,14 +30,14 @@ export function initSettings(deps: SettingsDeps): void {
   const { showView, announce } = deps;
 
   // Back button
-  document.getElementById('btn-settings-back')!.addEventListener('click', () => {
+  getElement('btn-settings-back').addEventListener('click', () => {
     showView('main');
     announce('Converter');
   });
 
   // Tabs
-  document.getElementById('tab-page')!.addEventListener('click', () => switchTab('page'));
-  document.getElementById('tab-general')!.addEventListener('click', () => switchTab('general'));
+  getElement('tab-page').addEventListener('click', () => switchTab('page'));
+  getElement('tab-general').addEventListener('click', () => switchTab('general'));
 
   // Page size
   for (const radio of document.querySelectorAll<HTMLInputElement>('input[name="page-size"]')) {
@@ -50,9 +51,9 @@ export function initSettings(deps: SettingsDeps): void {
 
   // Margin sliders
   for (const side of ['top', 'bottom', 'left', 'right'] as const) {
-    const slider = document.getElementById(`margin-${side}`) as HTMLInputElement;
-    const minusBtn = document.getElementById(`margin-${side}-minus`)!;
-    const plusBtn = document.getElementById(`margin-${side}-plus`)!;
+    const slider = getElement<HTMLInputElement>(`margin-${side}`);
+    const minusBtn = getElement(`margin-${side}-minus`);
+    const plusBtn = getElement(`margin-${side}-plus`);
 
     slider.addEventListener('input', () => {
       const val = parseFloat(slider.value);
@@ -88,22 +89,22 @@ export function initSettings(deps: SettingsDeps): void {
 
   // Theme buttons
   for (const themeId of ['light', 'dark', 'auto'] as const) {
-    document.getElementById(`theme-${themeId}`)!.addEventListener('click', () => {
+    getElement(`theme-${themeId}`).addEventListener('click', () => {
       setTheme(themeId, announce);
     });
   }
 
   // Reset
-  document.getElementById('btn-reset-settings')!.addEventListener('click', () => {
-    document.getElementById('reset-confirm')!.hidden = false;
+  getElement('btn-reset-settings').addEventListener('click', () => {
+    getElement('reset-confirm').hidden = false;
   });
 
-  document.getElementById('btn-reset-cancel')!.addEventListener('click', () => {
-    document.getElementById('reset-confirm')!.hidden = true;
+  getElement('btn-reset-cancel').addEventListener('click', () => {
+    getElement('reset-confirm').hidden = true;
   });
 
-  document.getElementById('btn-reset-confirm')!.addEventListener('click', () => {
-    document.getElementById('reset-confirm')!.hidden = true;
+  getElement('btn-reset-confirm').addEventListener('click', () => {
+    getElement('reset-confirm').hidden = true;
     resetToDefaults(announce);
   });
 
@@ -122,10 +123,10 @@ export function initSettings(deps: SettingsDeps): void {
 // ─── Tab switching ────────────────────────────────────────────────────────────
 
 function switchTab(tab: 'page' | 'general'): void {
-  const pagePanel = document.getElementById('settings-page')!;
-  const generalPanel = document.getElementById('settings-general')!;
-  const pageTab = document.getElementById('tab-page')!;
-  const generalTab = document.getElementById('tab-general')!;
+  const pagePanel = getElement('settings-page');
+  const generalPanel = getElement('settings-general');
+  const pageTab = getElement('tab-page');
+  const generalTab = getElement('tab-general');
 
   const isPage = tab === 'page';
   pagePanel.hidden = !isPage;
@@ -146,7 +147,7 @@ function populateForm(): void {
   // Margins
   for (const side of ['top', 'bottom', 'left', 'right'] as const) {
     const val = current.defaultConfig.margin[side];
-    const slider = document.getElementById(`margin-${side}`) as HTMLInputElement;
+    const slider = getElement<HTMLInputElement>(`margin-${side}`);
     slider.value = String(val);
     updateMarginDisplay(side, val);
   }
@@ -159,7 +160,7 @@ function populateForm(): void {
 // ─── Margin display helpers ───────────────────────────────────────────────────
 
 function updateMarginDisplay(side: 'top' | 'bottom' | 'left' | 'right', val: number): void {
-  document.getElementById(`margin-${side}-value`)!.textContent = `${val.toFixed(2)}"`;
+  getElement(`margin-${side}-value`).textContent = `${val.toFixed(2)}"`;
 }
 
 function updateMarginPreview(): void {
@@ -170,13 +171,13 @@ function updateMarginPreview(): void {
   const leftPct = (m.left / 8.5) * 100;
   const rightPct = (m.right / 8.5) * 100;
 
-  document.getElementById('margin-preview-content')!.style.inset =
+  getElement('margin-preview-content').style.inset =
     `${topPct}% ${rightPct}% ${bottomPct}% ${leftPct}%`;
 
-  document.getElementById('margin-preview-top')!.textContent = `${m.top.toFixed(2)}"`;
-  document.getElementById('margin-preview-bottom')!.textContent = `${m.bottom.toFixed(2)}"`;
-  document.getElementById('margin-preview-left')!.textContent = `${m.left.toFixed(2)}"`;
-  document.getElementById('margin-preview-right')!.textContent = `${m.right.toFixed(2)}"`;
+  getElement('margin-preview-top').textContent = `${m.top.toFixed(2)}"`;
+  getElement('margin-preview-bottom').textContent = `${m.bottom.toFixed(2)}"`;
+  getElement('margin-preview-left').textContent = `${m.left.toFixed(2)}"`;
+  getElement('margin-preview-right').textContent = `${m.right.toFixed(2)}"`;
 }
 
 // ─── Settings summary (shown in state-ready) ──────────────────────────────────
@@ -233,7 +234,7 @@ function applyTheme(theme: UserSettings['theme']): void {
 
 function updateThemeButtons(theme: UserSettings['theme']): void {
   for (const id of ['light', 'dark', 'auto'] as const) {
-    document.getElementById(`theme-${id}`)!.setAttribute('aria-pressed', String(theme === id));
+    getElement(`theme-${id}`).setAttribute('aria-pressed', String(theme === id));
   }
 }
 

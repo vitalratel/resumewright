@@ -2,6 +2,7 @@
 // ABOUTME: Wires together file import, conversion, settings, keyboard, and accessibility modules.
 
 import { initConversion } from './conversion';
+import { getElement } from './dom';
 import { initFileImport } from './file-import';
 import { initSettings } from './settings';
 
@@ -17,8 +18,8 @@ let currentState: UIState = 'import';
 
 export function showView(view: UIView): void {
   currentView = view;
-  const viewMain = document.getElementById('view-main')!;
-  const viewSettings = document.getElementById('view-settings')!;
+  const viewMain = getElement('view-main');
+  const viewSettings = getElement('view-settings');
   viewMain.hidden = view !== 'main';
   viewSettings.hidden = view !== 'settings';
   announce(view === 'settings' ? 'Settings opened' : 'Converter');
@@ -28,11 +29,11 @@ export function showState(state: UIState): void {
   currentState = state;
   const states: UIState[] = ['import', 'ready', 'converting', 'success', 'error'];
   for (const s of states) {
-    const el = document.getElementById(`state-${s}`)!;
+    const el = getElement(`state-${s}`);
     el.hidden = s !== state;
   }
   // Move focus to the newly visible section for accessibility
-  const active = document.getElementById(`state-${state}`)!;
+  const active = getElement(`state-${state}`);
   active.focus?.();
 }
 
@@ -43,7 +44,7 @@ export function getCurrentState(): UIState {
 // ─── Screen reader announcer ─────────────────────────────────────────────────
 
 export function announce(message: string, assertive = false): void {
-  const el = document.getElementById(assertive ? 'error-announcer' : 'announcer')!;
+  const el = getElement(assertive ? 'error-announcer' : 'announcer');
   // Clear then set — forces screen reader to re-read even if same text
   el.textContent = '';
   requestAnimationFrame(() => {
@@ -54,22 +55,20 @@ export function announce(message: string, assertive = false): void {
 // ─── Header / Footer wiring ──────────────────────────────────────────────────
 
 function initNav(): void {
-  document.getElementById('btn-settings')!.addEventListener('click', () => showView('settings'));
-  document
-    .getElementById('btn-change-settings')!
-    .addEventListener('click', () => showView('settings'));
-  document.getElementById('btn-help')!.addEventListener('click', openHelp);
+  getElement('btn-settings').addEventListener('click', () => showView('settings'));
+  getElement('btn-change-settings').addEventListener('click', () => showView('settings'));
+  getElement('btn-help').addEventListener('click', openHelp);
 
   // Help dialog
-  const helpDialog = document.getElementById('help-dialog') as HTMLDialogElement;
-  document.getElementById('btn-help-close')!.addEventListener('click', () => helpDialog.close());
+  const helpDialog = getElement<HTMLDialogElement>('help-dialog');
+  getElement('btn-help-close').addEventListener('click', () => helpDialog.close());
   helpDialog.addEventListener('click', (e) => {
     if (e.target === helpDialog) helpDialog.close();
   });
 }
 
 function openHelp(): void {
-  (document.getElementById('help-dialog') as HTMLDialogElement).showModal();
+  getElement<HTMLDialogElement>('help-dialog').showModal();
 }
 
 // ─── Keyboard shortcuts ───────────────────────────────────────────────────────
@@ -80,7 +79,7 @@ function initKeyboard(): void {
 
     // Escape: close dialog or go back from settings
     if (e.key === 'Escape') {
-      const helpDialog = document.getElementById('help-dialog') as HTMLDialogElement;
+      const helpDialog = getElement<HTMLDialogElement>('help-dialog');
       if (helpDialog.open) {
         helpDialog.close();
         return;

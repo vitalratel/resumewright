@@ -1,14 +1,20 @@
 // ABOUTME: Orchestrates font fetching from Google Fonts based on TSX font requirements.
 // ABOUTME: Filters web-safe fonts (built-in), fetches Google Fonts, handles custom font warnings.
 
-import type { IFontRepository } from '../../domain/fonts/IFontRepository';
-import type { FontData, FontRequirement } from '../../domain/fonts/types';
+import type { FontData, FontRequirement, FontStyle, FontWeight } from '../../domain/fonts/types';
 import type { ILogger } from '../../infrastructure/logging/logger';
 
 /**
  * Font fetch progress callback
  */
 type FontFetchProgressCallback = (current: number, total: number, fontFamily: string) => void;
+
+/**
+ * Minimal font source interface — only what the orchestrator needs
+ */
+export type FontSource = {
+  fetchGoogleFont: (family: string, weight: FontWeight, style: FontStyle) => Promise<Uint8Array>;
+};
 
 /**
  * Fetch fonts based on requirements from detect_fonts()
@@ -28,7 +34,7 @@ type FontFetchProgressCallback = (current: number, total: number, fontFamily: st
  */
 export async function fetchFontsFromRequirements(
   requirements: FontRequirement[],
-  fontRepository: IFontRepository,
+  fontRepository: FontSource,
   logger: ILogger,
   progressCallback?: FontFetchProgressCallback,
 ): Promise<FontData[]> {
@@ -89,7 +95,7 @@ export async function fetchFontsFromRequirements(
 async function fetchGoogleFontsRecursive(
   requirements: FontRequirement[],
   fontData: FontData[],
-  fontRepository: IFontRepository,
+  fontRepository: FontSource,
   logger: ILogger,
   progressCallback: FontFetchProgressCallback | undefined,
   currentOffset: number,
@@ -109,32 +115,28 @@ async function fetchGoogleFontsRecursive(
     `Fetching Google Font: ${req.family} ${req.weight} ${req.style}`,
   );
 
-  const result = await fontRepository.fetchGoogleFont(req.family, req.weight, req.style);
-
-  result.match(
-    (bytes) => {
-      fontData.push({
-        family: req.family,
-        weight: req.weight,
-        style: req.style,
-        bytes,
-        format: 'ttf', // Google Fonts API returns TrueType
-      });
-      logger.debug('FontFetchOrchestrator', `✓ Fetched ${req.family} (${bytes.length} bytes)`);
-    },
-    (error) => {
-      logger.error(
-        'FontFetchOrchestrator',
-        `✗ Failed to fetch Google Font ${req.family}:`,
-        error.message,
-      );
-      // Graceful degradation: Log warning but continue with fallback
-      logger.warn(
-        'FontFetchOrchestrator',
-        `Continuing without ${req.family} (will fallback to web-safe font)`,
-      );
-    },
-  );
+  try {
+    const bytes = await fontRepository.fetchGoogleFont(req.family, req.weight, req.style);
+    fontData.push({
+      family: req.family,
+      weight: req.weight,
+      style: req.style,
+      bytes,
+      format: 'ttf', // Google Fonts API returns TrueType
+    });
+    logger.debug('FontFetchOrchestrator', `✓ Fetched ${req.family} (${bytes.length} bytes)`);
+  } catch (error) {
+    logger.error(
+      'FontFetchOrchestrator',
+      `✗ Failed to fetch Google Font ${req.family}:`,
+      error instanceof Error ? error.message : String(error),
+    );
+    // Graceful degradation: Log warning but continue with fallback
+    logger.warn(
+      'FontFetchOrchestrator',
+      `Continuing without ${req.family} (will fallback to web-safe font)`,
+    );
+  }
 
   return fetchGoogleFontsRecursive(
     requirements,

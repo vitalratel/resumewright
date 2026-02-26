@@ -2,12 +2,13 @@
 // ABOUTME: Handles font detection, fetching, and WASM-based PDF generation.
 
 import { FontCollection, FontData as WasmFontData } from '@pkg/wasm_bridge';
-import { fetchFontsFromRequirements } from '../../application/fonts/FontFetchOrchestrator';
-import type { IFontRepository } from '../../domain/fonts/IFontRepository';
+import {
+  type FontSource,
+  fetchFontsFromRequirements,
+} from '../../application/fonts/FontFetchOrchestrator';
 import type { FontData, FontRequirement } from '../../domain/fonts/types';
 import { convertConfigToRust } from '../../domain/pdf/config';
 import { parseWasmError } from '../../domain/pdf/errors';
-import { validatePdfBytes, validateProgressParams } from '../../domain/pdf/wasmSchemas';
 import { createGoogleFontsRepository } from '../../infrastructure/fonts/GoogleFontsRepository';
 import { getLogger } from '../../infrastructure/logging/instance';
 import type { ILogger } from '../../infrastructure/logging/logger';
@@ -17,15 +18,10 @@ import type { ConversionConfig } from '../../types/models';
 
 /**
  * Dependency injection options for convertTsxToPdfWithFonts
- *
- * All dependencies are optional with sensible defaults.
- * Providing dependencies improves testability and flexibility.
  */
 interface ConversionDependencies {
   /** Logger instance (defaults to getLogger()) */
   logger?: ILogger;
-  /** Font repository for Google Fonts (defaults to GoogleFontsRepository) */
-  fontRepository?: IFontRepository;
 }
 
 /**
@@ -49,9 +45,8 @@ export async function convertTsxToPdfWithFonts(
   onFontFetch?: (current: number, total: number, fontFamily: string) => void,
   dependencies?: ConversionDependencies,
 ): Promise<Uint8Array> {
-  // Resolve dependencies with defaults (composition root)
   const logger = dependencies?.logger ?? getLogger();
-  const fontRepository = dependencies?.fontRepository ?? createGoogleFontsRepository();
+  const fontRepository = createGoogleFontsRepository();
 
   validateTsxInput(tsx);
 
@@ -136,15 +131,6 @@ function createProgressWrapper(
   }
 
   return (stage: string, percentage: number) => {
-    // Validate progress callback params from WASM
-    const validationResult = validateProgressParams(stage, percentage);
-    if (validationResult.isErr()) {
-      logger.warn('PdfConverter', 'Invalid progress params', {
-        error: validationResult.error.message,
-      });
-      return;
-    }
-
     // Map WASM progress (0-100) to overall progress (15-100)
     const mappedPercentage =
       PROGRESS_STAGES.WASM_START_OFFSET + percentage * PROGRESS_STAGES.WASM_SCALE;
@@ -192,7 +178,7 @@ async function detectFontsStep(
  */
 async function fetchFontsStep(
   fontRequirements: FontRequirement[],
-  fontRepository: IFontRepository,
+  fontRepository: FontSource,
   logger: ILogger,
   onProgress: ((stage: string, percentage: number) => void) | undefined,
   onFontFetch: ((current: number, total: number, fontFamily: string) => void) | undefined,
@@ -235,19 +221,9 @@ async function convertToPdfStep(
   // Convert with WASM
   const converterInstance = createConverterInstance();
   try {
-    const pdfBytes = converterInstance.convert_tsx_to_pdf(
-      tsx,
-      wasmConfig,
-      fontCollection,
-      progressCallback,
+    return new Uint8Array(
+      converterInstance.convert_tsx_to_pdf(tsx, wasmConfig, fontCollection, progressCallback),
     );
-
-    // Validate PDF output
-    const validationResult = validatePdfBytes(pdfBytes);
-    if (validationResult.isErr()) {
-      throw new Error(validationResult.error.message);
-    }
-    return validationResult.value;
   } finally {
     converterInstance.free();
   }

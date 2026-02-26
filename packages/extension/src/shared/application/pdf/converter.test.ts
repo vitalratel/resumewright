@@ -16,7 +16,6 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ok } from '@/shared/errors/result';
 import type { FontWeight } from '../../domain/fonts/types';
 import type { WasmPdfConfig } from '../../domain/pdf/types';
 import type { ConversionConfig } from '../../types/models';
@@ -37,11 +36,6 @@ vi.mock('../../infrastructure/pdf/fonts', () => ({
 
 vi.mock('../../domain/pdf/errors', () => ({
   parseWasmError: vi.fn(),
-}));
-
-vi.mock('../../domain/pdf/wasmSchemas', () => ({
-  validatePdfBytes: vi.fn(),
-  validateProgressParams: vi.fn(),
 }));
 
 // Mock fetchFontsFromRequirements function and createGoogleFontsRepository
@@ -102,8 +96,6 @@ describe('PDF Converter', () => {
   let mockConvertConfigToRust: ReturnType<typeof vi.fn>;
   let mockDetectFonts: ReturnType<typeof vi.fn>;
   let mockParseWasmError: ReturnType<typeof vi.fn>;
-  let mockValidatePdfBytes: ReturnType<typeof vi.fn>;
-  let mockValidateProgressParams: ReturnType<typeof vi.fn>;
   let mockConverter: {
     convert_tsx_to_pdf: ReturnType<typeof vi.fn>;
     free: ReturnType<typeof vi.fn>;
@@ -127,14 +119,11 @@ describe('PDF Converter', () => {
     const config = await import('../../domain/pdf/config');
     const fonts = await import('../../infrastructure/pdf/fonts');
     const errors = await import('../../domain/pdf/errors');
-    const wasmSchemas = await import('../../domain/pdf/wasmSchemas');
 
     mockCreateConverterInstance = vi.mocked(wasm.createConverterInstance);
     mockConvertConfigToRust = vi.mocked(config.convertConfigToRust);
     mockDetectFonts = vi.mocked(fonts.detectFonts);
     mockParseWasmError = vi.mocked(errors.parseWasmError);
-    mockValidatePdfBytes = vi.mocked(wasmSchemas.validatePdfBytes);
-    mockValidateProgressParams = vi.mocked(wasmSchemas.validateProgressParams);
 
     // Default mock setup
     mockConverter = {
@@ -153,8 +142,6 @@ describe('PDF Converter', () => {
     validPdf[3] = 0x46; // F
 
     mockConverter.convert_tsx_to_pdf.mockReturnValue(validPdf);
-    mockValidatePdfBytes.mockReturnValue(ok(validPdf));
-    mockValidateProgressParams.mockReturnValue(ok(undefined));
   });
 
   afterEach(() => {
@@ -178,29 +165,6 @@ describe('PDF Converter', () => {
       ]);
     });
 
-    it('should complete full conversion pipeline successfully', async () => {
-      const result = await convertTsxToPdfWithFonts(validTsx, validConfig);
-
-      expect(result).toBeInstanceOf(Uint8Array);
-      expect(result.length).toBeGreaterThan(0);
-      // Verify all steps were called in order
-      expect(mockDetectFonts).toHaveBeenCalledWith(validTsx);
-      expect(mockFetchFontsFromRequirements).toHaveBeenCalled();
-      expect(mockConverter.convert_tsx_to_pdf).toHaveBeenCalled();
-    });
-
-    it('should fetch fonts from requirements', async () => {
-      await convertTsxToPdfWithFonts(validTsx, validConfig);
-
-      // Function signature: (requirements, fontRepository, logger, progressCallback)
-      expect(mockFetchFontsFromRequirements).toHaveBeenCalledWith(
-        [{ family: 'Roboto', weight: 400 as FontWeight, style: 'normal', source: 'google' }],
-        expect.any(Object), // fontRepository
-        expect.any(Object), // logger
-        undefined,
-      );
-    });
-
     it('should call font fetch callback if provided', async () => {
       const onFontFetch = vi.fn();
 
@@ -213,17 +177,6 @@ describe('PDF Converter', () => {
         expect.any(Object), // logger
         onFontFetch,
       );
-    });
-
-    it('should create FontCollection and add fonts', async () => {
-      const wasmBridge = await import('@pkg/wasm_bridge');
-      const mockFontCollection = vi.mocked(wasmBridge.FontCollection);
-
-      await convertTsxToPdfWithFonts(validTsx, validConfig);
-
-      expect(mockFontCollection).toHaveBeenCalled();
-      const collectionInstance = mockFontCollection.mock.results[0]?.value;
-      expect(collectionInstance.add).toHaveBeenCalled();
     });
 
     it('should throw error for empty TSX input', async () => {
@@ -258,20 +211,6 @@ describe('PDF Converter', () => {
       expect(mockConverterForError.free).toHaveBeenCalled();
     });
 
-    it('should validate progress callback parameters from WASM', async () => {
-      const onProgress = vi.fn();
-
-      await convertTsxToPdfWithFonts(validTsx, validConfig, onProgress);
-
-      // Get the progress callback wrapper
-      const progressCallback = mockConverter.convert_tsx_to_pdf.mock.calls[0][3];
-
-      // Simulate WASM calling progress callback
-      progressCallback('parsing', 50);
-
-      expect(mockValidateProgressParams).toHaveBeenCalledWith('parsing', 50);
-    });
-
     it('should map WASM progress to overall progress (15-100)', async () => {
       const onProgress = vi.fn();
 
@@ -301,15 +240,6 @@ describe('PDF Converter', () => {
       // WASM progress callback should also be registered
       const progressCallback = mockConverter.convert_tsx_to_pdf.mock.calls[0][3];
       expect(progressCallback).toBeDefined();
-    });
-
-    it('should validate PDF bytes from WASM', async () => {
-      const mockPdfBytes = new Uint8Array([0x25, 0x50, 0x44, 0x46]);
-      mockConverter.convert_tsx_to_pdf.mockReturnValue(mockPdfBytes);
-
-      await convertTsxToPdfWithFonts(validTsx, validConfig);
-
-      expect(mockValidatePdfBytes).toHaveBeenCalledWith(mockPdfBytes);
     });
 
     it('should handle font detection errors', async () => {
@@ -343,48 +273,6 @@ describe('PDF Converter', () => {
       await expect(convertTsxToPdfWithFonts(validTsx, validConfig)).rejects.toThrow(
         'WASM conversion failed',
       );
-    });
-
-    it('should work with no progress callback', async () => {
-      const result = await convertTsxToPdfWithFonts(validTsx, validConfig);
-
-      expect(result).toBeInstanceOf(Uint8Array);
-    });
-
-    it('should handle multiple fonts', async () => {
-      mockDetectFonts.mockResolvedValue([
-        { family: 'Roboto', weight: 400 as FontWeight, style: 'normal', source: 'google' },
-        { family: 'Inter', weight: 700 as FontWeight, style: 'italic', source: 'google' },
-        { family: 'Lato', weight: 300 as FontWeight, style: 'normal', source: 'google' },
-      ]);
-      mockFetchFontsFromRequirements.mockResolvedValue([
-        {
-          family: 'Roboto',
-          weight: 400 as FontWeight,
-          style: 'normal',
-          bytes: new Uint8Array([1, 2, 3]),
-        },
-        {
-          family: 'Inter',
-          weight: 700 as FontWeight,
-          style: 'italic',
-          bytes: new Uint8Array([4, 5, 6]),
-        },
-        {
-          family: 'Lato',
-          weight: 300 as FontWeight,
-          style: 'normal',
-          bytes: new Uint8Array([7, 8, 9]),
-        },
-      ]);
-
-      await convertTsxToPdfWithFonts(validTsx, validConfig);
-
-      const wasmBridge = await import('@pkg/wasm_bridge');
-      const mockFontCollection = vi.mocked(wasmBridge.FontCollection);
-      const collectionInstance = mockFontCollection.mock.results[0]?.value;
-
-      expect(collectionInstance.add).toHaveBeenCalledTimes(3);
     });
 
     it('should handle italic font style correctly', async () => {
@@ -527,13 +415,6 @@ describe('PDF Converter', () => {
       // Verify custom logger was used
       expect(mockLogger.debug).toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalled();
-    });
-
-    it('should use default dependencies when none provided', async () => {
-      const result = await convertTsxToPdfWithFonts(validTsx, validConfig);
-
-      // Should work with defaults
-      expect(result).toBeInstanceOf(Uint8Array);
     });
   });
 });

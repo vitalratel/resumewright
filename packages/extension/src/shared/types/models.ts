@@ -57,98 +57,6 @@ export interface ConversionProgress {
 }
 
 /**
- * Error metadata types - Discriminated union for type safety
- */
-
-/** Metadata for parse errors (TSX syntax errors) */
-export interface ParseErrorMetadata {
-  type: 'parse';
-  /** Line number where parse error occurred */
-  line: number;
-  /** Column number where parse error occurred */
-  column: number;
-  /** Code context snippet showing the error */
-  codeContext: string;
-}
-
-/** Metadata for size limit errors */
-export interface SizeErrorMetadata {
-  type: 'size';
-  /** Current file size in bytes */
-  fileSize: number;
-  /** Maximum allowed size in bytes */
-  maxSize: number;
-}
-
-/** Metadata for retry tracking */
-export interface RetryErrorMetadata {
-  type: 'retry';
-  /** Number of retry attempts made */
-  retryAttempt: number;
-  /** Last error message from previous attempt */
-  lastError?: string;
-}
-
-/** Metadata for WASM-specific errors */
-export interface WasmErrorMetadata {
-  type: 'wasm';
-  /** Browser information */
-  browserInfo?: unknown;
-  /** WASM module information */
-  wasmInfo?: unknown;
-  /** Memory information */
-  memoryInfo?: unknown;
-}
-
-/** Metadata for generic errors with line/column info */
-export interface LocationErrorMetadata {
-  type: 'location';
-  /** Line number (optional) */
-  line?: number;
-  /** Column number (optional) */
-  column?: number;
-  /** File size (optional) */
-  fileSize?: number;
-  /** Max size (optional) */
-  maxSize?: number;
-}
-
-/** Union of all possible error metadata types */
-export type ErrorMetadata =
-  | ParseErrorMetadata
-  | SizeErrorMetadata
-  | RetryErrorMetadata
-  | WasmErrorMetadata
-  | LocationErrorMetadata;
-
-/**
- * Type guards for error metadata
- */
-export function isParseErrorMetadata(
-  metadata: ErrorMetadata | undefined,
-): metadata is ParseErrorMetadata {
-  return metadata?.type === 'parse';
-}
-
-export function isSizeErrorMetadata(
-  metadata: ErrorMetadata | undefined,
-): metadata is SizeErrorMetadata {
-  return metadata?.type === 'size';
-}
-
-export function isRetryErrorMetadata(
-  metadata: ErrorMetadata | undefined,
-): metadata is RetryErrorMetadata {
-  return metadata?.type === 'retry';
-}
-
-export function isLocationErrorMetadata(
-  metadata: ErrorMetadata | undefined,
-): metadata is LocationErrorMetadata {
-  return metadata?.type === 'location';
-}
-
-/**
  * Conversion Error
  *
  * Structured error information for failed conversions.
@@ -174,9 +82,6 @@ export interface ConversionError {
 
   /** Error category for UI presentation */
   category?: ErrorCategory;
-
-  /** Error-specific metadata for enhanced error display - Discriminated union */
-  metadata?: ErrorMetadata;
 
   /** Timestamp when the error occurred */
   timestamp: number;

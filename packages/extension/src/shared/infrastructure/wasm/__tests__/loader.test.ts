@@ -1,5 +1,5 @@
 // ABOUTME: Tests for WASM loader initialization and error handling.
-// ABOUTME: Verifies environment detection, Result-based error handling, and state management.
+// ABOUTME: Verifies environment detection, throw-based error handling, and state management.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -110,73 +110,50 @@ describe('WASM Loader', () => {
     vi.restoreAllMocks();
   });
 
-  describe('initWASM - Error Handling with Result pattern', () => {
+  describe('initWASM - Error Handling', () => {
     beforeEach(async () => {
       // Reset WASM state before each test to ensure isolation
       const { resetWASMForTesting } = await import('../loader');
       resetWASMForTesting();
     });
 
-    it('should return err result on init() failure', async () => {
+    it('should throw on init() failure', async () => {
       // Mock Node.js loader to fail
       const { initWASMNode } = await import('../loader.node.js');
       vi.mocked(initWASMNode).mockRejectedValue(new Error('WASM initialization failed'));
 
-      // Import loader - let it run in Node.js environment (no need to spy)
       const loaderModule = await import('../loader');
 
-      const result = await loaderModule.initWASM();
-      expect(result.isErr()).toBe(true);
-      if (result.isErr()) {
-        expect(result.error.type).toBe('init_failed');
-        expect(result.error.message).toContain('WASM initialization failed');
-      }
+      await expect(loaderModule.initWASM()).rejects.toThrow('WASM initialization failed');
     });
 
-    it('should map error to WasmError with init_failed type', async () => {
+    it('should preserve error message on failure', async () => {
       const originalError = new Error('Original WASM error');
 
-      // Mock Node.js loader to fail with original error
       const { initWASMNode } = await import('../loader.node.js');
       vi.mocked(initWASMNode).mockRejectedValue(originalError);
 
-      // Import loader - let it run in Node.js environment
       const loaderModule = await import('../loader');
 
-      const result = await loaderModule.initWASM();
-      expect(result.isErr()).toBe(true);
-      if (result.isErr()) {
-        expect(result.error.type).toBe('init_failed');
-        expect(result.error.message).toContain('Original WASM error');
-      }
+      await expect(loaderModule.initWASM()).rejects.toThrow('Original WASM error');
     });
 
-    it('should wrap non-Error exceptions in WasmError', async () => {
-      // Mock Node.js loader to throw non-Error
+    it('should throw on non-Error exceptions', async () => {
       const { initWASMNode } = await import('../loader.node.js');
       vi.mocked(initWASMNode).mockRejectedValue('String error');
 
-      // Import loader - let it run in Node.js environment
       const loaderModule = await import('../loader');
 
-      const result = await loaderModule.initWASM();
-      expect(result.isErr()).toBe(true);
-      if (result.isErr()) {
-        expect(result.error.type).toBe('init_failed');
-        expect(result.error.message).toContain('String error');
-      }
+      await expect(loaderModule.initWASM()).rejects.toBeDefined();
     });
 
-    it('should return ok result on successful initialization', async () => {
-      // Mock Node.js loader to succeed
+    it('should resolve on successful initialization', async () => {
       const { initWASMNode } = await import('../loader.node.js');
       vi.mocked(initWASMNode).mockResolvedValue(undefined);
 
-      // Import loader - let it run in Node.js environment
       const loaderModule = await import('../loader');
 
-      const result = await loaderModule.initWASM();
-      expect(result.isOk()).toBe(true);
+      await expect(loaderModule.initWASM()).resolves.toBeUndefined();
     });
   });
 
@@ -188,15 +165,12 @@ describe('WASM Loader', () => {
     });
 
     it('should return true after successful initialization', async () => {
-      // Mock Node.js loader to succeed
       const { initWASMNode } = await import('../loader.node.js');
       vi.mocked(initWASMNode).mockResolvedValue(undefined);
 
-      // Import loader - let it run in Node.js environment
       const loaderModule = await import('../loader');
 
-      const result = await loaderModule.initWASM();
-      expect(result.isOk()).toBe(true);
+      await loaderModule.initWASM();
       expect(loaderModule.isWASMInitialized()).toBe(true);
     });
   });

@@ -3,7 +3,6 @@
 
 import process from 'node:process';
 import init from '@pkg/wasm_bridge';
-import { type AsyncResult, ResultAsync, type WasmError } from '../../errors/result';
 import { getLogger } from '../../infrastructure/logging/instance';
 
 let wasmInitialized = false;
@@ -55,17 +54,6 @@ export function isServiceWorkerEnvironment(): boolean {
 }
 
 /**
- * Map an unknown error to a WasmError
- */
-function mapToWasmError(error: unknown): WasmError {
-  const message = error instanceof Error ? error.message : String(error);
-  return {
-    type: 'init_failed',
-    message: `WASM initialization failed: ${message}`,
-  };
-}
-
-/**
  * Fetch and initialize WASM in browser/extension context
  * @internal
  */
@@ -105,43 +93,38 @@ async function initWASMFromExtension(environmentName: string): Promise<void> {
  *
  * @param wasmPath - Optional path to WASM file (for Node.js environment)
  *                   If not provided and running in Node.js, auto-constructs path
- * @returns Result with void on success, or WasmError on failure
+ * @throws Error if WASM initialization fails
  */
-export function initWASM(wasmPath?: string): AsyncResult<void, WasmError> {
-  return ResultAsync.fromPromise(
-    (async (): Promise<void> => {
-      logger().debug('WasmLoader', 'WASM initialization starting');
+export async function initWASM(wasmPath?: string): Promise<void> {
+  logger().debug('WasmLoader', 'WASM initialization starting');
 
-      if (wasmInitialized) {
-        logger().debug('WasmLoader', 'WASM already initialized, skipping');
-        return;
-      }
+  if (wasmInitialized) {
+    logger().debug('WasmLoader', 'WASM already initialized, skipping');
+    return;
+  }
 
-      const isNode = isNodeEnvironment();
-      const isServiceWorker = isServiceWorkerEnvironment();
+  const isNode = isNodeEnvironment();
+  const isServiceWorker = isServiceWorkerEnvironment();
 
-      logger().debug('WasmLoader', 'Environment detection', { isNode, isServiceWorker });
+  logger().debug('WasmLoader', 'Environment detection', { isNode, isServiceWorker });
 
-      if (isNode) {
-        logger().debug('WasmLoader', 'Environment: Node.js');
-        const { initWASMNode, getDefaultNodeWasmPath } = await import('./loader.node.js');
-        const effectiveWasmPath =
-          wasmPath !== null && wasmPath !== undefined && wasmPath !== ''
-            ? wasmPath
-            : getDefaultNodeWasmPath();
-        logger().debug('WasmLoader', 'Using WASM path', { wasmPath: effectiveWasmPath });
-        await initWASMNode(effectiveWasmPath);
-      } else if (isServiceWorker) {
-        await initWASMFromExtension('Service Worker');
-      } else {
-        await initWASMFromExtension('Browser (popup/TSX extractor)');
-      }
+  if (isNode) {
+    logger().debug('WasmLoader', 'Environment: Node.js');
+    const { initWASMNode, getDefaultNodeWasmPath } = await import('./loader.node.js');
+    const effectiveWasmPath =
+      wasmPath !== null && wasmPath !== undefined && wasmPath !== ''
+        ? wasmPath
+        : getDefaultNodeWasmPath();
+    logger().debug('WasmLoader', 'Using WASM path', { wasmPath: effectiveWasmPath });
+    await initWASMNode(effectiveWasmPath);
+  } else if (isServiceWorker) {
+    await initWASMFromExtension('Service Worker');
+  } else {
+    await initWASMFromExtension('Browser (popup/TSX extractor)');
+  }
 
-      wasmInitialized = true;
-      logger().info('WasmLoader', 'WASM initialization successful');
-    })(),
-    mapToWasmError,
-  );
+  wasmInitialized = true;
+  logger().info('WasmLoader', 'WASM initialization successful');
 }
 
 /**

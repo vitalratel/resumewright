@@ -5,7 +5,6 @@ import type { BaseIssue } from 'valibot';
 import { safeParse } from 'valibot';
 import { CURRENT_SETTINGS_VERSION, DEFAULT_USER_SETTINGS } from '@/shared/domain/settings/defaults';
 import { UserSettingsSchema } from '@/shared/domain/validation/settings';
-import { type AsyncResult, ResultAsync, type SettingsError } from '@/shared/errors/result';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { localExtStorage, syncExtStorage } from '@/shared/infrastructure/storage/typedStorage';
 import type { UserSettings, ValidationError, ValidationResult } from '@/shared/types/settings';
@@ -65,68 +64,47 @@ export async function loadSettings(): Promise<UserSettings> {
   }
 }
 
-/**
- * Save user settings to storage.
- * Validates settings and ensures version/timestamp are current.
- * Returns a Result to indicate success or failure.
- */
-export function saveSettings(settings: UserSettings): AsyncResult<void, SettingsError> {
-  return ResultAsync.fromPromise(
-    (async (): Promise<void> => {
-      // Validate settings
-      const validation = validateSettings(settings);
-      if (!validation.valid) {
-        const validationError: SettingsError = {
-          type: 'validation_failed',
-          message: `Invalid settings: ${validation.errors.map((e) => e.message).join(', ')}`,
-        };
-        throw validationError;
-      }
-
-      // Ensure version and timestamp are current
-      const toSave: UserSettings = {
-        ...settings,
-        settingsVersion: CURRENT_SETTINGS_VERSION,
-        lastUpdated: Date.now(),
-      };
-
-      try {
-        await syncExtStorage.setItem('resumewright-settings', toSave);
-      } catch (error) {
-        getLogger().error('SettingsStore', 'Failed to save settings to sync storage', error);
-        // Fallback to local storage
-        await localExtStorage.setItem('resumewright-settings', toSave);
-      }
-    })(),
-    (error): SettingsError => {
-      if (isSettingsError(error)) {
-        return error;
-      }
-      return {
-        type: 'storage_failed',
-        message: error instanceof Error ? error.message : String(error),
-      };
-    },
-  );
+interface SettingsError {
+  type: 'validation_failed' | 'storage_failed';
+  message: string;
 }
 
 /**
- * Type guard for SettingsError
+ * Save user settings to storage.
+ * Validates settings and ensures version/timestamp are current.
+ * @throws SettingsError if validation fails or storage is unavailable
  */
-function isSettingsError(error: unknown): error is SettingsError {
-  return (
-    error !== null &&
-    typeof error === 'object' &&
-    'type' in error &&
-    'message' in error &&
-    (error.type === 'validation_failed' || error.type === 'storage_failed')
-  );
+export async function saveSettings(settings: UserSettings): Promise<void> {
+  // Validate settings
+  const validation = validateSettings(settings);
+  if (!validation.valid) {
+    const validationError: SettingsError = {
+      type: 'validation_failed',
+      message: `Invalid settings: ${validation.errors.map((e) => e.message).join(', ')}`,
+    };
+    throw validationError;
+  }
+
+  // Ensure version and timestamp are current
+  const toSave: UserSettings = {
+    ...settings,
+    settingsVersion: CURRENT_SETTINGS_VERSION,
+    lastUpdated: Date.now(),
+  };
+
+  try {
+    await syncExtStorage.setItem('resumewright-settings', toSave);
+  } catch (error) {
+    getLogger().error('SettingsStore', 'Failed to save settings to sync storage', error);
+    // Fallback to local storage
+    await localExtStorage.setItem('resumewright-settings', toSave);
+  }
 }
 
 /**
  * Reset settings to factory defaults.
  */
-export function resetSettings(): AsyncResult<void, SettingsError> {
+export function resetSettings(): Promise<void> {
   return saveSettings(DEFAULT_USER_SETTINGS);
 }
 

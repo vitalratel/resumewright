@@ -41,8 +41,7 @@
   },
   "dependencies": {
     "@webext-core/storage": "^1.2.0",
-    "neverthrow": "^8.2.0",
-    "transliteration": "^2.6.1",
+"transliteration": "^2.6.1",
     "valibot": "^1.2.0"
   },
   "devDependencies": {

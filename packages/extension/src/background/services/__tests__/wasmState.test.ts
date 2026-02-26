@@ -197,6 +197,17 @@ describe('WASM State Functions', () => {
         error: undefined,
       });
     });
+
+    it('should return unknown status when storage read fails', async () => {
+      vi.spyOn(fakeBrowser.storage.local, 'get').mockRejectedValueOnce(
+        new Error('Storage read error'),
+      );
+
+      const result = await getWasmStatus();
+
+      expect(result.status).toBe('unknown');
+      expect(result.error).toBeDefined();
+    });
   });
 
   describe('state transitions', () => {

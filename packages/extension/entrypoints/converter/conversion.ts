@@ -10,6 +10,7 @@ import type {
   ConversionProgressPayload,
 } from '@/shared/types/messages';
 import type { UIState } from './converter';
+import { getElement } from './dom';
 import { clearImportedFile, getImportedFile } from './file-import';
 
 interface ConversionDeps {
@@ -31,12 +32,12 @@ export function initConversion(deps: ConversionDeps): void {
   const { showState, announce, getCurrentState } = deps;
 
   // Export button
-  document.getElementById('btn-export')!.addEventListener('click', () => {
+  getElement('btn-export').addEventListener('click', () => {
     handleExport(deps);
   });
 
   // Cancel button (during conversion)
-  document.getElementById('btn-cancel')!.addEventListener('click', () => {
+  getElement('btn-cancel').addEventListener('click', () => {
     stopCountdown();
     clearImportedFile();
     showState('import');
@@ -44,25 +45,25 @@ export function initConversion(deps: ConversionDeps): void {
   });
 
   // Success state actions
-  document.getElementById('btn-convert-another')!.addEventListener('click', () => {
+  getElement('btn-convert-another').addEventListener('click', () => {
     stopCountdown();
     clearImportedFile();
     showState('import');
     announce('Ready to import another file');
   });
 
-  document.getElementById('btn-pause-countdown')!.addEventListener('click', () => {
+  getElement('btn-pause-countdown').addEventListener('click', () => {
     toggleCountdown();
   });
 
-  document.getElementById('btn-close-tab')!.addEventListener('click', () => {
+  getElement('btn-close-tab').addEventListener('click', () => {
     stopCountdown();
     window.close();
   });
 
   // Copy filename button
-  document.getElementById('btn-copy-filename')!.addEventListener('click', async () => {
-    const filename = document.getElementById('success-filename')!.textContent ?? '';
+  getElement('btn-copy-filename').addEventListener('click', async () => {
+    const filename = getElement('success-filename').textContent ?? '';
     try {
       await navigator.clipboard.writeText(filename);
       announce('Filename copied');
@@ -72,19 +73,19 @@ export function initConversion(deps: ConversionDeps): void {
   });
 
   // Error state actions
-  document.getElementById('btn-retry')!.addEventListener('click', () => {
+  getElement('btn-retry').addEventListener('click', () => {
     handleExport(deps);
   });
 
-  document.getElementById('btn-import-different')!.addEventListener('click', () => {
+  getElement('btn-import-different').addEventListener('click', () => {
     clearImportedFile();
     showState('import');
     announce('Ready to import a different file');
   });
 
-  document.getElementById('btn-report-issue')!.addEventListener('click', async () => {
-    const message = document.getElementById('error-message')!.textContent ?? '';
-    const technical = document.getElementById('error-technical')!.textContent ?? '';
+  getElement('btn-report-issue').addEventListener('click', async () => {
+    const message = getElement('error-message').textContent ?? '';
+    const technical = getElement('error-technical').textContent ?? '';
     const report = technical ? `${message}\n\nTechnical details:\n${technical}` : message;
     try {
       await navigator.clipboard.writeText(report);
@@ -126,7 +127,7 @@ async function handleExport(deps: ConversionDeps): Promise<void> {
   resetProgressUI();
 
   // Hide retry button (shown only after retryable error)
-  document.getElementById('btn-retry')!.hidden = true;
+  getElement('btn-retry').hidden = true;
 
   try {
     getLogger().info('Conversion', 'Sending conversion request', {
@@ -161,17 +162,17 @@ function handleProgress(payload: ConversionProgressPayload): void {
   const { progress } = payload;
   const pct = Math.round(progress.percentage);
 
-  document.getElementById('progress-bar-fill')!.style.width = `${pct}%`;
-  document.getElementById('progress-bar-container')!.setAttribute('aria-valuenow', String(pct));
-  document.getElementById('progress-percent')!.textContent = `${pct}%`;
-  document.getElementById('progress-stage')!.textContent = progress.currentOperation;
+  getElement('progress-bar-fill').style.width = `${pct}%`;
+  getElement('progress-bar-container').setAttribute('aria-valuenow', String(pct));
+  getElement('progress-percent').textContent = `${pct}%`;
+  getElement('progress-stage').textContent = progress.currentOperation;
 }
 
 function resetProgressUI(): void {
-  document.getElementById('progress-bar-fill')!.style.width = '0%';
-  document.getElementById('progress-bar-container')!.setAttribute('aria-valuenow', '0');
-  document.getElementById('progress-percent')!.textContent = '0%';
-  document.getElementById('progress-stage')!.textContent = '';
+  getElement('progress-bar-fill').style.width = '0%';
+  getElement('progress-bar-container').setAttribute('aria-valuenow', '0');
+  getElement('progress-percent').textContent = '0%';
+  getElement('progress-stage').textContent = '';
 }
 
 // ─── Complete handler ─────────────────────────────────────────────────────────
@@ -199,10 +200,9 @@ async function handleComplete(
   }
 
   // Populate success state
-  document.getElementById('success-filename')!.textContent = filename;
-  document.getElementById('success-filesize')!.textContent = formatFileSize(payload.fileSize);
-  document.getElementById('success-duration')!.textContent =
-    `${(payload.duration / 1000).toFixed(1)}s`;
+  getElement('success-filename').textContent = filename;
+  getElement('success-filesize').textContent = formatFileSize(payload.fileSize);
+  getElement('success-duration').textContent = `${(payload.duration / 1000).toFixed(1)}s`;
 
   showState('success');
   announce(`PDF ready: ${filename}. Downloaded to your computer.`);
@@ -221,11 +221,11 @@ function showConversionError(payload: ConversionErrorPayload, deps: ConversionDe
   const { showState, announce } = deps;
   const { error } = payload;
 
-  document.getElementById('error-category')!.textContent = error.category ?? '';
-  document.getElementById('error-message')!.textContent = error.message;
+  getElement('error-category').textContent = error.category ?? '';
+  getElement('error-message').textContent = error.message;
 
   // Suggestions list — first item is the most likely fix
-  const ul = document.getElementById('error-suggestions')!;
+  const ul = getElement('error-suggestions');
   ul.innerHTML = '';
   error.suggestions.forEach((suggestion, i) => {
     const li = document.createElement('li');
@@ -243,16 +243,16 @@ function showConversionError(payload: ConversionErrorPayload, deps: ConversionDe
   });
 
   // Technical details
-  const detailsContainer = document.getElementById('error-details-container')!;
+  const detailsContainer = getElement('error-details-container');
   if (error.technicalDetails) {
-    document.getElementById('error-technical')!.textContent = error.technicalDetails;
+    getElement('error-technical').textContent = error.technicalDetails;
     detailsContainer.classList.remove('hidden');
   } else {
     detailsContainer.classList.add('hidden');
   }
 
   // Show retry button only for recoverable errors
-  document.getElementById('btn-retry')!.hidden = !error.recoverable;
+  getElement('btn-retry').hidden = !error.recoverable;
 
   showState('error');
   announce(`Conversion failed: ${error.message}`, true);
@@ -266,7 +266,7 @@ function startCountdown(): void {
   countdownPaused = false;
   updateCountdownDisplay();
 
-  const btn = document.getElementById('btn-pause-countdown')!;
+  const btn = getElement('btn-pause-countdown');
   btn.textContent = 'Pause';
 
   countdownTimer = setInterval(() => {
@@ -291,10 +291,10 @@ function stopCountdown(): void {
 
 function toggleCountdown(): void {
   countdownPaused = !countdownPaused;
-  const btn = document.getElementById('btn-pause-countdown')!;
+  const btn = getElement('btn-pause-countdown');
   btn.textContent = countdownPaused ? 'Resume' : 'Pause';
 }
 
 function updateCountdownDisplay(): void {
-  document.getElementById('countdown-seconds')!.textContent = String(countdownRemaining);
+  getElement('countdown-seconds').textContent = String(countdownRemaining);
 }

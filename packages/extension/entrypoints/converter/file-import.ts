@@ -6,6 +6,7 @@ import { FILE_SIZE_LIMITS, validateFileExtension } from '@/shared/domain/pdf/val
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { sendMessage } from '@/shared/messaging';
 import type { UIState } from './converter';
+import { getElement } from './dom';
 
 interface FileImportDeps {
   showState: (state: UIState) => void;
@@ -35,10 +36,10 @@ export function clearImportedFile(): void {
 export function initFileImport(deps: FileImportDeps): void {
   const { showState, announce } = deps;
 
-  const fileInput = document.getElementById('file-input') as HTMLInputElement;
-  const dropZone = document.getElementById('drop-zone')!;
-  const btnBrowse = document.getElementById('btn-browse')!;
-  const btnClear = document.getElementById('btn-clear-file')!;
+  const fileInput = getElement<HTMLInputElement>('file-input');
+  const dropZone = getElement('drop-zone');
+  const btnBrowse = getElement('btn-browse');
+  const btnClear = getElement('btn-clear-file');
 
   // Browse Files button + drop zone click → open file picker
   btnBrowse.addEventListener('click', () => fileInput.click());
@@ -182,8 +183,8 @@ async function processFile(file: File, deps: FileImportDeps): Promise<void> {
   importedFile = { name: file.name, size: file.size, content };
 
   // Populate ready state UI
-  const readyFilename = document.getElementById('ready-filename')!;
-  const readyFilesize = document.getElementById('ready-filesize')!;
+  const readyFilename = getElement('ready-filename');
+  const readyFilesize = getElement('ready-filesize');
   readyFilename.textContent = file.name;
   readyFilesize.textContent = formatFileSize(file.size);
 
@@ -198,15 +199,15 @@ async function processFile(file: File, deps: FileImportDeps): Promise<void> {
 // ─── Validation error helpers ─────────────────────────────────────────────────
 
 function showValidationError(message: string): void {
-  const container = document.getElementById('validation-error')!;
-  const text = document.getElementById('validation-error-text')!;
+  const container = getElement('validation-error');
+  const text = getElement('validation-error-text');
   text.textContent = message;
   container.hidden = false;
   container.focus?.();
 }
 
 function hideValidationError(): void {
-  document.getElementById('validation-error')!.hidden = true;
+  getElement('validation-error').hidden = true;
 }
 
 // ─── File reading ─────────────────────────────────────────────────────────────

@@ -1,10 +1,8 @@
 // ABOUTME: WASM initialization state management functions.
 // ABOUTME: Provides type-safe access to WASM status with validation.
 
-import { null_, number, picklist, string } from 'valibot';
 import { getLogger } from '@/shared/infrastructure/logging/instance';
 import { localExtStorage } from '@/shared/infrastructure/storage/typedStorage';
-import { setValidatedStorage } from '@/shared/infrastructure/storage/validation';
 
 /**
  * WASM initialization status types
@@ -20,15 +18,10 @@ export interface WasmStatusInfo {
 }
 
 /**
- * Valibot schema for WASM status validation
- */
-const statusSchema = picklist(['initializing', 'success', 'failed'] as const);
-
-/**
  * Mark WASM as initializing
  */
 export async function setWasmInitializing(): Promise<void> {
-  await setValidatedStorage('wasmStatus', 'initializing', statusSchema);
+  await localExtStorage.setItem('wasmStatus', 'initializing');
 }
 
 /**
@@ -38,9 +31,9 @@ export async function setWasmInitializing(): Promise<void> {
  * Clears any previous error state.
  */
 export async function setWasmSuccess(): Promise<void> {
-  await setValidatedStorage('wasmStatus', 'success', statusSchema);
-  await setValidatedStorage('wasmInitTime', Date.now(), number());
-  await setValidatedStorage('wasmInitError', null, null_());
+  await localExtStorage.setItem('wasmStatus', 'success');
+  await localExtStorage.setItem('wasmInitTime', Date.now());
+  await localExtStorage.setItem('wasmInitError', null);
 }
 
 /**
@@ -49,8 +42,8 @@ export async function setWasmSuccess(): Promise<void> {
  * @param errorMessage - Human-readable error message
  */
 export async function setWasmFailed(errorMessage: string): Promise<void> {
-  await setValidatedStorage('wasmStatus', 'failed', statusSchema);
-  await setValidatedStorage('wasmInitError', errorMessage, string());
+  await localExtStorage.setItem('wasmStatus', 'failed');
+  await localExtStorage.setItem('wasmInitError', errorMessage);
 }
 
 /**

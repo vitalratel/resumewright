@@ -1,22 +1,23 @@
 // ABOUTME: Google Fonts Repository - Infrastructure implementation of IFontRepository.
 // ABOUTME: Provides font fetching with LRU caching, WOFF2 decompression, and retry logic.
 
-import type { FontCacheStats, IFontRepository } from '../../domain/fonts/IFontRepository';
 import type { FontStyle, FontWeight } from '../../domain/fonts/types';
-import {
-  type AsyncResult,
-  err,
-  type FontError,
-  ok,
-  type Result,
-  ResultAsync,
-} from '../../errors/result';
 import { getLogger } from '../logging/instance';
 import {
   executeWithRetry,
   type RetryConfig,
   retryPresets,
 } from '../retry/ExponentialBackoffRetryPolicy';
+
+/**
+ * Font cache statistics
+ */
+export interface FontCacheStats {
+  size: number;
+  maxSize: number;
+  hits?: number;
+  misses?: number;
+}
 
 /**
  * Cached font data with LRU tracking
@@ -51,47 +52,24 @@ const CACHE_TTL_MS = 3600000; // 1 hour
 const FETCH_TIMEOUT_MS = 30000; // 30 seconds
 
 /**
- * Map an unknown error to a FontError
+ * Map an unknown error to a descriptive Error for a specific font family
  */
-function mapToFontError(error: unknown, family: string): FontError {
-  if (isFontError(error)) {
-    return error;
-  }
-
+function toFontError(error: unknown, family: string): Error {
   if (error instanceof DOMException && error.name === 'TimeoutError') {
-    return {
-      type: 'network_timeout',
-      fontFamily: family,
-      message: `Timeout fetching font ${family} (exceeded 30 seconds). Consider using a web-safe font.`,
-    };
+    return new Error(
+      `Timeout fetching font ${family} (exceeded 30 seconds). Consider using a web-safe font.`,
+    );
   }
 
   if (error instanceof TypeError) {
-    return {
-      type: 'network_error',
-      fontFamily: family,
-      message: `Network error fetching font ${family}: ${error.message}`,
-    };
+    return new Error(`Network error fetching font ${family}: ${error.message}`);
   }
 
-  return {
-    type: 'network_error',
-    fontFamily: family,
-    message: `Unknown error fetching font ${family}: ${String(error)}`,
-  };
-}
+  if (error instanceof Error) {
+    return error;
+  }
 
-/**
- * Type guard for FontError
- */
-function isFontError(error: unknown): error is FontError {
-  return (
-    error !== null &&
-    typeof error === 'object' &&
-    'type' in error &&
-    'fontFamily' in error &&
-    'message' in error
-  );
+  return new Error(`Unknown error fetching font ${family}: ${String(error)}`);
 }
 
 /**
@@ -101,9 +79,8 @@ function isFontError(error: unknown): error is FontError {
  * - In-memory LRU cache
  * - 30-second timeout with retry logic
  * - WOFF2 decompression support
- * - Result-based error handling
  */
-export function createGoogleFontsRepository(retryConfig?: Partial<RetryConfig>): IFontRepository {
+export function createGoogleFontsRepository(retryConfig?: Partial<RetryConfig>) {
   // Private state
   const fontCache = new Map<string, CachedFont>();
   const config = retryConfig ?? retryPresets.network;
@@ -140,32 +117,21 @@ export function createGoogleFontsRepository(retryConfig?: Partial<RetryConfig>):
     return null;
   }
 
-  async function decompressWoff2(
-    fontBytes: Uint8Array,
-    family: string,
-  ): Promise<Result<Uint8Array, FontError>> {
-    try {
-      getLogger().debug(
-        'GoogleFontsRepository',
-        `Decompressing WOFF2: ${family} (${fontBytes.length} bytes)`,
-      );
+  async function decompressWoff2(fontBytes: Uint8Array, family: string): Promise<Uint8Array> {
+    getLogger().debug(
+      'GoogleFontsRepository',
+      `Decompressing WOFF2: ${family} (${fontBytes.length} bytes)`,
+    );
 
-      const wasmModule = await import('@pkg/wasm_bridge');
-      const decompressed = new Uint8Array(wasmModule.decompress_woff2_font(fontBytes));
+    const wasmModule = await import('@pkg/wasm_bridge');
+    const decompressed = new Uint8Array(wasmModule.decompress_woff2_font(fontBytes));
 
-      getLogger().info(
-        'GoogleFontsRepository',
-        `WOFF2 decompressed: ${family} ${fontBytes.length} → ${decompressed.length} bytes`,
-      );
+    getLogger().info(
+      'GoogleFontsRepository',
+      `WOFF2 decompressed: ${family} ${fontBytes.length} → ${decompressed.length} bytes`,
+    );
 
-      return ok(decompressed);
-    } catch (error) {
-      return err({
-        type: 'parse_error',
-        fontFamily: family,
-        message: `WOFF2 decompression failed for ${family}: ${String(error)}`,
-      });
-    }
+    return decompressed;
   }
 
   function evictLRU(): void {
@@ -187,98 +153,78 @@ export function createGoogleFontsRepository(retryConfig?: Partial<RetryConfig>):
   }
 
   // Public interface implementation
-  function fetchGoogleFont(
+  async function fetchGoogleFont(
     family: string,
     weight: FontWeight,
     style: FontStyle,
-  ): AsyncResult<Uint8Array, FontError> {
+  ): Promise<Uint8Array> {
     const cacheKey = getCacheKey(family, weight, style);
 
-    return ResultAsync.fromPromise(
-      (async (): Promise<Uint8Array> => {
-        // Check cache first
-        const cached = await getCachedFont(family, weight, style);
-        if (cached) {
-          return cached;
+    try {
+      // Check cache first
+      const cached = await getCachedFont(family, weight, style);
+      if (cached) {
+        return cached;
+      }
+
+      getLogger().debug('GoogleFontsRepository', `Fetching: ${family} ${weight} ${style}`);
+
+      // Step 1: Fetch CSS from Google Fonts API
+      const apiUrl = buildApiUrl(family, weight, style);
+      const cssResponse = await executeWithRetry(async () => {
+        const response = await fetch(apiUrl, {
+          signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Google Fonts API returned ${response.status} for ${family}`);
         }
 
-        getLogger().debug('GoogleFontsRepository', `Fetching: ${family} ${weight} ${style}`);
+        return response;
+      }, config);
 
-        // Step 1: Fetch CSS from Google Fonts API
-        const apiUrl = buildApiUrl(family, weight, style);
-        const cssResponse = await executeWithRetry(async () => {
-          const response = await fetch(apiUrl, {
-            signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-          });
+      const cssText = await cssResponse.text();
 
-          if (!response.ok) {
-            const fontError: FontError = {
-              type: 'not_found',
-              fontFamily: family,
-              message: `Google Fonts API returned ${response.status} for ${family}`,
-            };
-            throw fontError;
-          }
+      // Step 2: Parse CSS to extract font URL
+      const fontInfo = extractFontUrl(cssText);
+      if (!fontInfo) {
+        throw new Error(`Failed to extract font URL from CSS for ${family}`);
+      }
 
-          return response;
-        }, config);
+      // Step 3: Fetch font file
+      const fontResponse = await executeWithRetry(async () => {
+        const response = await fetch(fontInfo.url, {
+          signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        });
 
-        const cssText = await cssResponse.text();
-
-        // Step 2: Parse CSS to extract font URL
-        const fontInfo = extractFontUrl(cssText);
-        if (!fontInfo) {
-          const fontError: FontError = {
-            type: 'parse_error',
-            fontFamily: family,
-            message: `Failed to extract font URL from CSS for ${family}`,
-          };
-          throw fontError;
+        if (!response.ok) {
+          throw new Error(`Failed to download font file: ${response.status}`);
         }
 
-        // Step 3: Fetch font file
-        const fontResponse = await executeWithRetry(async () => {
-          const response = await fetch(fontInfo.url, {
-            signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-          });
+        return response;
+      }, config);
 
-          if (!response.ok) {
-            const fontError: FontError = {
-              type: 'network_error',
-              fontFamily: family,
-              message: `Failed to download font file: ${response.status}`,
-            };
-            throw fontError;
-          }
+      // Step 4: Convert to Uint8Array and decompress if needed
+      const arrayBuffer = await fontResponse.arrayBuffer();
+      let fontBytes: Uint8Array = new Uint8Array(arrayBuffer);
 
-          return response;
-        }, config);
+      // Decompress WOFF2 to TrueType using Rust WASM
+      if (fontInfo.format === 'woff2') {
+        fontBytes = await decompressWoff2(fontBytes, family);
+      }
 
-        // Step 4: Convert to Uint8Array and decompress if needed
-        const arrayBuffer = await fontResponse.arrayBuffer();
-        let fontBytes: Uint8Array = new Uint8Array(arrayBuffer);
+      // Cache the result
+      await cacheFont(family, weight, style, fontBytes);
 
-        // Decompress WOFF2 to TrueType using Rust WASM
-        if (fontInfo.format === 'woff2') {
-          const decompressResult = await decompressWoff2(fontBytes, family);
-          if (decompressResult.isErr()) {
-            throw decompressResult.error;
-          }
-          fontBytes = decompressResult.value;
-        }
+      getLogger().debug(
+        'GoogleFontsRepository',
+        `Fetched ${fontBytes.length} bytes for ${cacheKey} (cache: ${fontCache.size}/${MAX_CACHED_FONTS})`,
+      );
 
-        // Cache the result
-        await cacheFont(family, weight, style, fontBytes);
-
-        getLogger().debug(
-          'GoogleFontsRepository',
-          `Fetched ${fontBytes.length} bytes for ${cacheKey} (cache: ${fontCache.size}/${MAX_CACHED_FONTS})`,
-        );
-
-        return fontBytes;
-      })(),
-      (error) => mapToFontError(error, family),
-    );
+      return fontBytes;
+    } catch (error) {
+      throw toFontError(error, family);
+    }
   }
 
   async function getCachedFont(
