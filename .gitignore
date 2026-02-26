@@ -9,6 +9,7 @@ target/
 *.tsbuildinfo
 packages/extension/.output/
 packages/extension/.wxt/
+packages/extension/public/gleam/
 
 # Transpiled test fixtures (generated from TSX)
 test-fixtures/transpiled/

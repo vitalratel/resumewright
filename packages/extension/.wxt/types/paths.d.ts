@@ -7,6 +7,7 @@ declare module "wxt/browser" {
     | "/"
     | "/background.js"
     | "/converter.html"
+    | "/gleam/app_gleam.js"
     | "/help/error-recovery.md"
     | "/help/troubleshooting.md"
     | "/help/tsx-syntax-guide.md"
