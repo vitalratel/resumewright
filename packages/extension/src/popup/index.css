@@ -197,6 +197,42 @@
   --ring-offset: oklch(0.21 0.034 264.665);
 }
 
+/* Auto mode: apply dark tokens when system preference is dark and no explicit theme class */
+@media (prefers-color-scheme: dark) {
+  :root:not(.dark):not(.light) {
+    --background: oklch(0.21 0.034 264.665);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.269 0.006 264);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.269 0.006 264);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(54.6% 0.245 262.881);
+    --primary-foreground: oklch(1 0 0);
+    --secondary: oklch(0.278 0.033 256.848);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.278 0.033 256.848);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.278 0.033 256.848);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(57.7% 0.245 27.325);
+    --destructive-foreground: oklch(1 0 0);
+    --destructive-text: oklch(70.4% 0.191 22.216);
+    --success: oklch(52.7% 0.154 150.069);
+    --success-foreground: oklch(1 0 0);
+    --success-text: oklch(79.2% 0.209 151.711);
+    --warning: oklch(79.5% 0.184 86.047);
+    --warning-foreground: oklch(0.145 0 0);
+    --warning-text: oklch(85.2% 0.199 91.936);
+    --info: oklch(70.7% 0.165 254.624);
+    --info-foreground: oklch(1 0 0);
+    --info-text: oklch(79.7% 0.113 228.508);
+    --border: oklch(0.35 0 0);
+    --input: oklch(0.35 0 0);
+    --ring: oklch(62.3% 0.214 259.815);
+    --ring-offset: oklch(0.21 0.034 264.665);
+  }
+}
+
 /*
  * =============================================================================
  * TAILWIND V4 THEME INLINE - Maps CSS variables to Tailwind utilities

@@ -56,7 +56,7 @@
       <!-- ═══════════════════════════════════════════════════════════
            MAIN — state machine + settings view
            ═══════════════════════════════════════════════════════════ -->
-      <main id="main-content" class="w-full max-w-2xl flex flex-col px-4 py-6 flex-1" tabindex="-1">
+      <main id="main-content" class="w-full max-w-2xl flex flex-col px-4 py-6 flex-1 overflow-y-auto" tabindex="-1">
 
         <!-- ─────────────────────────────────────────────────────────
              VIEW: MAIN CONVERTER
@@ -381,56 +381,59 @@
             </fieldset>
 
             <!-- Margins -->
-            <fieldset class="space-y-4">
+            <fieldset class="space-y-3">
               <legend class="text-sm font-semibold text-foreground">Margins</legend>
               <p class="text-xs text-muted-foreground">In inches (0.25 - 1.5). Use arrow keys to adjust.</p>
 
-              <div class="space-y-3">
-                <!-- Top -->
-                <div class="flex items-center gap-3">
-                  <label for="margin-top" class="w-12 text-sm text-muted-foreground">Top</label>
-                  <button type="button" id="margin-top-minus" aria-label="Decrease top margin" class="btn-stepper">−</button>
-                  <input type="range" id="margin-top" name="margin-top" min="0.25" max="1.5" step="0.05" value="0.5" class="flex-1 text-primary accent-primary" aria-label="Top margin in inches" />
-                  <button type="button" id="margin-top-plus" aria-label="Increase top margin" class="btn-stepper">+</button>
-                  <span id="margin-top-value" class="w-12 text-sm text-right text-muted-foreground tabular-nums">0.50"</span>
+              <div class="flex gap-6 items-center">
+                <!-- Sliders -->
+                <div class="flex-1 space-y-3 min-w-0">
+                  <!-- Top -->
+                  <div class="flex items-center gap-3">
+                    <label for="margin-top" class="w-12 text-sm text-muted-foreground">Top</label>
+                    <button type="button" id="margin-top-minus" aria-label="Decrease top margin" class="btn-stepper">−</button>
+                    <input type="range" id="margin-top" name="margin-top" min="0.25" max="1.5" step="0.05" value="0.5" class="flex-1 min-w-0 text-primary accent-primary" aria-label="Top margin in inches" />
+                    <button type="button" id="margin-top-plus" aria-label="Increase top margin" class="btn-stepper">+</button>
+                    <span id="margin-top-value" class="w-12 text-sm text-right text-muted-foreground tabular-nums">0.50"</span>
+                  </div>
+                  <!-- Bottom -->
+                  <div class="flex items-center gap-3">
+                    <label for="margin-bottom" class="w-12 text-sm text-muted-foreground">Bottom</label>
+                    <button type="button" id="margin-bottom-minus" aria-label="Decrease bottom margin" class="btn-stepper">−</button>
+                    <input type="range" id="margin-bottom" name="margin-bottom" min="0.25" max="1.5" step="0.05" value="0.5" class="flex-1 min-w-0 text-primary accent-primary" aria-label="Bottom margin in inches" />
+                    <button type="button" id="margin-bottom-plus" aria-label="Increase bottom margin" class="btn-stepper">+</button>
+                    <span id="margin-bottom-value" class="w-12 text-sm text-right text-muted-foreground tabular-nums">0.50"</span>
+                  </div>
+                  <!-- Left -->
+                  <div class="flex items-center gap-3">
+                    <label for="margin-left" class="w-12 text-sm text-muted-foreground">Left</label>
+                    <button type="button" id="margin-left-minus" aria-label="Decrease left margin" class="btn-stepper">−</button>
+                    <input type="range" id="margin-left" name="margin-left" min="0.25" max="1.5" step="0.05" value="0.5" class="flex-1 min-w-0 text-primary accent-primary" aria-label="Left margin in inches" />
+                    <button type="button" id="margin-left-plus" aria-label="Increase left margin" class="btn-stepper">+</button>
+                    <span id="margin-left-value" class="w-12 text-sm text-right text-muted-foreground tabular-nums">0.50"</span>
+                  </div>
+                  <!-- Right -->
+                  <div class="flex items-center gap-3">
+                    <label for="margin-right" class="w-12 text-sm text-muted-foreground">Right</label>
+                    <button type="button" id="margin-right-minus" aria-label="Decrease right margin" class="btn-stepper">−</button>
+                    <input type="range" id="margin-right" name="margin-right" min="0.25" max="1.5" step="0.05" value="0.5" class="flex-1 min-w-0 text-primary accent-primary" aria-label="Right margin in inches" />
+                    <button type="button" id="margin-right-plus" aria-label="Increase right margin" class="btn-stepper">+</button>
+                    <span id="margin-right-value" class="w-12 text-sm text-right text-muted-foreground tabular-nums">0.50"</span>
+                  </div>
                 </div>
-                <!-- Bottom -->
-                <div class="flex items-center gap-3">
-                  <label for="margin-bottom" class="w-12 text-sm text-muted-foreground">Bottom</label>
-                  <button type="button" id="margin-bottom-minus" aria-label="Decrease bottom margin" class="btn-stepper">−</button>
-                  <input type="range" id="margin-bottom" name="margin-bottom" min="0.25" max="1.5" step="0.05" value="0.5" class="flex-1 text-primary accent-primary" aria-label="Bottom margin in inches" />
-                  <button type="button" id="margin-bottom-plus" aria-label="Increase bottom margin" class="btn-stepper">+</button>
-                  <span id="margin-bottom-value" class="w-12 text-sm text-right text-muted-foreground tabular-nums">0.50"</span>
-                </div>
-                <!-- Left -->
-                <div class="flex items-center gap-3">
-                  <label for="margin-left" class="w-12 text-sm text-muted-foreground">Left</label>
-                  <button type="button" id="margin-left-minus" aria-label="Decrease left margin" class="btn-stepper">−</button>
-                  <input type="range" id="margin-left" name="margin-left" min="0.25" max="1.5" step="0.05" value="0.5" class="flex-1 text-primary accent-primary" aria-label="Left margin in inches" />
-                  <button type="button" id="margin-left-plus" aria-label="Increase left margin" class="btn-stepper">+</button>
-                  <span id="margin-left-value" class="w-12 text-sm text-right text-muted-foreground tabular-nums">0.50"</span>
-                </div>
-                <!-- Right -->
-                <div class="flex items-center gap-3">
-                  <label for="margin-right" class="w-12 text-sm text-muted-foreground">Right</label>
-                  <button type="button" id="margin-right-minus" aria-label="Decrease right margin" class="btn-stepper">−</button>
-                  <input type="range" id="margin-right" name="margin-right" min="0.25" max="1.5" step="0.05" value="0.5" class="flex-1 text-primary accent-primary" aria-label="Right margin in inches" />
-                  <button type="button" id="margin-right-plus" aria-label="Increase right margin" class="btn-stepper">+</button>
-                  <span id="margin-right-value" class="w-12 text-sm text-right text-muted-foreground tabular-nums">0.50"</span>
-                </div>
-              </div>
 
-              <!-- Margin preview -->
-              <div class="mt-4">
-                <p class="text-xs text-muted-foreground mb-2 text-center">Margin Preview</p>
-                <div id="margin-preview" class="relative mx-auto border-2 border-primary/40 bg-card rounded" style="width: 140px; height: 180px;">
-                  <!-- Content area (shows as darker region) -->
-                  <div id="margin-preview-content" class="absolute bg-muted/60 border border-border/40" style="inset: 20% 20% 20% 20%;"></div>
-                  <!-- Margin labels -->
-                  <span id="margin-preview-top" class="absolute text-[9px] text-muted-foreground" style="top: 4px; left: 50%; transform: translateX(-50%)">0.50"</span>
-                  <span id="margin-preview-bottom" class="absolute text-[9px] text-muted-foreground" style="bottom: 4px; left: 50%; transform: translateX(-50%)">0.50"</span>
-                  <span id="margin-preview-left" class="absolute text-[9px] text-muted-foreground" style="left: 2px; top: 50%; transform: translateY(-50%) rotate(-90deg)">0.50"</span>
-                  <span id="margin-preview-right" class="absolute text-[9px] text-muted-foreground" style="right: 2px; top: 50%; transform: translateY(-50%) rotate(90deg)">0.50"</span>
+                <!-- Margin preview -->
+                <div class="flex flex-col items-center gap-1 shrink-0">
+                  <p class="text-xs text-muted-foreground">Preview</p>
+                  <div id="margin-preview" class="relative border-2 border-primary/40 bg-card rounded" style="width: 150px; height: 194px;">
+                    <!-- Content area -->
+                    <div id="margin-preview-content" class="absolute bg-primary/10 border border-primary/20" style="inset: 20% 20% 20% 20%;"></div>
+                    <!-- Margin labels -->
+                    <span id="margin-preview-top" class="absolute text-[9px] text-muted-foreground" style="top: 4px; left: 50%; transform: translateX(-50%)">0.50"</span>
+                    <span id="margin-preview-bottom" class="absolute text-[9px] text-muted-foreground" style="bottom: 4px; left: 50%; transform: translateX(-50%)">0.50"</span>
+                    <span id="margin-preview-left" class="absolute text-[9px] text-muted-foreground" style="left: 2px; top: 50%; transform: translateY(-50%) rotate(-90deg)">0.50"</span>
+                    <span id="margin-preview-right" class="absolute text-[9px] text-muted-foreground" style="right: 2px; top: 50%; transform: translateY(-50%) rotate(90deg)">0.50"</span>
+                  </div>
                 </div>
               </div>
             </fieldset>
