@@ -78,8 +78,7 @@ export async function convertTsxToPdfWithFonts(
     return pdfBytes;
   } catch (error) {
     logger.error('PdfConverter', 'Conversion failed', error);
-    const conversionError = parseWasmError(error);
-    throw new Error(conversionError.message);
+    throw parseWasmError(error);
   }
 }
 

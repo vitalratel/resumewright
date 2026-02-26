@@ -2,7 +2,7 @@
  * Badge Manager Tests
  *
  * Comprehensive tests for badge management functions.
- * Coverage: Success badge, error badge, error logging, non-critical failure handling
+ * Coverage: Success badge, error badge, non-critical failure handling
  */
 
 import { fakeBrowser } from '@webext-core/fake-browser';
@@ -18,10 +18,9 @@ describe('Badge Manager Functions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Create spies for fakeBrowser action and storage methods
+    // Create spies for fakeBrowser action methods
     vi.spyOn(fakeBrowser.action, 'setBadgeText').mockResolvedValue(undefined);
     vi.spyOn(fakeBrowser.action, 'setBadgeBackgroundColor').mockResolvedValue(undefined);
-    vi.spyOn(fakeBrowser.storage.local, 'set').mockResolvedValue(undefined);
 
     // Suppress logger output during tests
     const silentLogger = createLogger({ level: LogLevel.NONE });
@@ -58,44 +57,6 @@ describe('Badge Manager Functions', () => {
 
       // Should not throw despite badge error
       await expect(showBadgeSuccess()).resolves.toBeUndefined();
-    });
-
-    it('should log badge error to storage when badge update fails', async () => {
-      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValueOnce(new Error('Badge error'));
-
-      await showBadgeSuccess();
-
-      expect(fakeBrowser.storage.local.set).toHaveBeenCalledWith(
-        expect.objectContaining({
-          wasmBadgeError: expect.objectContaining({
-            hasError: true,
-            errorMessage: 'Badge update failed (non-critical)',
-            timestamp: expect.any(Number),
-          }),
-        }),
-      );
-    });
-
-    it('should handle storage error when logging badge error', async () => {
-      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValueOnce(new Error('Badge error'));
-      vi.mocked(fakeBrowser.storage.local.set).mockRejectedValueOnce(new Error('Storage error'));
-
-      // Should not throw even if both badge and storage fail
-      await expect(showBadgeSuccess()).resolves.toBeUndefined();
-    });
-
-    it('should set timestamp when logging error', async () => {
-      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValueOnce(new Error('Badge error'));
-
-      const beforeTime = Date.now();
-      await showBadgeSuccess();
-      const afterTime = Date.now();
-
-      const call = vi.mocked(fakeBrowser.storage.local.set).mock.calls[0][0] as {
-        wasmBadgeError: { timestamp: number };
-      };
-      expect(call.wasmBadgeError.timestamp).toBeGreaterThanOrEqual(beforeTime);
-      expect(call.wasmBadgeError.timestamp).toBeLessThanOrEqual(afterTime);
     });
   });
 
@@ -134,30 +95,6 @@ describe('Badge Manager Functions', () => {
       await expect(showBadgeError()).resolves.toBeUndefined();
     });
 
-    it('should log badge error to storage when badge update fails', async () => {
-      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValueOnce(new Error('Badge error'));
-
-      await showBadgeError();
-
-      expect(fakeBrowser.storage.local.set).toHaveBeenCalledWith(
-        expect.objectContaining({
-          wasmBadgeError: expect.objectContaining({
-            hasError: true,
-            errorMessage: 'Badge update failed (non-critical)',
-            timestamp: expect.any(Number),
-          }),
-        }),
-      );
-    });
-
-    it('should handle storage error when logging badge error', async () => {
-      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValueOnce(new Error('Badge error'));
-      vi.mocked(fakeBrowser.storage.local.set).mockRejectedValueOnce(new Error('Storage error'));
-
-      // Should not throw even if both badge and storage fail
-      await expect(showBadgeError()).resolves.toBeUndefined();
-    });
-
     it('should handle background color API error', async () => {
       vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValueOnce(
         new Error('Background color error'),
@@ -167,62 +104,9 @@ describe('Badge Manager Functions', () => {
     });
   });
 
-  describe('error logging', () => {
-    it('should log with correct message format', async () => {
-      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValueOnce(new Error('Badge error'));
-
-      await showBadgeSuccess();
-
-      const call = vi.mocked(fakeBrowser.storage.local.set).mock.calls[0][0] as {
-        wasmBadgeError: { errorMessage: string };
-      };
-      expect(call.wasmBadgeError.errorMessage).toBe('Badge update failed (non-critical)');
-    });
-
-    it('should include timestamp in error log', async () => {
-      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValueOnce(new Error('Badge error'));
-
-      await showBadgeSuccess();
-
-      const call = vi.mocked(fakeBrowser.storage.local.set).mock.calls[0][0] as {
-        wasmBadgeError: { timestamp: number };
-      };
-      expect(call.wasmBadgeError.timestamp).toBeTypeOf('number');
-    });
-
-    it('should include hasError flag in error log', async () => {
-      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValueOnce(new Error('Badge error'));
-
-      await showBadgeError();
-
-      const call = vi.mocked(fakeBrowser.storage.local.set).mock.calls[0][0] as {
-        wasmBadgeError: { hasError: boolean };
-      };
-      expect(call.wasmBadgeError.hasError).toBe(true);
-    });
-
-    it('should not call storage.set if badge update succeeds', async () => {
-      await showBadgeSuccess();
-
-      expect(fakeBrowser.storage.local.set).not.toHaveBeenCalled();
-    });
-
-    it('should silently ignore storage failures', async () => {
-      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValueOnce(new Error('Badge error'));
-      vi.mocked(fakeBrowser.storage.local.set).mockRejectedValueOnce(new Error('Storage error'));
-
-      // Should complete without throwing
-      await expect(showBadgeSuccess()).resolves.toBeUndefined();
-
-      // Storage.set was attempted but failed
-      expect(fakeBrowser.storage.local.set).toHaveBeenCalledOnce();
-    });
-  });
-
   describe('non-critical behavior', () => {
     it('should never throw errors from showBadgeSuccess', async () => {
       vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValue(new Error('Badge error'));
-      vi.mocked(fakeBrowser.storage.local.set).mockRejectedValue(new Error('Storage error'));
 
       await expect(showBadgeSuccess()).resolves.toBeUndefined();
       await expect(showBadgeSuccess()).resolves.toBeUndefined();
@@ -232,7 +116,6 @@ describe('Badge Manager Functions', () => {
     it('should never throw errors from showBadgeError', async () => {
       vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValue(new Error('Badge error'));
       vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValue(new Error('Color error'));
-      vi.mocked(fakeBrowser.storage.local.set).mockRejectedValue(new Error('Storage error'));
 
       await expect(showBadgeError()).resolves.toBeUndefined();
       await expect(showBadgeError()).resolves.toBeUndefined();
@@ -242,14 +125,6 @@ describe('Badge Manager Functions', () => {
     it('should handle complete badge API failure', async () => {
       vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValue(new Error('Badge API broken'));
       vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValue(new Error('Badge API broken'));
-
-      await expect(showBadgeSuccess()).resolves.toBeUndefined();
-      await expect(showBadgeError()).resolves.toBeUndefined();
-    });
-
-    it('should handle complete storage failure', async () => {
-      vi.mocked(fakeBrowser.action.setBadgeText).mockRejectedValue(new Error('Badge error'));
-      vi.mocked(fakeBrowser.storage.local.set).mockRejectedValue(new Error('Storage broken'));
 
       await expect(showBadgeSuccess()).resolves.toBeUndefined();
       await expect(showBadgeError()).resolves.toBeUndefined();

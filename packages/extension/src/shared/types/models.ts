@@ -40,15 +40,6 @@ export interface ConversionProgress {
   /** Human-readable description of current operation */
   currentOperation: string;
 
-  /** Estimated time remaining in milliseconds (optional) */
-  estimatedTimeRemaining?: number;
-
-  /** Pages processed so far (optional) */
-  pagesProcessed?: number;
-
-  /** Total pages to process (optional) */
-  totalPages?: number;
-
   /** Current retry attempt number (Retry logic) */
   retryAttempt?: number;
 

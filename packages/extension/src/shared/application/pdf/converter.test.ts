@@ -371,14 +371,59 @@ describe('PDF Converter', () => {
         code: 'LAYOUT_ERROR',
       });
 
-      await expect(convertTsxToPdfWithFonts(validTsx, validConfig)).rejects.toThrow(
-        'Layout calculation failed',
-      );
+      await expect(convertTsxToPdfWithFonts(validTsx, validConfig)).rejects.toMatchObject({
+        message: 'Layout calculation failed',
+      });
 
       // Should complete all steps up to conversion
       expect(mockDetectFonts).toHaveBeenCalled();
       expect(mockFetchFontsFromRequirements).toHaveBeenCalled();
       expect(mockParseWasmError).toHaveBeenCalledWith(wasmError);
+    });
+
+    it('should preserve full ConversionError structure when WASM throws', async () => {
+      mockDetectFonts.mockResolvedValue([
+        { family: 'Roboto', weight: 400 as FontWeight, style: 'normal', source: 'google' },
+      ]);
+      mockFetchFontsFromRequirements.mockResolvedValue([
+        {
+          family: 'Roboto',
+          weight: 400 as FontWeight,
+          style: 'normal',
+          bytes: new Uint8Array([1, 2, 3]),
+        },
+      ]);
+
+      const fullError = {
+        code: 'PDF_LAYOUT_ERROR',
+        message: 'Content does not fit on page',
+        stage: 'laying-out',
+        recoverable: true,
+        suggestions: ['Try wider margins', 'Reduce font size'],
+        category: 'SYSTEM',
+        timestamp: Date.now(),
+      };
+      const mockConverterForError = {
+        convert_tsx_to_pdf: vi.fn(() => {
+          throw new Error('raw wasm error');
+        }),
+        free: vi.fn(),
+      };
+      mockCreateConverterInstance.mockReturnValueOnce(mockConverterForError);
+      mockParseWasmError.mockReturnValue(fullError);
+
+      let thrown: unknown;
+      try {
+        await convertTsxToPdfWithFonts(validTsx, validConfig);
+      } catch (e) {
+        thrown = e;
+      }
+
+      expect(thrown).toMatchObject({
+        code: 'PDF_LAYOUT_ERROR',
+        suggestions: ['Try wider margins', 'Reduce font size'],
+        recoverable: true,
+      });
     });
   });
 

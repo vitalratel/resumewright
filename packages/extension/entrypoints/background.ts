@@ -6,20 +6,11 @@
 
 import { setupLifecycleListeners } from '../src/background/lifecycleManager';
 import { setupMessageHandler } from '../src/background/messageHandler';
-// Track service worker start time
-import {
-  getServiceWorkerStartTime,
-  resetServiceWorkerStartTime,
-} from '../src/background/serviceWorkerState';
 import { initializeWASM } from '../src/background/wasmInit';
 
 import { getLogger } from '../src/shared/infrastructure/logging/instance';
 
 const logger = getLogger();
-
-resetServiceWorkerStartTime();
-
-export { getServiceWorkerStartTime };
 
 export default defineBackground({
   type: 'module',

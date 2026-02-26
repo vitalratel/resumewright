@@ -10,15 +10,6 @@ import { browser } from 'wxt/browser';
 import type { UserSettings } from '@/shared/types/settings';
 
 /**
- * WASM badge error info for UI display
- */
-interface WasmBadgeError {
-  hasError: boolean;
-  errorMessage?: string;
-  timestamp?: number;
-}
-
-/**
  * Local storage schema - browser.storage.local
  *
  * All keys that can be stored in local storage with their types.
@@ -29,13 +20,9 @@ interface LocalStorageSchema {
   wasmStatus: 'initializing' | 'success' | 'failed' | null;
   wasmInitTime: number | null;
   wasmInitError: string | null;
-  wasmBadgeError: WasmBadgeError | null;
 
   // Settings fallback (primary is sync storage)
   'resumewright-settings': UserSettings | null;
-
-  // Zustand store persistence (dynamic key based on store name)
-  // Note: Zustand uses its own key pattern, handled separately
 }
 
 /**
