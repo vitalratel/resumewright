@@ -47,21 +47,6 @@ export async function setWasmFailed(errorMessage: string): Promise<void> {
 }
 
 /**
- * Check if WASM is ready for conversion operations
- *
- * @returns true if WASM initialization succeeded, false otherwise
- */
-export async function isWasmReady(): Promise<boolean> {
-  try {
-    const status = await localExtStorage.getItem('wasmStatus');
-    return status === 'success';
-  } catch (error) {
-    getLogger().error('WasmStateManager', 'Failed to check WASM status', error);
-    return false;
-  }
-}
-
-/**
  * Get detailed WASM status for error messages and diagnostics
  *
  * @returns Status information including error message if failed

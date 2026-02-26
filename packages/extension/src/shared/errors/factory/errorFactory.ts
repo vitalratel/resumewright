@@ -4,7 +4,7 @@
  * Contains the base createConversionError function used by all category-specific factories.
  */
 
-import type { ConversionError, ConversionStatus } from '../../types/models';
+import type { ConversionError } from '../../types/models';
 import type { ErrorCode } from '../codes';
 import { ERROR_MESSAGES, ERROR_RECOVERABLE, ERROR_SUGGESTIONS } from '../messages';
 import { ERROR_CATEGORIES } from '../metadata';
@@ -15,9 +15,6 @@ import { ERROR_CATEGORIES } from '../metadata';
 export interface CreateErrorOptions {
   /** Error code from ErrorCode enum */
   code: ErrorCode;
-
-  /** Conversion stage where error occurred */
-  stage: ConversionStatus;
 
   /** Optional custom message (overrides default) */
   message?: string;
@@ -43,17 +40,15 @@ export interface CreateErrorOptions {
  * ```
  */
 export function createConversionError(options: CreateErrorOptions): ConversionError {
-  const { code, stage, message, technicalDetails } = options;
+  const { code, message, technicalDetails } = options;
 
   const errorMessage = ERROR_MESSAGES[code];
 
   return {
     code,
-    stage,
     message: message ?? (typeof errorMessage === 'string' ? errorMessage : errorMessage.title),
     technicalDetails,
     recoverable: ERROR_RECOVERABLE[code],
-    timestamp: Date.now(),
     suggestions: ERROR_SUGGESTIONS[code],
     category: ERROR_CATEGORIES[code],
   };

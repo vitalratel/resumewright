@@ -55,12 +55,13 @@ async function verifyTheme(page: Page, theme: Theme): Promise<void> {
 }
 
 /**
- * Wait for the converter page to be ready for interaction.
- * The drop zone is present in the initial HTML and visible on load;
- * waiting for it is deterministic regardless of WASM or script timing.
+ * Wait for the converter page to be fully initialised.
+ * Waits for the drop zone (static HTML) and then for the page-size radio to be
+ * checked, which only happens after initSettings() → loadSettings() resolves.
  */
 async function waitForConverter(page: Page): Promise<void> {
   await page.waitForSelector('#drop-zone', { state: 'visible' });
+  await page.waitForSelector('input[name="page-size"]:checked', { state: 'attached' });
 }
 
 /**
@@ -319,17 +320,6 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
         expect(isAccessible).toBeTruthy();
       }
     }
-
-    const results = await runAxeScan(page);
-    expect(results.violations).toEqual([]);
-
-    await page.close();
-  });
-
-  test('Landmark regions - Proper semantic structure', async ({ context, extensionId }) => {
-    const page = await context.newPage();
-    await page.goto(`chrome-extension://${extensionId}/converter.html`);
-    await waitForConverter(page);
 
     const results = await runAxeScan(page);
     expect(results.violations).toEqual([]);

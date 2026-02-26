@@ -11,13 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetLogger, setLogger } from '@/shared/infrastructure/logging/instance';
 import { createLogger, LogLevel } from '@/shared/infrastructure/logging/logger';
 import { localExtStorage } from '@/shared/infrastructure/storage/typedStorage';
-import {
-  getWasmStatus,
-  isWasmReady,
-  setWasmFailed,
-  setWasmInitializing,
-  setWasmSuccess,
-} from '../wasmState';
+import { getWasmStatus, setWasmFailed, setWasmInitializing, setWasmSuccess } from '../wasmState';
 
 describe('WASM State Functions', () => {
   beforeEach(async () => {
@@ -115,40 +109,6 @@ describe('WASM State Functions', () => {
 
     it('should complete without throwing', async () => {
       await expect(setWasmFailed('Error')).resolves.toBeUndefined();
-    });
-  });
-
-  describe('isWasmReady', () => {
-    it('should return true when status is success', async () => {
-      await localExtStorage.setItem('wasmStatus', 'success');
-
-      const result = await isWasmReady();
-
-      expect(result).toBe(true);
-    });
-
-    it('should return false when status is initializing', async () => {
-      await localExtStorage.setItem('wasmStatus', 'initializing');
-
-      const result = await isWasmReady();
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false when status is failed', async () => {
-      await localExtStorage.setItem('wasmStatus', 'failed');
-
-      const result = await isWasmReady();
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false when status is undefined', async () => {
-      // Storage is empty from beforeEach
-
-      const result = await isWasmReady();
-
-      expect(result).toBe(false);
     });
   });
 
@@ -265,14 +225,6 @@ describe('WASM State Functions', () => {
       // Final state should be one of the valid states
       const status = await localExtStorage.getItem('wasmStatus');
       expect(['initializing', 'success', 'failed']).toContain(status);
-    });
-
-    it('should handle rapid isWasmReady calls', async () => {
-      await localExtStorage.setItem('wasmStatus', 'success');
-
-      const results = await Promise.all([isWasmReady(), isWasmReady(), isWasmReady()]);
-
-      expect(results).toEqual([true, true, true]);
     });
 
     it('should handle rapid getWasmStatus calls', async () => {

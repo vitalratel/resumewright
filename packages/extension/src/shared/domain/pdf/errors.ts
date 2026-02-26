@@ -13,29 +13,12 @@ import type { ConversionError } from '../../types/models';
 const WasmErrorSchema = object({
   code: string(),
   message: string(),
-  stage: optional(string()),
   technicalDetails: optional(string()),
   recoverable: optional(boolean()),
   suggestions: optional(array(string())),
 });
 
 type WasmError = InferOutput<typeof WasmErrorSchema>;
-
-/**
- * Map WASM stage to ConversionStatus
- */
-function mapStageToConversionStatus(stage: string): ConversionError['stage'] {
-  const stageMap: Record<string, ConversionError['stage']> = {
-    parsing: 'parsing',
-    'extracting-metadata': 'extracting-metadata',
-    rendering: 'rendering',
-    'laying-out': 'laying-out',
-    'generating-pdf': 'generating-pdf',
-    completed: 'completed',
-  };
-
-  return stageMap[stage] || 'failed';
-}
 
 /**
  * Parse WASM error into ConversionError format
@@ -57,10 +40,8 @@ export function parseWasmError(error: unknown): ConversionError {
     if (result.success) {
       const errorJson: WasmError = result.output;
       return {
-        stage: mapStageToConversionStatus(errorJson.stage ?? ''),
         code: errorJson.code as ErrorCode,
         message: errorJson.message,
-        timestamp: Date.now(),
         technicalDetails: errorJson.technicalDetails,
         recoverable: errorJson.recoverable ?? false,
         suggestions: errorJson.suggestions ?? [],
@@ -84,10 +65,8 @@ export function parseWasmError(error: unknown): ConversionError {
   }
 
   return {
-    stage: 'failed',
     code: ErrorCode.UNKNOWN_ERROR,
     message: `Conversion failed: ${errorMessage}`,
-    timestamp: Date.now(),
     recoverable: false,
     suggestions: ['Check TSX syntax', 'Try again', 'Contact support if error persists'],
   };

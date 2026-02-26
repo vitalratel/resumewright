@@ -40,31 +40,23 @@ export function parseConversionError(error: unknown, _jobId: string): Conversion
   const errorMessage = error instanceof Error ? error.message : String(error);
   const errorStack = error instanceof Error ? error.stack : undefined;
 
-  // Pattern matching to determine error code and conversion stage
+  // Pattern matching to determine error code
   let code = 'UNKNOWN_ERROR';
-  let stage: ConversionError['stage'] = 'generating-pdf';
 
   if (errorMessage.includes('parse') || errorMessage.includes('syntax')) {
     code = 'TSX_PARSE_ERROR';
-    stage = 'parsing';
   } else if (errorMessage.includes('WASM') || errorMessage.includes('WebAssembly')) {
     code = 'WASM_EXECUTION_ERROR';
-    stage = 'queued';
   } else if (errorMessage.includes('memory') || errorMessage.includes('heap')) {
     code = 'MEMORY_LIMIT_EXCEEDED';
-    stage = 'laying-out';
   } else if (errorMessage.includes('timeout')) {
     code = 'CONVERSION_TIMEOUT';
-    stage = 'generating-pdf';
   } else if (errorMessage.includes('font')) {
     code = 'FONT_LOAD_ERROR';
-    stage = 'generating-pdf';
   } else if (errorMessage.includes('layout')) {
     code = 'PDF_LAYOUT_ERROR';
-    stage = 'laying-out';
   } else {
     code = 'PDF_GENERATION_FAILED';
-    stage = 'generating-pdf';
   }
 
   // Sanitize stack trace before passing as technical details
@@ -78,7 +70,6 @@ export function parseConversionError(error: unknown, _jobId: string): Conversion
 
   return createConversionError({
     code: code as ErrorCode,
-    stage,
     technicalDetails: sanitizedTechnicalDetails,
   });
 }

@@ -7,7 +7,7 @@ import { resetLogger, setLogger } from '@/shared/infrastructure/logging/instance
 import { createLogger, LogLevel } from '@/shared/infrastructure/logging/logger';
 import { initWASM } from '../../shared/infrastructure/wasm/loader';
 import { setWasmFailed, setWasmInitializing, setWasmSuccess } from '../services/wasmState';
-import { initializeWASM, retryWasmInit } from '../wasmInit';
+import { initializeWASM } from '../wasmInit';
 
 // Mock dependencies
 vi.mock('../services/wasmState', () => ({
@@ -15,7 +15,6 @@ vi.mock('../services/wasmState', () => ({
   setWasmSuccess: vi.fn(),
   setWasmFailed: vi.fn(),
   getWasmStatus: vi.fn(),
-  isWasmReady: vi.fn(),
 }));
 vi.mock('../../shared/infrastructure/wasm/loader', () => ({
   initWASM: vi.fn(),
@@ -117,41 +116,6 @@ describe('wasmInit - Integration Tests', () => {
       expect(setWasmFailed).toHaveBeenCalledWith(
         expect.stringContaining('WASM initialization failed'),
       );
-    });
-  });
-
-  describe('retryWasmInit - public API', () => {
-    it('should start fresh initialization', async () => {
-      vi.mocked(initWASM).mockReturnValue(okResult());
-
-      await retryWasmInit();
-
-      expect(initWASM).toHaveBeenCalledOnce();
-      expect(setWasmInitializing).toHaveBeenCalled();
-    });
-
-    it('should handle retry failures', async () => {
-      vi.mocked(initWASM).mockImplementation(() => errResult('Retry failed'));
-
-      const promise = retryWasmInit().catch((e: unknown) => e);
-
-      // Advance through all retry attempts
-      await vi.advanceTimersByTimeAsync(6000);
-
-      const result = await promise;
-      expect(result).toBeInstanceOf(Error);
-      expect((result as Error).message).toContain('WASM initialization failed');
-    });
-
-    it('should use same retry logic as initializeWASM', async () => {
-      vi.mocked(initWASM)
-        .mockImplementationOnce(() => errResult('Fail'))
-        .mockReturnValueOnce(okResult());
-
-      void retryWasmInit();
-      await vi.runAllTimersAsync();
-
-      expect(initWASM).toHaveBeenCalledTimes(2);
     });
   });
 

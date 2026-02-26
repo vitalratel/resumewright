@@ -21,11 +21,9 @@ describe('parseWasmError', () => {
 
       expect(result.code).toBe('TSX_PARSE_ERROR');
       expect(result.message).toBe('Failed to parse TSX');
-      expect(result.stage).toBe('parsing');
       expect(result.technicalDetails).toBe('Syntax error at line 5');
       expect(result.recoverable).toBe(true);
       expect(result.suggestions).toEqual(['Check syntax', 'Try again']);
-      expect(result.timestamp).toBeTypeOf('number');
     });
 
     it('should parse JSON error with minimal fields', () => {
@@ -38,60 +36,8 @@ describe('parseWasmError', () => {
 
       expect(result.code).toBe('UNKNOWN_ERROR');
       expect(result.message).toBe('Something went wrong');
-      expect(result.stage).toBe('failed'); // Default for unknown/missing stage
       expect(result.recoverable).toBe(false); // Default
       expect(result.suggestions).toEqual([]); // Default
-    });
-
-    it('should handle empty stage as failed', () => {
-      const jsonError = JSON.stringify({
-        code: 'ERROR',
-        message: 'Error',
-        stage: '',
-      });
-
-      const result = parseWasmError(jsonError);
-
-      expect(result.stage).toBe('failed');
-    });
-
-    it('should handle null stage as failed', () => {
-      const jsonError = JSON.stringify({
-        code: 'ERROR',
-        message: 'Error',
-        stage: null,
-      });
-
-      const result = parseWasmError(jsonError);
-
-      expect(result.stage).toBe('failed');
-    });
-  });
-
-  describe('stage mapping', () => {
-    const stages = [
-      { input: 'parsing', expected: 'parsing' },
-      { input: 'extracting-metadata', expected: 'extracting-metadata' },
-      { input: 'rendering', expected: 'rendering' },
-      { input: 'laying-out', expected: 'laying-out' },
-      { input: 'generating-pdf', expected: 'generating-pdf' },
-      { input: 'completed', expected: 'completed' },
-      { input: 'unknown-stage', expected: 'failed' },
-      { input: 'invalid', expected: 'failed' },
-    ];
-
-    stages.forEach(({ input, expected }) => {
-      it(`should map stage "${input}" to "${expected}"`, () => {
-        const jsonError = JSON.stringify({
-          code: 'ERROR',
-          message: 'Error',
-          stage: input,
-        });
-
-        const result = parseWasmError(jsonError);
-
-        expect(result.stage).toBe(expected);
-      });
     });
   });
 
@@ -103,7 +49,6 @@ describe('parseWasmError', () => {
 
       expect(result.code).toBe(ErrorCode.UNKNOWN_ERROR);
       expect(result.message).toBe('Conversion failed: Something broke');
-      expect(result.stage).toBe('failed');
       expect(result.recoverable).toBe(false);
       expect(result.suggestions).toEqual([
         'Check TSX syntax',

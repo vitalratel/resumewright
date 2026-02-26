@@ -18,11 +18,9 @@ export type ConversionStatus =
   | 'extracting-metadata' // Extracting CV metadata
   | 'rendering' // Rendering virtual DOM
   | 'laying-out' // Calculating PDF layout
-  | 'optimizing' // Applying ATS optimizations
   | 'generating-pdf' // Generating PDF bytes
   | 'completed' // Successfully completed
-  | 'failed' // Failed with error
-  | 'cancelled'; // User cancelled
+  | 'failed'; // Failed with error
 
 /**
  * Conversion Progress
@@ -53,9 +51,6 @@ export interface ConversionProgress {
  * Structured error information for failed conversions.
  */
 export interface ConversionError {
-  /** Conversion stage where error occurred */
-  stage: ConversionStatus;
-
   /** Machine-readable error code (see ErrorCode enum) */
   code: ErrorCode;
 
@@ -73,9 +68,6 @@ export interface ConversionError {
 
   /** Error category for UI presentation */
   category?: ErrorCategory;
-
-  /** Timestamp when the error occurred */
-  timestamp: number;
 }
 
 /**

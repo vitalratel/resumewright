@@ -9,8 +9,8 @@ import type { TsxToPdfConverter } from '../shared/domain/pdf/types';
 import { validateTsxSyntax } from '../shared/domain/pdf/validation';
 import { convert } from './services/ConversionService';
 import { createProgressTracker } from './services/ProgressTracker';
+import { getWasmStatus } from './services/wasmState';
 import { parseConversionError } from './utils/errorParser';
-import { getWasmStatus } from './wasmInit';
 
 /**
  * Setup message handlers for extension communication
@@ -106,10 +106,7 @@ export function setupMessageHandler(): void {
       getLogger().error(
         'MessageHandler',
         `[${jobId}] ${conversionError.code}: ${conversionError.message}`,
-        {
-          stage: conversionError.stage,
-          error,
-        },
+        { error },
       );
 
       // Send error broadcast

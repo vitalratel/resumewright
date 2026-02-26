@@ -83,10 +83,8 @@ describe('parseConversionError', () => {
       const conversionError = {
         code: ErrorCode.PDF_GENERATION_FAILED,
         message: 'Already structured',
-        stage: 'generating-pdf' as const,
         recoverable: true,
         suggestions: ['Try again'],
-        timestamp: Date.now(),
       };
       const result = parseConversionError(conversionError, 'job-11');
       expect(result.message).toBe('Already structured');

@@ -1,5 +1,5 @@
 // ABOUTME: Tests for createProgressTracker factory function.
-// ABOUTME: Verifies progress tracking, throttling, retry updates, and popup synchronization.
+// ABOUTME: Verifies progress tracking, throttling, and retry updates.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createProgressTracker, type IProgressTracker } from '../ProgressTracker';
@@ -39,24 +39,16 @@ describe('createProgressTracker', () => {
   });
 
   describe('startTracking', () => {
-    it('should initialize active conversion state', async () => {
+    it('should enable subsequent progress callbacks', () => {
       const jobId = 'test-job-456';
-
       tracker.startTracking(jobId);
 
-      // Verify by synchronizing - should send progress for this job
-      await tracker.synchronizeProgress();
+      const progressCallback = tracker.createProgressCallback(jobId);
+      progressCallback('parsing', 10);
 
       expect(mocks.sendMessage).toHaveBeenCalledWith(
         'conversionProgress',
-        expect.objectContaining({
-          jobId,
-          progress: expect.objectContaining({
-            stage: 'queued',
-            percentage: 0,
-            currentOperation: 'Starting conversion...',
-          }),
-        }),
+        expect.objectContaining({ jobId }),
       );
     });
   });
@@ -77,28 +69,6 @@ describe('createProgressTracker', () => {
           currentOperation: 'Parsing TSX code...',
         },
       });
-    });
-
-    it('should update active conversion state', async () => {
-      const jobId = 'test-job-101';
-      tracker.startTracking(jobId);
-
-      const progressCallback = tracker.createProgressCallback(jobId);
-      progressCallback('rendering', 50);
-
-      // Synchronize to verify state was updated
-      mocks.sendMessage.mockClear();
-      await tracker.synchronizeProgress();
-
-      expect(mocks.sendMessage).toHaveBeenCalledWith(
-        'conversionProgress',
-        expect.objectContaining({
-          progress: expect.objectContaining({
-            stage: 'rendering',
-            percentage: 50,
-          }),
-        }),
-      );
     });
 
     it('should handle unknown stage gracefully', () => {
@@ -152,28 +122,6 @@ describe('createProgressTracker', () => {
       });
     });
 
-    it('should update active conversion state with retry info', async () => {
-      const jobId = 'test-job-505';
-      tracker.startTracking(jobId);
-
-      const error = new Error('Network timeout');
-      tracker.sendRetryProgress(jobId, 1, 3, 1000, error);
-
-      // Verify state was updated by synchronizing
-      mocks.sendMessage.mockClear();
-      await tracker.synchronizeProgress();
-
-      expect(mocks.sendMessage).toHaveBeenCalledWith(
-        'conversionProgress',
-        expect.objectContaining({
-          progress: expect.objectContaining({
-            retryAttempt: 1,
-            lastError: 'Network timeout',
-          }),
-        }),
-      );
-    });
-
     it('should handle message send failures gracefully', () => {
       const jobId = 'test-job-606';
       tracker.startTracking(jobId);
@@ -187,71 +135,7 @@ describe('createProgressTracker', () => {
     });
   });
 
-  describe('synchronizeProgress', () => {
-    it('should send progress for all active conversions', async () => {
-      const jobId1 = 'job-1';
-      const jobId2 = 'job-2';
-
-      tracker.startTracking(jobId1);
-      tracker.startTracking(jobId2);
-
-      mocks.sendMessage.mockClear();
-      await tracker.synchronizeProgress();
-
-      // Should send progress for both jobs
-      expect(mocks.sendMessage).toHaveBeenCalledTimes(2);
-      expect(mocks.sendMessage).toHaveBeenCalledWith(
-        'conversionProgress',
-        expect.objectContaining({ jobId: jobId1 }),
-      );
-      expect(mocks.sendMessage).toHaveBeenCalledWith(
-        'conversionProgress',
-        expect.objectContaining({ jobId: jobId2 }),
-      );
-    });
-
-    it('should not send messages when no active conversions', async () => {
-      await tracker.synchronizeProgress();
-
-      expect(mocks.sendMessage).not.toHaveBeenCalled();
-    });
-
-    it('should send latest progress state', async () => {
-      const jobId = 'job-sync-test';
-      tracker.startTracking(jobId);
-
-      const progressCallback = tracker.createProgressCallback(jobId);
-      progressCallback('layout', 80);
-
-      mocks.sendMessage.mockClear();
-      await tracker.synchronizeProgress();
-
-      expect(mocks.sendMessage).toHaveBeenCalledWith(
-        'conversionProgress',
-        expect.objectContaining({
-          progress: expect.objectContaining({
-            stage: 'layout',
-            percentage: 80,
-          }),
-        }),
-      );
-    });
-  });
-
   describe('stopTracking', () => {
-    it('should remove job from active conversions', async () => {
-      const jobId = 'test-job-cleanup';
-      tracker.startTracking(jobId);
-
-      tracker.stopTracking(jobId);
-
-      // Verify by synchronizing - should not send progress for this job
-      mocks.sendMessage.mockClear();
-      await tracker.synchronizeProgress();
-
-      expect(mocks.sendMessage).not.toHaveBeenCalled();
-    });
-
     it('should be idempotent', () => {
       const jobId = 'test-job-idempotent';
 

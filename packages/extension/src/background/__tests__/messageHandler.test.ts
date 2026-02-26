@@ -31,7 +31,7 @@ vi.mock('@/shared/infrastructure/wasm/loader', () => ({
   isWASMInitialized: vi.fn().mockReturnValue(true),
 }));
 
-vi.mock('../wasmInit', () => ({
+vi.mock('../services/wasmState', () => ({
   getWasmStatus: vi.fn().mockResolvedValue({ status: 'success' }),
 }));
 

@@ -142,10 +142,8 @@ async function handleExport(deps: ConversionDeps): Promise<void> {
       {
         jobId: 'default',
         error: {
-          stage: 'queued',
           code: 'CONVERSION_START_FAILED' as never,
           message: "We couldn't start converting your CV. This might be a temporary issue.",
-          timestamp: Date.now(),
           recoverable: true,
           suggestions: ['Try converting again', 'Reload the extension and try again'],
           technicalDetails: err instanceof Error ? err.message : String(err),

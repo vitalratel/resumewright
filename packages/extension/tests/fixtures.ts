@@ -204,8 +204,11 @@ async function verifyExtensionReady(
     // Navigate to converter page - this will fail if extension isn't loaded
     await testPage.goto(converterUrl, { timeout: 10000 });
 
-    // Wait for React app to mount (look for actual app content in #root)
-    await testPage.waitForSelector('#root > *', { timeout: 5000 });
+    // Wait for JS initialization to complete — proven by populateForm() checking a page-size radio
+    await testPage.waitForSelector('input[name="page-size"]:checked', {
+      state: 'attached',
+      timeout: 5000,
+    });
 
     console.warn('[Fixture] Extension is ready');
   } catch (e) {

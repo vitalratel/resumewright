@@ -52,11 +52,6 @@ export interface IProgressTracker {
   ) => void;
 
   /**
-   * Synchronizes current progress to newly opened popup
-   */
-  synchronizeProgress: () => Promise<void>;
-
-  /**
    * Stops tracking a conversion job
    */
   stopTracking: (jobId: string) => void;
@@ -159,17 +154,6 @@ export function createProgressTracker(): IProgressTracker {
     });
   }
 
-  async function synchronizeProgress(): Promise<void> {
-    await Promise.all(
-      Array.from(conversions.entries()).map(async ([jobId, conversion]) => {
-        await sendMessage('conversionProgress', {
-          jobId,
-          progress: conversion.currentProgress,
-        });
-      }),
-    );
-  }
-
   function stopTracking(jobId: string): void {
     conversions.delete(jobId);
   }
@@ -178,7 +162,6 @@ export function createProgressTracker(): IProgressTracker {
     startTracking,
     createProgressCallback,
     sendRetryProgress,
-    synchronizeProgress,
     stopTracking,
   };
 }

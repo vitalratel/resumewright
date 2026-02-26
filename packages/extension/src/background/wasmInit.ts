@@ -6,13 +6,7 @@ import { ErrorCode } from '../shared/errors/codes';
 import { executeWithRetry } from '../shared/infrastructure/retry/ExponentialBackoffRetryPolicy';
 import { initWASM } from '../shared/infrastructure/wasm/loader';
 import { showBadgeError, showBadgeSuccess } from './services/badgeManager';
-import type { WasmStatusInfo } from './services/wasmState';
-import {
-  getWasmStatus as getWasmStatusFromStorage,
-  setWasmFailed,
-  setWasmInitializing,
-  setWasmSuccess,
-} from './services/wasmState';
+import { setWasmFailed, setWasmInitializing, setWasmSuccess } from './services/wasmState';
 
 // WASM initialization configuration
 const MAX_INIT_RETRIES = 3;
@@ -73,19 +67,4 @@ export async function initializeWASM(): Promise<void> {
 
     throw error;
   }
-}
-
-/**
- * Get detailed WASM status for error messages.
- */
-export async function getWasmStatus(): Promise<WasmStatusInfo> {
-  return getWasmStatusFromStorage();
-}
-
-/**
- * Expose retry function for manual retry from popup
- */
-export async function retryWasmInit(): Promise<void> {
-  getLogger().info('WasmInit', 'Manual retry requested');
-  await initializeWASM();
 }
