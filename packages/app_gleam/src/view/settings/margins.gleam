@@ -109,36 +109,34 @@ fn preview(margin: Margin) -> Element(Msg) {
       ),
       html.div(
         [
-          attribute.class("relative border-2 border-primary/40 bg-card rounded"),
-          attribute.style("width", "150px"),
-          attribute.style("height", "194px"),
+          attribute.class(
+            "margin-preview-box relative border-2 border-primary/40 bg-card rounded",
+          ),
         ],
         [
           html.div(
             [
-              attribute.class("absolute bg-primary/10 border border-primary/20"),
-              attribute.style("top", to_pct(margin.top)),
-              attribute.style("right", to_pct(margin.right)),
-              attribute.style("bottom", to_pct(margin.bottom)),
-              attribute.style("left", to_pct(margin.left)),
+              attribute.class(
+                "margin-preview-overlay absolute bg-primary/10 border border-primary/20",
+              ),
             ],
             [],
           ),
-          label_span("top", "4px", "50%", "translateX(-50%)", fmt(margin.top)),
-          label_span(
-            "bottom",
-            "auto",
-            "50%",
-            "translateX(-50%)",
-            fmt(margin.bottom),
+          html.span(
+            [attribute.class("margin-label-top absolute text-[9px] text-muted-foreground")],
+            [html.text(fmt(margin.top))],
           ),
-          label_span("left", "50%", "2px", "translateY(-50%) rotate(-90deg)", fmt(margin.left)),
-          label_span(
-            "right",
-            "50%",
-            "auto",
-            "translateY(-50%) rotate(90deg)",
-            fmt(margin.right),
+          html.span(
+            [attribute.class("margin-label-bottom absolute text-[9px] text-muted-foreground")],
+            [html.text(fmt(margin.bottom))],
+          ),
+          html.span(
+            [attribute.class("margin-label-left absolute text-[9px] text-muted-foreground")],
+            [html.text(fmt(margin.left))],
+          ),
+          html.span(
+            [attribute.class("margin-label-right absolute text-[9px] text-muted-foreground")],
+            [html.text(fmt(margin.right))],
           ),
         ],
       ),
@@ -146,51 +144,10 @@ fn preview(margin: Margin) -> Element(Msg) {
   )
 }
 
-fn label_span(
-  edge: String,
-  top_bottom: String,
-  left_right: String,
-  transform: String,
-  text: String,
-) -> Element(Msg) {
-  let position_attrs = case edge {
-    "top" -> [
-      attribute.style("top", top_bottom),
-      attribute.style("left", left_right),
-    ]
-    "bottom" -> [
-      attribute.style("bottom", "4px"),
-      attribute.style("left", left_right),
-    ]
-    "left" -> [
-      attribute.style("left", left_right),
-      attribute.style("top", top_bottom),
-    ]
-    _ -> [
-      attribute.style("right", "2px"),
-      attribute.style("top", top_bottom),
-    ]
-  }
-  html.span(
-    [
-      attribute.class("absolute text-[9px] text-muted-foreground"),
-      attribute.style("transform", transform),
-      ..position_attrs
-    ],
-    [html.text(text)],
-  )
-}
-
 fn slider_decoder(side: String) -> decode.Decoder(Msg) {
   use val_str <- decode.subfield(["target", "value"], decode.string)
   let f = result.unwrap(float.parse(val_str), 0.0)
   decode.success(model.MarginChanged(side, f))
-}
-
-fn to_pct(v: Float) -> String {
-  // Map 0.25"–1.5" linearly to 8%–40% for the preview box
-  let pct = 8.0 +. { v -. 0.25 } /. 1.25 *. 32.0
-  float.to_string(pct) <> "%"
 }
 
 fn fmt(v: Float) -> String {

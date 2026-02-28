@@ -464,7 +464,47 @@
 }
 
 .progress-bar-fill {
+  width: var(--progress-pct, 0%);
   transition: width 300ms ease-out;
+}
+
+/* Margin preview: dimensions and overlay positioning via CSS custom properties.
+   Values set by FFI effect using style.setProperty() to satisfy extension CSP
+   (style-src 'self' blocks setAttribute but not setProperty). */
+.margin-preview-box {
+  width: 150px;
+  height: 194px;
+}
+
+.margin-preview-overlay {
+  top: var(--preview-top, 14.4%);
+  right: var(--preview-right, 14.4%);
+  bottom: var(--preview-bottom, 14.4%);
+  left: var(--preview-left, 14.4%);
+}
+
+.margin-label-top {
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.margin-label-bottom {
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.margin-label-left {
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+.margin-label-right {
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
 }
 
 /* Respect user's motion preferences */

@@ -47,10 +47,6 @@ pub fn view(file: model.ImportedFile, progress: model.Progress) -> Element(Msg) 
               attribute.class(
                 "progress-bar-fill h-full bg-primary rounded-full",
               ),
-              attribute.style(
-                "width",
-                int.to_string(progress.percentage) <> "%",
-              ),
             ],
             [],
           ),

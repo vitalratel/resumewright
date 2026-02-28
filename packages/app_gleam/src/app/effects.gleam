@@ -5,6 +5,7 @@ import app/model
 import app/validation
 import ffi/app as app_ffi
 import gleam/dynamic/decode
+import gleam/float
 import gleam/json
 import gleam/option.{None}
 import lustre/effect.{type Effect}
@@ -137,6 +138,31 @@ pub fn save_settings(settings: types.Settings) -> Effect(model.Msg) {
 pub fn apply_theme(theme_str: String) -> Effect(model.Msg) {
   use _ <- effect.from
   app_ffi.apply_theme(theme_str)
+}
+
+/// Sets the margin preview overlay position via CSS custom properties.
+/// Uses style.setProperty() to bypass the extension's style-src CSP restriction.
+pub fn apply_margin_preview(margin: types.Margin) -> Effect(model.Msg) {
+  use _ <- effect.from
+  app_ffi.apply_margin_preview(
+    margin_to_pct(margin.top),
+    margin_to_pct(margin.right),
+    margin_to_pct(margin.bottom),
+    margin_to_pct(margin.left),
+  )
+}
+
+/// Sets the progress bar width via a CSS custom property.
+/// Uses style.setProperty() to bypass the extension's style-src CSP restriction.
+pub fn apply_progress_pct(pct: Int) -> Effect(model.Msg) {
+  use _ <- effect.from
+  app_ffi.apply_progress_pct(pct)
+}
+
+fn margin_to_pct(v: Float) -> String {
+  // Map 0.25"–1.5" linearly to 8%–40% for the preview box
+  let pct = 8.0 +. { v -. 0.25 } /. 1.25 *. 32.0
+  float.to_string(pct) <> "%"
 }
 
 // ---------------------------------------------------------------------------

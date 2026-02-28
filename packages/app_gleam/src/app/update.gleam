@@ -22,12 +22,23 @@ import shared/types.{
 pub fn update(m: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
     // Navigation
-    model.ShowSettings -> #(model.Model(..m, view: Settings), effect.none())
+    model.ShowSettings ->
+      #(
+        model.Model(..m, view: Settings),
+        effects.apply_margin_preview(m.settings.default_config.margin),
+      )
     model.ShowMain ->
       #(model.Model(..m, view: model.Main, reset_confirm: False), effect.none())
     model.OpenHelp -> #(model.Model(..m, view: model.Help), effect.none())
     model.CloseHelp -> #(model.Model(..m, view: model.Main), effect.none())
-    model.SwitchTab(tab) -> #(model.Model(..m, settings_tab: tab), effect.none())
+    model.SwitchTab(tab) -> {
+      let tab_effect = case tab {
+        model.PageTab ->
+          effects.apply_margin_preview(m.settings.default_config.margin)
+        _ -> effect.none()
+      }
+      #(model.Model(..m, settings_tab: tab), tab_effect)
+    }
 
     // Drag-drop visual state
     model.DraggedOver ->
@@ -104,7 +115,10 @@ pub fn update(m: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       #(model.Model(..m, reset_confirm: False), effect.none())
     model.ResetConfirmed -> handle_reset_confirmed(m)
     model.SettingsLoaded(settings) ->
-      #(model.Model(..m, settings: settings), effect.none())
+      #(
+        model.Model(..m, settings: settings),
+        effects.apply_margin_preview(settings.default_config.margin),
+      )
 
     model.KeyDown(key, ctrl) -> handle_key_down(m, key, ctrl)
 
@@ -244,7 +258,7 @@ fn handle_got_progress(
     Converting(file, _) ->
       #(
         model.Model(..m, converter_state: Converting(file, Progress(stage, pct, op))),
-        effect.none(),
+        effects.apply_progress_pct(pct),
       )
     _ -> #(m, effect.none())
   }
@@ -375,7 +389,9 @@ fn handle_margin_changed(m: Model, side: String, value: Float) -> #(Model, Effec
     "right" -> Margin(..margin, right: value)
     _ -> margin
   }
-  update_config(m, ConversionConfig(..m.settings.default_config, margin: new_margin))
+  let #(new_m, save_effect) =
+    update_config(m, ConversionConfig(..m.settings.default_config, margin: new_margin))
+  #(new_m, effect.batch([save_effect, effects.apply_margin_preview(new_margin)]))
 }
 
 fn handle_theme_changed(m: Model, theme_str: String) -> #(Model, Effect(Msg)) {
@@ -394,6 +410,7 @@ fn handle_reset_confirmed(m: Model) -> #(Model, Effect(Msg)) {
     effect.batch([
       effects.save_settings(defaults),
       effects.apply_theme("auto"),
+      effects.apply_margin_preview(defaults.default_config.margin),
     ]),
   )
 }

@@ -181,6 +181,39 @@ export function add_keydown_listener(handler) {
 }
 
 // ---------------------------------------------------------------------------
+// CSS custom property setters (bypasses CSP style-src 'self' restriction)
+// Lustre's attribute.style() uses setAttribute which is blocked; style.setProperty()
+// is a JS operation and is not subject to style-src CSP restrictions.
+// ---------------------------------------------------------------------------
+
+function setStyleProps(selector, props) {
+  // Double rAF: first frame lets Lustre patch the DOM, second reads the result.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const el = document.querySelector(selector);
+      if (el) {
+        for (const [key, val] of props) {
+          el.style.setProperty(key, val);
+        }
+      }
+    });
+  });
+}
+
+export function apply_margin_preview(top, right, bottom, left) {
+  setStyleProps(".margin-preview-box", [
+    ["--preview-top", top],
+    ["--preview-right", right],
+    ["--preview-bottom", bottom],
+    ["--preview-left", left],
+  ]);
+}
+
+export function apply_progress_pct(pct) {
+  setStyleProps(".progress-bar-fill", [["--progress-pct", pct + "%"]]);
+}
+
+// ---------------------------------------------------------------------------
 // Extension metadata
 // ---------------------------------------------------------------------------
 

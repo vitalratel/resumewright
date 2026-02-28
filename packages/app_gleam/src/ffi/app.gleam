@@ -125,6 +125,21 @@ pub fn file_from_input_event(event: Dynamic) -> Option(File)
 pub fn add_keydown_listener(handler: fn(String, Bool) -> Nil) -> Nil
 
 // ---------------------------------------------------------------------------
+// CSS custom property setters
+// ---------------------------------------------------------------------------
+
+@external(javascript, "./app_ffi.mjs", "apply_margin_preview")
+pub fn apply_margin_preview(
+  top: String,
+  right: String,
+  bottom: String,
+  left: String,
+) -> Nil
+
+@external(javascript, "./app_ffi.mjs", "apply_progress_pct")
+pub fn apply_progress_pct(pct: Int) -> Nil
+
+// ---------------------------------------------------------------------------
 // Extension metadata
 // ---------------------------------------------------------------------------
 
