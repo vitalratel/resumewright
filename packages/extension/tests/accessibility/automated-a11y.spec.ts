@@ -55,6 +55,14 @@ async function verifyTheme(page: Page, theme: Theme): Promise<void> {
 }
 
 /**
+ * Wait for the converter page to be fully initialised.
+ * Waits for the drop zone, which appears once the Lustre app mounts.
+ */
+async function waitForConverter(page: Page): Promise<void> {
+  await page.waitForSelector('#drop-zone', { state: 'visible' });
+}
+
+/**
  * Run aXe accessibility scan with WCAG 2.1 AA tags
  */
 async function runAxeScan(page: Page, selector?: string) {
@@ -75,7 +83,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
         const page = await context.newPage();
         await setupTheme(page, theme);
         await page.goto(`chrome-extension://${extensionId}/converter.html`);
-        await page.waitForTimeout(1000);
+        await waitForConverter(page);
         await verifyTheme(page, theme);
 
         const results = await runAxeScan(page);
@@ -88,7 +96,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
         const page = await context.newPage();
         await setupTheme(page, theme);
         await page.goto(`chrome-extension://${extensionId}/converter.html`);
-        await page.waitForTimeout(1000);
+        await waitForConverter(page);
         await verifyTheme(page, theme);
 
         const results = await new AxeBuilder({ page })
@@ -108,7 +116,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
         const page = await context.newPage();
         await setupTheme(page, theme);
         await page.goto(`chrome-extension://${extensionId}/converter.html`);
-        await page.waitForTimeout(1000);
+        await waitForConverter(page);
         await verifyTheme(page, theme);
 
         const buttons = await page.locator('button').all();
@@ -129,7 +137,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
         const page = await context.newPage();
         await setupTheme(page, theme);
         await page.goto(`chrome-extension://${extensionId}/converter.html`);
-        await page.waitForTimeout(1000);
+        await waitForConverter(page);
         await verifyTheme(page, theme);
 
         await page.keyboard.press('Tab');
@@ -166,7 +174,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
         const page = await context.newPage();
         await setupTheme(page, theme);
         await page.goto(`chrome-extension://${extensionId}/converter.html`);
-        await page.waitForTimeout(1000);
+        await waitForConverter(page);
         await verifyTheme(page, theme);
 
         // Navigate to settings
@@ -200,7 +208,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
 
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/converter.html`);
-    await page.waitForTimeout(1000);
+    await waitForConverter(page);
 
     const fileInput = page.locator('input[type="file"]');
     await fileInput.setInputFiles(testFilePath);
@@ -232,7 +240,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
   test('Keyboard navigation - Focusable elements', async ({ context, extensionId }) => {
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/converter.html`);
-    await page.waitForTimeout(1000);
+    await waitForConverter(page);
 
     const focusableElements = await page.evaluate(() => {
       const selector = 'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -264,7 +272,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
   test('Form elements - Proper labels and associations', async ({ context, extensionId }) => {
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/converter.html`);
-    await page.waitForTimeout(1000);
+    await waitForConverter(page);
 
     const fileInput = page.locator('input[type="file"]');
     if ((await fileInput.count()) > 0) {
@@ -297,7 +305,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
   test('Images - Alt text or aria-label', async ({ context, extensionId }) => {
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/converter.html`);
-    await page.waitForTimeout(1000);
+    await waitForConverter(page);
 
     const images = await page.locator('img').all();
     if (images.length > 0) {
@@ -317,21 +325,10 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
     await page.close();
   });
 
-  test('Landmark regions - Proper semantic structure', async ({ context, extensionId }) => {
-    const page = await context.newPage();
-    await page.goto(`chrome-extension://${extensionId}/converter.html`);
-    await page.waitForTimeout(1000);
-
-    const results = await runAxeScan(page);
-    expect(results.violations).toEqual([]);
-
-    await page.close();
-  });
-
   test('Heading hierarchy - Proper h1-h6 structure', async ({ context, extensionId }) => {
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/converter.html`);
-    await page.waitForTimeout(1000);
+    await waitForConverter(page);
 
     const headings = await page.evaluate(() => {
       const headingElements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
@@ -360,7 +357,7 @@ test.describe('Automated Accessibility (WCAG 2.1 AA)', () => {
   test('Links - Descriptive text (no "click here")', async ({ context, extensionId }) => {
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/converter.html`);
-    await page.waitForTimeout(1000);
+    await waitForConverter(page);
 
     const links = await page.locator('a[href]').all();
     for (const link of links) {

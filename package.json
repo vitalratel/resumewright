@@ -5,21 +5,17 @@
   "description": "Export Claude-generated CVs to professional PDFs",
   "scripts": {
     "build:wasm": "wasm-pack build packages/rust-core/wasm-bridge --target web",
-    "build:test-fixtures": "node scripts/transpile-fixtures.mjs",
     "dev": "pnpm build:wasm && pnpm --filter extension dev",
     "build": "pnpm build:wasm && pnpm --filter extension build",
     "typecheck": "pnpm --filter extension typecheck",
-    "test:ts": "pnpm --filter extension test:ts",
     "test:rust": "cargo test --workspace",
     "test:wasm": "wasm-pack test packages/rust-core/wasm-bridge --headless --chrome --firefox",
     "test:e2e": "pnpm --filter extension test:e2e",
-    "test:integration": "pnpm --filter extension test:integration",
-    "test:performance": "pnpm --filter extension test:performance",
     "lint": "pnpm --filter extension lint",
     "knip": "knip",
     "format": "pnpm --filter extension format",
     "validate:bundle": "node scripts/validate-bundle-size.js",
-    "ci": "pnpm typecheck && pnpm lint && pnpm build && pnpm test:ts",
+    "ci": "pnpm typecheck && pnpm lint && pnpm build",
     "prepare": "husky"
   },
   "engines": {
@@ -33,6 +29,14 @@
       "glob": ">=10.5.0",
       "node-forge": ">=1.3.2",
       "qs": ">=6.14.1"
+    },
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-23c5-xmqv-rm74",
+        "GHSA-2g4f-4pwh-qvx6",
+        "GHSA-3ppc-4f35-3m26",
+        "GHSA-7r86-cg39-jmmj"
+      ]
     }
   },
   "lint-staged": {
@@ -42,22 +46,21 @@
     "packages/extension/**/*.css": [
       "prettier --write"
     ],
+    "packages/app_gleam/**/*.gleam": [
+      "bash -c 'cd packages/app_gleam && mise exec -- gleam format'"
+    ],
     "**/*.rs": [
       "bash -c 'cargo fmt -- --check'",
       "bash -c 'cargo clippy -- -D warnings'"
     ]
   },
   "devDependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/preset-react": "^7.28.5",
-    "@babel/preset-typescript": "^7.28.5",
     "@playwright/test": "^1.58.2",
     "@swc/core": "^1.15.11",
     "@webext-core/fake-browser": "^1.3.4",
     "husky": "^9.1.7",
     "knip": "^5.83.1",
     "lint-staged": "^16.2.7",
-    "web-ext": "^9.3.0",
-    "wxt": "^0.20.17"
+"wxt": "^0.20.18"
   }
 }

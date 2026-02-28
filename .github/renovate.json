@@ -1,0 +1,56 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    ":semanticCommits",
+    ":preserveSemverRanges",
+    "group:allNonMajor"
+  ],
+  "schedule": ["before 9am on monday"],
+  "timezone": "UTC",
+  "prConcurrentLimit": 3,
+  "platformAutomerge": true,
+  "labels": ["dependencies"],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true,
+    "schedule": ["before 5am on monday"]
+  },
+  "enabledManagers": ["cargo", "gleam", "github-actions"],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "labels": ["breaking"]
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions",
+      "automerge": true
+    },
+    {
+      "matchManagers": ["cargo"],
+      "groupName": "rust dependencies",
+      "semanticCommitType": "deps",
+      "semanticCommitScope": "rust"
+    },
+    {
+      "matchManagers": ["gleam"],
+      "groupName": "gleam dependencies",
+      "semanticCommitType": "deps",
+      "semanticCommitScope": "gleam"
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "automerge": true
+    }
+  ]
+}

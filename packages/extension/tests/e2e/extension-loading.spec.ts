@@ -21,7 +21,7 @@ test.describe('Extension Loading', () => {
     // Verify backgroundPage fixture is available (even if mocked)
     expect(backgroundPage).toBeTruthy();
     expect(backgroundPage.url()).toContain(extensionId);
-    expect(backgroundPage.url()).toContain('background.js');
+    expect(backgroundPage.url()).toContain('background.mjs');
 
     // Note: Service workers may not be accessible via Playwright's
     // context.serviceWorkers() in Manifest V3 persistent contexts.
@@ -39,8 +39,8 @@ test.describe('Extension Loading', () => {
     // Verify main UI elements are present
     await expect(page.locator('body')).toBeVisible();
 
-    // Verify React app mounted
-    await expect(page.locator('#root')).toBeVisible();
+    // Verify Lustre app mounted
+    await expect(page.locator('#app')).toBeVisible();
   });
 
   test('should have correct manifest version', async ({ context, extensionId, browserType }) => {
@@ -62,8 +62,8 @@ test.describe('Extension Loading', () => {
       const bodyVisible = await page.locator('body').isVisible();
       expect(bodyVisible).toBe(true);
 
-      // Check that React app is mounted
-      const rootExists = await page.locator('#root').count();
+      // Check that Lustre app is mounted
+      const rootExists = await page.locator('#app').count();
       expect(rootExists).toBeGreaterThan(0);
     } finally {
       await page.close();

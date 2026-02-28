@@ -1,6 +1,5 @@
 import type { Plugin } from 'vite';
 import path from 'node:path';
-import react from '@vitejs/plugin-react';
 import wasm from 'vite-plugin-wasm';
 import { defineConfig } from 'wxt';
 
@@ -20,8 +19,12 @@ export default defineConfig({
   // Manifest configuration
   manifest: ({ browser }) => ({
     name: 'ResumeWright',
-    version: '0.2.0',
+    version: '0.2.1',
     description: 'Export Claude-generated CVs to professional PDFs',
+    background:
+      browser === 'firefox'
+        ? { scripts: ['gleam/background.mjs'], type: 'module' }
+        : { service_worker: 'gleam/background.mjs', type: 'module' },
     permissions: ['storage', 'downloads'],
     icons: {
       16: '/icons/icon-16.png',
@@ -82,6 +85,14 @@ export default defineConfig({
   srcDir: '.',
   entrypointsDir: 'entrypoints',
 
+  // Path aliases — WXT's @/ maps to srcDir (root), so we override for src/ subdirectories
+  alias: {
+    '@/background': path.resolve(__dirname, './src/background'),
+    '@/popup': path.resolve(__dirname, './src/popup'),
+    '@/shared': path.resolve(__dirname, './src/shared'),
+    '@pkg': path.resolve(__dirname, '../../packages/rust-core/wasm-bridge/pkg'),
+  },
+
   // Vite configuration
   vite: () => ({
     plugins: [
@@ -103,12 +114,6 @@ export default defineConfig({
           }
         },
       },
-      react({
-        jsxRuntime: 'automatic',
-        babel: {
-          plugins: [['babel-plugin-react-compiler', { target: '19' }]],
-        },
-      }),
       wasm(),
     ] as Plugin[],
     esbuild: {
@@ -117,14 +122,6 @@ export default defineConfig({
         compilerOptions: {
           useDefineForClassFields: true,
         },
-      },
-    },
-    resolve: {
-      alias: {
-        '@/background': path.resolve(__dirname, './src/background'),
-        '@/popup': path.resolve(__dirname, './src/popup'),
-        '@/shared': path.resolve(__dirname, './src/shared'),
-        '@pkg': path.resolve(__dirname, '../../packages/rust-core/wasm-bridge/pkg'),
       },
     },
     build: {

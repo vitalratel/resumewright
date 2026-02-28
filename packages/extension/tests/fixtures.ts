@@ -204,8 +204,11 @@ async function verifyExtensionReady(
     // Navigate to converter page - this will fail if extension isn't loaded
     await testPage.goto(converterUrl, { timeout: 10000 });
 
-    // Wait for React app to mount (look for actual app content in #root)
-    await testPage.waitForSelector('#root > *', { timeout: 5000 });
+    // Wait for Lustre app to mount — proven by drop zone appearing in the importing state
+    await testPage.waitForSelector('#drop-zone', {
+      state: 'visible',
+      timeout: 5000,
+    });
 
     console.warn('[Fixture] Extension is ready');
   } catch (e) {
