@@ -1,36 +1,17 @@
-/**
- * Accessibility Testing Utility
- *
- * Wrapper for axe-core with WCAG 2.1 Level A/AA config
- */
+// ABOUTME: Axe-core wrapper for WCAG 2.1 Level A/AA accessibility testing.
+// ABOUTME: Used by accessibility test specs to run compliance scans.
 
 import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
 
-/**
- * Run axe accessibility scan on a page
- *
- * @param page - Playwright page object
- * @param tags - Accessibility tags to test (default: WCAG 2.1 A and AA)
- * @returns Axe scan results
- */
 async function runAccessibilityScan(
   page: Page,
   tags: string[] = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'],
 ) {
   const builder = new AxeBuilder({ page }).withTags(tags);
-
-  const results = await builder.analyze();
-
-  return results;
+  return builder.analyze();
 }
 
-/**
- * Assert zero WCAG Level A violations (hard requirement)
- *
- * @param page - Playwright page object
- * @throws Error if Level A violations found
- */
 export async function assertNoLevelAViolations(page: Page) {
   const results = await runAccessibilityScan(page, ['wcag2a', 'wcag21a']);
 
@@ -50,12 +31,6 @@ export async function assertNoLevelAViolations(page: Page) {
   return results;
 }
 
-/**
- * Check for WCAG Level AA violations (target for production)
- *
- * @param page - Playwright page object
- * @returns Scan results with violations
- */
 export async function checkLevelAAViolations(page: Page) {
   const results = await runAccessibilityScan(page, ['wcag2aa', 'wcag21aa']);
 

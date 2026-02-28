@@ -420,8 +420,8 @@ fn handle_reset_confirmed(m: Model) -> #(Model, Effect(Msg)) {
 // ---------------------------------------------------------------------------
 
 fn handle_key_down(m: Model, key: String, ctrl: Bool) -> #(Model, Effect(Msg)) {
-  case #(key, ctrl) {
-    #("Escape", _) ->
+  case key, ctrl {
+    "Escape", _ ->
       case m.view {
         model.Help -> #(model.Model(..m, view: model.Main), effect.none())
         Settings ->
@@ -431,11 +431,11 @@ fn handle_key_down(m: Model, key: String, ctrl: Bool) -> #(Model, Effect(Msg)) {
           )
         _ -> #(m, effect.none())
       }
-    #("F1", _) -> #(model.Model(..m, view: model.Help), effect.none())
-    #(",", True) -> #(model.Model(..m, view: Settings), effect.none())
-    #("e", True) -> handle_export(m)
-    #("r", True) -> handle_retry(m)
-    _ -> #(m, effect.none())
+    "F1", _ -> #(model.Model(..m, view: model.Help), effect.none())
+    ",", True -> #(model.Model(..m, view: Settings), effect.none())
+    "e", True -> handle_export(m)
+    "r", True -> handle_retry(m)
+    _, _ -> #(m, effect.none())
   }
 }
 

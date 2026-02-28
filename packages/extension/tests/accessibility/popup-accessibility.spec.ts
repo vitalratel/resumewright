@@ -6,10 +6,7 @@
  */
 
 import { expect, test } from '@playwright/test';
-import {
-  assertNoLevelAViolations,
-  checkLevelAAViolations,
-} from '../../src/__tests__/utils/accessibility';
+import { assertNoLevelAViolations, checkLevelAAViolations } from '../helpers/accessibility';
 
 // Increase timeout for accessibility tests (axe-core analysis is slow)
 test.setTimeout(60000); // 60 seconds per test
