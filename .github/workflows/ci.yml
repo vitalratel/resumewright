@@ -213,6 +213,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Setup Erlang/OTP
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: '27'
+
       - name: Setup mise
         uses: jdx/mise-action@v2
 
@@ -315,6 +320,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+
+      - name: Setup Erlang/OTP
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: '27'
 
       - name: Setup mise
         uses: jdx/mise-action@v2
