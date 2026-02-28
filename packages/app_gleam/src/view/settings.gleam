@@ -24,7 +24,7 @@ pub fn view(model: Model) -> Element(Msg) {
 
 fn settings_header() -> Element(Msg) {
   html.div(
-    [attribute.class("flex items-center gap-3 mb-1")],
+    [attribute.class("relative flex items-center mb-1")],
     [
       html.button(
         [
@@ -36,7 +36,11 @@ fn settings_header() -> Element(Msg) {
         [back_icon(), html.text("Back")],
       ),
       html.h1(
-        [attribute.class("text-lg font-semibold text-foreground")],
+        [
+          attribute.class(
+            "absolute inset-x-0 text-center text-lg font-semibold text-foreground pointer-events-none",
+          ),
+        ],
         [html.text("Settings")],
       ),
     ],
