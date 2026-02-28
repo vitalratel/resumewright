@@ -18,6 +18,10 @@ pub fn view(
   html.div(
     [],
     [
+      html.h1(
+        [attribute.class("sr-only")],
+        [html.text("Convert CV to PDF")],
+      ),
       tip_collapsible(),
       drop_zone(validation_error, drag_over),
       validation_error_div(validation_error),

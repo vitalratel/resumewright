@@ -54,12 +54,10 @@ pub fn update(m: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     // Async file read completed
     model.FileReadComplete(Ok(content), name, size) ->
       handle_file_read(m, content, name, size)
-    model.FileReadComplete(Error(_), _, _) ->
+    model.FileReadComplete(Error(msg), _, _) ->
       #(
         model.Model(..m, converter_state: Importing(
-          validation_error: Some(
-            "Unable to read this file. Please try exporting your CV from Claude again.",
-          ),
+          validation_error: Some(msg),
           drag_over: False,
         )),
         effect.none(),

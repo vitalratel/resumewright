@@ -52,6 +52,7 @@ fn theme_button(
 ) -> Element(Msg) {
   html.button(
     [
+      attribute.id("theme-" <> value),
       attribute.type_("button"),
       attribute.class("btn-theme"),
       attribute.aria_pressed(case pressed {

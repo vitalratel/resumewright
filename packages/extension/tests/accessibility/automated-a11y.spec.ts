@@ -56,12 +56,10 @@ async function verifyTheme(page: Page, theme: Theme): Promise<void> {
 
 /**
  * Wait for the converter page to be fully initialised.
- * Waits for the drop zone (static HTML) and then for the page-size radio to be
- * checked, which only happens after initSettings() → loadSettings() resolves.
+ * Waits for the drop zone, which appears once the Lustre app mounts.
  */
 async function waitForConverter(page: Page): Promise<void> {
   await page.waitForSelector('#drop-zone', { state: 'visible' });
-  await page.waitForSelector('input[name="page-size"]:checked', { state: 'attached' });
 }
 
 /**

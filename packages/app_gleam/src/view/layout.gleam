@@ -36,15 +36,30 @@ fn header(model: Model) -> Element(Msg) {
         ],
         [
           logo(),
-          html.button(
+          html.div(
+            [attribute.class("flex items-center gap-1")],
             [
-              attribute.type_("button"),
-              attribute.aria_label("Help"),
-              attribute.aria_expanded(model.help_open),
-              attribute.class("btn-icon"),
-              event.on_click(model.OpenHelp),
+              html.button(
+                [
+                  attribute.id("btn-settings"),
+                  attribute.type_("button"),
+                  attribute.aria_label("Settings"),
+                  attribute.class("btn-icon"),
+                  event.on_click(model.ShowSettings),
+                ],
+                [settings_icon()],
+              ),
+              html.button(
+                [
+                  attribute.type_("button"),
+                  attribute.aria_label("Help"),
+                  attribute.aria_expanded(model.help_open),
+                  attribute.class("btn-icon"),
+                  event.on_click(model.OpenHelp),
+                ],
+                [help_icon()],
+              ),
             ],
-            [help_icon()],
           ),
         ],
       ),
@@ -181,12 +196,40 @@ fn live_regions(model: Model) -> Element(Msg) {
       ),
       html.div(
         [
-          attribute.role("alert"),
           attribute.aria_live("assertive"),
           attribute.aria_atomic(True),
         ],
         [html.text(model.error_announcement)],
       ),
+    ],
+  )
+}
+
+fn settings_icon() -> Element(Msg) {
+  svg.svg(
+    [
+      attribute.attribute("width", "16"),
+      attribute.attribute("height", "16"),
+      attribute.attribute("viewBox", "0 0 24 24"),
+      attribute.attribute("fill", "none"),
+      attribute.attribute("stroke", "currentColor"),
+      attribute.attribute("stroke-width", "2"),
+      attribute.attribute("stroke-linecap", "round"),
+      attribute.attribute("stroke-linejoin", "round"),
+      attribute.aria_hidden(True),
+    ],
+    [
+      svg.circle([
+        attribute.attribute("cx", "12"),
+        attribute.attribute("cy", "12"),
+        attribute.attribute("r", "3"),
+      ]),
+      svg.path([
+        attribute.attribute(
+          "d",
+          "M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z",
+        ),
+      ]),
     ],
   )
 }

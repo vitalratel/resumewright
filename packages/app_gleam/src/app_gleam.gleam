@@ -18,5 +18,5 @@ pub fn main() {
 fn init(_flags) -> #(model.Model, effect.Effect(model.Msg)) {
   let version = app_ffi.get_version()
   let m = model.initial(model.default_settings(), version)
-  #(m, effects.load_settings())
+  #(m, effect.batch([effects.load_settings(), effects.register_listener()]))
 }

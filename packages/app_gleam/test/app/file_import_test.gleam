@@ -62,9 +62,7 @@ pub fn file_read_error_shows_validation_error_test() {
   |> do_update(model.FileReadComplete(Error("read failed"), "resume.tsx", 100))
   |> fn(m) { m.converter_state }
   |> should.equal(Importing(
-    validation_error: Some(
-      "Unable to read this file. Please try exporting your CV from Claude again.",
-    ),
+    validation_error: Some("read failed"),
     drag_over: False,
   ))
 }

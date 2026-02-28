@@ -204,9 +204,9 @@ async function verifyExtensionReady(
     // Navigate to converter page - this will fail if extension isn't loaded
     await testPage.goto(converterUrl, { timeout: 10000 });
 
-    // Wait for JS initialization to complete — proven by populateForm() checking a page-size radio
-    await testPage.waitForSelector('input[name="page-size"]:checked', {
-      state: 'attached',
+    // Wait for Lustre app to mount — proven by drop zone appearing in the importing state
+    await testPage.waitForSelector('#drop-zone', {
+      state: 'visible',
       timeout: 5000,
     });
 

@@ -1,6 +1,9 @@
 // ABOUTME: JS implementations for converter frontend FFI — file I/O, messaging, storage, theme.
 // ABOUTME: Implements all functions declared in ffi/app.gleam.
 
+import { Ok, Error as GleamError } from "../../prelude.mjs";
+import { Some, None } from "../../gleam_stdlib/gleam/option.mjs";
+
 // ---------------------------------------------------------------------------
 // File metadata
 // ---------------------------------------------------------------------------
@@ -23,9 +26,12 @@ export function file_type(file) {
 
 export function read_file_as_text(file, callback) {
   const reader = new FileReader();
-  reader.onload = () => callback({ type: "Ok", 0: reader.result });
-  reader.onerror = () =>
-    callback({ type: "Error", 0: reader.error?.message ?? "read error" });
+  reader.onload = () => {
+    callback(new Ok(reader.result));
+  };
+  reader.onerror = () => {
+    callback(new GleamError(reader.error?.message ?? "read error"));
+  };
   reader.readAsText(file);
 }
 
@@ -48,7 +54,10 @@ export function send_message_typed(type, dataJson, callback) {
 
 export function on_message_typed(handler) {
   chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
-    if (message?.type) handler(message.type, message.data ?? {});
+    if (message?.type) {
+      console.log("[FFI] on_message_typed:", message.type, JSON.stringify(message.data).slice(0, 80));
+      handler(message.type, message.data ?? {});
+    }
     return false;
   });
 }
@@ -59,9 +68,9 @@ export function on_message_typed(handler) {
 
 export function decode_bool_field(obj, field) {
   if (obj && typeof obj[field] === "boolean") {
-    return { type: "Ok", 0: obj[field] };
+    return new Ok(obj[field]);
   }
-  return { type: "Error", 0: undefined };
+  return new GleamError(undefined);
 }
 
 export function json_encode_string(s) {
@@ -109,12 +118,9 @@ export function storage_sync_get_string(key, callback) {
     void chrome.runtime.lastError;
     const val = result[key];
     if (val == null) {
-      callback({ type: "Error", 0: undefined });
+      callback(new GleamError(undefined));
     } else {
-      callback({
-        type: "Ok",
-        0: typeof val === "string" ? val : JSON.stringify(val),
-      });
+      callback(new Ok(typeof val === "string" ? val : JSON.stringify(val)));
     }
   });
 }
@@ -132,7 +138,11 @@ export function storage_sync_set_json(key, json) {
 // ---------------------------------------------------------------------------
 
 export function apply_theme(theme) {
-  document.documentElement.setAttribute("data-theme", theme);
+  const html = document.documentElement;
+  html.classList.remove("light", "dark");
+  if (theme !== "auto" && theme !== "") {
+    html.classList.add(theme);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -151,12 +161,12 @@ export function write_to_clipboard(text) {
 
 export function file_from_drop_event(event) {
   const file = event?.dataTransfer?.files?.[0];
-  return file ? { type: "Some", 0: file } : { type: "None" };
+  return file ? new Some(file) : new None();
 }
 
 export function file_from_input_event(event) {
   const file = event?.target?.files?.[0];
-  return file ? { type: "Some", 0: file } : { type: "None" };
+  return file ? new Some(file) : new None();
 }
 
 // ---------------------------------------------------------------------------

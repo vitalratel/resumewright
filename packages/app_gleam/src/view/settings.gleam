@@ -57,8 +57,13 @@ fn tab_bar(m: Model) -> Element(Msg) {
 }
 
 fn tab_button(label: String, tab: model.SettingsTab, selected: Bool) -> Element(Msg) {
+  let tab_id = case tab {
+    PageTab -> "tab-page"
+    GeneralTab -> "tab-general"
+  }
   html.button(
     [
+      attribute.id(tab_id),
       attribute.type_("button"),
       attribute.role("tab"),
       attribute.aria_selected(selected),

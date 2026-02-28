@@ -5,6 +5,7 @@
 @source "../shared/";
 @source "../lib/";
 @source "../../entrypoints/";
+@source "../../public/gleam/";
 
 /* Dark mode: system preference by default, overridden by .dark/.light class */
 @custom-variant dark (

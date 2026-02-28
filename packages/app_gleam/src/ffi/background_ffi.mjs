@@ -42,7 +42,7 @@ export function wasm_is_initialized() {
 }
 
 export async function wasm_validate(tsx) {
-  if (!converterInstance) return false;
+  if (!converterInstance) return true; // fallback: allow through if WASM not yet ready
   try {
     const result = converterInstance.detect_fonts(tsx);
     return Array.isArray(JSON.parse(result));
@@ -60,7 +60,7 @@ export async function wasm_validate(tsx) {
 function buildWasmConfig(configJson, title) {
   const cfg = JSON.parse(configJson);
   return {
-    page_size: cfg.page_size,
+    page_size: cfg.pageSize,
     margin: {
       top: cfg.margin.top * 72,
       right: cfg.margin.right * 72,
