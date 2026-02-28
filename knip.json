@@ -17,10 +17,7 @@
   },
   "ignoreDependencies": [
     "prettier",
-    "tailwindcss",
-    "web-ext",
-    "@testing-library/dom",
-    "@wxt-dev/module-solid"
+    "tailwindcss"
   ],
   "ignoreBinaries": ["wasm-pack", "prettier"],
   "ignoreExportsUsedInFile": {
