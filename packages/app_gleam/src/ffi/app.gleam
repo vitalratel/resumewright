@@ -118,6 +118,13 @@ pub fn file_from_drop_event(event: Dynamic) -> Option(File)
 pub fn file_from_input_event(event: Dynamic) -> Option(File)
 
 // ---------------------------------------------------------------------------
+// Keyboard shortcuts
+// ---------------------------------------------------------------------------
+
+@external(javascript, "./app_ffi.mjs", "add_keydown_listener")
+pub fn add_keydown_listener(handler: fn(String, Bool) -> Nil) -> Nil
+
+// ---------------------------------------------------------------------------
 // Extension metadata
 // ---------------------------------------------------------------------------
 

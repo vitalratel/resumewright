@@ -16,6 +16,7 @@ import shared/types.{
 pub type View {
   Main
   Settings
+  Help
 }
 
 pub type SettingsTab {
@@ -58,7 +59,6 @@ pub type Model {
     view: View,
     converter_state: ConverterState,
     settings: Settings,
-    help_open: Bool,
     reset_confirm: Bool,
     settings_tab: SettingsTab,
     version: String,
@@ -73,7 +73,6 @@ pub fn initial(settings: Settings, version: String) -> Model {
     view: Main,
     converter_state: Importing(validation_error: None, drag_over: False),
     settings: settings,
-    help_open: False,
     reset_confirm: False,
     settings_tab: PageTab,
     version: version,
@@ -150,6 +149,8 @@ pub type Msg {
   ResetCancelled
   ResetConfirmed
   SettingsLoaded(Settings)
+  // Keyboard shortcuts
+  KeyDown(key: String, ctrl: Bool)
   // No-op for events where we need to prevent default but dispatch nothing
   NoOp
 }

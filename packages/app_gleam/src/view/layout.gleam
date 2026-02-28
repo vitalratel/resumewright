@@ -1,5 +1,5 @@
-// ABOUTME: App shell — header with logo/help, main content slot, footer with version.
-// ABOUTME: Also renders the help dialog and ARIA live regions for announcements.
+// ABOUTME: App shell — header with logo/help/settings buttons, main content slot, footer.
+// ABOUTME: Wraps converter and settings views; help routes to its own full-screen view.
 
 import app/model.{type Model, type Msg}
 import lustre/attribute
@@ -12,21 +12,20 @@ pub fn wrap(model: Model, content: Element(Msg)) -> Element(Msg) {
   html.div(
     [attribute.class("flex flex-col min-h-screen bg-background text-foreground")],
     [
-      header(model),
+      header(),
       html.main(
         [attribute.class("flex-1 w-full max-w-lg mx-auto px-4 py-6")],
         [content],
       ),
       footer(model),
-      help_dialog(model),
       live_regions(model),
     ],
   )
 }
 
-fn header(model: Model) -> Element(Msg) {
+fn header() -> Element(Msg) {
   html.header(
-    [attribute.class("border-b border-border bg-card")],
+    [attribute.class("w-full bg-primary text-primary-foreground")],
     [
       html.div(
         [
@@ -41,23 +40,22 @@ fn header(model: Model) -> Element(Msg) {
             [
               html.button(
                 [
-                  attribute.id("btn-settings"),
                   attribute.type_("button"),
-                  attribute.aria_label("Settings"),
-                  attribute.class("btn-icon"),
-                  event.on_click(model.ShowSettings),
+                  attribute.aria_label("Help"),
+                  attribute.class("btn-header"),
+                  event.on_click(model.OpenHelp),
                 ],
-                [settings_icon()],
+                [help_icon(), html.text("Help")],
               ),
               html.button(
                 [
+                  attribute.id("btn-settings"),
                   attribute.type_("button"),
-                  attribute.aria_label("Help"),
-                  attribute.aria_expanded(model.help_open),
-                  attribute.class("btn-icon"),
-                  event.on_click(model.OpenHelp),
+                  attribute.aria_label("Settings"),
+                  attribute.class("btn-header"),
+                  event.on_click(model.ShowSettings),
                 ],
-                [help_icon()],
+                [settings_icon(), html.text("Settings")],
               ),
             ],
           ),
@@ -78,7 +76,7 @@ fn logo() -> Element(Msg) {
         attribute.aria_hidden(True),
       ]),
       html.span(
-        [attribute.class("text-sm font-semibold text-foreground")],
+        [attribute.class("text-sm font-semibold text-primary-foreground")],
         [html.text("ResumeWright")],
       ),
     ],
@@ -87,97 +85,82 @@ fn logo() -> Element(Msg) {
 
 fn footer(model: Model) -> Element(Msg) {
   html.footer(
-    [attribute.class("border-t border-border bg-card")],
+    [attribute.class("w-full border-t border-border")],
     [
-      html.p(
+      html.div(
         [
           attribute.class(
-            "text-xs text-muted-foreground text-center py-2",
+            "max-w-lg mx-auto px-4 py-3 flex items-center justify-between text-xs text-muted-foreground",
           ),
         ],
-        [html.text("v" <> model.version)],
+        [
+          html.a(
+            [
+              attribute.href("https://resumewright.com/#faq"),
+              attribute.attribute("target", "_blank"),
+              attribute.attribute("rel", "noopener noreferrer"),
+              attribute.class("btn-ghost flex items-center gap-1.5"),
+            ],
+            [footer_help_icon(), html.text("Help & FAQ")],
+          ),
+          html.span(
+            [attribute.class("flex items-center gap-1.5")],
+            [footer_check_icon(), html.text("Privacy-first")],
+          ),
+          html.span([], [html.text("v" <> model.version)]),
+        ],
       ),
     ],
   )
 }
 
-fn help_dialog(model: Model) -> Element(Msg) {
-  html.div(
+fn footer_help_icon() -> Element(Msg) {
+  svg.svg(
     [
-      attribute.role("dialog"),
-      attribute.aria_modal(True),
-      attribute.aria_label("Help"),
-      attribute.hidden(!model.help_open),
-      attribute.class(
-        "fixed inset-0 z-50 flex items-center justify-center bg-background/80",
-      ),
+      attribute.attribute("width", "12"),
+      attribute.attribute("height", "12"),
+      attribute.attribute("viewBox", "0 0 24 24"),
+      attribute.attribute("fill", "none"),
+      attribute.attribute("stroke", "currentColor"),
+      attribute.attribute("stroke-width", "2"),
+      attribute.attribute("stroke-linecap", "round"),
+      attribute.attribute("stroke-linejoin", "round"),
+      attribute.aria_hidden(True),
     ],
     [
-      html.div(
-        [
-          attribute.class(
-            "bg-card border border-border rounded-lg shadow-lg p-6 w-full max-w-sm mx-4 space-y-4",
-          ),
-        ],
-        [
-          html.div(
-            [attribute.class("flex items-center justify-between")],
-            [
-              html.h2(
-                [attribute.class("text-base font-semibold text-foreground")],
-                [html.text("Help")],
-              ),
-              html.button(
-                [
-                  attribute.type_("button"),
-                  attribute.aria_label("Close help"),
-                  attribute.class("btn-icon"),
-                  event.on_click(model.CloseHelp),
-                ],
-                [close_icon()],
-              ),
-            ],
-          ),
-          html.div(
-            [attribute.class("space-y-3 text-sm text-muted-foreground")],
-            [
-              html.p(
-                [],
-                [
-                  html.text("1. Ask Claude.ai to write your CV as a React component"),
-                ],
-              ),
-              html.p(
-                [],
-                [
-                  html.text("2. Save the code as a "),
-                  html.code(
-                    [attribute.class("code-inline")],
-                    [html.text(".tsx")],
-                  ),
-                  html.text(" file"),
-                ],
-              ),
-              html.p([], [html.text("3. Drop it here to convert to PDF")]),
-              html.p(
-                [attribute.class("pt-2")],
-                [
-                  html.text("Keyboard shortcut: "),
-                  html.kbd(
-                    [
-                      attribute.class(
-                        "px-1.5 py-0.5 text-xs font-mono bg-muted rounded border border-border",
-                      ),
-                    ],
-                    [html.text("Ctrl E")],
-                  ),
-                  html.text(" to export"),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
+      svg.circle([
+        attribute.attribute("cx", "12"),
+        attribute.attribute("cy", "12"),
+        attribute.attribute("r", "10"),
+      ]),
+      svg.path([attribute.attribute("d", "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3")]),
+      svg.line([
+        attribute.attribute("x1", "12"),
+        attribute.attribute("y1", "17"),
+        attribute.attribute("x2", "12.01"),
+        attribute.attribute("y2", "17"),
+      ]),
+    ],
+  )
+}
+
+fn footer_check_icon() -> Element(Msg) {
+  svg.svg(
+    [
+      attribute.attribute("width", "12"),
+      attribute.attribute("height", "12"),
+      attribute.attribute("viewBox", "0 0 24 24"),
+      attribute.attribute("fill", "none"),
+      attribute.attribute("stroke", "currentColor"),
+      attribute.attribute("stroke-width", "2"),
+      attribute.attribute("stroke-linecap", "round"),
+      attribute.attribute("stroke-linejoin", "round"),
+      attribute.aria_hidden(True),
+      attribute.class("text-success"),
+    ],
+    [
+      svg.path([attribute.attribute("d", "M22 11.08V12a10 10 0 1 1-5.93-9.14")]),
+      svg.polyline([attribute.attribute("points", "22 4 12 14.01 9 11.01")]),
     ],
   )
 }
@@ -264,13 +247,3 @@ fn help_icon() -> Element(Msg) {
   )
 }
 
-fn close_icon() -> Element(Msg) {
-  svg.svg(
-    [
-      attribute.attribute("width", "16"),
-      attribute.attribute("height", "16"),
-      attribute.aria_hidden(True),
-    ],
-    [svg.use_([attribute.attribute("href", "#icon-close")])],
-  )
-}

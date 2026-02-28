@@ -170,6 +170,17 @@ export function file_from_input_event(event) {
 }
 
 // ---------------------------------------------------------------------------
+// Keyboard shortcuts
+// ---------------------------------------------------------------------------
+
+export function add_keydown_listener(handler) {
+  document.addEventListener("keydown", (e) => {
+    const ctrl = e.ctrlKey || e.metaKey;
+    handler(e.key, ctrl);
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Extension metadata
 // ---------------------------------------------------------------------------
 

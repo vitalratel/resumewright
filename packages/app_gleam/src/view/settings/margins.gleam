@@ -100,14 +100,6 @@ fn row(side: String, label: String, value: Float) -> Element(Msg) {
 }
 
 fn preview(margin: Margin) -> Element(Msg) {
-  let inset =
-    to_pct(margin.top)
-    <> " "
-    <> to_pct(margin.right)
-    <> " "
-    <> to_pct(margin.bottom)
-    <> " "
-    <> to_pct(margin.left)
   html.div(
     [attribute.class("flex flex-col items-center gap-1 shrink-0")],
     [
@@ -125,7 +117,10 @@ fn preview(margin: Margin) -> Element(Msg) {
           html.div(
             [
               attribute.class("absolute bg-primary/10 border border-primary/20"),
-              attribute.style("inset", inset),
+              attribute.style("top", to_pct(margin.top)),
+              attribute.style("right", to_pct(margin.right)),
+              attribute.style("bottom", to_pct(margin.bottom)),
+              attribute.style("left", to_pct(margin.left)),
             ],
             [],
           ),

@@ -1,5 +1,5 @@
-// ABOUTME: Settings general fieldset — theme selector (light/dark/system) and reset button.
-// ABOUTME: Dispatches ThemeChanged and ResetSettings messages.
+// ABOUTME: Settings general fieldset — theme selector (light/dark/auto) and reset button.
+// ABOUTME: Dispatches ThemeChanged, ResetRequested, ResetCancelled, ResetConfirmed messages.
 
 import app/model.{type Msg}
 import lustre/attribute
@@ -9,12 +9,12 @@ import lustre/element/svg
 import lustre/event
 import shared/types.{type Settings, Auto, Dark, Light}
 
-pub fn view(settings: Settings) -> Element(Msg) {
+pub fn view(settings: Settings, reset_confirm: Bool) -> Element(Msg) {
   html.div(
     [attribute.class("space-y-4")],
     [
       theme_fieldset(settings),
-      reset_section(),
+      reset_section(reset_confirm),
     ],
   )
 }
@@ -28,17 +28,17 @@ fn theme_fieldset(settings: Settings) -> Element(Msg) {
         [attribute.class("text-sm font-semibold text-foreground")],
         [html.text("Theme")],
       ),
-      html.p(
-        [attribute.class("text-xs text-muted-foreground mb-3")],
-        [html.text("PDF rendering color mode")],
-      ),
       html.div(
         [attribute.class("flex gap-2")],
         [
           theme_button("light", "Light", light_icon(), current == Light),
           theme_button("dark", "Dark", dark_icon(), current == Dark),
-          theme_button("system", "System", system_icon(), current == Auto),
+          theme_button("auto", "Auto", system_icon(), current == Auto),
         ],
+      ),
+      html.p(
+        [attribute.class("text-xs text-muted-foreground")],
+        [html.text("Follows your system preference")],
       ),
     ],
   )
@@ -68,25 +68,54 @@ fn theme_button(
   )
 }
 
-fn reset_section() -> Element(Msg) {
-  html.div(
-    [attribute.class("border-t border-border pt-4 mt-2")],
-    [
-      html.p(
-        [attribute.class("text-xs text-muted-foreground mb-3")],
-        [html.text("Restore all settings to their default values.")],
-      ),
+fn reset_section(reset_confirm: Bool) -> Element(Msg) {
+  case reset_confirm {
+    False ->
       html.button(
         [
           attribute.type_("button"),
           attribute.data("testid", "reset-settings"),
-          attribute.class("btn-warning"),
+          attribute.class("btn-outline w-full py-2.5 px-4 rounded-md"),
           event.on_click(model.ResetRequested),
         ],
         [html.text("Reset to Defaults")],
-      ),
-    ],
-  )
+      )
+    True ->
+      html.div(
+        [
+          attribute.class(
+            "p-4 border border-warning/50 bg-warning/10 rounded-md text-sm space-y-3",
+          ),
+        ],
+        [
+          html.p(
+            [attribute.class("text-warning-text font-medium")],
+            [html.text("Reset all settings to defaults?")],
+          ),
+          html.div(
+            [attribute.class("flex gap-3")],
+            [
+              html.button(
+                [
+                  attribute.type_("button"),
+                  attribute.class("btn-warning flex-1 py-2 px-3"),
+                  event.on_click(model.ResetConfirmed),
+                ],
+                [html.text("Reset")],
+              ),
+              html.button(
+                [
+                  attribute.type_("button"),
+                  attribute.class("btn-outline flex-1 py-2 px-3 rounded"),
+                  event.on_click(model.ResetCancelled),
+                ],
+                [html.text("Cancel")],
+              ),
+            ],
+          ),
+        ],
+      )
+  }
 }
 
 fn light_icon() -> Element(Msg) {

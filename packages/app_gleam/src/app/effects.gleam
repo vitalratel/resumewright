@@ -143,6 +143,14 @@ pub fn apply_theme(theme_str: String) -> Effect(model.Msg) {
 // Background broadcast listener
 // ---------------------------------------------------------------------------
 
+/// Registers a document-level keydown listener for keyboard shortcuts.
+pub fn register_keyboard_handler() -> Effect(model.Msg) {
+  use dispatch <- effect.from
+  app_ffi.add_keydown_listener(fn(key, ctrl) {
+    dispatch(model.KeyDown(key, ctrl))
+  })
+}
+
 /// Registers a chrome.runtime.onMessage listener for background broadcasts.
 /// Decodes conversionProgress / conversionComplete / conversionError and dispatches.
 pub fn register_listener() -> Effect(model.Msg) {

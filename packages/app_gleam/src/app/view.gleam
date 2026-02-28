@@ -5,6 +5,7 @@ import app/model.{type Model, type Msg}
 import lustre/element.{type Element}
 import view/converting
 import view/error
+import view/help
 import view/importing
 import view/layout
 import view/ready
@@ -12,11 +13,17 @@ import view/settings
 import view/success
 
 pub fn view(model: Model) -> Element(Msg) {
-  let content = case model.view {
-    model.Settings -> settings.view(model)
-    model.Main -> converter_view(model)
+  case model.view {
+    model.Help -> help.view()
+    _ -> layout.wrap(model, main_content(model))
   }
-  layout.wrap(model, content)
+}
+
+fn main_content(model: Model) -> Element(Msg) {
+  case model.view {
+    model.Settings -> settings.view(model)
+    _ -> converter_view(model)
+  }
 }
 
 fn converter_view(model: Model) -> Element(Msg) {

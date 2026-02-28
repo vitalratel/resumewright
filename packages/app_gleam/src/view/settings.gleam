@@ -5,6 +5,7 @@ import app/model.{type Model, type Msg, GeneralTab, PageTab}
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
+import lustre/element/svg
 import lustre/event
 import view/settings/general
 import view/settings/margins
@@ -23,20 +24,20 @@ pub fn view(model: Model) -> Element(Msg) {
 
 fn settings_header() -> Element(Msg) {
   html.div(
-    [attribute.class("flex items-center justify-between")],
+    [attribute.class("flex items-center gap-3 mb-1")],
     [
-      html.h2(
-        [attribute.class("text-base font-semibold text-foreground")],
-        [html.text("Settings")],
-      ),
       html.button(
         [
           attribute.type_("button"),
           attribute.aria_label("Back to converter"),
-          attribute.class("btn-icon"),
+          attribute.class("btn-ghost flex items-center gap-1.5 text-sm"),
           event.on_click(model.ShowMain),
         ],
-        [back_icon()],
+        [back_icon(), html.text("Back")],
+      ),
+      html.h1(
+        [attribute.class("text-lg font-semibold text-foreground")],
+        [html.text("Settings")],
       ),
     ],
   )
@@ -79,14 +80,24 @@ fn tab_content(m: Model) -> Element(Msg) {
     [attribute.class("space-y-4")],
     case m.settings_tab {
       PageTab -> [page_size.view(m.settings), margins.view(m.settings)]
-      GeneralTab -> [general.view(m.settings)]
+      GeneralTab -> [general.view(m.settings, m.reset_confirm)]
     },
   )
 }
 
 fn back_icon() -> Element(Msg) {
-  html.span(
-    [attribute.class("text-sm")],
-    [html.text("←")],
+  svg.svg(
+    [
+      attribute.attribute("width", "16"),
+      attribute.attribute("height", "16"),
+      attribute.attribute("viewBox", "0 0 24 24"),
+      attribute.attribute("fill", "none"),
+      attribute.attribute("stroke", "currentColor"),
+      attribute.attribute("stroke-width", "2"),
+      attribute.attribute("stroke-linecap", "round"),
+      attribute.attribute("stroke-linejoin", "round"),
+      attribute.aria_hidden(True),
+    ],
+    [svg.path([attribute.attribute("d", "m15 18-6-6 6-6")])],
   )
 }

@@ -25,8 +25,8 @@ pub fn update(m: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     model.ShowSettings -> #(model.Model(..m, view: Settings), effect.none())
     model.ShowMain ->
       #(model.Model(..m, view: model.Main, reset_confirm: False), effect.none())
-    model.OpenHelp -> #(model.Model(..m, help_open: True), effect.none())
-    model.CloseHelp -> #(model.Model(..m, help_open: False), effect.none())
+    model.OpenHelp -> #(model.Model(..m, view: model.Help), effect.none())
+    model.CloseHelp -> #(model.Model(..m, view: model.Main), effect.none())
     model.SwitchTab(tab) -> #(model.Model(..m, settings_tab: tab), effect.none())
 
     // Drag-drop visual state
@@ -105,6 +105,8 @@ pub fn update(m: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     model.ResetConfirmed -> handle_reset_confirmed(m)
     model.SettingsLoaded(settings) ->
       #(model.Model(..m, settings: settings), effect.none())
+
+    model.KeyDown(key, ctrl) -> handle_key_down(m, key, ctrl)
 
     model.NoOp -> #(m, effect.none())
   }
@@ -394,6 +396,30 @@ fn handle_reset_confirmed(m: Model) -> #(Model, Effect(Msg)) {
       effects.apply_theme("auto"),
     ]),
   )
+}
+
+// ---------------------------------------------------------------------------
+// Keyboard shortcuts
+// ---------------------------------------------------------------------------
+
+fn handle_key_down(m: Model, key: String, ctrl: Bool) -> #(Model, Effect(Msg)) {
+  case #(key, ctrl) {
+    #("Escape", _) ->
+      case m.view {
+        model.Help -> #(model.Model(..m, view: model.Main), effect.none())
+        Settings ->
+          #(
+            model.Model(..m, view: model.Main, reset_confirm: False),
+            effect.none(),
+          )
+        _ -> #(m, effect.none())
+      }
+    #("F1", _) -> #(model.Model(..m, view: model.Help), effect.none())
+    #(",", True) -> #(model.Model(..m, view: Settings), effect.none())
+    #("e", True) -> handle_export(m)
+    #("r", True) -> handle_retry(m)
+    _ -> #(m, effect.none())
+  }
 }
 
 fn update_config(m: Model, cfg: ConversionConfig) -> #(Model, Effect(Msg)) {

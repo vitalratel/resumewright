@@ -77,15 +77,15 @@ pub fn show_main_clears_reset_confirm_test() {
 pub fn open_help_test() {
   initial_model()
   |> do_update(model.OpenHelp)
-  |> fn(m) { m.help_open }
-  |> should.be_true
+  |> fn(m) { m.view }
+  |> should.equal(model.Help)
 }
 
 pub fn close_help_test() {
-  Model(..initial_model(), help_open: True)
+  Model(..initial_model(), view: model.Help)
   |> do_update(model.CloseHelp)
-  |> fn(m) { m.help_open }
-  |> should.be_false
+  |> fn(m) { m.view }
+  |> should.equal(model.Main)
 }
 
 // ---------------------------------------------------------------------------
@@ -120,6 +120,53 @@ pub fn dragged_over_sets_flag_test() {
 pub fn drag_left_clears_flag_test() {
   Model(..initial_model(), converter_state: Importing(None, True))
   |> do_update(model.DragLeft)
+  |> fn(m) { m.converter_state }
+  |> should.equal(Importing(validation_error: None, drag_over: False))
+}
+
+// ---------------------------------------------------------------------------
+// Keyboard shortcuts
+// ---------------------------------------------------------------------------
+
+pub fn escape_from_help_goes_to_main_test() {
+  Model(..initial_model(), view: model.Help)
+  |> do_update(model.KeyDown("Escape", False))
+  |> fn(m) { m.view }
+  |> should.equal(model.Main)
+}
+
+pub fn escape_from_settings_goes_to_main_test() {
+  Model(..initial_model(), view: model.Settings, reset_confirm: True)
+  |> do_update(model.KeyDown("Escape", False))
+  |> fn(m) { #(m.view, m.reset_confirm) }
+  |> should.equal(#(model.Main, False))
+}
+
+pub fn escape_from_main_is_noop_test() {
+  let m = initial_model()
+  m
+  |> do_update(model.KeyDown("Escape", False))
+  |> fn(m2) { m2.view }
+  |> should.equal(model.Main)
+}
+
+pub fn f1_opens_help_test() {
+  initial_model()
+  |> do_update(model.KeyDown("F1", False))
+  |> fn(m) { m.view }
+  |> should.equal(model.Help)
+}
+
+pub fn ctrl_comma_opens_settings_test() {
+  initial_model()
+  |> do_update(model.KeyDown(",", True))
+  |> fn(m) { m.view }
+  |> should.equal(model.Settings)
+}
+
+pub fn ctrl_e_in_non_ready_state_is_noop_test() {
+  initial_model()
+  |> do_update(model.KeyDown("e", True))
   |> fn(m) { m.converter_state }
   |> should.equal(Importing(validation_error: None, drag_over: False))
 }
