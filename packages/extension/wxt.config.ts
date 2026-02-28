@@ -19,7 +19,7 @@ export default defineConfig({
   // Manifest configuration
   manifest: ({ browser }) => ({
     name: 'ResumeWright',
-    version: '0.2.0',
+    version: '0.2.1',
     description: 'Export Claude-generated CVs to professional PDFs',
     background:
       browser === 'firefox'

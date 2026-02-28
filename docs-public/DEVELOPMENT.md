@@ -27,6 +27,7 @@ See [README.md](../README.md#prerequisites) for detailed installation instructio
 - pnpm 10+
 - Rust 1.91+
 - wasm-pack 0.12+
+- Gleam 1.14+ (via mise: `mise install`)
 - Git
 
 ---
@@ -44,14 +45,14 @@ pnpm install
 # Build WASM core (one-time, or after Rust changes)
 pnpm build:wasm
 
-# Start development server with hot reload
-pnpm dev
+# Build Gleam application
+pnpm build:gleam
 
-# In another terminal, load extension in Chrome:
+# Load the extension in Chrome:
 # 1. Open chrome://extensions/
 # 2. Enable "Developer mode"
 # 3. Click "Load unpacked"
-# 4. Select the `.output/chrome-mv3` directory
+# 4. Select the `packages/extension/public` directory
 ```
 
 ---
@@ -61,23 +62,30 @@ pnpm dev
 ```
 resumewright/
 ├── packages/
-│   ├── extension/          # TypeScript browser extension
+│   ├── app_gleam/              # Gleam/Lustre application
 │   │   ├── src/
-│   │   │   ├── background/ # Service worker (Manifest V3)
-│   │   │   ├── popup/      # React UI components
-│   │   │   └── shared/     # Shared utilities and types
-│   │   ├── tests/          # Vitest unit tests
-│   │   └── wxt.config.ts   # WXT configuration
-│   └── rust-core/          # Rust/WASM backend
-│       ├── tsx-parser/     # TSX parsing with OXC
-│       ├── cv-domain/      # Domain models
-│       ├── layout-engine/  # Box layout algorithm
-│       ├── pdf-generator/  # PDF generation
-│       ├── font-toolkit/   # Font subsetting
-│       └── wasm-bridge/    # WASM bindings
-├── docs-public/            # Documentation
-├── scripts/                # Build scripts
-└── pkg/                    # Built WASM files (gitignored)
+│   │   │   ├── app/            # MVU core (model, view, update, msg)
+│   │   │   ├── background/     # Service worker (message handling, conversion)
+│   │   │   ├── shared/         # Shared types, codecs, validation
+│   │   │   ├── view/           # View layer (importing, converting, success, error, settings)
+│   │   │   └── ffi/            # Chrome extension API FFI wrappers
+│   │   ├── test/               # Gleam unit tests
+│   │   └── gleam.toml          # Gleam project config
+│   ├── extension/              # Extension packaging and tests
+│   │   ├── entrypoints/        # HTML shells (converter, popup)
+│   │   ├── public/             # Static assets + built Gleam bundle
+│   │   │   └── gleam/          # Built JS output (gitignored)
+│   │   ├── tests/              # E2E (Playwright) and accessibility tests
+│   │   └── wxt.config.ts       # Extension manifest config
+│   └── rust-core/              # Rust/WASM backend
+│       ├── tsx-parser/         # TSX parsing with OXC
+│       ├── cv-domain/          # Domain models
+│       ├── layout-engine/      # Box layout algorithm
+│       ├── pdf-generator/      # PDF generation
+│       ├── font-toolkit/       # Font subsetting
+│       └── wasm-bridge/        # WASM bindings
+├── docs-public/                # Documentation
+└── scripts/                    # Build scripts
 ```
 
 **Architecture:** See [ARCHITECTURE.md](ARCHITECTURE.md) for system design overview.
@@ -86,20 +94,24 @@ resumewright/
 
 ## Development Workflow
 
-### Development Mode
+### Making Changes
 
-**Hot reload for TypeScript/React:**
+**Gleam/Lustre (Extension UI):**
 ```bash
-pnpm dev  # Starts WXT dev server
+cd packages/app_gleam
+mise exec -- gleam test   # Run unit tests
+pnpm build:gleam           # Rebuild and reload extension
 ```
 
-Changes to `packages/extension/src/**` trigger automatic rebuild and extension reload.
-
-**After Rust changes:**
+**Rust/WASM (PDF Engine):**
 ```bash
-pnpm build:wasm  # Rebuild WASM
-# Then restart `pnpm dev`
+pnpm build:wasm   # Rebuild WASM
+# Then reload extension in chrome://extensions/
 ```
+
+**Styles (Tailwind CSS):**
+- Edit `packages/extension/src/popup/index.css`
+- Run `pnpm build` to recompile CSS
 
 ### Loading Extension in Browser
 
@@ -107,32 +119,8 @@ pnpm build:wasm  # Rebuild WASM
 1. Navigate to `chrome://extensions/`
 2. Enable "Developer mode" (top right)
 3. Click "Load unpacked"
-4. Select `.output/chrome-mv3` directory
-5. Extension appears in toolbar
-
-**Firefox:**
-```bash
-pnpm dev:firefox
-```
-Then navigate to `about:debugging#/runtime/this-firefox` and load temporary add-on.
-
-### Making Changes
-
-**TypeScript/React (Extension UI):**
-- Edit files in `packages/extension/src/`
-- Changes hot-reload automatically
-- Check browser console for errors
-
-**Rust/WASM (PDF Engine):**
-- Edit files in `packages/rust-core/`
-- Run `pnpm build:wasm` to rebuild
-- Restart `pnpm dev`
-- Check browser console for WASM errors
-
-**Styles (Tailwind CSS):**
-- Edit classes in React components
-- Tailwind auto-compiles on change
-- See `packages/extension/tailwind.config.js`
+4. Select `packages/extension/public` directory
+5. After rebuilding, click the refresh icon on the extension card
 
 ---
 
@@ -141,38 +129,38 @@ Then navigate to `about:debugging#/runtime/this-firefox` and load temporary add-
 ### Run All Tests
 
 ```bash
-pnpm test  # Runs TypeScript + Rust tests
+pnpm test:all   # E2E + accessibility tests
 ```
 
-### TypeScript Tests (Vitest)
+### Gleam Unit Tests
 
 ```bash
-pnpm test:ts              # Run once
-pnpm test:watch           # Watch mode
-pnpm test:coverage        # With coverage report
-```
-
-**Test files:** Co-located with source (e.g., `App.test.tsx` next to `App.tsx`)
-
-**Key test utilities:**
-- `@testing-library/react` - Component testing
-- `fake-indexeddb` - Mock browser storage
-- `vitest` - Test runner
-
-### Rust Tests (Cargo)
-
-```bash
-pnpm test:rust            # All Rust tests
-cd packages/rust-core
-cargo test --package tsx-parser  # Specific crate
+cd packages/app_gleam
+mise exec -- gleam test   # Run all Gleam tests
 ```
 
 ### End-to-End Tests (Playwright)
 
 ```bash
-pnpm test:e2e             # Run E2E tests
+cd packages/extension
+pnpm test:e2e             # Run E2E tests (headless Chrome)
 pnpm test:e2e:headed      # With visible browser
 pnpm test:e2e:debug       # Debug mode
+```
+
+### Accessibility Tests
+
+```bash
+cd packages/extension
+pnpm test:a11y            # WCAG 2.1 Level A/AA checks (axe-core)
+```
+
+### Rust Tests (Cargo)
+
+```bash
+pnpm test:rust                               # All Rust tests
+cd packages/rust-core
+cargo test --package tsx-parser              # Specific crate
 ```
 
 ---
@@ -182,29 +170,21 @@ pnpm test:e2e:debug       # Debug mode
 ### Build Extension
 
 ```bash
-pnpm build  # Builds for Chrome (Manifest V3)
+pnpm build   # Full build: WASM + Gleam + CSS
 ```
 
-Output: `.output/chrome-mv3/` (ready to zip and upload to Chrome Web Store)
-
-**Firefox:**
-```bash
-pnpm build:firefox
-```
-
-Output: `.output/firefox-mv3/`
+Output: `packages/extension/public/` (load unpacked from this directory)
 
 ### Create Store Packages
 
 ```bash
-pnpm zip          # Creates resumewright-[version]-chrome.zip
-pnpm zip:firefox  # Creates resumewright-[version]-firefox.zip
+pnpm zip   # Creates resumewright-[version]-chrome.zip
 ```
 
 ### Bundle Size Validation
 
 ```bash
-pnpm validate:bundle  # Ensures WASM < 4MB threshold
+pnpm validate:bundle   # Ensures WASM < 4MB threshold
 ```
 
 ---
@@ -214,48 +194,44 @@ pnpm validate:bundle  # Ensures WASM < 4MB threshold
 ### Type Checking
 
 ```bash
-pnpm typecheck  # TypeScript type checking (no build)
+pnpm typecheck   # TypeScript type checking for Playwright configs
 ```
 
-### Linting
+### Linting / Formatting
 
 ```bash
-pnpm lint        # ESLint for TypeScript
-pnpm lint --fix  # Auto-fix issues
+pnpm lint        # Biome lint for TypeScript test files
+pnpm format      # Biome format
+cargo fmt        # Rust formatting
 ```
 
-### Formatting
+### Gleam Formatting
 
 ```bash
-pnpm format  # Prettier (TypeScript/JSON)
-cargo fmt    # Rust formatting
-```
-
-### Pre-Commit Hooks
-
-Husky runs automatically before each commit:
-- ✅ Type checking
-- ✅ Linting
-
-To bypass (emergencies only):
-```bash
-git commit --no-verify -m "Emergency fix"
+cd packages/app_gleam
+mise exec -- gleam format
 ```
 
 ---
 
 ## Common Tasks
 
-### Add a New Dependency
+### Add a Gleam Dependency
 
-**TypeScript:**
 ```bash
-cd packages/extension
-pnpm add <package>           # Production dependency
-pnpm add -D <package>        # Dev dependency
+cd packages/app_gleam
+mise exec -- gleam add <package>
 ```
 
-**Rust:**
+### Add a TypeScript Dev Dependency (tests only)
+
+```bash
+cd packages/extension
+pnpm add -D <package>
+```
+
+### Add a Rust Dependency
+
 ```bash
 cd packages/rust-core/<crate-name>
 cargo add <crate>
@@ -271,42 +247,32 @@ cargo add <crate>
 **Check WASM errors:**
 1. Console tab
 2. Look for errors from `wasm-bridge`
-3. Check `background` service worker logs
+3. Check background service worker logs
 
 **Rebuild WASM from scratch:**
 ```bash
-rm -rf pkg/
+rm -rf packages/rust-core/wasm-bridge/pkg/
 pnpm build:wasm
 ```
 
 ### Update Dependencies
 
+**Gleam:**
+```bash
+cd packages/app_gleam
+mise exec -- gleam update
+```
+
 **TypeScript:**
 ```bash
-pnpm update               # Interactive update
-pnpm audit                # Check for vulnerabilities
-pnpm audit --fix          # Auto-fix vulnerabilities
+pnpm update
+pnpm audit
 ```
 
 **Rust:**
 ```bash
-cargo update              # Update Cargo.lock
-cargo audit               # Check for vulnerabilities
-```
-
-### Generate Test Coverage
-
-**TypeScript:**
-```bash
-pnpm test:coverage
-# Opens coverage report in browser
-```
-
-**Rust:**
-```bash
-cd packages/rust-core
-cargo llvm-cov --lcov --html --output-dir target/coverage
-# Generates lcov.info and HTML report in target/coverage/
+cargo update
+cargo audit
 ```
 
 ---
@@ -317,24 +283,30 @@ See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues and solutions.
 
 **Common issues:**
 
-1. **`wasm-pack: command not found`**
+1. **`gleam: command not found`**
+   ```bash
+   mise install   # installs Gleam and rebar3 via mise.toml
+   ```
+
+2. **`wasm-pack: command not found`**
    ```bash
    cargo install wasm-pack
    ```
 
-2. **WASM build fails**
+3. **WASM build fails**
    ```bash
-   rustup update  # Update Rust toolchain
+   rustup update   # Update Rust toolchain
    ```
 
-3. **Extension not loading**
-   - Check `.output/chrome-mv3/manifest.json` exists
+4. **Extension not loading**
+   - Check `packages/extension/public/manifest.json` exists
    - Check browser console for errors
    - Try removing and re-adding extension
 
-4. **Tests fail with OOM**
+5. **Gleam build fails with "module not found"**
    ```bash
-   NODE_OPTIONS='--max-old-space-size=4096' pnpm test
+   cd packages/app_gleam
+   mise exec -- gleam deps download
    ```
 
 ---
@@ -348,7 +320,7 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for:
 - Code review expectations
 
 **Quick tips:**
-- Write tests for new features
+- Write tests for new features (Gleam unit tests + Playwright E2E where relevant)
 - Run `pnpm ci` before creating PR
 - Keep commits focused and atomic
 - Follow existing code patterns
@@ -366,7 +338,3 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for:
 ---
 
 **Questions?** Open an issue on GitHub or contact contact@resumewright.com.
-
----
-
-**Happy coding!** 🚀

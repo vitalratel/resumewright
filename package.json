@@ -5,21 +5,17 @@
   "description": "Export Claude-generated CVs to professional PDFs",
   "scripts": {
     "build:wasm": "wasm-pack build packages/rust-core/wasm-bridge --target web",
-    "build:test-fixtures": "node scripts/transpile-fixtures.mjs",
     "dev": "pnpm build:wasm && pnpm --filter extension dev",
     "build": "pnpm build:wasm && pnpm --filter extension build",
     "typecheck": "pnpm --filter extension typecheck",
-    "test:ts": "pnpm --filter extension test:ts",
     "test:rust": "cargo test --workspace",
     "test:wasm": "wasm-pack test packages/rust-core/wasm-bridge --headless --chrome --firefox",
     "test:e2e": "pnpm --filter extension test:e2e",
-    "test:integration": "pnpm --filter extension test:integration",
-    "test:performance": "pnpm --filter extension test:performance",
     "lint": "pnpm --filter extension lint",
     "knip": "knip",
     "format": "pnpm --filter extension format",
     "validate:bundle": "node scripts/validate-bundle-size.js",
-    "ci": "pnpm typecheck && pnpm lint && pnpm build && pnpm test:ts",
+    "ci": "pnpm typecheck && pnpm lint && pnpm build",
     "prepare": "husky"
   },
   "engines": {
@@ -41,6 +37,9 @@
     ],
     "packages/extension/**/*.css": [
       "prettier --write"
+    ],
+    "packages/app_gleam/**/*.gleam": [
+      "bash -c 'cd packages/app_gleam && mise exec -- gleam format'"
     ],
     "**/*.rs": [
       "bash -c 'cargo fmt -- --check'",

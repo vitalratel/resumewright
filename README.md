@@ -2,7 +2,7 @@
 
 **A privacy-first browser extension that converts Claude-generated CV/resume TSX components into professional, ATS-compatible PDF files.**
 
-ResumeWright combines a high-performance Rust/WebAssembly core engine with a TypeScript-based browser extension interface to deliver seamless, local-only CV conversion directly in your browser.
+ResumeWright combines a high-performance Rust/WebAssembly core engine with a Gleam/Lustre browser extension interface to deliver seamless, local-only CV conversion directly in your browser.
 
 **Status:** Beta - Ready for testing and feedback
 
@@ -22,7 +22,7 @@ ResumeWright combines a high-performance Rust/WebAssembly core engine with a Typ
 
 ## Architecture
 
-- **Frontend**: TypeScript + React browser extension (Manifest V3) built with WXT
+- **Frontend**: Gleam/Lustre browser extension (Manifest V3), MVU architecture
 - **Backend**: Rust/WASM engine for PDF generation
 - **Storage**: Local-only (browser storage API, no cloud sync)
 - **Build System**: pnpm workspaces + Cargo workspaces (monorepo)
