@@ -16,7 +16,7 @@
 
 import { Buffer } from 'node:buffer';
 import type { Page } from '@playwright/test';
-import { browserConfigs, expect, test } from '../fixtures';
+import { browserConfigs, test } from '../fixtures';
 import { expectValidationError } from '../helpers/pdfDownload';
 
 /**
