@@ -11,14 +11,11 @@ import lustre/event
 import shared/types.{type Settings, A4, Legal, Letter}
 
 pub fn view(file: model.ImportedFile, settings: Settings) -> Element(Msg) {
-  html.div(
-    [attribute.class("animate-fade-in space-y-4")],
-    [
-      file_card(file),
-      export_button(),
-      settings_summary_line(settings),
-    ],
-  )
+  html.div([attribute.class("animate-fade-in space-y-4")], [
+    file_card(file),
+    export_button(),
+    settings_summary_line(settings),
+  ])
 }
 
 fn file_card(file: model.ImportedFile) -> Element(Msg) {
@@ -29,34 +26,27 @@ fn file_card(file: model.ImportedFile) -> Element(Msg) {
       ),
     ],
     [
-      html.div(
-        [attribute.class("flex items-center gap-3 min-w-0")],
-        [
-          file_icon(),
-          html.div(
-            [attribute.class("min-w-0")],
+      html.div([attribute.class("flex items-center gap-3 min-w-0")], [
+        file_icon(),
+        html.div([attribute.class("min-w-0")], [
+          html.p(
             [
-              html.p(
-                [
-                  attribute.class(
-                    "text-sm font-medium text-success-text truncate",
-                  ),
-                ],
-                [html.text(file.name)],
-              ),
-              html.p(
-                [attribute.class("text-xs text-success-text/80")],
-                [html.text(format_file_size(file.size))],
-              ),
+              attribute.class("text-sm font-medium text-success-text truncate"),
             ],
+            [html.text(file.name)],
           ),
-        ],
-      ),
+          html.p([attribute.class("text-xs text-success-text/80")], [
+            html.text(format_file_size(file.size)),
+          ]),
+        ]),
+      ]),
       html.button(
         [
           attribute.type_("button"),
           attribute.aria_label("Remove file"),
-          attribute.class("btn-icon text-success-text/60 hover:text-success-text"),
+          attribute.class(
+            "btn-icon text-success-text/60 hover:text-success-text",
+          ),
           event.on_click(model.FileCleared),
         ],
         [close_icon()],
@@ -93,21 +83,18 @@ fn export_button() -> Element(Msg) {
 }
 
 fn settings_summary_line(settings: Settings) -> Element(Msg) {
-  html.p(
-    [attribute.class("text-center text-xs text-muted-foreground")],
-    [
-      html.text("Current settings: "),
-      html.span([], [html.text(settings_summary(settings))]),
-      html.button(
-        [
-          attribute.type_("button"),
-          attribute.class("btn-link ml-1"),
-          event.on_click(model.ShowSettings),
-        ],
-        [html.text("Change")],
-      ),
-    ],
-  )
+  html.p([attribute.class("text-center text-xs text-muted-foreground")], [
+    html.text("Current settings: "),
+    html.span([], [html.text(settings_summary(settings))]),
+    html.button(
+      [
+        attribute.type_("button"),
+        attribute.class("btn-link ml-1"),
+        event.on_click(model.ShowSettings),
+      ],
+      [html.text("Change")],
+    ),
+  ])
 }
 
 fn settings_summary(settings: Settings) -> String {
@@ -150,7 +137,10 @@ fn file_icon() -> Element(Msg) {
     ],
     [
       svg.path([
-        attribute.attribute("d", "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"),
+        attribute.attribute(
+          "d",
+          "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z",
+        ),
       ]),
       svg.polyline([attribute.attribute("points", "14 2 14 8 20 8")]),
       svg.line([
@@ -195,7 +185,10 @@ fn export_icon() -> Element(Msg) {
     ],
     [
       svg.path([
-        attribute.attribute("d", "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"),
+        attribute.attribute(
+          "d",
+          "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z",
+        ),
       ]),
       svg.polyline([attribute.attribute("points", "14 2 14 8 20 8")]),
       svg.line([

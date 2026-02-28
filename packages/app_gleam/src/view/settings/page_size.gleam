@@ -9,27 +9,19 @@ import lustre/event
 import shared/types.{type Settings, A4, Legal, Letter}
 
 pub fn view(settings: Settings) -> Element(Msg) {
-  html.fieldset(
-    [attribute.class("space-y-2")],
-    [
-      html.legend(
-        [attribute.class("text-sm font-semibold text-foreground")],
-        [html.text("Page Size")],
-      ),
-      html.p(
-        [attribute.class("text-xs text-muted-foreground mb-3")],
-        [html.text("Control PDF page dimensions")],
-      ),
-      html.div(
-        [attribute.class("space-y-2")],
-        [
-          option("Letter", "Letter (8.5\" × 11\")", settings),
-          option("A4", "A4 (210mm × 297mm)", settings),
-          option("Legal", "Legal (8.5\" × 14\")", settings),
-        ],
-      ),
-    ],
-  )
+  html.fieldset([attribute.class("space-y-2")], [
+    html.legend([attribute.class("text-sm font-semibold text-foreground")], [
+      html.text("Page Size"),
+    ]),
+    html.p([attribute.class("text-xs text-muted-foreground mb-3")], [
+      html.text("Control PDF page dimensions"),
+    ]),
+    html.div([attribute.class("space-y-2")], [
+      option("Letter", "Letter (8.5\" × 11\")", settings),
+      option("A4", "A4 (210mm × 297mm)", settings),
+      option("Legal", "Legal (8.5\" × 14\")", settings),
+    ]),
+  ])
 }
 
 fn option(value: String, label: String, settings: Settings) -> Element(Msg) {
@@ -53,10 +45,7 @@ fn option(value: String, label: String, settings: Settings) -> Element(Msg) {
         attribute.class("text-primary focus:ring-ring"),
         event.on_change(fn(v) { model.PageSizeChanged(v) }),
       ]),
-      html.span(
-        [attribute.class("text-sm text-foreground")],
-        [html.text(label)],
-      ),
+      html.span([attribute.class("text-sm text-foreground")], [html.text(label)]),
     ],
   )
 }

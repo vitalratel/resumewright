@@ -25,32 +25,28 @@ pub fn view(
     ],
     [
       checkmark_circle(),
-      html.h1(
-        [attribute.class("text-2xl font-bold text-foreground")],
-        [html.text("PDF Ready")],
-      ),
-      html.div(
-        [attribute.class("flex items-center gap-2 max-w-full")],
-        [
-          html.span(
-            [
-              attribute.class(
-                "text-base text-muted-foreground font-mono bg-muted px-3 py-1.5 rounded-md border border-border truncate max-w-xs",
-              ),
-            ],
-            [html.text(filename)],
-          ),
-          html.button(
-            [
-              attribute.type_("button"),
-              attribute.aria_label("Copy filename"),
-              attribute.class("btn-icon"),
-              event.on_click(model.CopyFilenameClicked),
-            ],
-            [copy_icon()],
-          ),
-        ],
-      ),
+      html.h1([attribute.class("text-2xl font-bold text-foreground")], [
+        html.text("PDF Ready"),
+      ]),
+      html.div([attribute.class("flex items-center gap-2 max-w-full")], [
+        html.span(
+          [
+            attribute.class(
+              "text-base text-muted-foreground font-mono bg-muted px-3 py-1.5 rounded-md border border-border truncate max-w-xs",
+            ),
+          ],
+          [html.text(filename)],
+        ),
+        html.button(
+          [
+            attribute.type_("button"),
+            attribute.aria_label("Copy filename"),
+            attribute.class("btn-icon"),
+            event.on_click(model.CopyFilenameClicked),
+          ],
+          [copy_icon()],
+        ),
+      ]),
       html.div(
         [
           attribute.class(
@@ -59,26 +55,20 @@ pub fn view(
         ],
         [download_icon(), html.text("Downloaded to your computer")],
       ),
-      html.details(
-        [attribute.class("w-full text-sm text-muted-foreground")],
-        [
-          html.summary(
-            [
-              attribute.class(
-                "cursor-pointer hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded",
-              ),
-            ],
-            [html.text("View export details")],
-          ),
-          html.div(
-            [attribute.class("mt-2 ml-4 space-y-1 text-xs")],
-            [
-              html.p([], [html.text("Size: " <> format_file_size(file_size))]),
-              html.p([], [html.text("Duration: " <> format_duration(duration))]),
-            ],
-          ),
-        ],
-      ),
+      html.details([attribute.class("w-full text-sm text-muted-foreground")], [
+        html.summary(
+          [
+            attribute.class(
+              "cursor-pointer hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded",
+            ),
+          ],
+          [html.text("View export details")],
+        ),
+        html.div([attribute.class("mt-2 ml-4 space-y-1 text-xs")], [
+          html.p([], [html.text("Size: " <> format_file_size(file_size))]),
+          html.p([], [html.text("Duration: " <> format_duration(duration))]),
+        ]),
+      ]),
       html.button(
         [
           attribute.type_("button"),
@@ -103,7 +93,12 @@ pub fn view(
               attribute.class("btn-link"),
               event.on_click(model.PauseCountdownClicked),
             ],
-            [html.text(case paused { True -> "Resume" False -> "Pause" })],
+            [
+              html.text(case paused {
+                True -> "Resume"
+                False -> "Pause"
+              }),
+            ],
           ),
           html.button(
             [
@@ -130,10 +125,7 @@ fn format_file_size(bytes: Int) -> String {
 fn format_duration(ms: Int) -> String {
   case ms {
     m if m >= 1000 ->
-      int.to_string(m / 1000)
-      <> "."
-      <> int.to_string({ m % 1000 } / 100)
-      <> "s"
+      int.to_string(m / 1000) <> "." <> int.to_string({ m % 1000 } / 100) <> "s"
     _ -> int.to_string(ms) <> "ms"
   }
 }
@@ -211,7 +203,9 @@ fn download_icon() -> Element(Msg) {
       attribute.aria_hidden(True),
     ],
     [
-      svg.path([attribute.attribute("d", "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4")]),
+      svg.path([
+        attribute.attribute("d", "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"),
+      ]),
       svg.polyline([attribute.attribute("points", "7 10 12 15 17 10")]),
       svg.line([
         attribute.attribute("x1", "12"),

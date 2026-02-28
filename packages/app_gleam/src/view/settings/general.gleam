@@ -10,38 +10,27 @@ import lustre/event
 import shared/types.{type Settings, Auto, Dark, Light}
 
 pub fn view(settings: Settings, reset_confirm: Bool) -> Element(Msg) {
-  html.div(
-    [attribute.class("space-y-4")],
-    [
-      theme_fieldset(settings),
-      reset_section(reset_confirm),
-    ],
-  )
+  html.div([attribute.class("space-y-4")], [
+    theme_fieldset(settings),
+    reset_section(reset_confirm),
+  ])
 }
 
 fn theme_fieldset(settings: Settings) -> Element(Msg) {
   let current = settings.theme
-  html.fieldset(
-    [attribute.class("space-y-2")],
-    [
-      html.legend(
-        [attribute.class("text-sm font-semibold text-foreground")],
-        [html.text("Theme")],
-      ),
-      html.div(
-        [attribute.class("flex gap-2")],
-        [
-          theme_button("light", "Light", light_icon(), current == Light),
-          theme_button("dark", "Dark", dark_icon(), current == Dark),
-          theme_button("auto", "Auto", system_icon(), current == Auto),
-        ],
-      ),
-      html.p(
-        [attribute.class("text-xs text-muted-foreground")],
-        [html.text("Follows your system preference")],
-      ),
-    ],
-  )
+  html.fieldset([attribute.class("space-y-2")], [
+    html.legend([attribute.class("text-sm font-semibold text-foreground")], [
+      html.text("Theme"),
+    ]),
+    html.div([attribute.class("flex gap-2")], [
+      theme_button("light", "Light", light_icon(), current == Light),
+      theme_button("dark", "Dark", dark_icon(), current == Dark),
+      theme_button("auto", "Auto", system_icon(), current == Auto),
+    ]),
+    html.p([attribute.class("text-xs text-muted-foreground")], [
+      html.text("Follows your system preference"),
+    ]),
+  ])
 }
 
 fn theme_button(
@@ -88,31 +77,27 @@ fn reset_section(reset_confirm: Bool) -> Element(Msg) {
           ),
         ],
         [
-          html.p(
-            [attribute.class("text-warning-text font-medium")],
-            [html.text("Reset all settings to defaults?")],
-          ),
-          html.div(
-            [attribute.class("flex gap-3")],
-            [
-              html.button(
-                [
-                  attribute.type_("button"),
-                  attribute.class("btn-warning flex-1 py-2 px-3"),
-                  event.on_click(model.ResetConfirmed),
-                ],
-                [html.text("Reset")],
-              ),
-              html.button(
-                [
-                  attribute.type_("button"),
-                  attribute.class("btn-outline flex-1 py-2 px-3 rounded"),
-                  event.on_click(model.ResetCancelled),
-                ],
-                [html.text("Cancel")],
-              ),
-            ],
-          ),
+          html.p([attribute.class("text-warning-text font-medium")], [
+            html.text("Reset all settings to defaults?"),
+          ]),
+          html.div([attribute.class("flex gap-3")], [
+            html.button(
+              [
+                attribute.type_("button"),
+                attribute.class("btn-warning flex-1 py-2 px-3"),
+                event.on_click(model.ResetConfirmed),
+              ],
+              [html.text("Reset")],
+            ),
+            html.button(
+              [
+                attribute.type_("button"),
+                attribute.class("btn-outline flex-1 py-2 px-3 rounded"),
+                event.on_click(model.ResetCancelled),
+              ],
+              [html.text("Cancel")],
+            ),
+          ]),
         ],
       )
   }
@@ -204,7 +189,10 @@ fn dark_icon() -> Element(Msg) {
     ],
     [
       svg.path([
-        attribute.attribute("d", "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"),
+        attribute.attribute(
+          "d",
+          "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z",
+        ),
       ]),
     ],
   )

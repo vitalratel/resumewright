@@ -36,20 +36,22 @@ fn default_settings() -> Settings {
 // ---------------------------------------------------------------------------
 
 pub fn margins_preview_changes_with_different_margins_test() {
-  let narrow = SharedSettings(
-    ..default_settings(),
-    default_config: ConversionConfig(
-      ..default_config(),
-      margin: Margin(top: 0.25, right: 0.25, bottom: 0.25, left: 0.25),
-    ),
-  )
-  let wide = SharedSettings(
-    ..default_settings(),
-    default_config: ConversionConfig(
-      ..default_config(),
-      margin: Margin(top: 1.5, right: 1.5, bottom: 1.5, left: 1.5),
-    ),
-  )
+  let narrow =
+    SharedSettings(
+      ..default_settings(),
+      default_config: ConversionConfig(
+        ..default_config(),
+        margin: Margin(top: 0.25, right: 0.25, bottom: 0.25, left: 0.25),
+      ),
+    )
+  let wide =
+    SharedSettings(
+      ..default_settings(),
+      default_config: ConversionConfig(
+        ..default_config(),
+        margin: Margin(top: 1.5, right: 1.5, bottom: 1.5, left: 1.5),
+      ),
+    )
 
   let html_narrow = element.to_string(margins.view(narrow))
   let html_wide = element.to_string(margins.view(wide))
@@ -58,13 +60,14 @@ pub fn margins_preview_changes_with_different_margins_test() {
 }
 
 pub fn margins_top_label_reflects_value_test() {
-  let settings = SharedSettings(
-    ..default_settings(),
-    default_config: ConversionConfig(
-      ..default_config(),
-      margin: Margin(top: 1.0, right: 0.25, bottom: 0.25, left: 0.25),
-    ),
-  )
+  let settings =
+    SharedSettings(
+      ..default_settings(),
+      default_config: ConversionConfig(
+        ..default_config(),
+        margin: Margin(top: 1.0, right: 0.25, bottom: 0.25, left: 0.25),
+      ),
+    )
 
   margins.view(settings)
   |> element.to_string

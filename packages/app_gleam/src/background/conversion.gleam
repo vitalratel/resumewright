@@ -74,9 +74,13 @@ pub fn run(
 
   let tsx = option.unwrap(request.tsx, "")
 
-  use convert_result <- promise.await(
-    ffi.wasm_convert_and_download(tsx, config_json, job_id, on_progress, safe_filename),
-  )
+  use convert_result <- promise.await(ffi.wasm_convert_and_download(
+    tsx,
+    config_json,
+    job_id,
+    on_progress,
+    safe_filename,
+  ))
 
   let #(file_size, duration) = convert_result
 

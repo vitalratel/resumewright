@@ -28,7 +28,8 @@ pub fn generate_whitespace_name_test() {
 
 pub fn generate_resume_fallback_no_duplication_test() {
   // If sanitize produces "Resume" as the only output, don't write "Resume_Resume_..."
-  assert filename.generate(Some("@#$%"), "2025-01-01") == "Resume_2025-01-01.pdf"
+  assert filename.generate(Some("@#$%"), "2025-01-01")
+    == "Resume_2025-01-01.pdf"
 }
 
 // ---------------------------------------------------------------------------

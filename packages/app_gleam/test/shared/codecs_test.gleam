@@ -5,8 +5,8 @@ import gleam/json
 import gleam/option.{None, Some}
 import shared/codecs
 import shared/types.{
-  A4, Auto, Completed, ConversionConfig, ConversionError, ConversionProgress,
-  CompletePayload, ConversionRequest, Dark, ErrorPayload, ExtractingMetadata,
+  A4, Auto, CompletePayload, Completed, ConversionConfig, ConversionError,
+  ConversionProgress, ConversionRequest, Dark, ErrorPayload, ExtractingMetadata,
   Failed, GeneratingPdf, LayingOut, Legal, Letter, Light, Margin, Parsing,
   ProgressPayload, Queued, Rendering, Settings,
 }
@@ -16,20 +16,21 @@ import shared/types.{
 // ---------------------------------------------------------------------------
 
 pub fn settings_round_trip_test() {
-  let settings = Settings(
-    theme: Dark,
-    default_config: ConversionConfig(
-      page_size: A4,
-      margin: Margin(top: 0.5, right: 0.5, bottom: 0.5, left: 0.5),
-      font_size: 12,
-      font_family: "Inter",
-      compress: True,
-      ats_optimization: False,
-      include_metadata: True,
-    ),
-    settings_version: 1,
-    last_updated: 1_234_567_890,
-  )
+  let settings =
+    Settings(
+      theme: Dark,
+      default_config: ConversionConfig(
+        page_size: A4,
+        margin: Margin(top: 0.5, right: 0.5, bottom: 0.5, left: 0.5),
+        font_size: 12,
+        font_family: "Inter",
+        compress: True,
+        ats_optimization: False,
+        include_metadata: True,
+      ),
+      settings_version: 1,
+      last_updated: 1_234_567_890,
+    )
   let json_string = codecs.settings_to_json(settings)
   assert codecs.parse_settings(json_string) == Ok(settings)
 }
@@ -51,9 +52,12 @@ pub fn settings_all_page_sizes_test() {
       last_updated: 1,
     )
   }
-  assert codecs.parse_settings(codecs.settings_to_json(make(Letter))) == Ok(make(Letter))
-  assert codecs.parse_settings(codecs.settings_to_json(make(A4))) == Ok(make(A4))
-  assert codecs.parse_settings(codecs.settings_to_json(make(Legal))) == Ok(make(Legal))
+  assert codecs.parse_settings(codecs.settings_to_json(make(Letter)))
+    == Ok(make(Letter))
+  assert codecs.parse_settings(codecs.settings_to_json(make(A4)))
+    == Ok(make(A4))
+  assert codecs.parse_settings(codecs.settings_to_json(make(Legal)))
+    == Ok(make(Legal))
 }
 
 pub fn settings_all_themes_test() {
@@ -73,9 +77,12 @@ pub fn settings_all_themes_test() {
       last_updated: 1,
     )
   }
-  assert codecs.parse_settings(codecs.settings_to_json(make(Light))) == Ok(make(Light))
-  assert codecs.parse_settings(codecs.settings_to_json(make(Dark))) == Ok(make(Dark))
-  assert codecs.parse_settings(codecs.settings_to_json(make(Auto))) == Ok(make(Auto))
+  assert codecs.parse_settings(codecs.settings_to_json(make(Light)))
+    == Ok(make(Light))
+  assert codecs.parse_settings(codecs.settings_to_json(make(Dark)))
+    == Ok(make(Dark))
+  assert codecs.parse_settings(codecs.settings_to_json(make(Auto)))
+    == Ok(make(Auto))
 }
 
 // Legacy Chrome storage format — extra fields (autoDetectCV, etc.) are ignored.
@@ -124,20 +131,21 @@ pub fn settings_invalid_page_size_test() {
   let json_str =
     "{\"theme\":\"auto\",\"defaultConfig\":{\"pageSize\":\"B5\",\"margin\":{\"top\":0,\"right\":0,\"bottom\":0,\"left\":0},\"fontSize\":11,\"fontFamily\":\"Helvetica\",\"compress\":true},\"settingsVersion\":1,\"lastUpdated\":1}"
   let result = codecs.parse_settings(json_str)
-  assert result != Ok(Settings(
-    theme: Auto,
-    default_config: ConversionConfig(
-      page_size: Letter,
-      margin: Margin(top: 0.0, right: 0.0, bottom: 0.0, left: 0.0),
-      font_size: 11,
-      font_family: "Helvetica",
-      compress: True,
-      ats_optimization: False,
-      include_metadata: True,
-    ),
-    settings_version: 1,
-    last_updated: 1,
-  ))
+  assert result
+    != Ok(Settings(
+      theme: Auto,
+      default_config: ConversionConfig(
+        page_size: Letter,
+        margin: Margin(top: 0.0, right: 0.0, bottom: 0.0, left: 0.0),
+        font_size: 11,
+        font_family: "Helvetica",
+        compress: True,
+        ats_optimization: False,
+        include_metadata: True,
+      ),
+      settings_version: 1,
+      last_updated: 1,
+    ))
   case result {
     Error(_) -> Nil
     Ok(_) -> panic as "Expected decode error for invalid page size"
@@ -223,7 +231,9 @@ pub fn progress_payload_all_statuses_test() {
     <> pct
     <> ",\"currentOperation\":\"op\"}}"
   }
-  let parse = fn(j) { json.parse(from: j, using: codecs.progress_payload_decoder()) }
+  let parse = fn(j) {
+    json.parse(from: j, using: codecs.progress_payload_decoder())
+  }
 
   let check_stage = fn(json_str, expected_stage) {
     case parse(json_str) {
@@ -256,19 +266,18 @@ pub fn complete_payload_with_filename_test() {
     == Ok(CompletePayload(
       job_id: "job-2",
       filename: Some("resume.pdf"),
-      file_size: 42000,
+      file_size: 42_000,
       duration: 1500,
     ))
 }
 
 pub fn complete_payload_no_filename_test() {
-  let json_str =
-    "{\"jobId\":\"job-3\",\"fileSize\":10000,\"duration\":800}"
+  let json_str = "{\"jobId\":\"job-3\",\"fileSize\":10000,\"duration\":800}"
   assert json.parse(from: json_str, using: codecs.complete_payload_decoder())
     == Ok(CompletePayload(
       job_id: "job-3",
       filename: None,
-      file_size: 10000,
+      file_size: 10_000,
       duration: 800,
     ))
 }
@@ -335,14 +344,15 @@ pub fn conversion_request_empty_test() {
 }
 
 pub fn conversion_request_round_trip_test() {
-  let req = ConversionRequest(
-    tsx: Some("<CV />"),
-    file_name: Some("cv.tsx"),
-    config: None,
-  )
+  let req =
+    ConversionRequest(
+      tsx: Some("<CV />"),
+      file_name: Some("cv.tsx"),
+      config: None,
+    )
   assert json.parse(
-    from: codecs.conversion_request_to_json(req),
-    using: codecs.conversion_request_decoder(),
-  )
+      from: codecs.conversion_request_to_json(req),
+      using: codecs.conversion_request_decoder(),
+    )
     == Ok(req)
 }

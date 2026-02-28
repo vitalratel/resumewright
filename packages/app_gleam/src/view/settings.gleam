@@ -12,39 +12,33 @@ import view/settings/margins
 import view/settings/page_size
 
 pub fn view(model: Model) -> Element(Msg) {
-  html.div(
-    [attribute.class("space-y-5")],
-    [
-      settings_header(),
-      tab_bar(model),
-      tab_content(model),
-    ],
-  )
+  html.div([attribute.class("space-y-5")], [
+    settings_header(),
+    tab_bar(model),
+    tab_content(model),
+  ])
 }
 
 fn settings_header() -> Element(Msg) {
-  html.div(
-    [attribute.class("relative flex items-center mb-1")],
-    [
-      html.button(
-        [
-          attribute.type_("button"),
-          attribute.aria_label("Back to converter"),
-          attribute.class("btn-ghost flex items-center gap-1.5 text-sm"),
-          event.on_click(model.ShowMain),
-        ],
-        [back_icon(), html.text("Back")],
-      ),
-      html.h1(
-        [
-          attribute.class(
-            "absolute inset-x-0 text-center text-lg font-semibold text-foreground pointer-events-none",
-          ),
-        ],
-        [html.text("Settings")],
-      ),
-    ],
-  )
+  html.div([attribute.class("relative flex items-center mb-1")], [
+    html.button(
+      [
+        attribute.type_("button"),
+        attribute.aria_label("Back to converter"),
+        attribute.class("btn-ghost flex items-center gap-1.5 text-sm"),
+        event.on_click(model.ShowMain),
+      ],
+      [back_icon(), html.text("Back")],
+    ),
+    html.h1(
+      [
+        attribute.class(
+          "absolute inset-x-0 text-center text-lg font-semibold text-foreground pointer-events-none",
+        ),
+      ],
+      [html.text("Settings")],
+    ),
+  ])
 }
 
 fn tab_bar(m: Model) -> Element(Msg) {
@@ -61,7 +55,11 @@ fn tab_bar(m: Model) -> Element(Msg) {
   )
 }
 
-fn tab_button(label: String, tab: model.SettingsTab, selected: Bool) -> Element(Msg) {
+fn tab_button(
+  label: String,
+  tab: model.SettingsTab,
+  selected: Bool,
+) -> Element(Msg) {
   let tab_id = case tab {
     PageTab -> "tab-page"
     GeneralTab -> "tab-general"
@@ -80,13 +78,10 @@ fn tab_button(label: String, tab: model.SettingsTab, selected: Bool) -> Element(
 }
 
 fn tab_content(m: Model) -> Element(Msg) {
-  html.div(
-    [attribute.class("space-y-4")],
-    case m.settings_tab {
-      PageTab -> [page_size.view(m.settings), margins.view(m.settings)]
-      GeneralTab -> [general.view(m.settings, m.reset_confirm)]
-    },
-  )
+  html.div([attribute.class("space-y-4")], case m.settings_tab {
+    PageTab -> [page_size.view(m.settings), margins.view(m.settings)]
+    GeneralTab -> [general.view(m.settings, m.reset_confirm)]
+  })
 }
 
 fn back_icon() -> Element(Msg) {

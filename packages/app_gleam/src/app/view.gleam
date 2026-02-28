@@ -31,8 +31,7 @@ fn converter_view(model: Model) -> Element(Msg) {
     model.Importing(validation_error: err, drag_over: drag) ->
       importing.view(err, drag)
 
-    model.Ready(file: file) ->
-      ready.view(file, model.settings)
+    model.Ready(file: file) -> ready.view(file, model.settings)
 
     model.Converting(file: file, progress: progress) ->
       converting.view(file, progress)
@@ -43,10 +42,8 @@ fn converter_view(model: Model) -> Element(Msg) {
       duration: duration,
       countdown: countdown,
       paused: paused,
-    ) ->
-      success.view(filename, file_size, duration, countdown, paused)
+    ) -> success.view(filename, file_size, duration, countdown, paused)
 
-    model.Errored(error: err, file: file) ->
-      error.view(err, file)
+    model.Errored(error: err, file: file) -> error.view(err, file)
   }
 }

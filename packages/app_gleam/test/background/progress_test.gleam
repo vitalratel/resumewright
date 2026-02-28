@@ -20,11 +20,13 @@ pub fn parsing_description_test() {
 }
 
 pub fn extracting_metadata_description_test() {
-  assert progress.stage_description(ExtractingMetadata) == "Extracting metadata..."
+  assert progress.stage_description(ExtractingMetadata)
+    == "Extracting metadata..."
 }
 
 pub fn rendering_description_test() {
-  assert progress.stage_description(Rendering) == "Rendering React components..."
+  assert progress.stage_description(Rendering)
+    == "Rendering React components..."
 }
 
 pub fn laying_out_description_test() {
@@ -61,15 +63,18 @@ pub fn string_extracting_metadata_test() {
 }
 
 pub fn string_rendering_test() {
-  assert progress.description_from_string("rendering") == "Rendering React components..."
+  assert progress.description_from_string("rendering")
+    == "Rendering React components..."
 }
 
 pub fn string_laying_out_test() {
-  assert progress.description_from_string("laying-out") == "Calculating layout..."
+  assert progress.description_from_string("laying-out")
+    == "Calculating layout..."
 }
 
 pub fn string_generating_pdf_test() {
-  assert progress.description_from_string("generating-pdf") == "Generating PDF..."
+  assert progress.description_from_string("generating-pdf")
+    == "Generating PDF..."
 }
 
 pub fn string_completed_test() {

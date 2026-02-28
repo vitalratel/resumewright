@@ -131,8 +131,7 @@ pub fn content_react_double_quote_import_ok_test() {
 }
 
 pub fn content_has_jsx_with_react_ok_test() {
-  let content =
-    "import React from 'react'\nconst x = <div>test</div>"
+  let content = "import React from 'react'\nconst x = <div>test</div>"
   validation.check_content(content)
   |> should.be_ok
 }

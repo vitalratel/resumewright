@@ -8,11 +8,10 @@ import shared/types.{
   type CompletePayload, type ConversionConfig, type ConversionError,
   type ConversionProgress, type ConversionRequest, type ConversionStatus,
   type ErrorPayload, type Margin, type PageSize, type ProgressPayload,
-  type Settings, type Theme,
-  A4, Auto, CompletePayload, Completed, ConversionConfig, ConversionError,
-  ConversionProgress, ConversionRequest, Dark, ErrorPayload, ExtractingMetadata,
-  Failed, GeneratingPdf, LayingOut, Legal, Letter, Light, Margin, Parsing,
-  ProgressPayload, Queued, Rendering, Settings,
+  type Settings, type Theme, A4, Auto, CompletePayload, Completed,
+  ConversionConfig, ConversionError, ConversionProgress, ConversionRequest, Dark,
+  ErrorPayload, ExtractingMetadata, Failed, GeneratingPdf, LayingOut, Legal,
+  Letter, Light, Margin, Parsing, ProgressPayload, Queued, Rendering, Settings,
 }
 
 // ---------------------------------------------------------------------------
@@ -76,10 +75,18 @@ fn conversion_config_decoder() -> decode.Decoder(ConversionConfig) {
 
 pub fn settings_decoder() -> decode.Decoder(Settings) {
   use theme <- decode.field("theme", theme_decoder())
-  use default_config <- decode.field("defaultConfig", conversion_config_decoder())
+  use default_config <- decode.field(
+    "defaultConfig",
+    conversion_config_decoder(),
+  )
   use settings_version <- decode.field("settingsVersion", decode.int)
   use last_updated <- decode.field("lastUpdated", decode.int)
-  decode.success(Settings(theme:, default_config:, settings_version:, last_updated:))
+  decode.success(Settings(
+    theme:,
+    default_config:,
+    settings_version:,
+    last_updated:,
+  ))
 }
 
 pub fn parse_settings(json_string: String) -> Result(Settings, json.DecodeError) {

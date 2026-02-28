@@ -40,23 +40,19 @@ pub fn view(
         ],
         [alert_icon()],
       ),
-      html.div(
-        [attribute.class("text-center space-y-1 w-full max-w-md")],
-        [
-          html.p(
-            [
-              attribute.class(
-                "text-xs text-muted-foreground font-semibold uppercase tracking-wide",
-              ),
-            ],
-            [html.text(error.code)],
-          ),
-          html.h1(
-            [attribute.class("text-lg font-semibold text-foreground")],
-            [html.text(error.message)],
-          ),
-        ],
-      ),
+      html.div([attribute.class("text-center space-y-1 w-full max-w-md")], [
+        html.p(
+          [
+            attribute.class(
+              "text-xs text-muted-foreground font-semibold uppercase tracking-wide",
+            ),
+          ],
+          [html.text(error.code)],
+        ),
+        html.h1([attribute.class("text-lg font-semibold text-foreground")], [
+          html.text(error.message),
+        ]),
+      ]),
       html.ul(
         [
           attribute.class(

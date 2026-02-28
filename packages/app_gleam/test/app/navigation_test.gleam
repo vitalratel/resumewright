@@ -5,8 +5,8 @@ import app/model.{
   type Model, GeneralTab, Importing, Main, Model, PageTab, Settings,
 }
 import app/update
-import gleeunit/should
 import gleam/option.{None}
+import gleeunit/should
 import shared/types.{
   ConversionConfig, Letter, Margin, Settings as SharedSettings,
 }

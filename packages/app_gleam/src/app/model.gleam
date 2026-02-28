@@ -4,10 +4,10 @@
 import gleam/option.{type Option, None}
 import plinth/browser/file.{type File}
 import shared/types.{
-  type ConversionError, type Settings,
-  Auto, ConversionConfig, Letter, Margin,
-  // Note: Settings constructor NOT imported — conflicts with View { Main  Settings }
+  type ConversionError, type Settings, Auto, ConversionConfig, Letter, Margin,
 }
+
+// Note: Settings constructor NOT imported — conflicts with View { Main  Settings }
 
 // ---------------------------------------------------------------------------
 // Views

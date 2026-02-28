@@ -2,9 +2,7 @@
 // ABOUTME: Returns a list of error strings so callers surface all failures at once.
 
 import gleam/list
-import shared/types.{
-  type ConversionConfig, type Margin, type Settings,
-}
+import shared/types.{type ConversionConfig, type Margin, type Settings}
 
 /// Validates a Margin, checking each side is within [0.0, 1.5] inches.
 pub fn validate_margin(margin: Margin) -> Result(Margin, List(String)) {

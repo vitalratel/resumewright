@@ -38,7 +38,11 @@ pub fn description_from_string(stage: String) -> String {
 }
 
 /// Formats a retry progress description, e.g. "Conversion attempt 2/3... retrying in 1.0s".
-pub fn retry_description(attempt: Int, max_attempts: Int, delay_ms: Int) -> String {
+pub fn retry_description(
+  attempt: Int,
+  max_attempts: Int,
+  delay_ms: Int,
+) -> String {
   let delay_s = int.to_float(delay_ms) /. 1000.0
   let delay_str = format_delay(delay_s)
   "Conversion attempt "

@@ -72,10 +72,7 @@ fn handle_conversion(data: Dynamic) -> Promise(String) {
             json.to_string(
               json.object([
                 #("success", json.bool(False)),
-                #(
-                  "error",
-                  json.string("Invalid conversion request payload."),
-                ),
+                #("error", json.string("Invalid conversion request payload.")),
               ]),
             ),
           )

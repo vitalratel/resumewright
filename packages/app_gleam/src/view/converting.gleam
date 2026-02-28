@@ -58,14 +58,12 @@ pub fn view(file: model.ImportedFile, progress: model.Progress) -> Element(Msg) 
           attribute.data("testid", "progress-status"),
         ],
         [
-          html.p(
-            [attribute.class("text-2xl font-bold text-foreground")],
-            [html.text(int.to_string(progress.percentage) <> "%")],
-          ),
-          html.p(
-            [attribute.class("text-sm text-muted-foreground")],
-            [html.text(progress.stage)],
-          ),
+          html.p([attribute.class("text-2xl font-bold text-foreground")], [
+            html.text(int.to_string(progress.percentage) <> "%"),
+          ]),
+          html.p([attribute.class("text-sm text-muted-foreground")], [
+            html.text(progress.stage),
+          ]),
         ],
       ),
       html.button(

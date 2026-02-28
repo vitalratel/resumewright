@@ -83,13 +83,18 @@ pub fn start_conversion(file: model.ImportedFile) -> Effect(model.Msg) {
     case app_ffi.decode_bool_field(response, "success") {
       Ok(True) -> Nil
       _ ->
-        dispatch(model.GotError(types.ConversionError(
-          code: "CONVERSION_START_FAILED",
-          message: "We couldn't start converting your CV. This might be a temporary issue.",
-          suggestions: ["Try converting again", "Reload the extension and try again"],
-          recoverable: True,
-          technical_details: None,
-        )))
+        dispatch(
+          model.GotError(types.ConversionError(
+            code: "CONVERSION_START_FAILED",
+            message: "We couldn't start converting your CV. This might be a temporary issue.",
+            suggestions: [
+              "Try converting again",
+              "Reload the extension and try again",
+            ],
+            recoverable: True,
+            technical_details: None,
+          )),
+        )
     }
   })
 }
@@ -196,7 +201,10 @@ pub fn register_listener() -> Effect(model.Msg) {
         }
       "conversionError" ->
         case
-          json.parse(app_ffi.json_stringify(data), codecs.error_payload_decoder())
+          json.parse(
+            app_ffi.json_stringify(data),
+            codecs.error_payload_decoder(),
+          )
         {
           Ok(payload) -> dispatch(model.GotError(payload.error))
           Error(_) -> Nil

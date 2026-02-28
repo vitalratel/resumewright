@@ -1,12 +1,10 @@
 // ABOUTME: Tests for file import Msg transitions — file read, TSX validation, ready state.
 // ABOUTME: Covers FileReadComplete, TsxValidationResult, FileCleared, ExportClicked.
 
-import app/model.{
-  type Model, Converting, ImportedFile, Importing, Model, Ready,
-}
+import app/model.{type Model, Converting, ImportedFile, Importing, Model, Ready}
 import app/update
-import gleeunit/should
 import gleam/option.{None, Some}
+import gleeunit/should
 import shared/types.{
   ConversionConfig, Letter, Margin, Settings as SharedSettings,
 }

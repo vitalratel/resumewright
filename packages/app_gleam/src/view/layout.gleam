@@ -10,13 +10,16 @@ import lustre/event
 
 pub fn wrap(model: Model, content: Element(Msg)) -> Element(Msg) {
   html.div(
-    [attribute.class("flex flex-col min-h-screen bg-background text-foreground")],
+    [
+      attribute.class(
+        "flex flex-col min-h-screen bg-background text-foreground",
+      ),
+    ],
     [
       header(),
-      html.main(
-        [attribute.class("flex-1 w-full max-w-lg mx-auto px-4 py-6")],
-        [content],
-      ),
+      html.main([attribute.class("flex-1 w-full max-w-lg mx-auto px-4 py-6")], [
+        content,
+      ]),
       footer(model),
       live_regions(model),
     ],
@@ -24,94 +27,82 @@ pub fn wrap(model: Model, content: Element(Msg)) -> Element(Msg) {
 }
 
 fn header() -> Element(Msg) {
-  html.header(
-    [attribute.class("w-full bg-primary text-primary-foreground")],
-    [
-      html.div(
-        [
-          attribute.class(
-            "flex items-center justify-between w-full max-w-lg mx-auto px-4 py-3",
-          ),
-        ],
-        [
-          logo(),
-          html.div(
-            [attribute.class("flex items-center gap-1")],
+  html.header([attribute.class("w-full bg-primary text-primary-foreground")], [
+    html.div(
+      [
+        attribute.class(
+          "flex items-center justify-between w-full max-w-lg mx-auto px-4 py-3",
+        ),
+      ],
+      [
+        logo(),
+        html.div([attribute.class("flex items-center gap-1")], [
+          html.button(
             [
-              html.button(
-                [
-                  attribute.type_("button"),
-                  attribute.aria_label("Help"),
-                  attribute.class("btn-header"),
-                  event.on_click(model.OpenHelp),
-                ],
-                [help_icon(), html.text("Help")],
-              ),
-              html.button(
-                [
-                  attribute.id("btn-settings"),
-                  attribute.type_("button"),
-                  attribute.aria_label("Settings"),
-                  attribute.class("btn-header"),
-                  event.on_click(model.ShowSettings),
-                ],
-                [settings_icon(), html.text("Settings")],
-              ),
+              attribute.type_("button"),
+              attribute.aria_label("Help"),
+              attribute.class("btn-header"),
+              event.on_click(model.OpenHelp),
             ],
+            [help_icon(), html.text("Help")],
           ),
-        ],
-      ),
-    ],
-  )
+          html.button(
+            [
+              attribute.id("btn-settings"),
+              attribute.type_("button"),
+              attribute.aria_label("Settings"),
+              attribute.class("btn-header"),
+              event.on_click(model.ShowSettings),
+            ],
+            [settings_icon(), html.text("Settings")],
+          ),
+        ]),
+      ],
+    ),
+  ])
 }
 
 fn logo() -> Element(Msg) {
-  html.div(
-    [attribute.class("flex items-center gap-2")],
-    [
-      html.img([
-        attribute.src("/icons/icon-48.png"),
-        attribute.alt(""),
-        attribute.class("w-6 h-6"),
-        attribute.aria_hidden(True),
-      ]),
-      html.span(
-        [attribute.class("text-sm font-semibold text-primary-foreground")],
-        [html.text("ResumeWright")],
-      ),
-    ],
-  )
+  html.div([attribute.class("flex items-center gap-2")], [
+    html.img([
+      attribute.src("/icons/icon-48.png"),
+      attribute.alt(""),
+      attribute.class("w-6 h-6"),
+      attribute.aria_hidden(True),
+    ]),
+    html.span(
+      [attribute.class("text-sm font-semibold text-primary-foreground")],
+      [html.text("ResumeWright")],
+    ),
+  ])
 }
 
 fn footer(model: Model) -> Element(Msg) {
-  html.footer(
-    [attribute.class("w-full border-t border-border")],
-    [
-      html.div(
-        [
-          attribute.class(
-            "max-w-lg mx-auto px-4 py-3 flex items-center justify-between text-xs text-muted-foreground",
-          ),
-        ],
-        [
-          html.a(
-            [
-              attribute.href("https://resumewright.com/#faq"),
-              attribute.attribute("target", "_blank"),
-              attribute.attribute("rel", "noopener noreferrer"),
-              attribute.class("btn-ghost flex items-center gap-1.5"),
-            ],
-            [footer_help_icon(), html.text("Help & FAQ")],
-          ),
-          html.span(
-            [attribute.class("flex items-center gap-1.5")],
-            [footer_check_icon(), html.text("Privacy-first")],
-          ),
-          html.span([], [html.text("v" <> model.version)]),
-        ],
-      ),
-    ],
-  )
+  html.footer([attribute.class("w-full border-t border-border")], [
+    html.div(
+      [
+        attribute.class(
+          "max-w-lg mx-auto px-4 py-3 flex items-center justify-between text-xs text-muted-foreground",
+        ),
+      ],
+      [
+        html.a(
+          [
+            attribute.href("https://resumewright.com/#faq"),
+            attribute.attribute("target", "_blank"),
+            attribute.attribute("rel", "noopener noreferrer"),
+            attribute.class("btn-ghost flex items-center gap-1.5"),
+          ],
+          [footer_help_icon(), html.text("Help & FAQ")],
+        ),
+        html.span([attribute.class("flex items-center gap-1.5")], [
+          footer_check_icon(),
+          html.text("Privacy-first"),
+        ]),
+        html.span([], [html.text("v" <> model.version)]),
+      ],
+    ),
+  ])
 }
 
 fn footer_help_icon() -> Element(Msg) {
@@ -133,7 +124,9 @@ fn footer_help_icon() -> Element(Msg) {
         attribute.attribute("cy", "12"),
         attribute.attribute("r", "10"),
       ]),
-      svg.path([attribute.attribute("d", "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3")]),
+      svg.path([
+        attribute.attribute("d", "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"),
+      ]),
       svg.line([
         attribute.attribute("x1", "12"),
         attribute.attribute("y1", "17"),
@@ -166,26 +159,23 @@ fn footer_check_icon() -> Element(Msg) {
 }
 
 fn live_regions(model: Model) -> Element(Msg) {
-  html.div(
-    [attribute.class("sr-only")],
-    [
-      html.div(
-        [
-          attribute.role("status"),
-          attribute.aria_live("polite"),
-          attribute.aria_atomic(True),
-        ],
-        [html.text(model.announcement)],
-      ),
-      html.div(
-        [
-          attribute.aria_live("assertive"),
-          attribute.aria_atomic(True),
-        ],
-        [html.text(model.error_announcement)],
-      ),
-    ],
-  )
+  html.div([attribute.class("sr-only")], [
+    html.div(
+      [
+        attribute.role("status"),
+        attribute.aria_live("polite"),
+        attribute.aria_atomic(True),
+      ],
+      [html.text(model.announcement)],
+    ),
+    html.div(
+      [
+        attribute.aria_live("assertive"),
+        attribute.aria_atomic(True),
+      ],
+      [html.text(model.error_announcement)],
+    ),
+  ])
 }
 
 fn settings_icon() -> Element(Msg) {
@@ -236,7 +226,9 @@ fn help_icon() -> Element(Msg) {
         attribute.attribute("cy", "12"),
         attribute.attribute("r", "10"),
       ]),
-      svg.path([attribute.attribute("d", "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3")]),
+      svg.path([
+        attribute.attribute("d", "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"),
+      ]),
       svg.line([
         attribute.attribute("x1", "12"),
         attribute.attribute("y1", "17"),
@@ -246,4 +238,3 @@ fn help_icon() -> Element(Msg) {
     ],
   )
 }
-

@@ -6,8 +6,8 @@ import app/model.{
   Success,
 }
 import app/update
-import gleeunit/should
 import gleam/option.{None, Some}
+import gleeunit/should
 import shared/types.{
   ConversionConfig, ConversionError, Letter, Margin, Settings as SharedSettings,
 }
@@ -103,7 +103,11 @@ pub fn got_progress_ignored_outside_converting_test() {
 
 pub fn got_complete_transitions_to_success_test() {
   in_converting()
-  |> do_update(model.GotComplete("John_Doe_Resume_2024-01-01.pdf", 204_800, 1500))
+  |> do_update(model.GotComplete(
+    "John_Doe_Resume_2024-01-01.pdf",
+    204_800,
+    1500,
+  ))
   |> fn(m) {
     case m.converter_state {
       Success("John_Doe_Resume_2024-01-01.pdf", 204_800, 1500, 20, False) ->
@@ -132,7 +136,10 @@ pub fn got_error_transitions_to_errored_test() {
 // ---------------------------------------------------------------------------
 
 pub fn countdown_tick_decrements_test() {
-  Model(..initial_model(), converter_state: Success("file.pdf", 1000, 2000, 15, False))
+  Model(
+    ..initial_model(),
+    converter_state: Success("file.pdf", 1000, 2000, 15, False),
+  )
   |> do_update(model.CountdownTick)
   |> fn(m) {
     case m.converter_state {
@@ -144,7 +151,10 @@ pub fn countdown_tick_decrements_test() {
 }
 
 pub fn countdown_tick_paused_does_not_decrement_test() {
-  Model(..initial_model(), converter_state: Success("file.pdf", 1000, 2000, 15, True))
+  Model(
+    ..initial_model(),
+    converter_state: Success("file.pdf", 1000, 2000, 15, True),
+  )
   |> do_update(model.CountdownTick)
   |> fn(m) {
     case m.converter_state {
@@ -156,7 +166,10 @@ pub fn countdown_tick_paused_does_not_decrement_test() {
 }
 
 pub fn pause_countdown_toggles_paused_test() {
-  Model(..initial_model(), converter_state: Success("file.pdf", 1000, 2000, 10, False))
+  Model(
+    ..initial_model(),
+    converter_state: Success("file.pdf", 1000, 2000, 10, False),
+  )
   |> do_update(model.PauseCountdownClicked)
   |> fn(m) {
     case m.converter_state {
@@ -168,7 +181,10 @@ pub fn pause_countdown_toggles_paused_test() {
 }
 
 pub fn resume_countdown_toggles_paused_test() {
-  Model(..initial_model(), converter_state: Success("file.pdf", 1000, 2000, 10, True))
+  Model(
+    ..initial_model(),
+    converter_state: Success("file.pdf", 1000, 2000, 10, True),
+  )
   |> do_update(model.PauseCountdownClicked)
   |> fn(m) {
     case m.converter_state {
@@ -180,7 +196,10 @@ pub fn resume_countdown_toggles_paused_test() {
 }
 
 pub fn convert_another_returns_to_importing_test() {
-  Model(..initial_model(), converter_state: Success("file.pdf", 1000, 2000, 5, False))
+  Model(
+    ..initial_model(),
+    converter_state: Success("file.pdf", 1000, 2000, 5, False),
+  )
   |> do_update(model.ConvertAnotherClicked)
   |> fn(m) { m.converter_state }
   |> should.equal(Importing(validation_error: None, drag_over: False))
@@ -202,10 +221,7 @@ pub fn import_different_returns_to_importing_test() {
 
 pub fn retry_from_recoverable_error_transitions_to_converting_test() {
   let file = test_file()
-  Model(
-    ..initial_model(),
-    converter_state: Errored(test_error(), Some(file)),
-  )
+  Model(..initial_model(), converter_state: Errored(test_error(), Some(file)))
   |> do_update(model.RetryClicked)
   |> fn(m) {
     case m.converter_state {
@@ -217,10 +233,7 @@ pub fn retry_from_recoverable_error_transitions_to_converting_test() {
 }
 
 pub fn retry_without_file_stays_in_importing_test() {
-  Model(
-    ..initial_model(),
-    converter_state: Errored(test_error(), None),
-  )
+  Model(..initial_model(), converter_state: Errored(test_error(), None))
   |> do_update(model.RetryClicked)
   |> fn(m) {
     case m.converter_state {

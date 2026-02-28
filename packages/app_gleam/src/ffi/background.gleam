@@ -45,9 +45,7 @@ pub fn storage_local_get_string(key: String) -> Promise(Result(String, Nil))
 /// Registers a chrome.runtime.onMessage listener.
 /// handler returns a JSON string which is parsed and sent back as { res: parsed }.
 @external(javascript, "./background_ffi.mjs", "on_request")
-pub fn on_request(
-  handler: fn(String, Dynamic) -> Promise(String),
-) -> Nil
+pub fn on_request(handler: fn(String, Dynamic) -> Promise(String)) -> Nil
 
 /// Broadcasts a message to all extension pages using the @webext-core/messaging wire format.
 /// payload_json is a JSON string that becomes the `data` field.
@@ -79,4 +77,3 @@ pub fn sleep_ms(ms: Int) -> Promise(Nil)
 
 @external(javascript, "./background_ffi.mjs", "current_date_string")
 pub fn current_date_string() -> String
-

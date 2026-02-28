@@ -44,6 +44,8 @@ pub fn ready_shows_filename_test() {
 
 pub fn ready_has_export_button_test() {
   ready.view(test_file(), test_settings())
-  |> query.find(matching: query.element(query.attribute("data-testid", "export-button")))
+  |> query.find(
+    matching: query.element(query.attribute("data-testid", "export-button")),
+  )
   |> should.be_ok
 }

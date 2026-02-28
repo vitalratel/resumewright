@@ -139,11 +139,12 @@ pub fn reset_cancelled_hides_confirm_test() {
 }
 
 pub fn reset_confirmed_restores_defaults_test() {
-  let custom = SharedSettings(
-    ..default_settings(),
-    theme: types.Dark,
-    default_config: ConversionConfig(..default_config(), page_size: types.A4),
-  )
+  let custom =
+    SharedSettings(
+      ..default_settings(),
+      theme: types.Dark,
+      default_config: ConversionConfig(..default_config(), page_size: types.A4),
+    )
   Model(..initial_model(), settings: custom, reset_confirm: True)
   |> do_update(model.ResetConfirmed)
   |> fn(m) {

@@ -11,77 +11,54 @@ import lustre/element/html
 import lustre/element/svg
 import lustre/event
 
-pub fn view(
-  validation_error: Option(String),
-  drag_over: Bool,
-) -> Element(Msg) {
-  html.div(
-    [],
-    [
-      html.h1(
-        [attribute.class("sr-only")],
-        [html.text("Convert CV to PDF")],
-      ),
-      tip_collapsible(),
-      drop_zone(validation_error, drag_over),
-      validation_error_div(validation_error),
-      html.label(
-        [
-          attribute.for("file-input"),
-          attribute.class(
-            "btn-primary mt-4 w-full py-2.5 px-4 font-medium flex items-center justify-center cursor-pointer",
-          ),
-        ],
-        [html.text("Browse Files")],
-      ),
-    ],
-  )
+pub fn view(validation_error: Option(String), drag_over: Bool) -> Element(Msg) {
+  html.div([], [
+    html.h1([attribute.class("sr-only")], [html.text("Convert CV to PDF")]),
+    tip_collapsible(),
+    drop_zone(validation_error, drag_over),
+    validation_error_div(validation_error),
+    html.label(
+      [
+        attribute.for("file-input"),
+        attribute.class(
+          "btn-primary mt-4 w-full py-2.5 px-4 font-medium flex items-center justify-center cursor-pointer",
+        ),
+      ],
+      [html.text("Browse Files")],
+    ),
+  ])
 }
 
 fn tip_collapsible() -> Element(Msg) {
-  html.details(
-    [attribute.class("mb-4 text-sm text-muted-foreground")],
-    [
-      html.summary(
-        [
-          attribute.class(
-            "flex items-center gap-2 cursor-pointer select-none hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1 py-0.5",
-          ),
-        ],
-        [
-          info_icon(),
-          html.text("GetTSX from Claude.ai"),
-        ],
-      ),
-      html.div(
-        [attribute.class("mt-2 ml-5 space-y-1 text-muted-foreground")],
-        [
-          html.p(
-            [],
-            [html.text("1. Open Claude.ai and ask it to write your CV as a React component")],
-          ),
-          html.p(
-            [],
-            [
-              html.text("2. Save the generated code as a "),
-              html.code(
-                [attribute.class("code-inline")],
-                [html.text(".tsx")],
-              ),
-              html.text(" file"),
-            ],
-          ),
-          html.p([], [html.text("3. Drop it below to convert to PDF")]),
-        ],
-      ),
-    ],
-  )
+  html.details([attribute.class("mb-4 text-sm text-muted-foreground")], [
+    html.summary(
+      [
+        attribute.class(
+          "flex items-center gap-2 cursor-pointer select-none hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1 py-0.5",
+        ),
+      ],
+      [
+        info_icon(),
+        html.text("GetTSX from Claude.ai"),
+      ],
+    ),
+    html.div([attribute.class("mt-2 ml-5 space-y-1 text-muted-foreground")], [
+      html.p([], [
+        html.text(
+          "1. Open Claude.ai and ask it to write your CV as a React component",
+        ),
+      ]),
+      html.p([], [
+        html.text("2. Save the generated code as a "),
+        html.code([attribute.class("code-inline")], [html.text(".tsx")]),
+        html.text(" file"),
+      ]),
+      html.p([], [html.text("3. Drop it below to convert to PDF")]),
+    ]),
+  ])
 }
 
-fn drop_zone(
-  _validation_error: Option(String),
-  drag_over: Bool,
-) -> Element(Msg) {
+fn drop_zone(_validation_error: Option(String), drag_over: Bool) -> Element(Msg) {
   html.div(
     [
       attribute.id("drop-zone"),
@@ -89,7 +66,8 @@ fn drop_zone(
         "border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-ring "
         <> case drag_over {
           True -> "border-primary bg-primary/10"
-          False -> "border-primary/40 hover:border-primary/70 hover:bg-primary/5"
+          False ->
+            "border-primary/40 hover:border-primary/70 hover:bg-primary/5"
         },
       ),
       attribute.role("region"),
@@ -102,22 +80,18 @@ fn drop_zone(
     ],
     [
       upload_icon(),
-      html.div(
-        [attribute.class("text-center")],
-        [
-          html.p(
-            [attribute.class("text-sm font-medium text-foreground")],
-            [html.text("Drag & drop your CV file here")],
-          ),
-          html.p(
-            [
-              attribute.id("drop-zone-hint"),
-              attribute.class("text-xs text-muted-foreground mt-0.5"),
-            ],
-            [html.text("Supports: TSX files (up to 1MB)")],
-          ),
-        ],
-      ),
+      html.div([attribute.class("text-center")], [
+        html.p([attribute.class("text-sm font-medium text-foreground")], [
+          html.text("Drag & drop your CV file here"),
+        ]),
+        html.p(
+          [
+            attribute.id("drop-zone-hint"),
+            attribute.class("text-xs text-muted-foreground mt-0.5"),
+          ],
+          [html.text("Supports: TSX files (up to 1MB)")],
+        ),
+      ]),
       html.input([
         attribute.id("file-input"),
         attribute.type_("file"),
@@ -145,15 +119,12 @@ fn validation_error_div(validation_error: Option(String)) -> Element(Msg) {
     ],
     [
       alert_icon_sm(),
-      html.span(
-        [attribute.id("validation-error-text")],
-        [
-          html.text(case validation_error {
-            Some(msg) -> msg
-            None -> ""
-          }),
-        ],
-      ),
+      html.span([attribute.id("validation-error-text")], [
+        html.text(case validation_error {
+          Some(msg) -> msg
+          None -> ""
+        }),
+      ]),
     ],
   )
 }
@@ -193,7 +164,9 @@ fn upload_icon() -> Element(Msg) {
       attribute.class("text-primary/60"),
     ],
     [
-      svg.path([attribute.attribute("d", "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4")]),
+      svg.path([
+        attribute.attribute("d", "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"),
+      ]),
       svg.polyline([attribute.attribute("points", "17 8 12 3 7 8")]),
       svg.line([
         attribute.attribute("x1", "12"),
