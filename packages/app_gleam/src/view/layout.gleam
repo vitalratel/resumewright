@@ -118,22 +118,7 @@ fn footer_help_icon() -> Element(Msg) {
       attribute.attribute("stroke-linejoin", "round"),
       attribute.aria_hidden(True),
     ],
-    [
-      svg.circle([
-        attribute.attribute("cx", "12"),
-        attribute.attribute("cy", "12"),
-        attribute.attribute("r", "10"),
-      ]),
-      svg.path([
-        attribute.attribute("d", "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"),
-      ]),
-      svg.line([
-        attribute.attribute("x1", "12"),
-        attribute.attribute("y1", "17"),
-        attribute.attribute("x2", "12.01"),
-        attribute.attribute("y2", "17"),
-      ]),
-    ],
+    help_icon_paths(),
   )
 }
 
@@ -220,21 +205,25 @@ fn help_icon() -> Element(Msg) {
       attribute.attribute("stroke-linejoin", "round"),
       attribute.aria_hidden(True),
     ],
-    [
-      svg.circle([
-        attribute.attribute("cx", "12"),
-        attribute.attribute("cy", "12"),
-        attribute.attribute("r", "10"),
-      ]),
-      svg.path([
-        attribute.attribute("d", "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"),
-      ]),
-      svg.line([
-        attribute.attribute("x1", "12"),
-        attribute.attribute("y1", "17"),
-        attribute.attribute("x2", "12.01"),
-        attribute.attribute("y2", "17"),
-      ]),
-    ],
+    help_icon_paths(),
   )
+}
+
+fn help_icon_paths() -> List(Element(Msg)) {
+  [
+    svg.circle([
+      attribute.attribute("cx", "12"),
+      attribute.attribute("cy", "12"),
+      attribute.attribute("r", "10"),
+    ]),
+    svg.path([
+      attribute.attribute("d", "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"),
+    ]),
+    svg.line([
+      attribute.attribute("x1", "12"),
+      attribute.attribute("y1", "17"),
+      attribute.attribute("x2", "12.01"),
+      attribute.attribute("y2", "17"),
+    ]),
+  ]
 }

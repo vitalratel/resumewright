@@ -8,6 +8,7 @@ import gleam/dynamic/decode
 import gleam/float
 import gleam/json
 import gleam/option.{None}
+import gleam/result
 import lustre/effect.{type Effect}
 import plinth/browser/file.{type File}
 import shared/codecs
@@ -24,26 +25,17 @@ pub fn read_file(file: File) -> Effect(model.Msg) {
   let name = app_ffi.file_name(file)
   let size = app_ffi.file_size(file)
   let mime = app_ffi.file_type(file)
-  let quick_check =
-    validation.check_extension(name)
-    |> and_then(fn() { validation.check_mime(mime) })
-    |> and_then(fn() { validation.check_size(size) })
+  let quick_check = {
+    use _ <- result.try(validation.check_extension(name))
+    use _ <- result.try(validation.check_mime(mime))
+    validation.check_size(size)
+  }
   case quick_check {
     Error(msg) -> dispatch(model.FileReadComplete(Error(msg), name, size))
     Ok(Nil) ->
       app_ffi.read_file_as_text(file, fn(result) {
         dispatch(model.FileReadComplete(result, name, size))
       })
-  }
-}
-
-fn and_then(
-  r: Result(Nil, String),
-  next: fn() -> Result(Nil, String),
-) -> Result(Nil, String) {
-  case r {
-    Error(e) -> Error(e)
-    Ok(Nil) -> next()
   }
 }
 

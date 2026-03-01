@@ -8,6 +8,7 @@ import lustre/element.{type Element}
 import lustre/element/html
 import lustre/element/svg
 import lustre/event
+import view/format
 
 pub fn view(
   filename: String,
@@ -65,7 +66,7 @@ pub fn view(
           [html.text("View export details")],
         ),
         html.div([attribute.class("mt-2 ml-4 space-y-1 text-xs")], [
-          html.p([], [html.text("Size: " <> format_file_size(file_size))]),
+          html.p([], [html.text("Size: " <> format.file_size(file_size))]),
           html.p([], [html.text("Duration: " <> format_duration(duration))]),
         ]),
       ]),
@@ -114,14 +115,6 @@ pub fn view(
   )
 }
 
-fn format_file_size(bytes: Int) -> String {
-  case bytes {
-    b if b >= 1_048_576 -> int.to_string(b / 1_048_576) <> " MB"
-    b if b >= 1024 -> int.to_string(b / 1024) <> " KB"
-    _ -> int.to_string(bytes) <> " B"
-  }
-}
-
 fn format_duration(ms: Int) -> String {
   case ms {
     m if m >= 1000 ->
@@ -157,7 +150,7 @@ fn checkmark_circle() -> Element(Msg) {
   )
 }
 
-fn copy_icon() -> Element(Msg) {
+fn icon_16(children: List(Element(Msg))) -> Element(Msg) {
   svg.svg(
     [
       attribute.attribute("width", "16"),
@@ -170,49 +163,40 @@ fn copy_icon() -> Element(Msg) {
       attribute.attribute("stroke-linejoin", "round"),
       attribute.aria_hidden(True),
     ],
-    [
-      svg.rect([
-        attribute.attribute("x", "9"),
-        attribute.attribute("y", "9"),
-        attribute.attribute("width", "13"),
-        attribute.attribute("height", "13"),
-        attribute.attribute("rx", "2"),
-        attribute.attribute("ry", "2"),
-      ]),
-      svg.path([
-        attribute.attribute(
-          "d",
-          "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1",
-        ),
-      ]),
-    ],
+    children,
   )
 }
 
+fn copy_icon() -> Element(Msg) {
+  icon_16([
+    svg.rect([
+      attribute.attribute("x", "9"),
+      attribute.attribute("y", "9"),
+      attribute.attribute("width", "13"),
+      attribute.attribute("height", "13"),
+      attribute.attribute("rx", "2"),
+      attribute.attribute("ry", "2"),
+    ]),
+    svg.path([
+      attribute.attribute(
+        "d",
+        "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1",
+      ),
+    ]),
+  ])
+}
+
 fn download_icon() -> Element(Msg) {
-  svg.svg(
-    [
-      attribute.attribute("width", "16"),
-      attribute.attribute("height", "16"),
-      attribute.attribute("viewBox", "0 0 24 24"),
-      attribute.attribute("fill", "none"),
-      attribute.attribute("stroke", "currentColor"),
-      attribute.attribute("stroke-width", "2"),
-      attribute.attribute("stroke-linecap", "round"),
-      attribute.attribute("stroke-linejoin", "round"),
-      attribute.aria_hidden(True),
-    ],
-    [
-      svg.path([
-        attribute.attribute("d", "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"),
-      ]),
-      svg.polyline([attribute.attribute("points", "7 10 12 15 17 10")]),
-      svg.line([
-        attribute.attribute("x1", "12"),
-        attribute.attribute("y1", "15"),
-        attribute.attribute("x2", "12"),
-        attribute.attribute("y2", "3"),
-      ]),
-    ],
-  )
+  icon_16([
+    svg.path([
+      attribute.attribute("d", "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"),
+    ]),
+    svg.polyline([attribute.attribute("points", "7 10 12 15 17 10")]),
+    svg.line([
+      attribute.attribute("x1", "12"),
+      attribute.attribute("y1", "15"),
+      attribute.attribute("x2", "12"),
+      attribute.attribute("y2", "3"),
+    ]),
+  ])
 }

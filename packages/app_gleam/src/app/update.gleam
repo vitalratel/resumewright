@@ -71,13 +71,7 @@ pub fn update(m: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     model.FileReadComplete(Ok(content), name, size) ->
       handle_file_read(m, content, name, size)
     model.FileReadComplete(Error(msg), _, _) -> #(
-      model.Model(
-        ..m,
-        converter_state: Importing(
-          validation_error: Some(msg),
-          drag_over: False,
-        ),
-      ),
+      with_importing_error(m, msg),
       effect.none(),
     )
 
@@ -153,6 +147,13 @@ fn importing_clean() -> model.ConverterState {
   Importing(validation_error: None, drag_over: False)
 }
 
+fn with_importing_error(m: Model, msg: String) -> Model {
+  model.Model(
+    ..m,
+    converter_state: Importing(validation_error: Some(msg), drag_over: False),
+  )
+}
+
 fn get_validation_error(m: Model) -> option.Option(String) {
   case m.converter_state {
     Importing(err, _) -> err
@@ -178,16 +179,7 @@ fn handle_file_read(
   size: Int,
 ) -> #(Model, Effect(Msg)) {
   case validation.check_content(content) {
-    Error(msg) -> #(
-      model.Model(
-        ..m,
-        converter_state: Importing(
-          validation_error: Some(msg),
-          drag_over: False,
-        ),
-      ),
-      effect.none(),
-    )
+    Error(msg) -> #(with_importing_error(m, msg), effect.none())
     Ok(Nil) -> #(
       model.Model(
         ..m,
@@ -216,12 +208,9 @@ fn handle_tsx_validation(m: Model, valid: Bool) -> #(Model, Effect(Msg)) {
         )
         False -> #(
           model.Model(
-            ..m,
-            converter_state: Importing(
-              validation_error: Some(
-                "This file has TSX syntax errors. Please make sure your CV file from Claude is complete and unmodified.",
-              ),
-              drag_over: False,
+            ..with_importing_error(
+              m,
+              "This file has TSX syntax errors. Please make sure your CV file from Claude is complete and unmodified.",
             ),
             pending_file: None,
           ),
@@ -327,38 +316,29 @@ fn handle_got_error(
 
 fn handle_countdown_tick(m: Model) -> #(Model, Effect(Msg)) {
   case m.converter_state {
-    Success(filename, file_size, duration, countdown, paused) ->
-      case paused {
-        True -> #(m, effect.none())
-        False ->
-          case countdown <= 1 {
-            True -> #(
-              model.Model(
-                ..m,
-                converter_state: Success(
-                  filename,
-                  file_size,
-                  duration,
-                  0,
-                  False,
-                ),
-              ),
-              effects.close_tab(),
-            )
-            False -> #(
-              model.Model(
-                ..m,
-                converter_state: Success(
-                  filename,
-                  file_size,
-                  duration,
-                  countdown - 1,
-                  False,
-                ),
-              ),
-              effect.none(),
-            )
-          }
+    Success(_, _, _, _, True) -> #(m, effect.none())
+    Success(filename, file_size, duration, countdown, False) ->
+      case countdown <= 1 {
+        True -> #(
+          model.Model(
+            ..m,
+            converter_state: Success(filename, file_size, duration, 0, False),
+          ),
+          effects.close_tab(),
+        )
+        False -> #(
+          model.Model(
+            ..m,
+            converter_state: Success(
+              filename,
+              file_size,
+              duration,
+              countdown - 1,
+              False,
+            ),
+          ),
+          effect.none(),
+        )
       }
     _ -> #(m, effect.none())
   }
