@@ -120,10 +120,7 @@ fn validation_error_div(validation_error: Option(String)) -> Element(Msg) {
     [
       alert_icon_sm(),
       html.span([attribute.id("validation-error-text")], [
-        html.text(case validation_error {
-          Some(msg) -> msg
-          None -> ""
-        }),
+        html.text(option.unwrap(validation_error, "")),
       ]),
     ],
   )

@@ -2,6 +2,7 @@
 // ABOUTME: Returns a list of error strings so callers surface all failures at once.
 
 import gleam/list
+import gleam/result
 import shared/types.{type ConversionConfig, type Margin, type Settings}
 
 /// Validates a Margin, checking each side is within [0.0, 1.5] inches.
@@ -36,10 +37,8 @@ fn check_margin_side(side: String, value: Float) -> Result(Nil, String) {
 pub fn validate_conversion_config(
   config: ConversionConfig,
 ) -> Result(ConversionConfig, List(String)) {
-  case validate_margin(config.margin) {
-    Ok(_) -> Ok(config)
-    Error(errs) -> Error(errs)
-  }
+  use _ <- result.try(validate_margin(config.margin))
+  Ok(config)
 }
 
 /// Validates Settings: version > 0, last_updated > 0, and config is valid.

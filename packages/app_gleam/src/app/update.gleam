@@ -316,38 +316,29 @@ fn handle_got_error(
 
 fn handle_countdown_tick(m: Model) -> #(Model, Effect(Msg)) {
   case m.converter_state {
-    Success(filename, file_size, duration, countdown, paused) ->
-      case paused {
-        True -> #(m, effect.none())
-        False ->
-          case countdown <= 1 {
-            True -> #(
-              model.Model(
-                ..m,
-                converter_state: Success(
-                  filename,
-                  file_size,
-                  duration,
-                  0,
-                  False,
-                ),
-              ),
-              effects.close_tab(),
-            )
-            False -> #(
-              model.Model(
-                ..m,
-                converter_state: Success(
-                  filename,
-                  file_size,
-                  duration,
-                  countdown - 1,
-                  False,
-                ),
-              ),
-              effect.none(),
-            )
-          }
+    Success(_, _, _, _, True) -> #(m, effect.none())
+    Success(filename, file_size, duration, countdown, False) ->
+      case countdown <= 1 {
+        True -> #(
+          model.Model(
+            ..m,
+            converter_state: Success(filename, file_size, duration, 0, False),
+          ),
+          effects.close_tab(),
+        )
+        False -> #(
+          model.Model(
+            ..m,
+            converter_state: Success(
+              filename,
+              file_size,
+              duration,
+              countdown - 1,
+              False,
+            ),
+          ),
+          effect.none(),
+        )
       }
     _ -> #(m, effect.none())
   }
