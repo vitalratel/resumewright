@@ -47,7 +47,7 @@
       "prettier --write"
     ],
     "packages/app_gleam/**/*.gleam": [
-      "bash -c 'cd packages/app_gleam && mise exec -- gleam format'"
+      "bash -c 'cd packages/app_gleam && mise exec -- gleam format --check'"
     ],
     "**/*.rs": [
       "bash -c 'cargo fmt -- --check'",
