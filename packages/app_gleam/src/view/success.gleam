@@ -4,11 +4,11 @@
 import app/model.{type Msg}
 import gleam/int
 import lustre/attribute
-import view/format
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/element/svg
 import lustre/event
+import view/format
 
 pub fn view(
   filename: String,
