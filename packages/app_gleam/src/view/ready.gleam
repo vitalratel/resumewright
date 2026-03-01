@@ -2,13 +2,13 @@
 // ABOUTME: Rendered after TSX validation passes and the file is ready for conversion.
 
 import app/model.{type Msg}
-import gleam/int
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/element/svg
 import lustre/event
 import shared/types.{type Settings, A4, Legal, Letter}
+import view/format
 
 pub fn view(file: model.ImportedFile, settings: Settings) -> Element(Msg) {
   html.div([attribute.class("animate-fade-in space-y-4")], [
@@ -36,7 +36,7 @@ fn file_card(file: model.ImportedFile) -> Element(Msg) {
             [html.text(file.name)],
           ),
           html.p([attribute.class("text-xs text-success-text/80")], [
-            html.text(format_file_size(file.size)),
+            html.text(format.file_size(file.size)),
           ]),
         ]),
       ]),
@@ -111,14 +111,6 @@ fn settings_summary(settings: Settings) -> String {
     False -> "Custom margins"
   }
   page <> ", " <> margin_label
-}
-
-fn format_file_size(bytes: Int) -> String {
-  case bytes {
-    b if b >= 1_048_576 -> int.to_string(b / 1_048_576) <> " MB"
-    b if b >= 1024 -> int.to_string(b / 1024) <> " KB"
-    _ -> int.to_string(bytes) <> " B"
-  }
 }
 
 fn file_icon() -> Element(Msg) {
