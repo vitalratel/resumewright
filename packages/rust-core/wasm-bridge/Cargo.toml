@@ -37,7 +37,7 @@ serde-wasm-bindgen = { workspace = true }
 console_error_panic_hook = { workspace = true, optional = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-getrandom = { version = "0.3", features = ["wasm_js"] }  # Enable WASM support for lopdf's rand dependency
+getrandom = { version = "0.4", features = ["wasm_js"] }  # Enable WASM support for lopdf's rand dependency
 font-toolkit = { path = "../font-toolkit" }
 pdf-generator = { path = "../pdf-generator" }
 tsx-parser = { path = "../tsx-parser" }
